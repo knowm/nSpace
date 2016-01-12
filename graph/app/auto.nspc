@@ -25,6 +25,10 @@
 	% Setup
 	%%%%%%%%
 
+	% MISCN: Create file stream source
+	$	CreateFileSrc Misc.Create { Id Io.StmSrcFile }
+		!	Initialize/OnFire						CreateFileSrc/Fire
+
 	%%%%%%%%%
 	% WinUSB
 	%%%%%%%%%
@@ -33,5 +37,16 @@
 	$	EnumDev Io.EnumDevClass { Class "{58D07210-27C1-11DD-BD0B-0800200c9a66}" }
 		!	Initialize/OnFire						EnumDev/First
 		!	EnumDev/OnNext							Debug/Fire
-		!	EnumDev/OnNext							EnumDev/Next
+%		!	EnumDev/OnNext							EnumDev/Next
+
+	% ION: Access an asynchronous stream for the device path
+	$	DevStmSrc Io.StreamSource { Options { ReadOnly false:bool Async true:bool } }
+		!	CreateFileSrc/Fire					DevStmSrc/Source
+		!	EnumDev/OnNext							DevStmSrc/Location
+		!	EnumDev/OnNext							DevStmSrc/Open
+		!	DevStmSrc/OnError						Debug/Fire
+		!	DevStmSrc/OnOpen						Debug/Fire
+
+	% USBN: Using device stream for USB functionality
+
 
