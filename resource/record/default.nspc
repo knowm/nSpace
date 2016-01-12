@@ -1,0 +1,35 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%									DEFAULT.NSPC
+%
+%				Default temporal nSpace installation file
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+(
+	%%
+	%% Auto graph instance start-up
+	%%
+	{
+		Command	put		
+		Path		"/App/Shell/Default/State/Auto/OnFire"	
+		Value
+			(
+			% Testing
+%			"/App/AutoSub/Default/"
+
+			% Basic namespace server
+%			"/Lib/Namespace/Service/Default/"
+
+			% HTTP namespace browser
+%			"/Lib/Comm/Network/Ip/Tcp/Http/Browser/Default/"
+
+			% Portal
+%			"/Lib/Namespace/Portal/Inst/Default/"
+
+			% For testing
+			"/App/Auto/Default/"
+			)
+	}
+
+)

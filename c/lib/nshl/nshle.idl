@@ -1,0 +1,62 @@
+import "oaidl.idl";
+import "ocidl.idl";
+
+// Type library
+[
+uuid(2534d083-8628-11d2-868c-006008addfed),
+lcid(0x0409),
+version(1.0)
+]
+library nSpace
+	{
+	// IListenX
+	// Callback for received values on listened emitters
+	[
+	object,
+	uuid(2534d084-8628-11d2-868c-006008addfed),
+	dual,
+	oleautomation
+	] 
+	interface IListenX : IUnknown
+		{
+		HRESULT receive	( [in] BSTR szPath, [in] BSTR szLoc, [in] VARIANT * );
+		};
+
+	// INamespaceX
+	// Utilities for using the attached namespace
+	[
+	object,
+	uuid(2534d085-8628-11d2-868c-006008addfed),
+	dual,
+	oleautomation
+	] 
+	interface INamespaceX : IUnknown
+		{
+		HRESULT load		( [in] BSTR szPath, [out] VARIANT * );
+		HRESULT listen		( [in] BSTR szPath, [in] IListenX *ppL );
+		HRESULT store		( [in] BSTR szPath, [in] VARIANT * );
+		HRESULT unlisten	( [in] BSTR szPath, [in] IListenX *pL );
+		};
+
+	// IShellX
+	// Launch/connect to nSpace namespaces.
+	[
+	object,
+	uuid(2534d086-8628-11d2-868c-006008addfed),
+	dual,
+	oleautomation
+	] 
+	interface IShellX : IUnknown
+		{
+		HRESULT open ( [in] BSTR szCmdLine, [in] BOOL bShare, [out] INamespaceX **ppSpc );
+		};
+
+	// ShellX
+	[uuid(2534d087-8628-11d2-868c-006008addfed)]
+	coclass ShellX
+		{
+		[default] interface IShellX;
+		};
+
+	}	// nSpace
+

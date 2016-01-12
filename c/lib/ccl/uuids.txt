@@ -1,0 +1,394 @@
+2534d000-8628-11d2-868c-006008addfed				//	IID_IIt (adtl)
+2534d001-8628-11d2-868c-006008addfed				//	CLSID_KeyPath (adtl)
+2534d002-8628-11d2-868c-006008addfed				//	IID_ITemporalImpl (nspcl)
+2534d003-8628-11d2-868c-006008addfed				//	IID_IContainer (adtl)
+2534d004-8628-11d2-868c-006008addfed				//	IID_IList (adtl)
+2534d005-8628-11d2-868c-006008addfed				//	IID_IDictionary (adtl)
+2534d006-8628-11d2-868c-006008addfed				//	CLSID_TemporalImpl (nspcl)
+2534d007-8628-11d2-868c-006008addfed				//	
+2534d008-8628-11d2-868c-006008addfed				//	IID_IByteStream (iol)
+2534d009-8628-11d2-868c-006008addfed				//	CLSID_Dictionary (adtl)
+2534d00a-8628-11d2-868c-006008addfed				//	CLSID_StmSrcFile (adtl)
+2534d00b-8628-11d2-868c-006008addfed				//	IID_IResource (iol)
+2534d00c-8628-11d2-868c-006008addfed				//	IID_IStmFile (iol)
+2534d00d-8628-11d2-868c-006008addfed				//	IID_IStreamParser (iol)
+2534d00e-8628-11d2-868c-006008addfed				//	CLSID_StmPrsBin (iol)
+2534d00f-8628-11d2-868c-006008addfed				//	CLSID_List (adtl)
+2534d010-8628-11d2-868c-006008addfed				//
+2534d011-8628-11d2-868c-006008addfed				//
+2534d012-8628-11d2-868c-006008addfed				//
+2534d013-8628-11d2-868c-006008addfed				//
+2534d014-8628-11d2-868c-006008addfed				// 
+2534d015-8628-11d2-868c-006008addfed				// IID_IBehaviour (nspcl)
+2534d016-8628-11d2-868c-006008addfed				// CLSID_Queue (adtl)
+2534d017-8628-11d2-868c-006008addfed				// 
+2534d018-8628-11d2-868c-006008addfed				// 
+2534d019-8628-11d2-868c-006008addfed				// 
+2534d01a-8628-11d2-868c-006008addfed				// IID_IObjectFactory (ccl)
+2534d01b-8628-11d2-868c-006008addfed				// IID_ICloneable (sysl)
+2534d01c-8628-11d2-868c-006008addfed				// CLSID_Factory
+2534d01d-8628-11d2-868c-006008addfed				// CLSID_Dist
+2534d01e-8628-11d2-868c-006008addfed				// CLSID_PersistTxt (nspcl)
+2534d01f-8628-11d2-868c-006008addfed				// IID_IMemoryMapped
+2534d020-8628-11d2-868c-006008addfed				// CLSID_MemoryBlock 
+2534d021-8628-11d2-868c-006008addfed				// CLSID_StmMemory
+2534d022-8628-11d2-868c-006008addfed				// IID_ITickable
+2534d023-8628-11d2-868c-006008addfed				// IID_INamespace
+2534d024-8628-11d2-868c-006008addfed				// CLSID_Namespace
+2534d025-8628-11d2-868c-006008addfed				// CLSID_Emittert
+2534d026-8628-11d2-868c-006008addfed				// CLSID_Temporal
+2534d027-8628-11d2-868c-006008addfed				// CLSID_Toggle
+2534d028-8628-11d2-868c-006008addfed				// CLSID_Store (adtl)
+2534d029-8628-11d2-868c-006008addfed				// CLSID_State
+2534d02a-8628-11d2-868c-006008addfed				// CLSID_Connectors (nspcl)
+2534d02b-8628-11d2-868c-006008addfed				// CLSID_Debug (miscl)
+2534d02c-8628-11d2-868c-006008addfed				// CLSID_Create (miscl)
+2534d02d-8628-11d2-868c-006008addfed				// CLSID_Write (adtl)
+2534d02e-8628-11d2-868c-006008addfed				// CLSID_Load (adtl)
+2534d02f-8628-11d2-868c-006008addfed				// CLSID_Iterate (adtl)
+2534d030-8628-11d2-868c-006008addfed				// CLSID_Compare (miscl)
+2534d031-8628-11d2-868c-006008addfed				// CLSID_StreamSource (miscl)
+2534d032-8628-11d2-868c-006008addfed				// CLSID_Remove (adtl)
+2534d033-8628-11d2-868c-006008addfed				// CLSID_TokenIt (miscl)
+2534d034-8628-11d2-868c-006008addfed				// CLSID_DictParse
+2534d035-8628-11d2-868c-006008addfed				// CLSID_StringParse
+2534d036-8628-11d2-868c-006008addfed				// CLSID_Resource
+2534d037-8628-11d2-868c-006008addfed				//	CLSID_String (miscl)
+2534d038-8628-11d2-868c-006008addfed				// CLSID_This (nspcl)
+2534d039-8628-11d2-868c-006008addfed				// CLSID_Connect (nspcl)
+2534d03a-8628-11d2-868c-006008addfed				// CLSID_Bezier (opengll)
+2534d03b-8628-11d2-868c-006008addfed				// CLSID_Lock (Io)
+2534d03c-8628-11d2-868c-006008addfed				// CLSID_Type (miscl)
+2534d03d-8628-11d2-868c-006008addfed				// CLSID_Binary (mathl)
+2534d03e-8628-11d2-868c-006008addfed				// CLSID_Stack (adtl)
+2534d03f-8628-11d2-868c-006008addfed				// CLSID_Button (gdil)
+2534d040-8628-11d2-868c-006008addfed				// CLSID_View (gdil)
+2534d041-8628-11d2-868c-006008addfed				// CLSID_Table (gdil)
+2534d042-8628-11d2-868c-006008addfed				// CLSID_MiscDemux (miscl)
+2534d043-8628-11d2-868c-006008addfed				// CLSID_Keys (adtl)
+2534d044-8628-11d2-868c-006008addfed				// IID_INamespaceCB (Node)
+2534d045-8628-11d2-868c-006008addfed				// CLSID_Label (gdil)
+2534d046-8628-11d2-868c-006008addfed				// CLSID_Stat (adtl)
+2534d047-8628-11d2-868c-006008addfed				// CLSID_Counter (mathl)
+2534d048-8628-11d2-868c-006008addfed				// CLSID_Listbox (gdil)
+2534d049-8628-11d2-868c-006008addfed				// CLSID_Persist (IO)
+2534d04a-8628-11d2-868c-006008addfed				// CLSID_Stream (IO)
+2534d04b-8628-11d2-868c-006008addfed				// CLSID_StringStream (miscl)
+2534d04c-8628-11d2-868c-006008addfed				// CLSID_Window (gdil)
+2534d04d-8628-11d2-868c-006008addfed				// CLSID_Socket (netl)
+2534d04e-8628-11d2-868c-006008addfed				//	CLSID_Client (netl)
+2534d04f-8628-11d2-868c-006008addfed				// IID_IThread
+2534d050-8628-11d2-868c-006008addfed				//	CLSID_Send (netl)
+2534d051-8628-11d2-868c-006008addfed				// CLSID_Receive (netl)
+2534d052-8628-11d2-868c-006008addfed				// CLSID_Avail (netl)
+2534d053-8628-11d2-868c-006008addfed				// CLSID_DatagramOp (netl)
+2534d054-8628-11d2-868c-006008addfed				// CLSID_Sync (miscl)
+2534d055-8628-11d2-868c-006008addfed				// CLSID_Interfaces (netl)
+2534d056-8628-11d2-868c-006008addfed				// CLSID_Thread
+2534d057-8628-11d2-868c-006008addfed				// CLSID_Multicast (netl)
+2534d058-8628-11d2-868c-006008addfed				// CLSID_Timer (miscl)
+2534d059-8628-11d2-868c-006008addfed				// CLSID_Address (netl)
+2534d05a-8628-11d2-868c-006008addfed				// CLSID_UtilUUID (Sys)
+2534d05b-8628-11d2-868c-006008addfed				// CLSID_Color (opengll)
+2534d05c-8628-11d2-868c-006008addfed				// CLSID_PersistSkt (netl)
+2534d05d-8628-11d2-868c-006008addfed				// CLSID_AsyncQ (miscl)
+2534d05e-8628-11d2-868c-006008addfed				// CLSID_DictFormat (miscl)
+2534d05f-8628-11d2-868c-006008addfed				// CLSID_View (opengll)
+2534d060-8628-11d2-868c-006008addfed				// CLSID_PersistImg (medial)
+2534d061-8628-11d2-868c-006008addfed				// CLSID_Texture (opengll)
+2534d062-8628-11d2-868c-006008addfed				// CLSID_Signal (Node)
+2534d063-8628-11d2-868c-006008addfed				// CLSID_Value (nspcl)
+2534d064-8628-11d2-868c-006008addfed				// IID_INamespaceLoc
+2534d065-8628-11d2-868c-006008addfed				// IID_INamespaceValue
+2534d066-8628-11d2-868c-006008addfed				// CLSID_NamespaceLoc
+2534d067-8628-11d2-868c-006008addfed				// CLSID_NamespaceValue
+2534d068-8628-11d2-868c-006008addfed				// CLSID_DictionaryStm
+2534d069-8628-11d2-868c-006008addfed				// CLSID_Decoder (miscl)
+2534d070-8628-11d2-868c-006008addfed				// CLSID_Location (nspcl)
+2534d071-8628-11d2-868c-006008addfed				// IID_INamespaceLocCB (nspcl)
+2534d072-8628-11d2-868c-006008addfed				// CLSID_Values (nspcl)
+2534d073-8628-11d2-868c-006008addfed				// CLSID_Vertex (opengll)
+2534d074-8628-11d2-868c-006008addfed				//	CLSID_Time (miscl)
+2534d075-8628-11d2-868c-006008addfed				//	CLSID_Matrix (opengll)
+2534d076-8628-11d2-868c-006008addfed				// CLSID_Transform (opengll)
+2534d077-8628-11d2-868c-006008addfed				//	IID_IEmitterLoc (nspcl)
+2534d078-8628-11d2-868c-006008addfed				// CLSID_Link (nspcl)
+2534d079-8628-11d2-868c-006008addfed				// CLSID_StringFormat (miscl)
+2534d07a-8628-11d2-868c-006008addfed				// CLSID_StmPrsXML (IO)
+2534d07b-8628-11d2-868c-006008addfed				// CLSID_StmCopy (IO)
+2534d07c-8628-11d2-868c-006008addfed				// CLSID_GraphMod (nspcl)
+2534d07d-8628-11d2-868c-006008addfed				//	CLSID_Clone (miscl)
+2534d07e-8628-11d2-868c-006008addfed				// CLSID_Edit (gdil)
+2534d07f-8628-11d2-868c-006008addfed				//	CLSID_AsyncEmit (miscl)
+2534d080-8628-11d2-868c-006008addfed				//	IID_IReceptorLoc
+2534d081-8628-11d2-868c-006008addfed				//	CLSID_Tree (gdil)	
+2534d082-8628-11d2-868c-006008addfed				//	CLSID_GenSession (Sntl)
+2534d083-8628-11d2-868c-006008addfed				//	nSpace type library (IDL)
+2534d084-8628-11d2-868c-006008addfed				// IID_IListen (IDL)
+2534d085-8628-11d2-868c-006008addfed				// IID_INamespace (IDL)
+2534d086-8628-11d2-868c-006008addfed				//	IID_IShell (IDL)
+2534d087-8628-11d2-868c-006008addfed				//	CLSID_ShellX (IDL)
+2534d088-8628-11d2-868c-006008addfed				//	CLSID_Combobox (gdil)
+2534d089-8628-11d2-868c-006008addfed				//	CLSID_FileSelect (gdil)
+2534d08a-8628-11d2-868c-006008addfed				//	IID_IThis
+2534d08b-8628-11d2-868c-006008addfed				// CLSID_LicLogin (Sntl)
+2534d08c-8628-11d2-868c-006008addfed				//	CLSID_GenLicense (Sntl)
+2534d08d-8628-11d2-868c-006008addfed				//	CLSID_LicInfo (Sntl)
+2534d08e-8628-11d2-868c-006008addfed				//	CLSID_EnumDevClass (IO)
+2534d08f-8628-11d2-868c-006008addfed				//	CLSID_Enum (Visa)
+2534d090-8628-11d2-868c-006008addfed				//	CLSID_Io (Visa)
+2534d091-8628-11d2-868c-006008addfed				//	CLSID_Visa (Io)
+2534d092-8628-11d2-868c-006008addfed				//	CLSID_GpibNi (Io)
+2534d093-8628-11d2-868c-006008addfed				//	CLSID_GpibSicl (Io)
+2534d094-8628-11d2-868c-006008addfed				//	CLSID_Locator (WMI)
+2534d095-8628-11d2-868c-006008addfed				//	CLSID_Services (WMI)
+2534d096-8628-11d2-868c-006008addfed				//	CLSID_Enumerator (WMI)
+2534d097-8628-11d2-868c-006008addfed				// CLSID_Instance (WMI)
+2534d098-8628-11d2-868c-006008addfed				//	CLSID_RSAImpl (OpenSSL)
+2534d099-8628-11d2-868c-006008addfed				//	CLSID_PEMImpl (OpenSSL)
+2534d09a-8628-11d2-868c-006008addfed				//	CLSID_EVPSign (OpenSSL)
+2534d09b-8628-11d2-868c-006008addfed				// CLSID_EVPVerify (OpenSSL)
+2534d09c-8628-11d2-868c-006008addfed				// CLSID_Matrix3D (mathl)
+2534d09d-8628-11d2-868c-006008addfed				//	CLSID_Quad (opengll)
+2534d09e-8628-11d2-868c-006008addfed				// CLSID_Project (opengll)
+2534d09f-8628-11d2-868c-006008addfed				//	CLSID_Vector3 (mathl)
+2534d0a0-8628-11d2-868c-006008addfed				// CLSID_Formula (mathl)
+2534d0a1-8628-11d2-868c-006008addfed				// CLSID_Function (mathl)
+2534d0a2-8628-11d2-868c-006008addfed				// IID_ILocation (nspcl)
+2534d0a3-8628-11d2-868c-006008addfed				//	CLSID_Text (medial)
+2534d0a4-8628-11d2-868c-006008addfed				// CLSID_Hid (Io)
+2534d0a5-8628-11d2-868c-006008addfed				//	CLSID_GraphItems (nspcl)
+2534d0a6-8628-11d2-868c-006008addfed				//	CLSID_GraphConnect (nspcl)
+2534d0a7-8628-11d2-868c-006008addfed				//	CLSID_DictionaryNotify (adtl)
+2534d0a8-8628-11d2-868c-006008addfed				//	CLSID_Image (Widget)
+2534d0a9-8628-11d2-868c-006008addfed				//	IID_IDictionaryNotify (adtl)
+2534d0aa-8628-11d2-868c-006008addfed				//	CLSID_Bezier (Widget)
+2534d0ab-8628-11d2-868c-006008addfed				//	IID_IHaveValue (adtl)
+2534d0ac-8628-11d2-868c-006008addfed				//	CLSID_AdtValue (adtl)
+2534d0ad-8628-11d2-868c-006008addfed				// CLSID_DragDrop (Widget)
+2534d0ae-8628-11d2-868c-006008addfed				// CLSID_Reflect (nspcl)
+2534d0af-8628-11d2-868c-006008addfed				// CLSID_Transform3D (mathl)
+2534d0b0-8628-11d2-868c-006008addfed				//	CLSID_ByteCache (Io)
+2534d0b1-8628-11d2-868c-006008addfed				// CLSID_VideoGrab (medial)
+2534d0b2-8628-11d2-868c-006008addfed				// CLSID_Connect (nspcl)
+2534d0b3-8628-11d2-868c-006008addfed				// CLSID_Controller (Leap)
+2534d0b4-8628-11d2-868c-006008addfed				// CLSID_InputGen (Io)
+2534d0b5-8628-11d2-868c-006008addfed				// CLSID_Path (miscl)
+2534d0b6-8628-11d2-868c-006008addfed				// CLSID_Unary (mathl)
+2534d0b7-8628-11d2-868c-006008addfed				// CLSID_SSLConnect (OpenSSL)
+2534d0b8-8628-11d2-868c-006008addfed				// CLSID_
+2534d0b9-8628-11d2-868c-006008addfed				// 
+2534d0ba-8628-11d2-868c-006008addfed				// 
+2534d0bb-8628-11d2-868c-006008addfed				// 
+2534d0bc-8628-11d2-868c-006008addfed				// 
+2534d0bd-8628-11d2-868c-006008addfed				// 
+2534d0be-8628-11d2-868c-006008addfed				// 
+2534d0bf-8628-11d2-868c-006008addfed				// 
+2534d0c0-8628-11d2-868c-006008addfed				// 
+2534d0c1-8628-11d2-868c-006008addfed				//	
+2534d0c2-8628-11d2-868c-006008addfed				// 
+2534d0c3-8628-11d2-868c-006008addfed				// 
+2534d0c4-8628-11d2-868c-006008addfed				// 
+2534d0c5-8628-11d2-868c-006008addfed				// 
+2534d0c6-8628-11d2-868c-006008addfed				// 
+2534d0c7-8628-11d2-868c-006008addfed				// 
+2534d0c8-8628-11d2-868c-006008addfed				// 
+2534d0c9-8628-11d2-868c-006008addfed				// 
+2534d0ca-8628-11d2-868c-006008addfed				//	
+2534d0cb-8628-11d2-868c-006008addfed				// 
+2534d0cc-8628-11d2-868c-006008addfed				// 
+2534d0cd-8628-11d2-868c-006008addfed				// 
+2534d0ce-8628-11d2-868c-006008addfed				// 
+2534d0cf-8628-11d2-868c-006008addfed				// 
+2534d0d0-8628-11d2-868c-006008addfed				//	
+2534d0d1-8628-11d2-868c-006008addfed				//	
+2534d0d2-8628-11d2-868c-006008addfed				//	
+2534d0d3-8628-11d2-868c-006008addfed				//	
+2534d0d4-8628-11d2-868c-006008addfed				//	
+2534d0d5-8628-11d2-868c-006008addfed				//	
+2534d0d6-8628-11d2-868c-006008addfed				//	
+2534d0d7-8628-11d2-868c-006008addfed				//	
+2534d0d8-8628-11d2-868c-006008addfed				// 
+2534d0d9-8628-11d2-868c-006008addfed				// 
+2534d0da-8628-11d2-868c-006008addfed				// 
+2534d0db-8628-11d2-868c-006008addfed				// 
+2534d0dc-8628-11d2-868c-006008addfed				//	
+2534d0dd-8628-11d2-868c-006008addfed				//	
+2534d0de-8628-11d2-868c-006008addfed				//	
+2534d0df-8628-11d2-868c-006008addfed				//	
+2534d0e0-8628-11d2-868c-006008addfed				// 
+2534d0e1-8628-11d2-868c-006008addfed				//	
+2534d0e2-8628-11d2-868c-006008addfed				//	
+2534d0e3-8628-11d2-868c-006008addfed				//	
+2534d0e4-8628-11d2-868c-006008addfed				//	
+2534d0e5-8628-11d2-868c-006008addfed				//	
+2534d0e6-8628-11d2-868c-006008addfed				//	
+2534d0e7-8628-11d2-868c-006008addfed				//	
+2534d0e8-8628-11d2-868c-006008addfed				//	
+2534d0e9-8628-11d2-868c-006008addfed				//	
+2534d0ea-8628-11d2-868c-006008addfed				// 
+2534d0eb-8628-11d2-868c-006008addfed				//	
+2534d0ec-8628-11d2-868c-006008addfed				//	
+2534d0ed-8628-11d2-868c-006008addfed				//	
+2534d0ee-8628-11d2-868c-006008addfed				//	
+2534d0ef-8628-11d2-868c-006008addfed				//	
+2534d0f0-8628-11d2-868c-006008addfed				//	
+2534d0f1-8628-11d2-868c-006008addfed				//	
+2534d0f2-8628-11d2-868c-006008addfed				//	
+2534d0f3-8628-11d2-868c-006008addfed				//	
+2534d0f4-8628-11d2-868c-006008addfed				//	
+2534d0f5-8628-11d2-868c-006008addfed				//	
+2534d0f6-8628-11d2-868c-006008addfed				//	
+2534d0f7-8628-11d2-868c-006008addfed				//	
+2534d0f8-8628-11d2-868c-006008addfed				//	
+2534d0f9-8628-11d2-868c-006008addfed				//	
+2534d0fa-8628-11d2-868c-006008addfed				//	
+2534d0fb-8628-11d2-868c-006008addfed				//	
+2534d0fc-8628-11d2-868c-006008addfed				//	
+2534d0fd-8628-11d2-868c-006008addfed				//	
+2534d0fe-8628-11d2-868c-006008addfed				//	
+2534d0ff-8628-11d2-868c-006008addfed				//	
+2534d100-8628-11d2-868c-006008addfed				//	
+2534d101-8628-11d2-868c-006008addfed				// 
+2534d102-8628-11d2-868c-006008addfed				// 
+2534d103-8628-11d2-868c-006008addfed				// 
+2534d104-8628-11d2-868c-006008addfed				// 
+2534d105-8628-11d2-868c-006008addfed				// 
+2534d106-8628-11d2-868c-006008addfed				// 
+2534d107-8628-11d2-868c-006008addfed				// 
+2534d108-8628-11d2-868c-006008addfed				// 
+2534d109-8628-11d2-868c-006008addfed				// 
+2534d10a-8628-11d2-868c-006008addfed				// 
+2534d10b-8628-11d2-868c-006008addfed				// 
+2534d10c-8628-11d2-868c-006008addfed				// 
+2534d10d-8628-11d2-868c-006008addfed				// 
+2534d10e-8628-11d2-868c-006008addfed				// 
+2534d10f-8628-11d2-868c-006008addfed				// 
+2534d110-8628-11d2-868c-006008addfed				// 
+2534d111-8628-11d2-868c-006008addfed				// 
+2534d112-8628-11d2-868c-006008addfed				// 
+2534d113-8628-11d2-868c-006008addfed				// 
+2534d114-8628-11d2-868c-006008addfed				// 
+2534d115-8628-11d2-868c-006008addfed				// 
+2534d116-8628-11d2-868c-006008addfed				// 
+2534d117-8628-11d2-868c-006008addfed				// 
+2534d118-8628-11d2-868c-006008addfed				// 
+2534d119-8628-11d2-868c-006008addfed				// 
+2534d11a-8628-11d2-868c-006008addfed				// 
+2534d11b-8628-11d2-868c-006008addfed				// 
+2534d11c-8628-11d2-868c-006008addfed				// 
+2534d11d-8628-11d2-868c-006008addfed				// 
+2534d11e-8628-11d2-868c-006008addfed				// 
+2534d11f-8628-11d2-868c-006008addfed				// 
+2534d120-8628-11d2-868c-006008addfed				// 
+2534d121-8628-11d2-868c-006008addfed				// 
+2534d122-8628-11d2-868c-006008addfed				// 
+2534d123-8628-11d2-868c-006008addfed				// 
+2534d124-8628-11d2-868c-006008addfed				// 
+2534d125-8628-11d2-868c-006008addfed				// 
+2534d126-8628-11d2-868c-006008addfed				// 
+2534d127-8628-11d2-868c-006008addfed				// 
+2534d128-8628-11d2-868c-006008addfed				// 
+2534d129-8628-11d2-868c-006008addfed				// 
+2534d12a-8628-11d2-868c-006008addfed				// 
+2534d12b-8628-11d2-868c-006008addfed				// 
+2534d12c-8628-11d2-868c-006008addfed				// 
+2534d12d-8628-11d2-868c-006008addfed				// 
+2534d12e-8628-11d2-868c-006008addfed				// 
+2534d12f-8628-11d2-868c-006008addfed				// 
+2534d130-8628-11d2-868c-006008addfed				// 
+2534d131-8628-11d2-868c-006008addfed				// 
+2534d132-8628-11d2-868c-006008addfed				// 
+2534d133-8628-11d2-868c-006008addfed				// 
+2534d134-8628-11d2-868c-006008addfed				// 
+2534d135-8628-11d2-868c-006008addfed				// 
+2534d136-8628-11d2-868c-006008addfed				// 
+2534d137-8628-11d2-868c-006008addfed				// 
+2534d138-8628-11d2-868c-006008addfed				// 
+2534d139-8628-11d2-868c-006008addfed				// 
+2534d13a-8628-11d2-868c-006008addfed				// 
+2534d13b-8628-11d2-868c-006008addfed				// 
+2534d13c-8628-11d2-868c-006008addfed				// 
+2534d13d-8628-11d2-868c-006008addfed				// 
+2534d13e-8628-11d2-868c-006008addfed				// 
+2534d13f-8628-11d2-868c-006008addfed				// 
+2534d140-8628-11d2-868c-006008addfed				// 
+2534d141-8628-11d2-868c-006008addfed				// 
+2534d142-8628-11d2-868c-006008addfed				// 
+2534d143-8628-11d2-868c-006008addfed				// 
+2534d144-8628-11d2-868c-006008addfed				// 
+2534d145-8628-11d2-868c-006008addfed				// 
+2534d146-8628-11d2-868c-006008addfed				// 
+2534d147-8628-11d2-868c-006008addfed				// 
+2534d148-8628-11d2-868c-006008addfed				// 
+2534d149-8628-11d2-868c-006008addfed				// 
+2534d14a-8628-11d2-868c-006008addfed				// 
+2534d14b-8628-11d2-868c-006008addfed				// 
+2534d14c-8628-11d2-868c-006008addfed				// 
+2534d14d-8628-11d2-868c-006008addfed				// 
+2534d14e-8628-11d2-868c-006008addfed				// 
+2534d14f-8628-11d2-868c-006008addfed				// 
+2534d150-8628-11d2-868c-006008addfed				// 
+2534d151-8628-11d2-868c-006008addfed				// 
+2534d152-8628-11d2-868c-006008addfed				// 
+2534d153-8628-11d2-868c-006008addfed				// 
+2534d154-8628-11d2-868c-006008addfed				// 
+2534d155-8628-11d2-868c-006008addfed				// 
+2534d156-8628-11d2-868c-006008addfed				// 
+2534d157-8628-11d2-868c-006008addfed				// 
+2534d158-8628-11d2-868c-006008addfed				// 
+2534d159-8628-11d2-868c-006008addfed				// 
+2534d15a-8628-11d2-868c-006008addfed				// 
+2534d15b-8628-11d2-868c-006008addfed				// 
+2534d15c-8628-11d2-868c-006008addfed				// 
+2534d15d-8628-11d2-868c-006008addfed				// 
+2534d15e-8628-11d2-868c-006008addfed				// 
+2534d15f-8628-11d2-868c-006008addfed				// 
+2534d160-8628-11d2-868c-006008addfed				// 
+2534d161-8628-11d2-868c-006008addfed				// 
+2534d162-8628-11d2-868c-006008addfed				// 
+2534d163-8628-11d2-868c-006008addfed				// 
+2534d164-8628-11d2-868c-006008addfed				// 
+2534d165-8628-11d2-868c-006008addfed				// 
+2534d166-8628-11d2-868c-006008addfed				// 
+2534d167-8628-11d2-868c-006008addfed				// 
+2534d168-8628-11d2-868c-006008addfed				// 
+2534d169-8628-11d2-868c-006008addfed				// 
+2534d16a-8628-11d2-868c-006008addfed				// 
+2534d16b-8628-11d2-868c-006008addfed				// 
+2534d16c-8628-11d2-868c-006008addfed				// 
+2534d16d-8628-11d2-868c-006008addfed				// 
+2534d16e-8628-11d2-868c-006008addfed				// 
+2534d16f-8628-11d2-868c-006008addfed				// 
+2534d170-8628-11d2-868c-006008addfed				// 
+2534d171-8628-11d2-868c-006008addfed				// 
+2534d172-8628-11d2-868c-006008addfed				// 
+2534d173-8628-11d2-868c-006008addfed				// 
+2534d174-8628-11d2-868c-006008addfed				// 
+2534d175-8628-11d2-868c-006008addfed				// 
+2534d176-8628-11d2-868c-006008addfed				// 
+2534d177-8628-11d2-868c-006008addfed				// 
+2534d178-8628-11d2-868c-006008addfed				// 
+2534d179-8628-11d2-868c-006008addfed				// 
+2534d17a-8628-11d2-868c-006008addfed				// 
+2534d17b-8628-11d2-868c-006008addfed				// 
+2534d17d-8628-11d2-868c-006008addfed				// 
+2534d17e-8628-11d2-868c-006008addfed				// 
+2534d17f-8628-11d2-868c-006008addfed				// 
+2534d180-8628-11d2-868c-006008addfed				// 
+2534d181-8628-11d2-868c-006008addfed				// 
+2534d182-8628-11d2-868c-006008addfed				// 
+2534d183-8628-11d2-868c-006008addfed				// 
+2534d184-8628-11d2-868c-006008addfed				// 
+2534d185-8628-11d2-868c-006008addfed				// 
+2534d186-8628-11d2-868c-006008addfed				// 
+2534d187-8628-11d2-868c-006008addfed				// 
+2534d188-8628-11d2-868c-006008addfed				// 
+2534d189-8628-11d2-868c-006008addfed				// 
+2534d18a-8628-11d2-868c-006008addfed				// 
+2534d18b-8628-11d2-868c-006008addfed				// 
+2534d18c-8628-11d2-868c-006008addfed				// 
+2534d18d-8628-11d2-868c-006008addfed				// 
+2534d18e-8628-11d2-868c-006008addfed				// 
+2534d18f-8628-11d2-868c-006008addfed				// 
+

@@ -1,0 +1,132 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{14EDC47C-C44C-4821-B32D-DFC49FF00F67}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>nsh</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);comctl32.lib</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);comctl32.lib</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="nsh.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\dll\adtn\adtn.vcxproj">
+      <Project>{27d48bf6-ebc4-417b-9e4e-b7fa2f75d570}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dll\ion\ion.vcxproj">
+      <Project>{6222d284-3e51-4145-8fe1-4fe12c18029c}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dll\mathn\mathn.vcxproj">
+      <Project>{7435f9f4-3efe-42aa-9436-0e4d5229cd8d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dll\miscn\miscn.vcxproj">
+      <Project>{d3148dda-8655-4779-b555-0707c04bdb2d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dll\netn\netn.vcxproj">
+      <Project>{8b820b2b-829f-4c6d-8d16-fd867fa067ef}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dll\nspcn\nspcn.vcxproj">
+      <Project>{1f7f5996-f935-45d2-b4d5-e6e51bc465f7}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dll\sysn\sysn.vcxproj">
+      <Project>{b3a74ea1-07fd-4e38-a10f-2d86cedbb574}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dll\wmin\wmin.vcxproj">
+      <Project>{64506169-1f9d-4679-b135-122b46f861eb}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\lib\adtl\adtl.vcxproj">
+      <Project>{b8de1218-452b-46ce-a380-4b11f3d8c1da}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\lib\ccl\ccl.vcxproj">
+      <Project>{8d6e6dc8-bfc1-4d67-8b35-25a94c97bceb}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\lib\nshl\nshl.vcxproj">
+      <Project>{a58c30ed-db36-4390-beef-3f050bdd601e}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\lib\nshxl\nshxl.vcxproj">
+      <Project>{8738fdad-b4a1-48ed-b021-6faab9ab5072}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\lib\sysl\sysl.vcxproj">
+      <Project>{8532deaa-56d3-4ff4-8fb8-664efe6eef83}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,0 +1,84 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%							SHELL.NSPC
+%
+%					Graph side of nSpace shell
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Actions
+	$	Initialize			Misc.Dist {}		% Initialize
+	$	Uninitialize		Misc.Dist {}		% Uninitialize
+
+	% DEBUG
+	$	Debug Misc.Debug {}
+		!	Initialize/OnFire						Debug/Fire
+		!	Uninitialize/OnFire					Debug/Fire
+
+	%%%%%%%%
+	% Setup
+	%%%%%%%%
+
+	% Subgraph: Shell state
+	#	State											State/Graph/Shell/ {}
+		!	State/Auto/OnFire						Debug/Fire
+
+	%%%%%%%%%%%%%%%%%%
+	% Auto start/stop
+	%%%%%%%%%%%%%%%%%%
+
+	%% Graph configurations in the state tree can be configured
+	%% to automatically start/stop with the shell.
+
+	% MISCN: Create a dictionary to keep track of instanced graphs
+	$	CreateAutoDct Misc.Create { Id Adt.Dictionary }
+		!	Initialize/OnFire						CreateAutoDct/Fire
+
+	% ADTN: Iterate the entries in the location
+	$	AutoIt Adt.Iterate {}
+		!	State/Auto/OnFire						AutoIt/Container
+		!	State/Auto/OnFire						AutoIt/First
+%		!	Initialize/OnFire						AutoIt/First
+		!	AutoIt/OnNext							Debug/Fire
+
+	% NSPC: Load instance 
+	$	LoadAutoInst Nspc.This {}
+		!	AutoIt/OnNext							LoadAutoInst/Location
+		!	AutoIt/OnNext							LoadAutoInst/Load
+%		!	LoadAutoInst/Get						Debug/Fire
+%		!	LoadAutoInst/NotFound				Debug/Fire
+
+	% Next entry
+	!	AutoIt/OnNext								AutoIt/Next
+
+	%%%%%%%%
+	% Debug
+	%%%%%%%%
+
+	%% This is here for testing so that if there is an 'auto' graph running this
+	%% will fire a signal into it.
+
+	% MISCN: Debug receptor location
+%	$	ValueRecep Misc.Dist { Value "/Apps/Auto/Default/Test/Fire" }
+%		!	Initialize/OnFire						ValueRecep/Fire
+%		!	ValueRecep/OnFire						Debug/Fire
+
+	% MISCN: Debug receive
+%	$	ValueReceive Misc.Dist { Value 3.141:double }
+%		!	ValueRecep/OnFire						ValueReceive/Fire
+%		!	ValueReceive/OnFire					Debug/Fire
+
+	% NSPC: Load location
+%	$	LoadRecep Nspc.This {}
+%		!	ValueRecep/OnFire						LoadRecep/Location
+%		!	ValueRecep/OnFire						LoadRecep/Load
+%		!	LoadRecep/Get							Debug/Fire
+%		!	LoadRecep/NotFound					Debug/Fire
+
+	% NSPC: Receive value
+%	$	ReceiveVal Nspc.Connectors {}
+%		!	ValueReceive/OnFire					ReceiveVal/Value
+%		!	LoadRecep/OnLoad						ReceiveVal/Receive
+

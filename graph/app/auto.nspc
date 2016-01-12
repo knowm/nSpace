@@ -1,0 +1,37 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								AUTO.NSPC
+%
+%					Debug 'auto start' graph instance
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Actions
+	$	Initialize			Misc.Dist {}		% Initialize
+	$	Uninitialize		Misc.Dist {}		% Uninitialize
+
+	% DEBUG
+	$	Debug Misc.Debug {}
+		!	Initialize/OnFire						Debug/Fire
+		!	Uninitialize/OnFire					Debug/Fire
+
+	% NSPC: Local information
+	$	This Nspc.This {}
+%		!	Initialize/OnFire						This/Fire
+
+	%%%%%%%%
+	% Setup
+	%%%%%%%%
+
+	%%%%%%%%%
+	% WinUSB
+	%%%%%%%%%
+
+	% MISCN: Enumerate USB devices.  Class Id for Custom USB devices
+	$	EnumDev Io.EnumDevClass { Class "{58D07210-27C1-11DD-BD0B-0800200c9a66}" }
+		!	Initialize/OnFire						EnumDev/First
+		!	EnumDev/OnNext							Debug/Fire
+		!	EnumDev/OnNext							EnumDev/Next
+
