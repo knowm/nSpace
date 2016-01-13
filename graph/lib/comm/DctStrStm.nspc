@@ -1,0 +1,67 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%									DctStrStm.nspc
+%
+%			Format a dictionary into a string then into a stream.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+	$	Dictionary			Misc.Dist {}		% Input dictionary
+	$	Format				Misc.Dist {}		% Format specification
+	$	Terminate			Misc.Dist {}		% Terminator for string
+
+	% Notifications
+	$	OnSize				Misc.Dist {}		% Size of stream
+	$	OnStream				Misc.Dist {}		% Stream
+
+	% DEBUG
+	$	Debug Misc.Debug { Message "DCT_STR_STM" }
+%		!	Dictionary/Fire						Debug/Fire
+%		!	OnSize/Fire								Debug/Fire
+%		!	OnStream/Fire							Debug/Fire
+
+	%%%%%%%%%
+	% String
+	%%%%%%%%%
+
+	% MISCN: Format dictionary into string
+	$	FmtStr Misc.StringFormat {}
+		!	Format/OnFire							FmtStr/Format
+		!	Dictionary/OnFire						FmtStr/Dictionary
+		!	Dictionary/OnFire						FmtStr/Fire
+
+	% MATHN: Append optional terminator
+	$ AppendTerm Math.Binary { Right "" }
+		!	Terminate/OnFire						AppendTerm/Right
+		!	FmtStr/OnFire							AppendTerm/Left
+		!	FmtStr/OnFire							AppendTerm/Add
+		!	AppendTerm/OnFire						Debug/Fire
+
+	%%%%%%%%%	
+	% Stream
+	%%%%%%%%%
+
+	% MISCN: Create a stream to receive the string bytes
+	$	CreateStm Misc.Create { Id Io.StmMemory }
+		!	AppendTerm/OnFire						CreateStm/Fire
+
+	% MISCN: Write the string into the stream
+	$	StmStr Misc.StringStream { Terminate? false:bool }
+		!	CreateStm/OnFire						StmStr/Stream
+		!	AppendTerm/OnFire						StmStr/String
+		!	AppendTerm/OnFire						StmStr/Reset
+		!	AppendTerm/OnFire						StmStr/To
+
+	% MISCN: Reset position of stream and calculate size
+	$	StmPos Io.StreamOp { Origin Set Offset 0:int }
+		!	StmStr/OnFire							StmPos/Stream
+		!	StmStr/OnFire							StmPos/Seek
+		!	StmStr/OnFire							StmPos/Available
+
+	% Size
+	!	StmPos/OnAvailable						OnSize/Fire
+	!	StmStr/OnFire								OnStream/Fire
+

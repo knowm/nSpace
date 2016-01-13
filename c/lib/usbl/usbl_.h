@@ -1,21 +1,20 @@
 ////////////////////////////////////////////////////////////////////////
 //
-//										WMIL_.H
+//										USBL_.H
 //
-//				Implementation include file for WMI library
+//				Implementation include file for USB library
 //
 ////////////////////////////////////////////////////////////////////////
 
-#ifndef	WMIL__H
-#define	WMIL__H
+#ifndef	USBL__H
+#define	USBL__H
 
 // Includes
-#include	"WMIL.h"
+#include "usbl.h"
 #include "../../lib/nspcl/nspcl.h"
 
-// API
-#undef	INITGUID
-#include <WbemCli.h>
+// External API
+#include <winusb.h>
 
 ///////////
 // Objects
@@ -38,6 +37,10 @@ class Device :
 	Device ( void );										// Constructor
 
 	// Run-time data
+	IResource	*pRes;									// Device resource
+	WINUSB_INTERFACE_HANDLE		
+					hIntf;									// Interface handle
+	adtInt		iAltSet;									// Alternate setting number
 
 	// CCL
 	CCL_OBJECT_BEGIN(Device)
@@ -45,12 +48,69 @@ class Device :
 	CCL_OBJECT_END()
 
 	// Connections
-	DECLARE_RCP(Stream)
+	DECLARE_RCP(Close)
+	DECLARE_EMT(Device)
 	DECLARE_EMT(Error)
+	DECLARE_RCP(Open)
+	DECLARE_CON(Query)
+	DECLARE_RCP(Stream)
 	BEGIN_BEHAVIOUR()
-		DEFINE_RCP(Stream)
+		DEFINE_RCP(Close)
+		DEFINE_EMT(Device)
 		DEFINE_EMT(Error)
+		DEFINE_RCP(Open)
+		DEFINE_CON(Query)
+		DEFINE_RCP(Stream)
 	END_BEHAVIOUR_NOTIFY()
+	};
+
+//
+// Class - Endpoint.  USB Endpoint node.
+//
+
+class Endpoint :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	Endpoint ( void );									// Constructor
+
+	// Run-time data
+	WINUSB_INTERFACE_HANDLE		
+					hIntf;									// Interface handle
+	adtInt		iPipe;									// Pipe Id
+	IByteStream	*pStmIo;									// I/O stream
+	adtInt		iSzIo;									// I/O size
+	U8				*pcBfrPkt;								// Packet buffer
+	adtInt		iSzPkt;									// Packet size
+	HANDLE		hevWr,hevRd;							// I/O events
+
+	// CCL
+	CCL_OBJECT_BEGIN(Endpoint)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_RCP(Device)
+	DECLARE_RCP(Endpoint)
+	DECLARE_EMT(Error)
+	DECLARE_CON(Read)
+	DECLARE_RCP(Size)
+	DECLARE_RCP(Stream)
+	DECLARE_CON(Write)
+	BEGIN_BEHAVIOUR()
+		DEFINE_RCP(Device)
+		DEFINE_RCP(Endpoint)
+		DEFINE_EMT(Error)
+		DEFINE_CON(Read)
+		DEFINE_RCP(Size)
+		DEFINE_RCP(Stream)
+		DEFINE_CON(Write)
+	END_BEHAVIOUR_NOTIFY()
+
+	private :
+	void update ( IDictionary * );					// Update internal state
+
 	};
 
 #endif

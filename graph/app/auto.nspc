@@ -35,18 +35,123 @@
 
 	% MISCN: Enumerate USB devices.  Class Id for Custom USB devices
 	$	EnumDev Io.EnumDevClass { Class "{58D07210-27C1-11DD-BD0B-0800200c9a66}" }
-		!	Initialize/OnFire						EnumDev/First
 		!	EnumDev/OnNext							Debug/Fire
-%		!	EnumDev/OnNext							EnumDev/Next
+		!	EnumDev/OnName							Debug/Fire
 
 	% ION: Access an asynchronous stream for the device path
 	$	DevStmSrc Io.StreamSource { Options { ReadOnly false:bool Async true:bool } }
-		!	CreateFileSrc/Fire					DevStmSrc/Source
+		!	CreateFileSrc/OnFire					DevStmSrc/Source
 		!	EnumDev/OnNext							DevStmSrc/Location
 		!	EnumDev/OnNext							DevStmSrc/Open
 		!	DevStmSrc/OnError						Debug/Fire
-		!	DevStmSrc/OnOpen						Debug/Fire
+%		!	DevStmSrc/OnOpen						Debug/Fire
 
 	% USBN: Using device stream for USB functionality
+	$	DevUSB Usb.Device { AlternateSetting 1:int }
+		!	DevStmSrc/OnOpen						DevUSB/Stream
+		!	DevStmSrc/OnOpen						DevUSB/Open
+		!	DevUSB/OnDevice						Debug/Fire
+		!	DevUSB/OnQuery							Debug/Fire
 
+	%% Search for the pipes required for this application
 
+	% ADTN: Load the endpoint descriptors
+	$	LoadEndpts Adt.Load { Key Endpoints }
+		!	DevUSB/OnQuery							LoadEndpts/Dictionary
+		!	DevUSB/OnQuery							LoadEndpts/Fire
+
+	% ADTN: Iterate the endpoints on interface
+	$	EndptIt Adt.Iterate {}
+		!	LoadEndpts/OnFire						EndptIt/Container
+		!	LoadEndpts/OnFire						EndptIt/First
+		!	EndPtIt/OnNext							Debug/Fire
+
+	% MISCN: Demux the Endpoint type
+	$	DemuxType Misc.Demux { Key Type Values ( Bulk ) }
+		!	EndptIt/OnNext							DemuxType/Dictionary
+		!	EndptIt/OnNext							DemuxType/Fire
+
+	% MISCN: Demux the direction
+	$	DemuxDir Misc.Demux { Key Direction Values ( In Out ) }
+		!	DemuxType/OnBulk						DemuxDir/Dictionary
+		!	DemuxType/OnBulk						DemuxDir/Fire
+
+	% Next endpoint
+	!	EndptIt/OnNext								EndptIt/Next
+
+	%% I/O
+
+	% USBN: Endpoint, Bulk Out
+	$	BulkOut Usb.Endpoint {}
+		!	DevUSB/OnDevice						BulkOut/Device
+		!	DemuxDir/OnOut							BulkOut/Endpoint
+		!	BulkOut/OnWrite						Debug/Fire
+
+	% USBN: Endpoint, Bulk In
+	$	BulkIn Usb.Endpoint {}
+		!	DevUSB/OnDevice						BulkIn/Device
+		!	DemuxDir/OnIn							BulkIn/Endpoint
+		!	BulkIn/OnRead							Debug/Fire
+
+	% Latent connections
+	!	DevUSB/OnDevice							DevUSB/Query
+
+	%%%%%%%%
+	% Galvo
+	%%%%%%%%
+
+	% MISCN: Format for communication with hardware
+	$	ValueFmtOut Misc.Dist { Value (
+
+			% Command string
+			{
+			Name	Command
+			Size	1:int
+			Map
+				{
+				GetVersion	0x00:int
+				GetSerial	0x01:int
+				}	% Map
+			}	% Command
+		) }	% ValueFmtOut
+		!	Initialize/OnFire						ValueFmtOut/Fire
+
+	%% Outgoing 
+
+	% MISCN: Transmit message dictionary
+	$	OnTransmit Misc.Dist {}
+
+	% Subgraph: Convert dictionaries to streams
+	#	DctToStm										Lib/Comm/DctStm/ {}
+		!	ValueFmtOut/OnFire					DctToStm/Format/Fire
+		!	OnTransmit/OnFire						DctToStm/Dictionary/Fire
+		!	DctToStm/OnSize/OnFire				Debug/Fire
+		!	DctToStm/OnStream/OnFire			Debug/Fire
+
+	% Send stream out endpoint
+	!	DctToStm/OnSize/OnFire					BulkOut/Size
+	!	DctToStm/OnStream/OnFire				BulkOut/Stream
+	!	DctToStm/OnStream/OnFire				BulkOut/Write
+
+	%% Testing
+
+	% MISCN: Get firmware version
+	$	ValueGetVer Misc.Dist { Value { Command "GetVersion" } }
+		!	DevUSB/OnQuery							ValueGetVer/Fire
+		!	ValueGetVer/OnFire					OnTransmit/Fire
+
+	% MISCN: Response size
+	$	ValueGetVerSz Misc.Dist { Value 34:int }
+		!	Initialize/OnFire						ValueGetVerSz/Fire
+		!	ValueGetVerSz/OnFire					BulkIn/Size
+
+	% MISCN: Create stream to receive data
+	$	CreateStmIn Misc.Create { Id Io.StmMemory }
+		!	ValueGetVer/OnFire					CreateStmIn/Fire
+
+	% Read response
+	!	CreateStmIn/OnFire						BulkIn/Stream
+	!	CreateStmIn/OnFire						BulkIn/Read
+
+	% Latent connections
+	!	Initialize/OnFire							EnumDev/First

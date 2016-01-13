@@ -1,0 +1,49 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%									DctStrStm.nspc
+%
+%					Format a dictionary into a byte stream.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+	$	Format				Misc.Dist {}		% Format specification
+	$	Dictionary			Misc.Dist {}		% Input dictionary to convert
+
+	% Notifications
+	$	OnSize				Misc.Dist {}		% Size of resultant stream
+	$	OnStream				Misc.Dist {}		% Stream
+
+	% DEBUG
+	$	Debug Misc.Debug {}
+%		!	Dictionary/OnFire						Debug/Fire
+%		!	OnSize/OnFire							Debug/Fire
+%		!	OnStream/OnFire						Debug/Fire
+
+	%%%%%%%%%%%%%
+	% Conversion
+	%%%%%%%%%%%%%
+
+	% MISCN: Create a stream to receive the formatted bytes
+	$	CreateStm Misc.Create { Id Io.StmMemory }
+		!	Dictionary/OnFire						CreateStm/Fire
+
+	% MISCN: Format dictionary into stream
+	$	DctFmt Misc.DictFormat {}
+		!	Format/OnFire							DctFmt/Format
+		!	CreateStm/OnFire						DctFmt/Stream
+		!	Dictionary/OnFire						DctFmt/Dictionary
+		!	Dictionary/OnFire						DctFmt/Fire
+
+	% MISCN: Reset position of stream and calculate size
+	$	StmPos Io.StreamOp { Origin Set Offset 0:int }
+		!	DctFmt/OnFire							StmPos/Stream
+		!	DctFmt/OnFire							StmPos/Seek
+		!	DctFmt/OnFire							StmPos/Available
+
+	% Size
+	!	StmPos/OnAvailable						OnSize/Fire
+	!	DctFmt/OnFire								OnStream/Fire
+

@@ -1,0 +1,40 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%									StmDct.nspc
+%
+%						Parse a stream into a dictionary
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+	$	Format				Misc.Dist {}		% Format specification
+	$	Stream				Misc.Dist {}		% Stream to parse
+
+	% Notifications
+	$	OnDict				Misc.Dist {}		% Parsed dictionary
+
+	% DEBUG
+	$	Debug Misc.Debug {}
+%		!	Stream/Fire								Debug/Fire
+%		!	OnDict/Fire								Debug/Fire
+
+	%%%%%%%%%%%%%
+	% Conversion
+	%%%%%%%%%%%%%
+
+	% MISCN: Create a dictionary to receive the parsed information
+	$	CreateDct Misc.Create { Id Adt.Dictionary }
+		!	Stream/Fire								CreateDct/Fire
+
+	% MISCN: Parse stream into dictionary
+	$	DctPrs Misc.DictParse {}
+		!	Format/Fire								DctPrs/Format
+		!	CreateDct/Fire							DctPrs/Dictionary
+		!	Stream/Fire								DctPrs/Stream
+		!	Stream/Fire								DctPrs/Fire
+
+	% Result
+	!	DctPrs/Fire									OnDict/Fire
+

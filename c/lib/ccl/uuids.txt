@@ -177,7 +177,7 @@
 2534d0b6-8628-11d2-868c-006008addfed				// CLSID_Unary (mathl)
 2534d0b7-8628-11d2-868c-006008addfed				// CLSID_SSLConnect (OpenSSL)
 2534d0b8-8628-11d2-868c-006008addfed				// CLSID_Device (usbl)
-2534d0b9-8628-11d2-868c-006008addfed				// 
+2534d0b9-8628-11d2-868c-006008addfed				// CLSID_Endpoint (usbl)
 2534d0ba-8628-11d2-868c-006008addfed				// 
 2534d0bb-8628-11d2-868c-006008addfed				// 
 2534d0bc-8628-11d2-868c-006008addfed				// 

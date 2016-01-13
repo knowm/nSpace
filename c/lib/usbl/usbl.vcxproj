@@ -14,6 +14,10 @@
     <ClInclude Include="usbl.h" />
     <ClInclude Include="usbl_.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="device.cpp" />
+    <ClCompile Include="endp.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{66F466A4-342A-48F4-B1A6-785C636457D1}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>

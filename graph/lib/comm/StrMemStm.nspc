@@ -1,0 +1,66 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								STRMEMSTM.NSPC
+%
+%			Subgraph to stream strings to memory stream.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+	$	String				Misc.Dist {}			% Append string to stream
+
+	% Actions
+	$	Initialize			Misc.Dist {}			% Initialize
+	$	Uninitialize		Misc.Dist {}			% Initialize
+	$	End					Misc.Dist {}			% End of streams
+
+	% Notifications
+	$	OnLength				Misc.Dist {}			% Length of outgoing stream
+	$	OnStream				Misc.Dist {}			% Stream with strings
+
+	% DEBUG
+	$	Debug Misc.Debug { Message "STRMEMSTM" }
+%		!	String/Fire								Debug/Fire
+
+	%%%%%%%%
+	% Setup
+	%%%%%%%%
+
+	% MISCN: Create stream to receive strings
+	$	CreateStm Misc.Create { Id IO.StmMemory }
+		!	Initialize/OnFire						CreateStm/Fire
+		!	CreateStm/OnFire						OnStream/Value
+
+	%%%%%%%%%
+	% Append
+	%%%%%%%%%
+
+	% MISCN: Write string to stream
+	$	StrToStm Misc.StringStream {}
+		!	CreateStm/OnFire						StrToStm/Stream
+		!	String/OnFire							StrToStm/String
+		!	String/OnFire							StrToStm/To
+
+	%%%%%%
+	% End
+	%%%%%%
+
+	% MISCN: Get length of stream
+	$	StmLen Io.StreamOp { Offset 0:int Origin Current }
+		!	CreateStm/OnFire						StmLen/Stream
+		!	End/OnFire								StmLen/Seek
+		!	StmLen/OnPosition						OnLength/Fire
+
+	% MISCN: Reset stream position
+	$	StmPos Io.StreamOp { Offset 0:int Origin Set }
+		!	CreateStm/OnFire						StmPos/Stream
+		!	End/OnFire								StmPos/Seek
+
+	% Done
+	!	End/OnFire									OnStream/Fire
+
+	% Create new stream for next set of strings
+	!	End/OnFire									CreateStm/Fire
+
