@@ -90,14 +90,28 @@ HRESULT cclCreateObject ( const wchar_t *pId, IUnknown *pOuter,
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	HRESULT	hr = S_OK;
-	CLSID		clsid;
+	HRESULT		hr = S_OK;
+	CLSID			clsid;
+	WCHAR			wIdFull[255];
+	const WCHAR	*dot;
+	U32			cntIdFull;
 
 	// The Windows implementation uses the object Id as the 'ProgId' and
 	// uses COM to create the object.
 
+	// System prefix is assumed to be nSpace but not required.  Prepend if missing.
+	cntIdFull = sizeof(wIdFull)/sizeof(wIdFull[0]);
+	if (	(dot = wcschr ( pId, '.' )) == NULL ||
+			(dot = wcschr ( dot+1, '.' )) == NULL )
+		{
+		WCSCPY ( wIdFull, cntIdFull, L"nSpace." );
+		WCSCAT ( wIdFull, cntIdFull, pId );
+		}	// if
+	else
+		WCSCPY ( wIdFull, cntIdFull, pId );
+
 	// Object class Id
-	CCLTRY ( CLSIDFromProgID ( pId, &clsid ) );
+	CCLTRY ( CLSIDFromProgID ( wIdFull, &clsid ) );
 
 	// Create object
 	CCLTRY ( CoCreateInstance ( clsid, pOuter, CLSCTX_ALL, iid, ppv ) );

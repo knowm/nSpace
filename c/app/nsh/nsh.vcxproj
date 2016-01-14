@@ -86,33 +86,6 @@
     <ClInclude Include="nsh.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\dll\adtn\adtn.vcxproj">
-      <Project>{27d48bf6-ebc4-417b-9e4e-b7fa2f75d570}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\dll\ion\ion.vcxproj">
-      <Project>{6222d284-3e51-4145-8fe1-4fe12c18029c}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\dll\mathn\mathn.vcxproj">
-      <Project>{7435f9f4-3efe-42aa-9436-0e4d5229cd8d}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\dll\miscn\miscn.vcxproj">
-      <Project>{d3148dda-8655-4779-b555-0707c04bdb2d}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\dll\netn\netn.vcxproj">
-      <Project>{8b820b2b-829f-4c6d-8d16-fd867fa067ef}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\dll\nspcn\nspcn.vcxproj">
-      <Project>{1f7f5996-f935-45d2-b4d5-e6e51bc465f7}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\dll\sysn\sysn.vcxproj">
-      <Project>{b3a74ea1-07fd-4e38-a10f-2d86cedbb574}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\dll\usbn\usbn.vcxproj">
-      <Project>{3bcb9212-d047-4d43-91b6-acc8ec9cb7d1}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\dll\wmin\wmin.vcxproj">
-      <Project>{64506169-1f9d-4679-b135-122b46f861eb}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\..\lib\adtl\adtl.vcxproj">
       <Project>{b8de1218-452b-46ce-a380-4b11f3d8c1da}</Project>
     </ProjectReference>

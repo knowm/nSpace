@@ -105,7 +105,6 @@ HRESULT StmPrsBin :: load ( IByteStream *pStm, ADTVALUE &v )
 			// Create object.
 			if (hr == S_OK && strId.length() > 0)
 				{
-				CCLTRY ( strId.prepend ( L"nSpace." ) );
 				CCLTRY ( cclCreateObject ( strId, NULL, IID_IUnknown, (void **) &pUnk ) );
 				}	// if
 

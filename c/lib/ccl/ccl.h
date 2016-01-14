@@ -56,8 +56,8 @@
 												((IUnknown *)(a))->QueryInterface ( (b), (void **) (c) ) : E_UNEXPECTED;
 
 // COM Creation
-#define	COCREATE(a,b,c)				cclCreateObject ( L"nSpace." a, NULL, (b), (void **) (c) )
-#define	COCREATEA(a,b,c)				cclCreateObject ( L"nSpace." a, (b), IID_IUnknown, (void **) (c) )
+#define	COCREATE(a,b,c)				cclCreateObject ( a, NULL, (b), (void **) (c) )
+#define	COCREATEA(a,b,c)				cclCreateObject ( a, (b), IID_IUnknown, (void **) (c) )
 
 // Modules
 #ifdef	_WIN32

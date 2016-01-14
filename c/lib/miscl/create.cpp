@@ -79,16 +79,8 @@ HRESULT Create :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		// Create object
 		if (hr == S_OK)
 			{
-			adtString	strnId(L"nSpace.");
-
-			// "nSpace." prefix
-			if (WCASENCMP(strId,strnId,strnId.length()))
-				hr = strnId.append ( strId );
-			else
-				adtValue::copy ( strId, strnId );
-
 			// Assume internal string based object Id
-			CCLTRY ( cclCreateObject ( strnId, NULL, IID_IUnknown, (void **) &pUnk ) );
+			CCLTRY ( cclCreateObject ( strId, NULL, IID_IUnknown, (void **) &pUnk ) );
 			#ifdef	_WIN32
 			// For Windows, check if object Id is a COM object
 			if (hr != S_OK)

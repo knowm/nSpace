@@ -476,7 +476,6 @@ HRESULT Location :: desc ( void )
 			if (hr == S_OK)
 				{
 				// Object class Id
-				CCLTRY ( strB.prepend ( L"nSpace." ) );
 				CCLTRY ( cclCreateObject ( strB, NULL, IID_IBehaviour, (void **) &pBehave ) );
 				}	// if
 
@@ -484,7 +483,7 @@ HRESULT Location :: desc ( void )
 			CCLTRY ( pBehave->attach ( this, true ) );
 
 			// nSpace value behaviour ?
-			CCLOK ( bBehaveV = !WCASECMP(strB,L"nSpace.nSpc.Value"); )
+			CCLOK ( bBehaveV = !WCASECMP(strB,L"nSpc.Value"); )
 
 			// Clean up
 			if (hr != S_OK)
