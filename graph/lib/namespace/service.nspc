@@ -1,0 +1,393 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								SERVICE.NSPC
+%
+%							Namespace service
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+
+	% Actions
+	$	Initialize			Misc.Dist {}		% Initialize
+	$	Request				Misc.Dist {}		% Incoming request
+	$	Requested			Misc.Dist {}		% Completed request
+%	$	Get					Misc.Dist {}		% Incoming get request
+%	$	Got					Misc.Dist {}		% Incoming completed request
+
+	% Notifications
+%	$	OnGet					Misc.Dist {}		% Outgoing get request 
+	$	OnRequest			Misc.Dist {}		% Outgoing request
+
+	% DEBUG
+	$	Debug Misc.Debug {}
+		!	Initialize/OnFire						Debug/Fire
+%		!	Request/OnFire							Debug/Fire
+%		!	Requested/OnFire						Debug/Fire
+%		!	OnRequest/Fire							Debug/Fire
+
+	%%%%%%%%%%%
+	% Requests
+	%%%%%%%%%%%
+
+	% Subgraph: Synchronous request queue to serialize requests
+	#	Q												Lib/Sync_Value_Q/ {}
+
+	% Serialize requests
+	!	Request/OnFire								Q/Value/Fire
+
+	% External, dynamically added providers can listen to the 'OnRequest/Fire' receptor
+	% to decide if they want to handle the requests.  If no one claims
+	% ownership the request is handled in the local namespace.
+	!	Q/OnValue/OnFire							OnRequest/Fire
+
+	%%%%%%%%%%%%%%%%%%
+	% Request (Local)
+	%%%%%%%%%%%%%%%%%%
+
+	% MISCN: Local handling of unclaimed requests
+	$	OnReqLocal Misc.Dist {}
+
+	% Process current request and then move to next one
+%	!	Q/OnValue/OnFire							Debug/Fire
+	!	Q/OnValue/OnFire							OnReqLocal/Fire
+%	!	Q/OnValue/OnFire							Debug/Fire
+	!	Q/OnValue/OnFire							Q/Next/Fire
+
+	% ADTN: Owner flag present ?
+	$	LoadOwnerChk Adt.Load { Key Owner }
+		!	OnReqLocal/OnFire						LoadOwnerChk/Dictionary
+
+	% ADTN: Claim ownership
+	$	StoreReqOwn Adt.Store { Key Owner Value Local }
+		!	OnReqLocal/OnFire						StoreReqOwn/Dictionary
+		!	LoadOwnerChk/OnNotFound				StoreReqOwn/Fire
+
+	% MISCN: Demux the request
+	$	DemuxReq Misc.Demux { Key Verb Values ( Load Store ) }
+		!	StoreReqOwn/OnFire					DemuxReq/Dictionary
+		!	StoreReqOwn/OnFire					DemuxReq/Fire
+%		!	DemuxReq/OnLoad						Debug/Fire
+
+	%%%%%%%%
+	% Store
+	%%%%%%%%
+
+	%% Store a value at a path by receiving it into the root of the namespace.
+	%% (Any checks ?)
+%	!	DemuxReq/OnStore							Debug/Fire
+
+	% NSPC: Load the root of the namespace
+	$	LoadRootSt Nspc.This { Location "/" }
+%		!	Initialize/OnFire						LoadRootSt/Load
+
+	% ADTN: Load the requested location
+	$	LoadLocSt Adt.Load { Key Location }
+		!	DemuxReq/OnStore						LoadLocSt/Dictionary
+%		!	LoadLocSt/OnFire						Debug/Fire
+
+	% ADTN: Load the value
+	$	LoadValueSt Adt.Load { Key Value }
+		!	DemuxReq/OnStore						LoadValueSt/Dictionary
+%		!	LoadValueSt/OnFire					Debug/Fire
+
+	% NSPC: Receive value into location
+	$	RxValSt Nspc.Connectors {}
+		!	LoadRootSt/OnLoad						RxValSt/Receptor
+		!	LoadLocSt/OnFire						RxValSt/Location
+		!	LoadValueSt/OnFire					RxValSt/Value
+		!	LoadValueSt/OnFire					RxValSt/Receive
+
+	% Latent connections
+	!	DemuxReq/OnStore							LoadLocSt/Fire
+	!	LoadLocSt/OnFire							LoadValueSt/Fire
+
+	%%%%%%%
+	% Load
+	%%%%%%%
+
+	% ADTN: Load the requested location
+	$	LoadLdLoc Adt.Load { Key Location }
+		!	DemuxReq/OnLoad						LoadLdLoc/Dictionary
+%		!	LoadLdLoc/OnFire						Debug/Fire
+
+	% NSPC: Attempt to satisfy request locally
+	$	LoadLdValue Nspc.This {}
+		!	LoadLdLoc/OnFire						LoadLdValue/Location
+%		!	LoadLdValue/OnLoad					Debug/Fire
+		!	LoadLdValue/OnNotFound				Debug/Fire
+
+	%%
+	%% Location
+	%%
+
+	%% Location ends with a slash ('/') means catalog of location,
+	%% otherwise requesting a value.
+
+	% MISCN: Extract last character to check for location
+	$	LocLast Misc.StringOp { From -1:int }
+		!	LoadLdLoc/OnFire						LocLast/Source
+
+	% MISCN: Location ?
+	$	IsLoc Misc.Compare { Left "/" }
+		!	LocLast/OnFire							IsLoc/Fire
+
+	% Latent connections
+	!	LoadLdLoc/OnFire							LoadLdValue/Load
+
+	%%
+	%% Location info.
+	%%
+	
+	%% Generate catalog of retrieved location
+
+	% MISCN: Create a dictionary to receive the locations
+	$	CreateLocDct Misc.Create { Id Adt.Dictionary }
+		!	IsLoc/OnEqual							CreateLocDct/Fire
+
+	% ADTN: Iterate the keys in the loaded location
+	$	LocsIt Adt.Iterate {}
+		!	LoadLdValue/OnLoad					LocsIt/Container
+		!	IsLoc/OnEqual							LocsIt/First
+%		!	LocsIt/OnKey							Debug/Fire
+%		!	LocsIt/OnNext							Debug/Fire
+
+	% ADTN: Write name/type to list
+	$	LocStore Adt.Store {}
+		!	CreateLocDct/OnFire					LocStore/Dictionary
+		!	LocsIt/OnKey							LocStore/Key
+%		!	LocStore/OnFire						Debug/Fire
+
+	% MISCN: Default is a value
+	$	ValueVal Misc.Dist { Value Value }
+		!	LocsIt/OnNext							ValueVal/Fire
+		!	ValueVal/OnFire						LocStore/Value
+
+	%% Dictionary
+
+	% MISCN: Match ?
+	$	IsDct Misc.Type { Type Dictionary }
+		!	LocsIt/OnNext							IsDct/Fire
+
+	% MISCN: Dct
+	$	ValueDct Misc.Dist { Value Dictionary }
+		!	IsDct/OnEqual							ValueDct/Fire
+		!	ValueDct/OnFire						LocStore/Value
+
+	%% List
+
+	% MISCN: Match ?
+	$	IsList Misc.Type { Type List }
+		!	IsDct/OnNotEqual						IsList/Fire
+
+	% MISCN: List
+	$	ValueList Misc.Dist { Value List }
+		!	IsList/OnEqual							ValueList/Fire
+		!	ValueList/OnFire						LocStore/Value
+
+	% Store information
+	!	LocsIt/OnNext								LocStore/Fire
+
+	% Next name in location
+	!	LocsIt/OnNext								LocsIt/Next
+
+	%%
+	%% Value
+	%% Support loading a namespace hierarchy of values.
+	%% Location is scanned for 'Nspc.Value' nodes and latest emitter
+	%% value is stored.
+	%%
+
+	% Subgraph: Hierarchy visitation
+%	#	Visit											Lib/Graph/Visit/ {}
+%		!	Visit/OnEnter/OnFire					Debug/Fire
+%		!	Visit/OnLeave/OnFire					Debug/Fire
+%		!	Visit/OnGraph/OnFire					Debug/Fire
+%		!	Visit/OnEnd/OnFire					Debug/Fire
+
+	%% Value stack
+
+	% MISCN: Set the dictionary for the current level
+%	$	OnLevel Misc.Dist {}
+
+	% MISCN: Create stack used to keep track of levels
+%	$	CreateValueStk Misc.Create { Id Adt.Stack }
+%		!	Initialize/OnFire						CreateValueStk/Fire
+
+	% ADTN: Write value to stack
+%	$	WriteValueStk Adt.Write {}
+%		!	CreateValueStk/OnFire				WriteValueStk/List
+
+	% ADTN: Iterate value stack
+%	$	StkValueIt Adt.Iterate {}
+%		!	CreateValueStk/OnFire				StkValueIt/Container
+%		!	StkValueIt/OnNext						OnLevel/Fire
+
+	%% Process value
+
+	% MISCN: Is value a location ?
+%	$	IsValLoc Misc.Type { Type Location }
+%		!	LoadLdValue/OnLoad					IsValLoc/Value
+%		!	IsLoc/OnNotEqual						IsValLoc/Fire
+
+	% MISCN: Create root of values
+%	$	CreateRootDct Misc.Create { Id Adt.Dictionary }
+%		!	IsValLoc/OnEqual						CreateRootDct/Fire
+%		!	CreateRootDct/OnFire					OnLevel/Fire
+
+	% Visit hierarchy looking for Nspc.Value nodes
+%	!	IsValLoc/OnEqual							Visit/Root/Fire
+%	!	IsValLoc/OnEqual							Visit/First/Fire
+
+	%% Enter.
+
+	%% Ensure an entry for this location exists at the current level
+
+	% ADTN: Load name of entered location
+%	$	LoadVisitName Adt.Load { Key "_Name" }
+%		!	Visit/OnGraph/OnFire					LoadVisitName/Dictionary
+%		!	Visit/OnEnter/OnFire					LoadVisitName/Fire
+%		!	LoadVisitName/OnFire					Debug/Fire
+%		!	LoadVisitName/OnFire					Debug/Fire
+
+	% ADTN: Store value dictionary under name at current level
+%	$	StoreValDct Adt.Store {}
+%		!	OnLevel/OnFire							StoreValDct/Dictionary
+%		!	LoadVisitName/OnFire					StoreValDct/Key
+%		!	StoreValDct/OnFire					Debug/Fire
+
+	% MISCN: Push the previous level 
+%	$	OnLevelPush Misc.Dist {}
+%		!	OnLevel/OnFire							OnLevelPush/Value
+%		!	LoadVisitName/OnFire					OnLevelPush/Fire
+%		!	OnLevelPush/OnFire					WriteValueStk/Fire
+
+	% MISCN: Create a dictionary for this new level
+%	$	CreateValDct Misc.Create { Id Adt.Dictionary }
+%		!	LoadVisitName/OnFire					CreateValDct/Fire
+
+	% Store under current level and set as new level
+%	!	CreateValDct/OnFire						StoreValDct/Fire
+%	!	CreateValDct/OnFire						OnLevel/Fire
+
+	% ADTN: Iterate items in the graph
+%	$	VisitIt Adt.Iterate {}
+%		!	Visit/OnGraph/OnFire					VisitIt/Container
+%		!	LoadVisitName/OnFire					VisitIt/First
+%		!	VisitIt/OnKey							Debug/Fire
+%		!	VisitIt/OnNext							Debug/Fire
+
+	%% Node value
+
+	% MISCN: Node ?
+%	$	IsVisitNode Misc.Type { Type Node }
+%		!	VisitIt/OnNext							IsVisitNode/Fire
+
+	% ADTN: Obtain descriptor for node
+%	$	LoadNodeDesc Adt.Load { Key "_OnDescriptor" }
+%		!	IsVisitNode/OnEqual					LoadNodeDesc/Dictionary 
+%	$	LoadNodeDescVal Adt.Load { Key Value }
+%		!	LoadNodeDesc/OnFire					LoadNodeDescVal/Dictionary
+%		!	LoadNodeDesc/OnFire					LoadNodeDescVal/Fire
+
+	% ADTN: Access node behaviour
+%	$	LoadNodeBehave Adt.Load { Key "_Behaviour" }
+%		!	LoadNodeDescVal/OnFire				LoadNodeBehave/Dictionary
+%		!	LoadNodeDescVal/OnFire				LoadNodeBehave/Fire
+
+	% MISCN: Nspace value ?
+%	$	IsNspcVal Misc.Compare { Left "Nspc.Value" }
+%		!	LoadNodeBehave/OnFire				IsNspcVal/Fire
+
+	% ADTN: Load the value emitter
+%	$	LoadNodeFire Adt.Load { Key OnFire }
+%		!	IsVisitNode/OnEqual					LoadNodeFire/Dictionary
+%		!	IsNspcVal/OnEqual						LoadNodeFire/Fire
+
+	% ADTN: Load latest value
+%	$	LoadNodeVal Adt.Load { Key Value }
+%		!	LoadNodeFire/OnFire					LoadNodeVal/Dictionary
+%		!	LoadNodeFire/OnFire					LoadNodeVal/Fire
+
+	% ADTN: Store in dictionary under name
+%	$	StoreVisitVal Adt.Store { Key Value }
+%		!	OnLevel/OnFire							StoreVisitVal/Dictionary
+%		!	VisitIt/OnKey							StoreVisitVal/Key
+%		!	LoadNodeVal/OnFire					StoreVisitVal/Fire
+%		!	StoreVisitVal/OnFire					Debug/Fire
+
+	% Latent connections
+%	!	IsVisitNode/OnEqual						LoadNodeDesc/Fire
+
+	%% Straight value
+
+	% MISCN: If not a node and not a graph, assume value
+%	$	IsVisitGr Misc.Type { Type Graph }
+%		!	IsVisitNode/OnNotEqual				IsVisitGr/Fire
+
+	% Store value
+%	!	IsVisitGr/OnNotEqual						StoreVisitVal/Fire
+
+	% Next entry
+%	!	VisitIt/OnNext								VisitIt/Next
+
+	% Continue down hierarchy
+%	!	Visit/OnEnter/OnFire						Visit/Down/Fire
+
+	%% Leave.
+
+	% Proceed to upper level on stack
+%	!	Visit/OnLeave/OnFire						StkValueIt/Next
+
+	% ADTN: Remove root level dictionary since caller asked for first entry down
+%	$	LevelIt Adt.Iterate {}
+%		!	CreateRootDct/OnFire					LevelIt/Container
+%		!	Visit/OnEnd/OnFire					LevelIt/First
+
+	%% Local result
+
+	% ADTN: Store results
+	$	StoreGetValue Adt.Store { Key Value }
+		!	DemuxReq/OnLoad						StoreGetValue/Dictionary
+		!	LoadLdValue/OnLoad					StoreGetValue/Fire
+		!	CreateLocDct/OnFire					StoreGetValue/Fire
+%		!	LevelIt/OnNext							StoreGetValue/Fire
+%		!	StoreGetValue/OnFire					Debug/Fire
+
+	% MISCN: Requested result
+	$	ValueLocalReqd Misc.Dist {}
+		!	OnReqLocal/OnFire						ValueLocalReqd/Value
+		!	ValueLocalReqd/OnFire				Requested/Fire
+
+	% Latent connections
+	!	DemuxReq/OnLoad							LoadLdLoc/Fire
+	!	LoadLdValue/OnLoad						LocLast/Substring
+
+	%% 
+
+	% Give local namespace a chance to handle request
+	!	OnReqLocal/OnFire							LoadOwnerChk/Fire
+
+	% Request complete if handled locally
+	!	LoadOwnerChk/OnNotFound					ValueLocalReqd/Fire
+
+	%%%%%%%%%
+	% Result
+	%%%%%%%%%
+
+	%% Deliver result to provided receptor.
+
+	% ADTN: Load the receptor
+	$	LoadReqdRcp Adt.Load { Key Receptor }
+		!	Requested/OnFire						LoadReqdRcp/Dictionary
+%		!	LoadReqdRcp/Get						Debug/Fire
+
+	% NSPC: Receive the value
+	$	ReqdReceive Nspc.Connectors {}
+		!	Requested/OnFire						ReqdReceive/Value
+		!	LoadReqdRcp/OnFire					ReqdReceive/Receive
+
+	% Latent connections
+	!	Requested/OnFire							LoadReqdRcp/Fire

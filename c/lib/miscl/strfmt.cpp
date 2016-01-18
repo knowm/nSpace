@@ -261,7 +261,7 @@ HRESULT StringFormat :: formatString ( IUnknown *pSpecs,
 								char	*res     = NULL;
 								U64	sz			= 0;
 								int	i;//,len;
-								char	*d;
+								char	*d			= NULL;
 								BYTE	b[3];
 
 								// Support an altered Base64 encoding that is 'web friendly'.

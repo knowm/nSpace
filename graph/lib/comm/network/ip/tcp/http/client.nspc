@@ -1,0 +1,266 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								Client.NSPC
+%
+%							Single HTTP client.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+	$	URL					Misc.Dist {}		% URL of request
+
+	% Actions
+	$	Initialize			Misc.Dist {}		% Initialize
+	$	Uninitialize		Misc.Dist {}		% Uninitialize
+	$	Get					Misc.Dist {}		% Get http://...
+	$	Close					Misc.Dist {}		% Close any connections
+	
+	% Notifications
+	$	OnResponse			Misc.Dist {}		% Response received
+	$	OnOpen				Misc.Dist {}		% Channel open to to server
+	$	OnError				Misc.Dist {}		% Error detected
+
+	% DEBUG
+	$	Debug Misc.Debug {}
+		!	Initialize/OnFire						Debug/Fire
+%		!	Request/OnFire							Debug/Fire
+		!	OnResponse/OnFire						Debug/Fire
+%		!	Get/OnFire								Debug/Fire
+%		!	OnOpen/OnFire							Debug/Fire
+
+	%%%%%%%%
+	% Setup
+	%%%%%%%%
+
+	% Subgraph: Server/client subgraph
+	#	Clients										Lib/Comm/Network/Ip/Tcp/ServerClients/ {}
+
+	% Subgraph: I/O
+	#	Io												Lib/Comm/Network/Ip/Tcp/Io/ {}
+
+	% MISCN: No server is needed
+	$	ValueSrvrInv Misc.Dist { Value -1:int }
+		!	Initialize/OnFire						ValueSrvrInv/Fire
+		!	ValueSrvrInv/OnFire					Clients/PortSrvr/Fire
+
+	% Ready for service
+	!	Initialize/OnFire							Clients/Start/Fire
+	!	Uninitialize/OnFire						Clients/Stop/Fire
+
+	% MISCN: Create dictionary of connected servers
+	$	CreateSrvrsDct Misc.Create { Id Adt.Dictionary }
+		!	Initialize/OnFire						CreateSrvrsDct/Fire
+
+	%%%%%%%
+	% Host
+	%%%%%%%
+
+	%% Extract the host address for the header and to know what the server
+	%% connection should be.
+
+	%%  URL
+
+	% Subgraph: Extract components of URL
+	#	URLBreak										Lib/URL/ {}
+		!	URL/OnFire								URLBreak/URL/Fire
+		!	URL/OnFire								URLBreak/Break/Fire
+		!	URLBreak/OnTransport/OnFire		Debug/Fire
+		!	URLBreak/OnAddress/OnFire			Debug/Fire
+		!	URLBreak/OnPath/OnFire				Debug/Fire
+		!	URLBreak/OnItem/OnFire				Debug/Fire
+
+	%% URI
+
+	% MATHN: Append item to path for URI
+	$	AppendURI Math.Binary {}
+		!	URLBreak/OnPath/OnFire				AppendURI/Left
+		!	URLBreak/OnItem/OnFire				AppendURI/Right
+		!	URLBreak/OnItem/OnFire				AppendURI/Fire
+
+	%% Address
+	%% Generate port number based on transport (http or https)
+
+	% MISCN: Secure connection required ?
+	$	IsHttps Misc.Compare { Left "https" }
+		!	URLBreak/OnTransport/OnFire		IsHttps/Fire
+
+	% MISCN: Http ports
+	$	ValuePortHttp Misc.Dist { Value ":80" }
+		!	IsHttps/OnNotEqual					ValuePortHttp/Fire
+	$	ValuePortHttps Misc.Dist { Value ":443" }
+		!	IsHttps/OnEqual						ValuePortHttps/Fire
+
+	% MATHN: Append port number to address
+	$	AppendPort Math.Binary { Right ":80" }
+		!	ValuePortHttp/OnFire					AppendPort/Right
+		!	ValuePortHttps/OnFire				AppendPort/Right
+		!	URLBreak/OnAddress/OnFire			AppendPort/Left
+		!	URLBreak/OnAddress/OnFire			AppendPort/Fire
+
+	%% Host
+
+	% ADTN: Is there a connection to server ?
+	$	LoadSrvrChk Adt.Load {}
+		!	CreateSrvrsDct/OnFire				LoadSrvrChk/Dictionary
+		!	AppendPort/OnFire						LoadSrvrChk/Key
+		!	AppendPort/OnFire						LoadSrvrChk/Fire
+
+	% ADTN: Load connected address
+	$	LoadSrvrAddrChk Adt.Load { Key Address }
+		!	LoadSrvrChk/OnFire					LoadSrvrAddrChk/Dictionary
+		!	LoadSrvrChk/OnFire					LoadSrvrAddrChk/Fire
+
+	% Notify
+	!	LoadSrvrAddrChk/OnFire					Debug/Fire
+	!	LoadSrvrAddrChk/OnFire					OnOpen/Fire
+
+	% No server connection yet, connect to it
+	!	LoadSrvrChk/OnNotFound					Debug/Fire
+	!	LoadSrvrChk/OnNotFound					Clients/Address/Fire
+	!	LoadSrvrChk/OnNotFound					Clients/Connect/Fire
+
+	%%%%%%%%%%%%%%
+	% Connections
+	%%%%%%%%%%%%%%
+
+	%% Save connection to server
+%	!	Clients/OnConnect/OnFire				Debug/Fire
+
+	% ADTN: Mark connection as 'secure' if applicable
+	$	StoreSecureConn Adt.Store { Key Secure Value true:bool }
+		!	Clients/OnConnect/OnFire			StoreSecureConn/Dictionary
+
+	% MISCN: Connection secure ?
+	$	IsSecure Misc.Toggle {}
+		!	ValuePortHttp/OnFire					IsSecure/False
+		!	ValuePortHttps/OnFire				IsSecure/True
+		!	Clients/OnConnect/OnFire			IsSecure/Fire
+		!	IsSecure/OnTrue						StoreSecureConn/Fire
+
+	% ADTN: Store connection under address
+	$	StoreAddrConn Adt.Store {}
+		!	CreateSrvrsDct/OnFire				StoreAddrConn/Dictionary
+		!	Clients/OnConnect/OnFire			StoreAddrConn/Value
+
+	% ADTN: Load original address
+	$	LoadAddrConn Adt.Load { Key Address }
+		!	Clients/OnConnect/OnFire			LoadAddrConn/Dictionary
+		!	Clients/OnConnect/OnFire			LoadAddrConn/Fire
+
+	% Store under address
+	!	LoadAddrConn/OnFire						StoreAddrConn/Key
+	!	LoadAddrConn/OnFire						StoreAddrConn/Fire
+
+	% Attach to I/O for use
+	!	Clients/OnConnect/OnFire				Io/Socket/Fire
+	!	Clients/OnConnect/OnFire				Io/Open/Fire
+	!	Io/OnOpen/OnFire							OnOpen/Fire
+
+	%% Connection lost, remove from dictionary
+
+	% MISCN: Close specific server connection
+	$	OnClose Misc.Dist {}
+		!	Io/OnClose/OnFire						OnClose/Fire
+%		!	OnClose/OnFire							Debug/Fire
+
+	% Have subgraph close the connection
+	!	OnClose/OnFire								Clients/Socket/Fire
+	!	OnClose/OnFire								Io/Socket/Fire
+	!	OnClose/OnFire								Io/Close/Fire
+	!	OnClose/OnFire								Clients/Close/Fire
+
+	% ADTN: Load requested address
+	$	LoadAddrCl Adt.Load { Key Address }
+		!	OnClose/OnFire							LoadAddrCl/Dictionary
+		!	OnClose/OnFire							LoadAddrCl/Fire
+
+	% ADTN: Remove from server list as valid
+	$	RemoveAddrConn Adt.Remove {}
+		!	CreateSrvrsDct/OnFire				RemoveAddrConn/Container
+		!	LoadAddrCl/OnFire						RemoveAddrConn/Key
+		!	LoadAddrCl/OnFire						RemoveAddrConn/Fire
+
+	%% Close all connections
+
+	% ADTN: Iterate connections
+	$	CloseIt Adt.Iterate {}
+		!	CreateSrvrsDct/OnFire				CloseIt/Container
+		!	Close/OnFire							CloseIt/First
+
+	% Close
+	!	CloseIt/OnNext								OnClose/Fire
+
+	% Connections are removed as they are close so restart iteration each time
+	!	CloseIt/OnNext								CloseIt/First
+
+	% Close all connections on shutdown
+	!	Uninitialize/OnFire						Close/Fire
+
+	%%%%%%%%%%%
+	% Transmit
+	%%%%%%%%%%%
+
+	% MISCN: Transmit request to current URL
+	$	Transmit Misc.Dist {}
+%		!	Transmit/OnFire						Debug/Fire
+
+	% Subgraph: Format dictionary into stream
+	#	ReqToStm										Lib/Comm/Network/Ip/Tcp/Http/ReqStm/ {}
+		!	Transmit/OnFire						ReqToStm/Dictionary/Fire
+
+	% ADTN: Load connection dictionary for host
+	$	LoadAddrTx Adt.Load {}
+		!	CreateSrvrsDct/OnFire				LoadAddrTx/Dictionary
+		!	AppendPort/OnFire						LoadAddrTx/Key
+		!	Transmit/OnFire						LoadAddrTx/Fire
+%		!	LoadAddrTx/OnFire						Debug/Fire
+
+	% Transmit stream
+	!	LoadAddrTx/OnFire							Io/Socket/Fire
+	!	LoadAddrTx/OnFire							ReqToStm/ToStream/Fire
+	!	ReqToStm/OnStream/OnFire				Io/Stream/Fire
+	!	ReqToStm/OnStream/OnFire				Io/Transmit/Fire
+
+	%%%%%%%%%%
+	% Receive
+	%%%%%%%%%%
+
+	% Socket ready for readying
+	!	Clients/OnRead/OnFire					Io/Socket/Fire
+	!	Clients/OnRead/OnFire					Io/Read/Fire
+
+	% Subgraph: Parse stream into response
+	#	StmToResp									Lib/Comm/Network/Ip/Tcp/Http/StmRsp/ {}
+%		!	Io/OnStream/OnFire					Debug/Fire
+
+	% Parse incoming streams as they are received
+	!	Io/OnStream/OnFire						StmToResp/Stream/Fire
+	!	Io/OnStream/OnFire						StmToResp/Parse/Fire
+
+	% On response, reset state for next time
+	!	StmToResp/OnResponse/OnFire			OnResponse/Fire
+	!	StmToResp/OnResponse/OnFire			StmToResp/Reset/Fire
+
+	%%%%%%
+	% Get
+	%%%%%%
+
+	%% Format a 'get' dictionary
+
+	% MISCN: Dictionary to use for gets
+	$	ValueGet Misc.Dist { Value { Method Get } }
+		!	Initialize/OnFire						ValueGet/Fire
+
+	% ADTN: Store information in request
+	$	StoreGetKeys Adt.Keys { Keys ( Host Path ) }
+		!	ValueGet/OnFire						StoreGetKeys/Dictionary
+		!	URLBreak/OnAddress/OnFire			StoreGetKeys/Host
+		!	AppendURI/OnFire						StoreGetKeys/Path
+		!	Get/OnFire								StoreGetKeys/Store
+
+	% Transmit request
+	!	StoreGetKeys/OnStore						Debug/Fire
+	!	StoreGetKeys/OnStore						Transmit/Fire
+

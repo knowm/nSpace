@@ -91,7 +91,7 @@ HRESULT Endpoint :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v 
 	// Write
 	if (_RCP(Write))
 		{
-		U32	uLeft;
+		U32	uLeft	= 0;
 		U64	uXferd;
 		ULONG uXfer;
 
@@ -138,7 +138,7 @@ HRESULT Endpoint :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v 
 	// Read
 	else if (_RCP(Read))
 		{
-		U32	uLeft;
+		U32	uLeft	= 0;
 		ULONG uXfer;
 
 		// State check
@@ -163,6 +163,10 @@ HRESULT Endpoint :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v 
 
 			// Next block
 			CCLOK ( uLeft -= uXfer; )
+
+			// A short packet means end of transfer
+			if (hr == S_OK && uXfer < iSzPkt)
+				break;
 			}	// while
 
 		// Result

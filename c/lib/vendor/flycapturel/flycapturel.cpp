@@ -1,0 +1,39 @@
+////////////////////////////////////////////////////////////////////////
+//
+//									FLYCAPTUREL.CPP
+//
+//				General utilities for Point Grey FlyCapture SDK
+//
+////////////////////////////////////////////////////////////////////////
+
+#include "flycapturel_.h"
+
+using namespace FlyCapture2;
+
+HRESULT pgrError ( FlyCapture2::Error err )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Determines if an error condition exists
+	//
+	//	PARAMETERS
+	//		-	err is the error code
+	//
+	//	RETURN
+	//		S_OK is successful
+	//
+	////////////////////////////////////////////////////////////////////////
+
+	// Error ?
+	if (err == PGRERROR_OK)
+		return S_OK;
+
+	// Error
+	dbgprintf ( L"pgrError:0x%x\r\n", err );
+
+	return S_FALSE;
+	}	// pgrError
+
+
+

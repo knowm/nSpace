@@ -19,7 +19,7 @@
 %			"/App/AutoSub/Default/"
 
 			% Basic namespace server
-%			"/Lib/Namespace/Service/Default/"
+			"/Lib/Namespace/Service/Default/"
 
 			% HTTP namespace browser
 %			"/Lib/Comm/Network/Ip/Tcp/Http/Browser/Default/"
@@ -31,5 +31,12 @@
 			"/App/Auto/Default/"
 			)
 	}
+
+	%
+	% HTTP browser
+	%
+
+	% Configure port for HTTP browsing
+	{ Command put		Path "/Lib/Comm/Network/Ip/Tcp/Http/Browser/Default/State/Port/OnFire"	Value 16370:int }
 
 )

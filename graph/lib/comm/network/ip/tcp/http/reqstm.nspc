@@ -1,0 +1,65 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								ReqStm.NSPC
+%
+%		Convert an HTTP request into a stream of bytes.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+	$	Dictionary			Misc.Dist {}		% Request dictionary
+
+	% Actions
+	$	Initialize			Misc.Dist {}		% Initialize
+	$	ToStream				Misc.Dist {}		% Convert request
+	
+	% Notifications
+	$	OnStream				Misc.Dist {}		% Byte stream
+	$	OnLength				Misc.Dist {}		% Length of stream
+
+	% DEBUG
+	$	Debug Misc.Debug {}
+		!	OnLength/OnFire						Debug/Fire
+		!	OnStream/OnFire						Debug/Fire
+
+	%%%%%%%%
+	% Setup
+	%%%%%%%%
+
+	% Subgraph: Request format
+	#	FmtReq										Lib/Comm/Network/Ip/Tcp/Http/FmtReq/ {}
+
+	%%%%%%%%%
+	% Format
+	%%%%%%%%%
+
+	% CREATE: Create a stream to receive the formatted command
+	$	CreateFmtStm Misc.Create { Id Io.StmMemory }
+		!	ToStream/OnFire						CreateFmtStm/Fire
+
+	% MISCN: Format into a string
+	$	Fmt Misc.StringFormat {}
+		!	FmtReq/ValueFmt/OnFire				Fmt/Format
+		!	Dictionary/OnFire						Fmt/Dictionary
+		!	ToStream/OnFire						Fmt/Fire
+		!	Fmt/OnFire								Debug/Fire
+
+	% MISCN: Convert string into stream
+	$	StrToStm Misc.StringStream { Terminate false:bool }
+		!	CreateFmtStm/OnFire					StrToStm/Stream
+		!	Fmt/OnFire								StrToStm/String
+		!	Fmt/OnFire								StrToStm/To
+
+	% MISCN: Get length of stream
+	$	StmLen Io.StreamOp { Offset 0:int Origin Current }
+		!	StrToStm/OnFire						StmLen/Seek
+
+	% MISCN: Reset stream position
+	$	StmPos Io.StreamOp { Offset 0:int Origin Set }
+		!	StrToStm/OnFire						StmPos/Seek
+
+	% Length and stream
+	!	StmLen/OnPosition							OnLength/Fire
+	!	StrToStm/OnFire							OnStream/Fire

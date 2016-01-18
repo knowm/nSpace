@@ -1,0 +1,159 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								CLIENT.NSPC
+%
+%					Local namespace service client
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+	$	Location				Misc.Dist {}		% Location for next request
+	$	Context				Misc.Dist {}		% Context for next request
+	$	Type					Misc.Dist {}		% Select type
+	$	Value					Misc.Dist {}		% Value
+
+	% Actions
+	$	Emitter				Misc.Dist {}		% Select emitter
+	$	Initialize			Misc.Dist {}		% Initialize
+	$	Load					Misc.Dist {}		% Load request
+	$	Receptor				Misc.Dist {}		% Select receptor
+	$	Store					Misc.Dist {}		% Store request
+
+	% Notifications
+	$	OnContext			Misc.Dist {}		% Context for request
+	$	OnLocation			Misc.Dist {}		% Location for request
+	$	OnNotFound			Misc.Dist {}		% Request failed
+	$	OnValue				Misc.Dist {}		% Value
+
+	% DEBUG
+	$	Debug Misc.Debug {}
+%		!	Initialize/OnFire						Debug/Fire
+
+	%%%%%%%%
+	% Setup
+	%%%%%%%%
+
+	% MISCN: Default context if unused
+	$	ValueCtxDef Misc.Dist { Value 0:int }
+		!	Initialize/OnFire						ValueCtxDef/Fire
+		!	ValueCtxDef/OnFire					Context/Fire
+
+	%%%%%%%
+	% Load
+	%%%%%%%
+
+	%% Setup
+
+	% MISCN: Satisfied requests will be received here
+	$	OnLoad Misc.Dist {}
+%		!	OnLoad/OnFire							Debug/Fire
+
+	% NSPC: Retrieve the receptor for receiving results
+	$	LoadLdRcp Nspc.This { Location "./OnLoad/Fire/" }
+		!	Initialize/OnFire						LoadLdRcp/Load
+
+	%% Request
+
+	% MISCN: Create a dictionary for the request
+	$	CreateLdDct Misc.Create { Id Adt.Dictionary }
+
+	% MISCN: Default types
+	$	ValueType Misc.Dist { Value Connector }
+		!	Type/OnFire								ValueType/Value
+		!	CreateLdDct/OnFire					ValueType/Fire
+	$	ValueRcp Misc.Dist { Value Receptor }
+		!	Receptor/OnFire						ValueRcp/Fire
+		!	ValueRcp/OnFire						ValueType/Value
+	$	ValueEmt Misc.Dist { Value Emitter }
+		!	Emitter/OnFire							ValueEmt/Fire
+		!	ValueEmt/OnFire						ValueType/Value
+
+	% ADTN: Store information into request
+	$	StoreLdKeys Adt.Keys { Keys ( Receptor Context Location Verb Type ) }
+		!	Context/OnFire							StoreLdKeys/Context
+		!	Location/OnFire						StoreLdKeys/Location
+		!	LoadLdRcp/OnLoad						StoreLdKeys/Receptor
+		!	ValueType/OnFire						StoreLdKeys/Type
+
+	% Fill dictionary on creation
+	!	CreateLdDct/OnFire						StoreLdKeys/Dictionary
+	!	CreateLdDct/OnFire						StoreLdKeys/Store
+
+	% MISCN: Verb
+	$	VerbLoad Misc.Dist { Value Load }
+
+	% Set verb and create request
+	!	Load/OnFire									VerbLoad/Fire
+	!	Load/OnFire									CreateLdDct/Fire
+		
+	%%%%%%%%
+	% Store
+	%%%%%%%%
+
+	% MISCN: Create a dictionary for the request
+	$	CreateStDct Misc.Create { Id Adt.Dictionary }
+
+	% ADTN: Store information into request
+	$	StoreStKeys Adt.Keys { Keys ( Context Location Value ) }
+		!	Context/OnFire							StoreStKeys/Context
+		!	Location/OnFire						StoreStKeys/Location
+		!	Value/OnFire							StoreStKeys/Value
+
+	% Fill dictionary on creation
+	!	CreateStDct/OnFire						StoreStKeys/Dictionary
+	!	CreateStDct/OnFire						StoreStKeys/Store
+
+	% MISCN: Verb
+	$	VerbStore Misc.Dist { Value Store }
+
+	% Set verb and create request
+	!	Store/OnFire								VerbStore/Fire
+	!	Store/OnFire								CreateStDct/Fire
+
+	%%%%%%%%%%
+	% Request
+	%%%%%%%%%%
+
+	% MISCN: Send request
+	$	OnRequest Misc.Dist {}
+		!	CreateLdDct/OnFire					OnRequest/Fire
+		!	CreateStDct/OnFire					OnRequest/Fire
+
+	% ADTN: Store current verb
+	$	StoreReqVerb Adt.Store { Key Verb Value "" }
+		!	OnRequest/OnFire						StoreReqVerb/Dictionary
+		!	OnRequest/OnFire						StoreReqVerb/Fire
+		!	VerbLoad/OnFire						StoreReqVerb/Value
+		!	VerbStore/OnFire						StoreReqVerb/Value
+
+	% Send request
+	!	StoreReqVerb/OnFire						/Lib/Namespace/Service/Default/Request/Fire
+
+	%%%%%%%%%%%%%%%%
+	% Load response
+	%%%%%%%%%%%%%%%%
+
+	%% Service delivers response to request directly to specified receptor.
+		
+	% ADTN: Load request parameters
+	$	LoadLdKeys Adt.Keys { Keys ( Context Location Value ) }
+		!	OnLoad/OnFire							LoadLdKeys/Dictionary
+		!	OnLoad/OnFire							LoadLdKeys/Load
+
+	% Notify
+%	!	LoadLdKeys/OnContext						Debug/Fire
+	!	LoadLdKeys/OnContext						OnContext/Fire
+%	!	LoadLdKeys/OnLocation					Debug/Fire
+	!	LoadLdKeys/OnLocation					OnLocation/Fire
+%	!	LoadLdKeys/OnValue						Debug/Fire
+	!	LoadLdKeys/OnValue						OnValue/Fire
+
+	% MISCN: Not found ?
+	$	ValueNot Misc.Compare { Left Value }
+		!	LoadLdKeys/OnNotFound				ValueNot/Fire
+
+	% Notify
+	!	ValueNot/OnEqual							OnNotFound/Fire
+

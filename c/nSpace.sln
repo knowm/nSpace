@@ -82,6 +82,10 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "usbn", "dll\usbn\usbn.vcxproj", "{3BCB9212-D047-4D43-91B6-ACC8EC9CB7D1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{8A6113B8-46B6-46BC-9F17-0EDC02FF5EA6}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\lib\sync_value_q.nspc = ..\graph\lib\sync_value_q.nspc
+		..\graph\lib\sync_value_qa.nspc = ..\graph\lib\sync_value_qa.nspc
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "comm", "comm", "{F3C3B639-4A62-49F9-84F2-787AD5D10D20}"
 	ProjectSection(SolutionItems) = preProject
@@ -90,6 +94,60 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "comm", "comm", "{F3C3B639-4
 		..\graph\lib\comm\StmDct.nspc = ..\graph\lib\comm\StmDct.nspc
 		..\graph\lib\comm\StrMemStm.nspc = ..\graph\lib\comm\StrMemStm.nspc
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "usb", "usb", "{61445C3B-660C-4937-B736-3CD2B0F35A58}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\lib\comm\usb\open_by_id.nspc = ..\graph\lib\comm\usb\open_by_id.nspc
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "network", "network", "{28385124-81B3-481C-A669-0B261946ACB4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ip", "ip", "{136D525D-DB06-4A26-AC78-263CFAE76AAA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tcp", "tcp", "{16608C67-3E3E-4356-8AEB-C53D8B447DF2}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\lib\comm\network\ip\tcp\ServerClients.nspc = ..\graph\lib\comm\network\ip\tcp\ServerClients.nspc
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "http", "http", "{6F1AD522-CE38-40A5-84F1-E6CFE9923420}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\lib\comm\network\ip\tcp\http\browser.nspc = ..\graph\lib\comm\network\ip\tcp\http\browser.nspc
+		..\graph\lib\comm\network\ip\tcp\http\client.nspc = ..\graph\lib\comm\network\ip\tcp\http\client.nspc
+		..\graph\lib\comm\network\ip\tcp\http\fmthdr.nspc = ..\graph\lib\comm\network\ip\tcp\http\fmthdr.nspc
+		..\graph\lib\comm\network\ip\tcp\http\fmtmthd.nspc = ..\graph\lib\comm\network\ip\tcp\http\fmtmthd.nspc
+		..\graph\lib\comm\network\ip\tcp\http\fmtreq.nspc = ..\graph\lib\comm\network\ip\tcp\http\fmtreq.nspc
+		..\graph\lib\comm\network\ip\tcp\http\format.nspc = ..\graph\lib\comm\network\ip\tcp\http\format.nspc
+		..\graph\lib\comm\network\ip\tcp\http\reqstm.nspc = ..\graph\lib\comm\network\ip\tcp\http\reqstm.nspc
+		..\graph\lib\comm\network\ip\tcp\http\server.nspc = ..\graph\lib\comm\network\ip\tcp\http\server.nspc
+		..\graph\lib\comm\network\ip\tcp\http\stmrsp.nspc = ..\graph\lib\comm\network\ip\tcp\http\stmrsp.nspc
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "network", "network", "{DD34CE7A-E164-4E5E-87EF-BF8B44431AE0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ip", "ip", "{F082C111-2D5D-4BC9-B57A-17D1F3C921CC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tcp", "tcp", "{790404EC-635B-4797-8F52-F1D45345FE5A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "http", "http", "{5CFBA96B-9923-43AD-AEA6-3958D0D106BA}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\state\network\ip\tcp\http\browser.nspc = ..\graph\state\network\ip\tcp\http\browser.nspc
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "namespace", "namespace", "{10AC39FC-B398-48A3-9C9C-95A4E07D9A48}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\lib\namespace\client.nspc = ..\graph\lib\namespace\client.nspc
+		..\graph\lib\namespace\service.nspc = ..\graph\lib\namespace\service.nspc
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "vendor", "vendor", "{BD9987A6-F3F4-4967-B0B3-11B7D6F43EA1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "flycapturel", "lib\vendor\flycapturel\flycapturel.vcxproj", "{03D2A464-D4C2-4519-B814-D516323AFA75}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "vendor", "vendor", "{D9ABFD87-4E82-40E5-A266-3EEBB2E47CA1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "flycapturen", "dll\vendor\flycapturen\flycapturen.vcxproj", "{3E543F5B-ED48-4EE5-B31E-4412B1E2BCFD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "driver", "driver", "{80092055-29F3-48FF-B851-E10B9573E29C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -197,6 +255,14 @@ Global
 		{3BCB9212-D047-4D43-91B6-ACC8EC9CB7D1}.Debug|Win32.Build.0 = Debug|Win32
 		{3BCB9212-D047-4D43-91B6-ACC8EC9CB7D1}.Release|Win32.ActiveCfg = Release|Win32
 		{3BCB9212-D047-4D43-91B6-ACC8EC9CB7D1}.Release|Win32.Build.0 = Release|Win32
+		{03D2A464-D4C2-4519-B814-D516323AFA75}.Debug|Win32.ActiveCfg = Debug|Win32
+		{03D2A464-D4C2-4519-B814-D516323AFA75}.Debug|Win32.Build.0 = Debug|Win32
+		{03D2A464-D4C2-4519-B814-D516323AFA75}.Release|Win32.ActiveCfg = Release|Win32
+		{03D2A464-D4C2-4519-B814-D516323AFA75}.Release|Win32.Build.0 = Release|Win32
+		{3E543F5B-ED48-4EE5-B31E-4412B1E2BCFD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3E543F5B-ED48-4EE5-B31E-4412B1E2BCFD}.Debug|Win32.Build.0 = Debug|Win32
+		{3E543F5B-ED48-4EE5-B31E-4412B1E2BCFD}.Release|Win32.ActiveCfg = Release|Win32
+		{3E543F5B-ED48-4EE5-B31E-4412B1E2BCFD}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -215,6 +281,7 @@ Global
 		{8738FDAD-B4A1-48ED-B021-6FAAB9AB5072} = {4560AF12-FA84-49FA-94E4-19CB5A898DF0}
 		{20A2401B-CB2F-4BC0-BD99-A742EE5ABF7B} = {4560AF12-FA84-49FA-94E4-19CB5A898DF0}
 		{66F466A4-342A-48F4-B1A6-785C636457D1} = {4560AF12-FA84-49FA-94E4-19CB5A898DF0}
+		{BD9987A6-F3F4-4967-B0B3-11B7D6F43EA1} = {4560AF12-FA84-49FA-94E4-19CB5A898DF0}
 		{DE2F0159-E927-490E-8BD4-7182CFF70EBD} = {BC540026-0B63-44BF-998D-444313B968CB}
 		{EA960234-7A49-4F69-A725-65EDCA57F825} = {BC540026-0B63-44BF-998D-444313B968CB}
 		{58CCE292-A622-4483-A310-8022215D158C} = {BC540026-0B63-44BF-998D-444313B968CB}
@@ -227,12 +294,26 @@ Global
 		{B3A74EA1-07FD-4E38-A10F-2D86CEDBB574} = {060BE89F-4362-4D47-8ED0-67F456629B3C}
 		{64506169-1F9D-4679-B135-122B46F861EB} = {060BE89F-4362-4D47-8ED0-67F456629B3C}
 		{3BCB9212-D047-4D43-91B6-ACC8EC9CB7D1} = {060BE89F-4362-4D47-8ED0-67F456629B3C}
+		{D9ABFD87-4E82-40E5-A266-3EEBB2E47CA1} = {060BE89F-4362-4D47-8ED0-67F456629B3C}
 		{14EDC47C-C44C-4821-B32D-DFC49FF00F67} = {EBE57489-1CFE-49BE-A830-8A8C171803DE}
 		{960C88F6-B839-44AD-AE18-C1B0BEFA6641} = {6136E7F7-76C9-492D-A32C-36C14EF0DE79}
 		{5A572578-54D6-40FE-93BC-F8E838082B52} = {6136E7F7-76C9-492D-A32C-36C14EF0DE79}
 		{8A6113B8-46B6-46BC-9F17-0EDC02FF5EA6} = {6136E7F7-76C9-492D-A32C-36C14EF0DE79}
+		{80092055-29F3-48FF-B851-E10B9573E29C} = {6136E7F7-76C9-492D-A32C-36C14EF0DE79}
 		{23602D14-1F03-4690-B5C4-2022E21B057E} = {5A572578-54D6-40FE-93BC-F8E838082B52}
+		{DD34CE7A-E164-4E5E-87EF-BF8B44431AE0} = {5A572578-54D6-40FE-93BC-F8E838082B52}
 		{83A86A15-2F05-4EFB-B7C1-18592F7F3B06} = {CF8D6E2C-36DB-48C5-9F9D-B4CAFCB8E13E}
 		{F3C3B639-4A62-49F9-84F2-787AD5D10D20} = {8A6113B8-46B6-46BC-9F17-0EDC02FF5EA6}
+		{10AC39FC-B398-48A3-9C9C-95A4E07D9A48} = {8A6113B8-46B6-46BC-9F17-0EDC02FF5EA6}
+		{61445C3B-660C-4937-B736-3CD2B0F35A58} = {F3C3B639-4A62-49F9-84F2-787AD5D10D20}
+		{28385124-81B3-481C-A669-0B261946ACB4} = {F3C3B639-4A62-49F9-84F2-787AD5D10D20}
+		{136D525D-DB06-4A26-AC78-263CFAE76AAA} = {28385124-81B3-481C-A669-0B261946ACB4}
+		{16608C67-3E3E-4356-8AEB-C53D8B447DF2} = {136D525D-DB06-4A26-AC78-263CFAE76AAA}
+		{6F1AD522-CE38-40A5-84F1-E6CFE9923420} = {16608C67-3E3E-4356-8AEB-C53D8B447DF2}
+		{F082C111-2D5D-4BC9-B57A-17D1F3C921CC} = {DD34CE7A-E164-4E5E-87EF-BF8B44431AE0}
+		{790404EC-635B-4797-8F52-F1D45345FE5A} = {F082C111-2D5D-4BC9-B57A-17D1F3C921CC}
+		{5CFBA96B-9923-43AD-AEA6-3958D0D106BA} = {790404EC-635B-4797-8F52-F1D45345FE5A}
+		{03D2A464-D4C2-4519-B814-D516323AFA75} = {BD9987A6-F3F4-4967-B0B3-11B7D6F43EA1}
+		{3E543F5B-ED48-4EE5-B31E-4412B1E2BCFD} = {D9ABFD87-4E82-40E5-A266-3EEBB2E47CA1}
 	EndGlobalSection
 EndGlobal

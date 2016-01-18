@@ -1,0 +1,228 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								server.NSPC
+%
+%								HTTP server.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+	$	PortSrvr				Misc.Dist {}			% Server port
+
+	% Actions
+	$	Initialize			Misc.Dist {}			% Initialize
+	$	Uninitialize		Misc.Dist {}			% Uninitialize
+	$	Respond				Misc.Dist {}			% Send response
+	
+	% Notifications
+	$	OnRequest			Misc.Dist {}			% Request received
+
+	% DEBUG
+	$	Debug Misc.Debug { Message "ServerHTTP" }
+		!	PortSrvr/OnFire						Debug/Fire
+		!	Initialize/OnFire						Debug/Fire
+		!	Uninitialize/OnFire					Debug/Fire
+		!	Respond/OnFire							Debug/Fire
+		!	OnRequest/OnFire						Debug/Fire
+
+	%%%%%%%%
+	% Setup
+	%%%%%%%%
+
+	% Subgraph: TCP server
+	#	Server										Lib/Comm/Network/IP/TCP/ServerClients/ {}
+%		!	Server/OnConnect/Fire				Debug/Fire
+%		!	Server/OnRead/Fire					Debug/Fire
+
+	% Server port required
+	!	PortSrvr/OnFire							Server/PortSrvr/Fire
+	!	PortSrvr/OnFire							Server/Start/Fire
+
+	% Subgraph: HTTP header format
+	#	Fmt											Lib/Comm/Network/Ip/Tcp/Http/Format/ {}
+
+	%%%%%%%%%%%%%
+	% Connection
+	%%%%%%%%%%%%%
+
+	%% Read in data for current request
+
+	% Active socket
+	!	Server/OnRead/OnFire						Server/Socket/Fire
+
+	% NETN: Read data
+	$	NetRx Net.Recv {}
+		!	Server/OnRead/OnFire					NetRx/Socket
+%		!	NetRx/OnFire							Debug/Fire
+%		!	NetRx/Error								Debug/Fire
+
+	% On read error, close socket
+	!	NetRx/OnError								Server/Close/Fire
+
+	% MISCN: Create stream to receive data
+	$	CreateStmRx Misc.Create { Id IO.StmMemory }
+
+	% Trigger read
+	!	CreateStmRx/OnFire						NetRx/Stream
+	!	CreateStmRx/OnFire						NetRx/Fire
+
+	% MISCN: Get length of stream
+	$	StmLenRx Io.StreamOp { Offset 0:int Origin Current }
+		!	NetRx/OnFire							StmLenRx/Seek
+
+	% MISCN: Reset stream position
+	$	StmPosRx Io.StreamOp { Offset 0:int Origin Set }
+		!	NetRx/OnFire							StmPosRx/Seek
+
+	%%%%%%%%%
+	% Header
+	%%%%%%%%%
+
+	% MISCN: Extract header strings up to the terminator
+	$	StmToStrRx Misc.StringStream { Terminator "\r\n\r\n" }
+		!	NetRx/OnFire							StmToStrRx/Stream
+		!	NetRx/OnFire							StmToStrRx/From
+%		!	StmToStrRx/OnFire						Debug/Fire
+
+	% MISCN: Create a dictionary to receive the request
+	$	CreateReqDct Misc.Create { Id Adt.Dictionary }
+		!	StmToStrRx/OnFire						CreateReqDct/Fire
+
+	%% Extract header one line at a time
+
+	% MISCN: Create a dictionary to received parsed lines
+	$	CreateDctHdr Misc.Create { Id Adt.Dictionary }
+
+	% MISCN: Parse line
+	$	ParseHdr Misc.StringParse {}
+		!	CreateDctHdr/OnFire					ParseHdr/Dictionary
+		!	CreateDctHdr/OnFire					ParseHdr/Fire
+		!	Fmt/ValueIn/OnFire					ParseHdr/Format
+		!	ParseHdr/OnFire						Debug/Fire
+
+	%% Copy results into request
+
+	% ADTN: Load the key
+	$	LoadKeyHdr Adt.Load { Key Key }
+		!	ParseHdr/OnFire						LoadKeyHdr/Dictionary
+
+	% ADTN: Store header dictionary under its key in request
+	$	StoreHdrReq Adt.Store {}
+		!	CreateReqDct/OnFire					StoreHdrReq/Dictionary
+		!	ParseHdr/OnFire						StoreHdrReq/Value
+		!	LoadKeyHdr/OnFire						StoreHdrReq/Key
+		!	LoadKeyHdr/OnFire						StoreHdrReq/Fire
+%		!	StoreHdrReq/OnFire					Debug/Fire
+
+	% Latent connections
+	!	ParseHdr/OnFire							LoadKeyHdr/Fire
+
+	%% Continue parsing
+
+	% MISCN: Generate unparsed string from remaining string
+	$	ParseSub Misc.StringOp {}
+		!	ParseHdr/OnPosition					ParseSub/From
+		!	ParseHdr/OnFire						ParseSub/Substring
+
+	% Strings
+	!	StmToStrRx/OnFire							ParseHdr/String
+	!	ParseSub/OnFire							ParseHdr/String
+	!	StmToStrRx/OnFire							ParseSub/Source
+	!	ParseSub/OnFire							ParseSub/Source
+
+	% MISCN: Length of remaining string
+	$	ParseLenSub Misc.StringOp {}
+		!	ParseSub/OnFire						ParseLenSub/Source
+		!	ParseSub/OnFire						ParseLenSub/Length
+%		!	ParseLenSub/Fire						Debug/Fire
+
+	% MISCN: Blank line ?
+	$	ParseNull Misc.Compare { Left 0:int }
+		!	ParseLenSub/OnFire					ParseNull/Fire
+%		!	ParseNull/Equal						Debug/Fire
+
+	% Parse
+	!	ParseNull/OnNotEqual						CreateDctHdr/Fire
+	!	StmToStrRx/OnFire							CreateDctHdr/Fire
+
+	% ADTN: Store socket of request
+	$	StoreSktReq Adt.Store { Key Socket }
+		!	CreateReqDct/OnFire					StoreSktReq/Dictionary
+		!	Server/OnRead/OnFire					StoreSktReq/Value
+		!	ParseNull/OnEqual						StoreSktReq/Fire
+
+	% Request complete
+	!	StoreSktReq/OnFire						OnRequest/Fire
+
+	% Communication complete (DEBUG)
+%	!	StoreSktReq/OnFire						Server/Close/Fire
+
+	% Latent connections
+	!	Server/OnRead/OnFire						CreateStmRx/Fire
+
+	%%%%%%%%%%%
+	% Response
+	%%%%%%%%%%%
+
+	% ADTN: Load the response socket
+	$	LoadRespSkt Adt.Load { Key Socket }
+		!	Respond/OnFire							LoadRespSkt/Dictionary
+%		!	LoadRespSkt/OnFire					Debug/Fire
+
+	% MISCN: Format response
+	$	FormatResp Misc.StringFormat {}
+		!	Respond/OnFire							FormatResp/Dictionary
+		!	Fmt/ValueOut/OnFire					FormatResp/Format
+%		!	FormatResp/OnFire						Debug/Fire
+
+	% MISCN: Create stream for outgoing data
+	$	CreateStmTx Misc.Create { Id IO.StmMemory }
+		!	FormatResp/OnFire						CreateStmTx/Fire
+
+	% MISCN: Convert result string into a stream
+	$	StrToStmTx Misc.StringStream {}
+	 	!	CreateStmTx/OnFire					StrToStmTx/Stream
+		!	FormatResp/OnFire						StrToStmTx/String
+		!	FormatResp/OnFire						StrToStmTx/To
+%		!	StrToStmTx/OnFire						Debug/Fire
+
+	% ADTN: Content ?
+	$	LoadContentStm Adt.Load { Key Content }
+		!	Respond/OnFire							LoadContentStm/Dictionary
+
+	% MISCN: Write content stream to outgoing stream
+	$	CopyContent IO.StreamCopy {}
+		!	StrToStmTx/OnFire						CopyContent/Destination
+		!	LoadContentStm/OnFire				CopyContent/Source
+		!	LoadContentStm/OnFire				CopyContent/Fire
+
+	% Latent connections
+	!	StrToStmTx/OnFire							LoadContentStm/Fire
+
+	% MISCN: Get length of stream
+	$	StmLenTx Io.StreamOp { Offset 0:int Origin Current }
+		!	StrToStmTx/OnFire						StmLenTx/Seek
+
+	% MISCN: Reset stream position
+	$	StmPosTx Io.StreamOp { Offset 0:int Origin Set }
+		!	StrToStmTx/OnFire						StmPosTx/Seek
+
+	% NETN: Send data
+	$	NetTx Net.Send {}
+		!	LoadRespSkt/OnFire					NetTx/Socket
+		!	CreateStmTx/OnFire					NetTx/Stream
+		!	StmLenTx/OnPosition					NetTx/Size
+		!	StmPosTx/OnPosition					NetTx/Fire
+%		!	NetTx/Fire								Debug/Fire
+%		!	NetTx/Error								Debug/Fire
+%		!	NetTx/Error								Debug/Fire
+
+	% Latent connections
+	!	Respond/OnFire								LoadRespSkt/Fire
+	!	LoadRespSkt/OnFire						FormatResp/Fire
+
+	% Communication complete
+%	!	Respond/Fire								Server/Close/Fire
+

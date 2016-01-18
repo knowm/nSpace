@@ -1,0 +1,97 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%							FORMAT.NSPC
+%
+%		Format specifications for various HTTP entities.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Actions
+	$	Initialize			Misc.Dist {}			% Initialize
+
+	% MISCN: Input format specification 
+	$	ValueIn Misc.Dist { Value (
+
+			% Header label
+			{
+			Name	Key
+			End	": "
+			Subformat
+				{
+				GET								( { Skip ": " } { Name Path End " " } { Skip " " } { Name Version End "\r\n" } )
+				Host								( { Skip ": " } { Name Value End "\r\n" } )
+				Connection						( { Skip ": " } { Name Value End "\r\n" } )
+				Cache-Control					( { Skip ": " } { Name Value End "\r\n" } )
+				Accept							( { Skip ": " } { Name Value End "\r\n" } )
+				User-Agent						( { Skip ": " } { Name Value End "\r\n" } )
+				Accept-Encoding				( { Skip ": " } { Name Value End "\r\n" } )
+				Accept-Language				( { Skip ": " } { Name Value End "\r\n" } )
+				Accept-Charset					( { Skip ": " } { Name Value End "\r\n" } )
+				Referer							( { Skip ": " } { Name Value End "\r\n" } )
+				DNT								( { Skip ": " } { Name Value End "\r\n" } )
+				UA-CPU							( { Skip ": " } { Name Value End "\r\n" } )
+				Upgrade-Insecure-Requests	( { Skip ": " } { Name Value End "\r\n" } )
+				Pragma							( { Skip ": " } { Name Value End "\r\n" } )
+				}	% Subformat
+
+			}	% Header
+
+			% Termination
+			{ Skip "\r\n" }
+
+		)	}	% ValueIn
+		!	Initialize/OnFire						ValueIn/Fire
+
+	% MISCN: Output format specification 
+	$	ValueOut Misc.Dist { Value (
+
+			% Method
+			{
+			Name	Key
+			Map
+				{
+				Response	"HTTP/1.1 "
+				}	% Map
+			Subformat
+				{
+				Response
+					( 
+						{ 
+						Name Response 
+						Map
+							{ 
+							Ok					"200 OK\r\n" 
+							"Not Found"		"404 Not found\r\n" 
+							"No content"	"204 NO CONTENT\r\n" 
+							}	% Map
+						Subformat
+							{
+							Ok
+								(
+								{ Constant "Server: nSpace\r\n" }
+								{ Constant "Content-Type: " } { Name Type } { Constant "\r\n" }
+								{ Constant "Connection: Close\r\n" }
+								{ Constant "Content-Length: " } { Name Length } { Constant "\r\n" }
+								{ Constant "Cache-Control: " }	{ Name Cache Map { Default public None "no-cache, must-revalidate" } }
+								{ Constant "\r\n\r\n" }
+								)
+							"Not Found"
+								(
+								{ Constant "Content-Length: 0\r\n\r\n" }
+								)
+							"No content"
+								(
+								{ Constant "\r\n" }
+								)
+							}	% Subformat
+						}
+
+					)	% Response
+
+				}	% Subformat
+			}	% Method
+			
+		)	}	% ValueOut
+		!	Initialize/OnFire						ValueOut/Fire

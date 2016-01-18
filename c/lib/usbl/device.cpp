@@ -65,7 +65,8 @@ HRESULT Device :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT Device :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Device :: receive ( IReceptor *pr, const WCHAR *pl, 
+										const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -233,7 +234,8 @@ HRESULT Device :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		_RELEASE(pRes);
 		_QISAFE(unkV,IID_IResource,&pRes);
 		}	// else if
-
+	else if (_RCP(Setting))
+		iAltSet = adtInt(v);
 	else
 		hr = ERROR_NO_MATCH;
 

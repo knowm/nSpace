@@ -1,0 +1,155 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								OPEN_BY_ID.NSPC
+%
+%	Find and open a device based on product and vendor Id.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+	$	ClassId				Misc.Dist {}		% Device class Id
+	$	VendorId				Misc.Dist {}		% Target vendor Id
+	$	ProductId			Misc.Dist {}		% Target product Id
+	$	AltSetting			Misc.Dist {}		% Alternate interface setting 
+
+	% Actions
+	$	Find					Misc.Dist {}		% Find device
+	$	Open					Misc.Dist {}		% Use/open device
+	$	Next					Misc.Dist {}		% Proceed to next device
+	$	Close					Misc.Dist {}		% Close current device
+
+	% Notifications
+	$	OnFound				Misc.Dist {}		% Device found
+	$	OnNotFound			Misc.Dist {}		% No more devices
+	$	OnEndpoint			Misc.Dist {}		% Endpoint found for device
+	$	OnOpen				Misc.Dist {}		% Device now open
+	
+	% DEBUG
+	$	Debug Misc.Debug {}
+
+	%%%%%%%%
+	% Setup
+	%%%%%%%%
+
+	% MISCN: Create file stream source
+	$	CreateFileSrc Misc.Create { Id Io.StmSrcFile }
+		!	Find/OnFire								CreateFileSrc/Fire
+
+	%%%%%%%%%%%%
+	% Enumerate
+	%%%%%%%%%%%%
+
+	% MISCN: Proceed to next device
+	$	OnNext Misc.Dist {}
+		!	Next/OnFire								OnNext/Fire
+
+	% Close current device
+	!	OnNext/OnFire								Close/Fire
+
+	% MISCN: Ensure previous device is closed
+	$	ResClose Io.Resource {}
+		!	Close/OnFire							ResClose/Close
+
+	% MISCN: Enumerate USB devices.  Class Id for Custom USB devices
+	$	EnumDev Io.EnumDevClass {}
+		!	ClassId/OnFire							EnumDev/Class
+		!	Find/OnFire								EnumDev/First
+		!	OnNext/OnFire							EnumDev/Next
+		!	EnumDev/OnNext							Debug/Fire
+%		!	EnumDev/OnName							Debug/Fire
+
+	% End of enumerate, not usable device found during scan
+	!	EnumDev/OnEnd								OnNotFound/Fire
+
+	%%%%%%%%
+	% Match
+	%%%%%%%%
+
+	% ION: Access an asynchronous stream for the device path
+	$	DevStmSrc Io.StreamSource { Options { ReadOnly false:bool Async true:bool } }
+		!	CreateFileSrc/OnFire					DevStmSrc/Source
+		!	EnumDev/OnNext							DevStmSrc/Location
+		!	EnumDev/OnNext							DevStmSrc/Open
+
+	% Not accesisble, proceed to next device
+	!	DevStmSrc/OnError							OnNext/Fire
+
+	% Active stream
+	!	DevStmSrc/OnOpen							ResClose/Resource
+
+	% USBN: Access the device to retreive vendor Id/device Id
+	$	DevUSB Usb.Device {}
+		!	AltSetting/OnFire						DevUSB/Setting
+		!	DevStmSrc/OnOpen						DevUSB/Stream
+		!	DevStmSrc/OnOpen						DevUSB/Open
+		!	DevUSB/OnDevice						Debug/Fire
+		!	DevUSB/OnQuery							Debug/Fire
+
+	% Not accessible, proceed to next device
+	!	DevUSB/OnError								OnNext/Fire
+
+	%% Matching vendor/product Ids
+
+	% MISCN: Device context on match
+	$	DevMatch Misc.Dist {}
+		!	DevUSB/OnDevice						DevMatch/Value
+		!	DevMatch/OnFire						OnFound/Fire
+
+	% ADTN: Load the vendor and product Id
+	$	LoadVendorId Adt.Load { Key IdVendor }
+		!	DevUSB/OnDevice						LoadVendorId/Dictionary
+	$	LoadProductId Adt.Load { Key IdProduct }
+		!	DevUSB/OnDevice						LoadProductId/Dictionary
+
+	% MISCN: Vendor/product match ?
+	$	VendorEq Misc.Compare { Left 0:int }
+		!	VendorId/OnFire						VendorEq/Left
+		!	LoadVendorId/OnFire					VendorEq/Fire
+		!	VendorEq/OnEqual						LoadProductId/Fire
+	$	ProductEq Misc.Compare { Left 0:int }
+		!	ProductId/OnFire						ProductEq/Left
+		!	LoadProductId/OnFire					ProductEq/Fire
+
+	% Match
+	!	ProductEq/OnEqual							DevMatch/Fire
+
+	% No match, proceed to next device
+	!	LoadVendorId/OnNotFound					OnNext/Fire
+	!	LoadProductId/OnNotFound				OnNext/Fire
+	!	VendorEq/OnNotEqual						OnNext/Fire
+	!	ProductEq/OnNotEqual						OnNext/Fire
+
+	% Latent connections
+	!	DevUSB/OnDevice							LoadVendorId/Fire
+
+	%%%%%%%
+	% Open
+	%%%%%%%
+
+	%% A found device has been selected for use.
+	%% Query and report its end points for the parent.
+
+	% Query device
+	!	Open/OnFire									DevUSB/Query
+
+	% ADTN: Load the endpoint descriptors
+	$	LoadEndpts Adt.Load { Key Endpoints }
+		!	DevUSB/OnQuery							LoadEndpts/Dictionary
+		!	DevUSB/OnQuery							LoadEndpts/Fire
+
+	% ADTN: Iterate the endpoints on interface
+	$	EndptIt Adt.Iterate {}
+		!	LoadEndpts/OnFire						EndptIt/Container
+		!	LoadEndpts/OnFire						EndptIt/First
+%		!	EndPtIt/OnNext							Debug/Fire
+
+	% Report endpoint
+	!	EndPtIt/OnNext								OnEndpoint/Fire
+
+	% Next endpoint
+	!	EndptIt/OnNext								EndptIt/Next
+
+	% Device ready
+	!	EndptIt/OnLast								OnOpen/Fire

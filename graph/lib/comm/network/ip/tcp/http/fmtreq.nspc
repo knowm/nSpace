@@ -1,0 +1,129 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%							FMTREQ.NSPC
+%
+%		Format specifications for HTTP requests
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Actions
+	$	Initialize			Misc.Dist {}			% Initialize
+
+	% MISCN: Format specification 
+	$	ValueFmt Misc.Dist { Value (
+
+			% Method string
+			{
+			Name		Method
+			Map
+				{
+				Response		"HTTP/1.1 "
+				Subscribe	"HTTP/1.1 "
+				Unsubscribe	"HTTP/1.1 "
+				Get			"GET "
+				Notify		"NOTIFY "
+				Post			"POST "
+				}	% Map
+			Subformat
+				{
+				Response
+					(
+						% Response code
+						{
+						Name Response
+						Map
+							{
+							Ok					"200 OK\r\n"
+							"Not Found"		"404 Not found\r\n"
+							"No content"	"204 NO CONTENT\r\n"
+							}
+						Substring
+							{
+							% Success
+							Ok
+								(
+								{ Constant "Server: nSpace\r\n" }
+								{ Constant "Content-Type: " }			{ Name Type }
+		%						{ Constant "\r\nConnection: Close" }
+								{ Constant "\r\nContent-Length: " } { Name Length }
+								{ Constant "\r\nCache-Control: " }	{ Name Cache Map { Default public None "no-cache, must-revalidate" } }
+								{ Constant "\r\n\r\n" }
+								)
+							"Not Found"
+								(
+								{ Constant "Content-Length: 0\r\n\r\n" }
+								)
+							"No content"
+								(
+								{ Constant "\r\n" }
+								)
+							}	% Substring
+						}	% Response
+					)	% Response
+
+				% Subscription response
+				Subscribe
+					(
+						% Response code
+						{
+						Name Response
+						Map
+							{
+							Ok				"200 OK"
+							}
+						Substring
+							{
+							% Success
+							Ok
+								(
+								{ Constant "\r\nSID: " }		{ Name SubscriptionID }
+								{ Constant "\r\nTimeout: " }	{ Name Timeout }
+								{ Constant "\r\n\r\n" }
+								)	% Ok
+							}	% Substring
+						}	% Response
+					)	% Subscribe
+				Unsubscribe
+					(
+					{ Constant "200 OK\r\n\r\n" }
+					)	% Unsubscribe
+
+				% State variable notifications
+				Notify
+					(
+					{ Name Path }										{ Constant " HTTP/1.1" }
+					{ Constant "\r\nHOST: " }						{ Name Host }
+					{ Constant "\r\nCONTENT-TYPE: text/xml" }
+					{ Constant "\r\nCONTENT-LENGTH: " }			{ Name Length }
+					{ Constant "\r\nNT: upnp:event" }
+					{ Constant "\r\nNTS: upnp:propchange" }
+					{ Constant "\r\nSID: " }						{ Name SubscriptionID }
+					{ Constant "\r\nSEQ: " }						{ Name Sequence }
+					{ Constant "\r\n\r\n" }
+					)	% Notify
+
+				% Get
+				Get
+					(
+					{ Name Path }				{ Constant " HTTP/1.1\r\n" }
+					{ Constant "HOST: " }	{ Name Host }	{ Constant "\r\n" }
+					{ Constant "\r\n" }
+					)	% Get
+
+				% Post
+				Post
+					(
+					{ Name Path }													{ Constant " HTTP/1.1\r\n" }
+					{ Constant "HOST: " }				{ Name Host }		{ Constant "\r\n" }
+					{ Constant "Cache-Control: no-cache\r\n" }
+					{ Constant "Content-Length: " }	{ Name Length }	{ Constant "\r\n" }
+					{ Constant "\r\n" }
+					)	% Post
+
+				}	% Subformat
+			}	% Method
+
+		)	}	% ValueFmt
+		!	Initialize/OnFire						ValueFmt/Fire

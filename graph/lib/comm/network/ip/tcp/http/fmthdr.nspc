@@ -1,0 +1,109 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%							FMTHDR.NSPC
+%
+%		Format specifications for lines in HTTP header.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Actions
+	$	Initialize			Misc.Dist {}			% Initialize
+
+	% MISCN: Format specification 
+	$	ValueFmt Misc.Dist { Value (
+
+			% Header label
+			{
+			Name		Header
+			End		":"
+			Subformat
+				{
+				% Application - Standard
+				DATE					(	{ Constant ":" } { Skip " " } { Name Date } )
+				Accept				(	{ Constant ":" } { Skip " " } { Name Accept } )
+				Accept-Language	(	{ Constant ":" } { Skip " " } { Name Language } )
+				Accept-Encoding	(	{ Constant ":" } { Skip " " } { Name Encoding } )
+				User-Agent			(	{ Constant ":" } { Skip " " } { Name UserAgent } )
+				HOST					(	{ Constant ":" } { Skip " " } { Name Host } )
+				Connection			(	{ Constant ":" } { Skip " " } { Name Connection } )
+				CONTENT-TYPE		(	{ Constant ":" } { Skip " " } { Name ContentType } )
+				Cookie				(	{ Constant ":" } { Skip " " } { Name Cookie } )
+				SERVER				(	{ Constant ":" } { Skip " " } { Name Server } )
+				Last-Modified		(	{ Constant ":" } { Skip " " } { Name LastModified } )
+				Set-Cookie			(	{ Constant ":" } { Skip " " } { Name SetCookie } )
+				Expires				(	{ Constant ":" } { Skip " " } { Name Expires } )
+				Transfer-Encoding	(	{ Constant ":" } { Skip " " } { Name TransferEncoding } )
+				X-Accept-Authentication
+										(	{ Constant ":" } { Skip " " } { Name XAcceptAuthentication } )
+				Supported			(	{ Constant ":" } { Skip " " } { Name Supported } )
+
+				% Application - SOAP
+				SOAPACTION			(	{ Constant ":" } { Skip " " } { Constant "\"" } 
+											{ Name URN End "#" }				{ Constant "#" }
+											{ Name Action End \"" } )
+
+				% Application - UPnP
+				LOCATION				(	{ Constant ":" } { Skip " " } { Name Location } )
+				HOST					(	{ Constant ":" } { Skip " " }	{ Name Host } )
+				NTS					(	{ Constant ":" } { Skip " " } { Name NotificationSubType } )
+				NT						(	{ Constant ":" } { Skip " " } { Name NotificationType } }
+				ST						(	{ Constant ":" } { Skip " " } { Name SearchType } }
+				MX						(	{ Constant ":" } { Skip " " } { Name DelayResponse Type Integer } )
+				MAN					(	{ Constant ":" } { Skip " " } { Constant "\"" } { Name Scope End "\"" } )
+				ST						(	{ Constant ":" } { Skip " " } { Name SearchTarget } )
+				EXT					(	{ Constant ":" } { Skip " " } )
+				"CACHE-CONTROL"	(	{ Constant ":" } { Skip " " } { Name Cache } )
+				PRAGMA				(	{ Constant ":" } { Skip " " } { Name Pragma } )
+				"Content-Length"	(	{ Constant ":" } { Skip " " } { Name ContentLength Type Integer End " " } )
+				TIMEOUT				(	{ Constant ":" } { Skip " " } { Name Timeout } )
+				SID					(	{ Constant ":" } { Skip " " } { Name SubscriptionID } )
+				CALLBACK				(	{ Constant ":" } { Skip " " } { Constant "<http://" } 
+											{ Name Host End "/" } { Name Path End ">" } )
+				USN
+					(
+						% Prefix
+						{ Constant ":" } { Skip " " } { Constant "uuid:" }
+						{ Name UUID End ":" }			{ Constant "::" }
+
+						% Break up domain,device types,etc
+						{
+						Name	USNType
+						End	":"
+						Substring
+							{
+							upnp ( { Constant ":" } { Name Device } )
+							urn
+								(
+									{ Constant ":" }
+									{ Name Domain End ":" }
+									{ Constant ":" }
+									{
+									Name	URNType
+									End	":"
+									Substring
+										{
+										device	( { Constant ":" } { Name DeviceType End ":" }	{ Constant ":" } { Name Version } )
+										service	( { Constant ":" } { Name ServiceType End ":" }	{ Constant ":" } { Name Version } )
+										}	% Substring
+									}	% URNType
+								)	% urn
+							}	% Substring
+						}	% USNType
+					)	% USN
+
+				% Application - PHP (?)
+				X-Powered-By:	(	{ Constant ":" } { Skip " " } { Name XPoweredBy } )
+
+				% Application - Other communication
+				"MM-response-type"		(	{ Constant ":" } { Skip " " } { Name ResponseType } )
+				"MM-fields"					(	{ Constant ":" } { Skip " " } { Name Fields } )
+				"MM-total-records"		(	{ Constant ":" } { Skip " " } { Name TotalRecords Type Integer } )
+				"MM-returned-records"	(	{ Constant ":" } { Skip " " } { Name ReturnedRecords Type Integer } )
+
+				}	% Subformat
+			}	% Header
+
+		)	}	% ValueFmt
+		!	Initialize/OnFire						ValueFmt/Fire

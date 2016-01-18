@@ -1,0 +1,12 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%							BROWSER.NSPC
+%
+%					HTTP browser state.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% MISCN: Port - Server port for browser
+	$	Port Nspc.Value { Value 0:int }

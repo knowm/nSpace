@@ -117,10 +117,10 @@ HRESULT ShellFactX :: reg ( BOOL bReg )
 	WCHAR			szIntfSpc[]		= L"Interface\\{2534d085-8628-11d2-868c-006008addfed}";
 	WCHAR			szIntfLstn[]	= L"Interface\\{2534d084-8628-11d2-868c-006008addfed}";
 	WCHAR			szTypeLib[]		= L"TypeLib\\{2534d083-8628-11d2-868c-006008addfed}";
+	WCHAR			*pw				= NULL;
 	LONG			ret;
 	adtString	strBfr;
 	WCHAR			szExe[1024],szBfr[1024],szKey[255];
-	WCHAR			*pw;
 
 	// The following items must be in the registry :
 	// - Type library (nshl.tlb)

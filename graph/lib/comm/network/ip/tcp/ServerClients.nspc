@@ -1,0 +1,271 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%							ServerClients.NSPC
+%
+%					Server/Clients TCP/IP behaviour.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+	$	PortSrvr				Misc.Dist {}			% Server port (optional)
+	$	Socket				Misc.Dist {}			% Active socket
+	$	Address				Misc.Dist {}			% Active address
+
+	% Actions
+	$	Initialize			Misc.Dist {}			% Initialize
+	$	Uninitialize		Misc.Dist {}			% Uninitialize
+	$	Start					Misc.Dist {}			% Start server
+	$	Stop					Misc.Dist {}			% Stop server
+	$	Connect				Misc.Dist {}			% Connection requested
+	$	Write					Misc.Dist {}			% Write requested
+	$	Close					Misc.Dist {}			% Close socket
+
+	% Notifications
+	$	OnRead				Misc.Dist {}			% Socket readable
+	$	OnWrite				Misc.Dist {}			% Socket writable
+	$	OnConnect			Misc.Dist {}			% Socket connected
+	$	OnPortSrvr			Misc.Dist {}			% Server port
+
+	% DEBUG
+	$	Debug Misc.Debug {}
+%		!	Address/Fire							Debug/Fire
+		!	Initialize/OnFire						Debug/Fire
+		!	Uninitialize/OnFire					Debug/Fire
+		!	Start/OnFire							Debug/Fire
+		!	Stop/OnFire								Debug/Fire
+%		!	OnPortSrvr/Fire						Debug/Fire
+%		!	OnConnect/OnFire						Debug/Fire
+
+	%%%%%%%%%%
+	% Listens
+	%%%%%%%%%%
+
+	%% 'Writability' for a socket means either it is ready to accept data for
+	%% transmission or a pending connection has completed successfully.
+
+	% MISCN: Listen for 'write' availability for pending client connections
+	$	AvailWr Net.Avail { Timeout 1000:int Read false:bool Write true:bool }
+		!	Start/OnFire							AvailWr/Start
+		!	Stop/OnFire								AvailWr/Stop
+%		!	AvailWr/Write							Debug/Fire
+
+	%% 'Readability' for a socket means either it has data to be read or
+	%% a client is requesting a connection (server).
+
+	% NETN: Data available
+	$	AvailRd Net.Avail { Timeout 1000:int Read true:bool Write false:bool }
+		!	Start/OnFire							AvailRd/Start
+		!	Stop/OnFire								AvailRd/Stop
+%		!	AvailRd/Read							Debug/Fire
+
+	%%%%%%%%%
+	% Server
+	%%%%%%%%%
+
+	%% Caller can specify a port of -1 to signal graph a server is not necessary.
+
+	% MISCN: Valid port ?
+	$	IsSrvr Misc.Compare { Left -1:int Right 0:int }
+		!	PortSrvr/OnFire						IsSrvr/Right
+		!	Start/OnFire							IsSrvr/Fire
+
+	% MISCN: Create a dictionary for the server socket
+	$	CreateSktSrvr Misc.Create { Id Adt.Dictionary }
+		!	IsSrvr/OnNotEqual						CreateSktSrvr/Fire
+
+	% ADTN: Store listen flag
+	$	StoreSktListen Adt.Store { Key Listen Value true:bool }
+		!	CreateSktSrvr/OnFire					StoreSktListen/Dictionary
+		!	CreateSktSrvr/OnFire					StoreSktListen/Fire
+
+	% NETN: Server socket access
+	$	SocketSrvr Net.SocketOp {}
+		!	CreateSktSrvr/OnFire					SocketSrvr/Socket
+		!	CreateSktSrvr/OnFire					SocketSrvr/Open
+		!	Stop/OnFire								SocketSrvr/Close
+		!	PortSrvr/OnFire						SocketSrvr/Port
+%		!	SocketSrvr/OnOpen						Debug/Fire
+
+	% Bound information
+	!	SocketSrvr/OnOpen							SocketSrvr/Query
+	!	SocketSrvr/OnPort							OnPortSrvr/Fire
+
+	% Add/remove server socket to readability
+	!	SocketSrvr/OnOpen							AvailRd/Socket
+	!	SocketSrvr/OnOpen							AvailRd/Add
+	!	SocketSrvr/OnClose						AvailRd/Socket
+	!	SocketSrvr/OnClose						AvailRd/Remove
+
+	%%%%%%%%%%
+	% Connect
+	%%%%%%%%%%
+
+	%% Connect an external server request
+
+	% MISCN: Create a dictionary for the client socket
+	$	CreateSktCli Misc.Create { Id Adt.Dictionary }
+		!	Connect/OnFire							CreateSktCli/Fire
+
+	% NETN: Create socket for new client
+	$	SocketCli Net.SocketOp {}
+		!	CreateSktCli/OnFire					SocketCli/Socket
+		!	CreateSktCli/OnFire					SocketCli/Open
+%		!	SocketCli/Open							Debug/Fire
+
+	% ADTN: Store requested address in outgoing dictionar
+	$	StoreAddrConnect Adt.Store { Key Address }
+		!	Address/OnFire							StoreAddrConnect/Value
+		!	SocketCli/OnOpen						StoreAddrConnect/Dictionary
+		!	SocketCli/OnOpen						StoreAddrConnect/Fire
+
+	% NETN: Attempt client connection
+	$	ConnectCli Net.Client { Timeout 10000:int }
+		!	Address/OnFire							ConnectCli/Address
+		!	SocketCli/OnOpen						ConnectCli/Socket
+		!	SocketCli/OnOpen						ConnectCli/Connect
+
+	% Connection immediately successful
+	!	ConnectCli/OnConnect						OnConnect/Fire
+
+	% ADTN: Store the pending flag
+	$	StoreSktPend Adt.Store { Key Pending Value true:bool }
+		!	ConnectCli/OnPending					StoreSktPend/Dictionary
+		!	ConnectCli/OnPending					StoreSktPend/Fire
+
+	% Connection pending, wait for 'writability'
+	!	ConnectCli/OnPending						Debug/Fire
+	!	ConnectCli/OnPending						AvailWr/Socket
+	!	ConnectCli/OnPending						AvailWr/Add
+
+	%% When a connection is made, store the address/port information into the
+	%% socket dictionary.
+
+	% NETN: Connected socket
+	$	SocketConn Net.SocketOp {}
+		!	OnConnect/OnFire						SocketConn/Socket
+
+	% NETN: Convert address/port combo into a single string
+	$	LclAddrToStr Net.Address {}
+		!	SocketConn/OnAddress					LclAddrToStr/Address
+		!	SocketConn/OnPort						LclAddrToStr/Port
+		!	SocketConn/OnPort						LclAddrToStr/String
+	$	RemAddrToStr Net.Address {}
+		!	SocketConn/OnPeerAddress			RemAddrToStr/Address
+		!	SocketConn/OnPeerPort				RemAddrToStr/Port
+		!	SocketConn/OnPeerPort				RemAddrToStr/String
+
+	% ADTN: Store address of local end
+	$	StoreConnLcl Adt.Store { Key Local }
+		!	OnConnect/OnFire						StoreConnLcl/Dictionary
+		!	LclAddrToStr/OnString				StoreConnLcl/Fire
+
+	% ADTN: Store adderss of remote end
+	$	StoreConnRem Adt.Store { Key Remote }
+		!	OnConnect/OnFire						StoreConnRem/Dictionary
+		!	RemAddrToStr/OnString				StoreConnRem/Fire
+
+	% Latent connections
+	!	OnConnect/OnFire							SocketConn/Query
+
+	%%%%%%%%
+	% Reads
+	%%%%%%%%
+
+	%% If server socket becomes 'readable' that means a client is requesting a connection.
+
+	% MISCN: Server ?
+	$	AvailSrvr Misc.Compare { Left {} }
+		!	SocketSrvr/OnOpen						AvailSrvr/Left
+		!	AvailRd/OnRead							AvailSrvr/Fire
+
+	% MISCN: Create a dictionary for the client socket
+	$	CreateAptDct Misc.Create { Id Adt.Dictionary }
+		!	AvailSrvr/OnEqual						CreateAptDct/Fire
+
+	% NETN: Accept connection
+	$	Accept Net.Client {}
+		!	CreateAptDct/OnFire					Accept/Socket
+		!	AvailSrvr/OnEqual						Accept/Accept
+%		!	Accept/OnAccept						Debug/Fire
+
+	% Add client to readability checking
+	!	Accept/OnAccept							AvailRd/Socket
+	!	Accept/OnAccept							AvailRd/Add
+
+	% Notify parent
+	!	Accept/OnAccept							OnConnect/Fire
+
+	%% Socket is readable
+
+	% Readable, notify parent
+	!	AvailSrvr/OnNotEqual						OnRead/Fire
+
+	% MISCN: Close socket on request
+	$	ValueSktRd Misc.Dist {}
+		!	Socket/OnFire							ValueSktRd/Value
+		!	Close/OnFire							ValueSktRd/Fire
+
+	% Remove from listening in case it is a read socket to avoid continuous notifications
+	!	ValueSktRd/OnFire							AvailRd/Socket
+	!	ValueSktRd/OnFire							AvailRd/Remove
+
+	% NETN: Shutdown socket
+	$	SocketCl Net.SocketOp {}
+		!	ValueSktRd/OnFire						SocketCl/Socket
+		!	ValueSktRd/OnFire						SocketCl/Close
+
+	%%%%%%%%%
+	% Writes
+	%%%%%%%%%
+
+	%% A socket becomes 'writable' when a pending connection has completed or
+	%% it can accept data.
+
+	% Writability is a one shot deal to avoid continuous 'writable' signals
+	!	AvailWr/OnWrite							AvailWr/Socket
+	!	AvailWr/OnWrite							AvailWr/Remove
+
+	% MISCN: See if writable socket was a pending connection
+	$	DemuxPending Misc.Demux { Key Pending Values ( true ) }
+		!	AvailWr/OnWrite						DemuxPending/Dictionary
+		!	AvailWr/OnWrite						DemuxPending/Fire
+
+	%% Pending connection remove flag and signal connection
+
+	% ADTN: Remove pending flag
+	$	RemovePend Adt.Remove { Key Pending }
+		!	DemuxPending/OnTrue					RemovePend/Container
+		!	DemuxPending/OnTrue					RemovePend/Fire
+
+	% NETN: Socket is connected
+	$	Connected Net.Client {}
+		!	DemuxPending/OnTrue					Connected/Socket
+		!	DemuxPending/OnTrue					Connected/Connected
+
+	% Add client to readability checking
+	!	DemuxPending/OnTrue						AvailRd/Socket
+	!	DemuxPending/OnTrue						AvailRd/Add
+
+	% Signal connection
+	!	DemuxPending/OnTrue						OnConnect/Fire
+
+	%% Writes
+
+	% MISCN: Request writability notification for the current socket
+	$	ValueSktWr Misc.Dist {}
+		!	Socket/OnFire							ValueSktWr/Value
+		!	Write/OnFire							ValueSktWr/Fire
+		!	ValueSktWr/OnFire						AvailWr/Socket
+		!	ValueSktWr/OnFire						AvailWr/Add
+
+	% Socket is writable, notify parent
+	!	DemuxPending/OnDefault					OnWrite/Fire
+
+	% Automatically stop server on shutdown
+	!	Uninitialize/OnFire						Stop/Fire
+
+	% Debug
+	!	OnConnect/OnFire							Debug/Fire
+

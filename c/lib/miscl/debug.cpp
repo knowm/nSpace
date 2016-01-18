@@ -318,7 +318,7 @@ HRESULT Debug :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 					// Current position and length
 					CCLTRY ( pStm->seek ( 0, STREAM_SEEK_CUR, &pos ) );
 					CCLTRY ( pStm->available ( &len ) );
-					swprintf ( SWPF(wDbgBfr2,DBGSZ), L"Stream:Position %d/Length %d", (S32)pos, (S32)len );
+					swprintf ( SWPF(wDbgBfr2,DBGSZ), L"Stream:Position %d/Length %d", (S32)pos, (S32)(pos+len) );
 					appendDbg ( wDbgBfr2 );
 					}	// else if
 				else

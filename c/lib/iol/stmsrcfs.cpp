@@ -162,7 +162,7 @@ HRESULT StmSrcFile :: defaultRoot ( void )
 	// Option 1 - Default is to use the same path where the process EXE is located
 	if (hr == S_OK)
 		{
-		WCHAR		*pwSlash;
+		WCHAR		*pwSlash = NULL;
 		DWORD		len;
 
 		// Get path to running executable

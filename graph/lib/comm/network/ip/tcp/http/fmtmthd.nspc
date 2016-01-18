@@ -1,0 +1,56 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%							FMTMTHD.NSPC
+%
+%		Format specifications for HTTP response method header
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Actions
+	$	Initialize			Misc.Dist {}			% Initialize
+
+	% MISCN: Format specification 
+	$	ValueFmt Misc.Dist { Value (
+
+			% Method string
+			{
+			Name		Method
+			End		" "
+			Map
+				{
+				GET			Get
+				M-SEARCH		Search
+				NOTIFY		Notify
+				"HTTP/1.1"	Response					% Handles HTTP(M)U
+				"HTTP/1.0"	Response
+				POST			Post
+				SUBSCRIBE	Subscribe
+				UNSUBSCRIBE	Unsubscribe
+				}	% Map
+			Subformat
+				{
+				"HTTP/1.1"	(	{ Skip " " } { Name ResponseCode Type Integer End " " }
+									{ Skip " " } { Name ResponseText } )
+				"HTTP/1.0"	(	{ Skip " " } { Name ResponseCode Type Integer End " " }
+									{ Skip " " } { Name ResponseText } )
+				GET			()
+				M-SEARCH		()
+				NOTIFY		()
+				POST			()
+				SUBSCRIBE	()
+				UNSUBSCRIBE	()
+				}	% Subformat
+			}	% Method
+
+			% URI
+			{ Skip " " }
+			{ Name URI End " " }
+
+			% Version
+			{ Skip " " }
+			{ Name Version End " " }
+
+		)	}	% ValueFmt
+		!	Initialize/OnFire						ValueFmt/Fire

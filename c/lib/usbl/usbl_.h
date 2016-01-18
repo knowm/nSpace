@@ -53,6 +53,7 @@ class Device :
 	DECLARE_EMT(Error)
 	DECLARE_RCP(Open)
 	DECLARE_CON(Query)
+	DECLARE_RCP(Setting)
 	DECLARE_RCP(Stream)
 	BEGIN_BEHAVIOUR()
 		DEFINE_RCP(Close)
@@ -60,6 +61,7 @@ class Device :
 		DEFINE_EMT(Error)
 		DEFINE_RCP(Open)
 		DEFINE_CON(Query)
+		DEFINE_RCP(Setting)
 		DEFINE_RCP(Stream)
 	END_BEHAVIOUR_NOTIFY()
 	};

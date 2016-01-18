@@ -1,0 +1,353 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								StmRsp.NSPC
+%
+%		Convert a possibly piecemeal HTTP byte stream
+%		response into a dictionary.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+	$	Stream				Misc.Dist {}		% Response stream
+
+	% Actions
+	$	Initialize			Misc.Dist {}		% Initialize
+	$	Reset					Misc.Dist {}		% Reset parseing state
+	$	Parse					Misc.Dist {}		% Parse stream
+
+	% Notifications
+	$	OnResponse			Misc.Dist {}		% Completed response dictionary
+
+	% DEBUG
+	$	Debug Misc.Debug {}
+%		!	Stream/OnFire							Debug/Fire
+%		!	OnResponse/OnFire						Debug/Fire
+
+	%%%%%%%%
+	% Setup
+	%%%%%%%%
+
+	% MISCN: Create a response dictionary
+	$	CreateRespDct Misc.Create { Id Adt.Dictionary }
+		!	Reset/OnFire							CreateRespDct/Fire
+
+	% Dictionary is result
+	!	CreateRespDct/OnFire						OnResponse/Value
+
+	% Initial reset of state
+	!	Initialize/OnFire							Reset/Fire
+
+	%%%%%%%%%
+	% Parse
+	%%%%%%%%
+
+	%% Parse streams one line at a time.  First line is the operation followed
+	%% by the header lines.  A blank line terminates the headers then the context
+	%% follows if present.  Allow feeding of continuous streams.
+
+	% MISCN: Create dictionary to receive parsed strings
+	$	CreateStrDct Misc.Create { Id Adt.Dictionary }
+		!	Initialize/OnFire						CreateStrDct/Fire
+
+	% MISCN: True if expecting first line
+	$	FirstBool Misc.Toggle {}
+		!	Reset/OnFire							FirstBool/True
+		!	FirstBool/OnTrue						FirstBool/False
+
+	%%%%%%%%%
+	% Method
+	%%%%%%%%%
+
+	% Subgraph: Method format
+	#	FmtMthd										Lib/Comm/Network/Ip/Tcp/Http/FmtMthd/ {}
+
+	% MISCN: Parse method into response
+	$	ParseMthd Misc.StringParse {}
+		!	FmtMthd/ValueFmt/OnFire				ParseMthd/Format
+		!	CreateRespDct/OnFire					ParseMthd/Dictionary
+		!	FirstBool/OnTrue						ParseMthd/String
+		!	FirstBool/OnTrue						ParseMthd/Fire
+%		!	ParseMthd/OnFire						Debug/Fire
+
+	%%%%%%
+	% URI
+	%%%%%%
+
+	% ADTN: Load the URI
+	$	LoadURI Adt.Load { Key URI }
+		!	CreateRespDct/OnFire					LoadURI/Dictionary
+		!	ParseMthd/OnFire						LoadURI/Fire
+
+	% MISCN: Convert specially encoded HTTP characters into normal chars
+	$	SubstURI Misc.StringOp { Map {
+			"\%20" " "  "\%3C" "<"  "\%3E" ">"  "\%23" "#"  "\%25" "\%"  "\%7B" "{"  "\%7D" "}"  "\%7C" "|"
+			"\%5C" "\\"  "\%5E" "^"  "\%7E" "~"  "\%5B" "["  "\%5D" "]"  "\%60" "`"  "\%3B" ";"  "\%2F" "/"
+			"\%3F" "?"  "\%3A" ":"  "\%40" "@"  "\%3D" "="  "\%26" "&"  "\%24" "$" } }
+		!	LoadURI/OnFire							SubstURI/Replace
+		!	SubstURI/OnFire						Debug/Fire
+
+	% ADTN: Store modified URI in header
+	$	StoreURI Adt.Store { Key URI }
+		!	CreateRespDct/OnFire					StoreURI/Dictionary
+		!	SubstURI/OnFire						StoreURI/Fire
+
+	%%%%%%%%%
+	% Header
+	%%%%%%%%%
+
+	% Subgraph: Header formats
+	#	FmtHdr										Lib/Comm/Network/Ip/Tcp/Http/FmtHdr/ {}
+
+	% MISCN: True during header parsing
+	$	HdrsBool Misc.Toggle {}
+		!	Reset/OnFire							HdrsBool/True
+		!	FirstBool/OnFalse						HdrsBool/Fire
+
+	% MISCN: Blank line ?  End of headers
+	$	IsHdrNull Misc.Compare { Left "" }
+		!	HdrsBool/OnTrue						IsHdrNull/Fire
+		!	IsHdrNull/OnEqual						HdrsBool/False
+%		!	IsHdrNull/OnEqual						Debug/Fire
+
+	% MISCN: Parse headers into response
+	$	ParseHdr Misc.StringParse {}
+		!	FmtHdr/ValueFmt/OnFire				ParseHdr/Format
+		!	CreateRespDct/OnFire					ParseHdr/Dictionary
+		!	IsHdrNull/OnNotEqual					ParseHdr/String
+		!	IsHdrNull/OnNotEqual					ParseHdr/Fire
+%		!	ParseHdr/OnFire						Debug/Fire
+
+	%%%%%%%%
+	% Lines
+	%%%%%%%%
+
+	%% Extract one line at a time
+
+	% MISCN: True during 'line' processing
+	$	LineBool Misc.Toggle {}
+		!	Reset/OnFire							LineBool/True
+
+	% Begin parsing lines
+	!	Parse/OnFire								LineBool/Fire
+
+	% MISCN: Convert incoming stream data to strings, watch for termination
+	$	StmToStr Misc.StringStream { Terminator "\r\n" }
+		!	Stream/OnFire							StmToStr/Stream
+		!	Reset/OnFire							StmToStr/Reset
+		!	LineBool/OnTrue						StmToStr/From
+
+	% MISCN: Trim termination before parse
+	$	StrTrim Misc.StringOp { Source "\r\n" }
+		!	StmToStr/OnFire						StrTrim/Destination
+		!	StmToStr/OnFire						StrTrim/Trailing
+
+	% Process line
+	!	StrTrim/OnFire								Debug/Fire
+	!	StrTrim/OnFire								FirstBool/Fire
+
+	% Continue processing stream
+	!	LineBool/OnTrue							LineBool/Fire
+
+	% When blank line is found, line processing is complete.  Any more
+	% data is handled by 'POST' processing
+	!	IsHdrNull/OnEqual							LineBool/False
+
+	%%%%%%%%%%
+	% Content
+	%%%%%%%%%%
+
+	% ADTN: Load the method to see if client is sending data
+	$	LoadMthdPost Adt.Load { Key Method }
+		!	CreateRespDct/OnFire					LoadMthdPost/Dictionary
+		!	IsHdrNull/OnEqual						LoadMthdPost/Fire
+%		!	LoadMthdPost/OnFire					Debug/Fire
+
+	% MISCN: Method ?
+	$	IsPost Misc.Compare { Left "POST" }
+		!	LoadMthdPost/OnFire					IsPost/Fire
+	$	IsResp Misc.Compare { Left "RESPONSE" }
+		!	IsPost/OnNotEqual						IsResp/Fire
+
+	% End of content (none) / parsing ?
+	!	IsResp/OnNotEqual							OnResponse/Fire
+
+	% MISCN: Create a stream to receive the content data
+	$	CreateContentStm Misc.Create { Id Io.StmMemory }
+		!	IsPost/OnEqual							CreateContentStm/Fire
+		!	IsResp/OnEqual							CreateContentStm/Fire
+
+	% ADTN: Store content stream in response
+	$	StoreContentStm Adt.Store { Key Content }
+		!	CreateRespDct/OnFire					StoreContentStm/Dictionary
+		!	CreateContentStm/OnFire				StoreContentStm/Fire
+
+	%% Content stream
+
+	% MISCN: Copy (Continue) byte count to content stream
+	$	OnContentCopy Misc.Dist {}
+	$	OnContentCont Misc.Dist {}
+
+	% MISCN: Starting length
+	$	ValueZeroLen Misc.Dist { Value 0:int }
+		!	OnContentCopy/OnFire					ValueZeroLen/Fire
+
+	% MISCN: Copy remaining content
+	$	CopyContent Io.StreamCopy {}
+		!	Stream/OnFire							CopyContent/Source
+		!	CreateContentStm/OnFire				CopyContent/Destination
+		!	OnContentCopy/OnFire					CopyContent/Size
+
+	% ION: Obtain current position/count of content stream
+	$	StmCnt Io.StreamOp { Offset 0:int Origin Current }
+		!	CopyContent/OnFire					StmCnt/Seek
+
+	% MATHN: Compute amount of remaining content
+	$	SubContentLen Math.Binary { Op Sub }
+		!	OnContentCopy/OnFire					SubContentLen/Left
+		!	StmCnt/OnPosition						SubContentLen/Right
+		!	StmCnt/OnPosition						SubContentLen/Fire
+
+	% MISCN: More data ?
+	$	NeedMore Misc.Compare { Left 0:int }
+		!	SubContentLen/OnFire					NeedMore/Fire
+
+	% Copy/continue
+	!	OnContentCopy/OnFire						CopyContent/Fire
+	!	OnContentCont/OnFire						CopyContent/Fire
+
+	% ION: Reset content stream
+	$	StmReset Io.StreamOp {}
+		!	CreateContentStm/OnFire				StmReset/Stream
+		!	NeedMore/OnEqual						StmReset/Seek
+		!	NeedMore/OnGreater					StmReset/Seek
+
+	% MISCN: End of content count
+	$	OnContentEnd Misc.Dist {}
+		!	StmReset/OnPosition					OnContentEnd/Fire
+
+	%%%%%%%%%%%%%%%%%
+	% Content length
+	%%%%%%%%%%%%%%%%%
+
+	%% Server sends length if it is known ahead of time.
+
+	% ADTN: Load the length of the expected content
+	$	LoadContentLen Adt.Load { Key ContentLength }
+		!	CreateRespDct/OnFire					LoadContentLen/Dictionary
+		!	IsPost/OnEqual							LoadContentLen/Fire
+		!	IsResp/OnEqual							LoadContentLen/Fire
+%		!	LoadContentLen/OnFire				Debug/Fire
+%		!	LoadContentLen/OnNotFound			Debug/Fire
+
+	% MISCN: True if content length is specified
+	$	ContentLenBool Misc.Toggle {}
+		!	Reset/OnFire							ContentLenBool/False
+		!	LoadContentLen/OnNotFound			ContentLenBool/False
+		!	LineBool/OnFalse						ContentLenBool/Fire
+%		!	ContentLenBool/OnFalse				Debug/Fire
+
+	% MISCN: True if end of content length
+	$	ContentLenEndBool Misc.Toggle {}
+		!	Reset/OnFire							ContentLenEndBool/False
+		!	LoadContentLen/OnFire				ContentLenEndBool/True
+		!	OnContentEnd/OnFire					ContentLenEndBool/Fire
+
+	% End of content when length is specified means end of parsing
+	!	ContentLenEndBool/OnTrue				OnResponse/Fire
+
+	% Receive data
+	!	LoadContentLen/OnFire					ContentLenBool/True
+	!	LoadContentLen/OnFire					OnContentCopy/Fire
+	!	ContentLenBool/OnTrue					OnContentCont/Fire
+
+	%%%%%%%%%%%
+	% Chunked
+	%%%%%%%%%%%
+
+	%% If no content length is specified, check for 'chunked' data
+
+	% ADTN: Load transfer encoding
+	$	LoadEncode Adt.Load { Key TransferEncoding }
+		!	CreateRespDct/OnFire					LoadEncode/Dictionary
+		!	LoadContentLen/OnNotFound			LoadEncode/Fire
+%		!	LoadEncode/OnFire						Debug/Fire
+
+	% MISCN: Chunked encoding ?
+	$	IsChunk Misc.Compare { Left chunked }
+		!	LoadEncode/OnFire						IsChunk/Fire
+
+	% MISCN: True if chunked data
+	$	ChunkBool Misc.Toggle {}
+		!	Reset/OnFire							ChunkBool/False
+		!	IsChunk/OnEqual						ChunkBool/True
+%		!	ContentLenBool/OnFalse				Debug/Fire
+		!	ContentLenBool/OnFalse				ChunkBool/Fire
+
+	% MISCN: True if need count of next chunk
+	$	ChunkCntBool Misc.Toggle {}
+		!	IsChunk/OnEqual						ChunkCntBool/True
+		!	ChunkCntBool/OnTrue					ChunkCntBool/False
+		!	ChunkBool/OnTrue						ChunkCntBool/Fire
+
+	%% Chunks seems to always be strings so parse each line.
+
+	% MISCN: Convert incoming stream data to string
+	$	ChunkStmToStr Misc.StringStream { Terminator "\r\n" }
+		!	Stream/OnFire							ChunkStmToStr/Stream
+		!	Reset/OnFire							ChunkStmToStr/Reset
+		!	ChunkCntBool/OnTrue					ChunkStmToStr/From
+
+	% MISCN: Trim termination before parse
+	$	ChunkStrTrim Misc.StringOp { Source "\r\n" }
+		!	ChunkStmToStr/OnFire					ChunkStrTrim/Destination
+		!	ChunkStmToStr/OnFire					ChunkStrTrim/Trailing
+%		!	ChunkStrTrim/OnFire					Debug/Fire
+
+	% MISCN: Blank line ?  End of chunked data
+	$	IsChkNull Misc.Compare { Left "" }
+		!	ChunkStrTrim/OnFire					IsChkNull/Fire
+
+	% End of chunk data means end of parsing
+	!	IsChkNull/OnEqual							OnResponse/Fire
+
+	%% Next chunk
+	%% For chunked data the first line of the chunk contains
+	%% the length of the following data
+
+	% MATHN: Prefix embedded hex number with '0x' for conversion
+	$	AppendHex Math.Binary { Left "0x" }
+		!	IsChkNull/OnNotEqual					AppendHex/Right
+		!	IsChkNull/OnNotEqual					AppendHex/Fire
+		!	AppendHex/OnFire						Debug/Fire
+
+	% MISCN: Convert hex integer text into number
+	$	ChunkToInt Misc.Type { Type Integer }
+		!	AppendHex/OnFire						ChunkToInt/Convert
+%		!	ChunkToInt/OnFire						Debug/Fire
+
+	% MISCN: Zero chunk data ?
+	$	ZeroChunk Misc.Compare { Left 0:int }
+		!	ChunkToInt/OnFire						ZeroChunk/Fire
+
+	% No more data
+	!	ZeroChunk/OnEqual							OnResponse/Fire
+
+	%%
+	%% Chunk data
+	%%
+
+	% MISCN: True if end of chunk length
+	$	ChunkLenEndBool Misc.Toggle {}
+		!	Reset/OnFire							ChunkLenEndBool/False
+		!	ZeroChunk/OnNotEqual					ChunkLenEndBool/True
+		!	OnContentEnd/OnFire					ChunkLenEndBool/Fire
+
+	% Copy the next specified numbers of bytes into content stream
+	!	ZeroChunk/OnNotEqual						OnContentCopy/Fire
+	!	ChunkCntBool/OnFalse						OnContentCont/Fire
+
+	% End of chunk, get next count
+	!	ChunkLenEndBool/OnTrue					ChunkCntBool/True
+

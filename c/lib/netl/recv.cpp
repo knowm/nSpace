@@ -112,7 +112,9 @@ HRESULT Recv :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			_EMT(Error,adtInt(hr));
 
 		// Debug
-		if (hr != S_OK)
+		if (hr == 0x2746)
+			dbgprintf ( L"Recv::receive:Connection forcibly closed\r\n" );
+		else if (hr != S_OK)
 			dbgprintf ( L"Recv::receive:Error:hr 0x%x\r\n", hr );
 		}	// if
 

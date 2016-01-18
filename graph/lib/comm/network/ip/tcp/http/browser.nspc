@@ -1,0 +1,302 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								BROWSER.NSPC
+%
+%						Http based namespace browser
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+
+	% Actions
+	$	Initialize				Misc.Dist {}		% Initialize
+	$	Uninitialize			Misc.Dist {}		% Uninitialize
+
+	% Notifications
+
+	% DEBUG
+	$	Debug Misc.Debug { Message "HTTP BROWSER" }
+		!	Initialize/OnFire						Debug/Fire
+		!	Uninitialize/OnFire					Debug/Fire
+%		!	Request/Fire							Debug/Fire
+%		!	Get/Fire									Debug/Fire
+%		!	OnGet/Fire								Debug/Fire
+%		!	OnRequest/Fire							Debug/Fire
+
+	%%%%%%%%%%%%
+	% Subgraphs
+	%%%%%%%%%%%%
+
+	% Subgraph: Browser state
+	#	State											State/Network/IP/TCP/HTTP/Browser/ {}
+		!	State/Port/OnFire						Debug/Fire
+
+	% Subgraph: HTTP server
+	#	Server										Lib/Comm/Network/IP/TCP/HTTP/Server/ {}
+%		!	Server/OnRequest/OnFire				Debug/Fire
+
+	% Subgraph: Namespace client
+	#	Namespace									Lib/Namespace/Client/ {}
+%		!	Namespace/OnContext/Fire			Debug/Fire
+%		!	Namespace/OnValue/Fire				Debug/Fire
+
+	%%%%%%%%%%
+	% Startup
+	%%%%%%%%%%
+
+	%% When a valid port is received via the state, start server.
+
+	% MISCN: Valid port ?
+	$	Port Misc.Compare { Left 0:int }
+		!	State/Port/OnFire						Port/Fire
+
+	% Start server
+	!	Port/OnNotEqual							Server/PortSrvr/Fire
+
+	%%%%%%%%%%%
+	% Requests
+	%%%%%%%%%%%
+
+	% Use the request as the context for possible namespace activity
+	!	Server/OnRequest/OnFire					Namespace/Context/Fire
+
+	% ADTN: Load source socket context in case response is required
+	$	LoadReqSkt Adt.Load { Key Socket }
+		!	Server/OnRequest/OnFire				LoadReqSkt/Dictionary
+		!	Server/OnRequest/OnFire				LoadReqSkt/Fire
+
+	%%%%%%
+	% Get
+	%%%%%%
+
+	% ADTN: Get request ?
+	$	LoadGet Adt.Load { Key Get }
+		!	Server/OnRequest/OnFire				LoadGet/Dictionary
+		!	Server/OnRequest/OnFire				LoadGet/Fire
+%		!	LoadGet/OnFire							Debug/Fire
+
+	% ADTN: Load the requested path
+	$	LoadGetPath Adt.Load { Key Path }
+		!	LoadGet/OnFire							LoadGetPath/Dictionary
+		!	LoadGet/OnFire							LoadGetPath/Fire
+%		!	LoadGetPath/OnFire					Debug/Fire
+
+	% MISCN: Convert special HTTP encodings to 'real' characters
+	$	URISubst Misc.StringOp { Map {
+			"\%20" " "  "\%3C" "<"  "\%3E" ">"  "\%23" "#"  "\%25" "\%"  "\%7B" "{"  "\%7D" "}"  "\%7C" "|"
+			"\%5C" "\\"  "\%5E" "^"  "\%7E" "~"  "\%5B" "["  "\%5D" "]"  "\%60" "`"  "\%3B" ";"  "\%2F" "/"
+			"\%3F" "?"  "\%3A" ":"  "\%40" "@"  "\%3D" "="  "\%26" "&"  "\%24" "$" } }
+		!	LoadGetPath/OnFire					URISubst/Replace
+%		!	URISubst/OnFire						Debug/Fire
+
+	% Request namespace information about the path
+	!	URISubst/OnFire							Namespace/Location/Fire
+	!	URISubst/OnFire							Namespace/Load/Fire
+
+	%% Response
+
+	% MISCN: Predefined response headers
+	$	RespNotFound Misc.Dist	{ Value { Key Response Response "Not Found" } }
+	$	RespNoContent Misc.Dist { Value { Key Response Response "No content" } }
+	$	RespOk Misc.Dist			{ Value { Key Response Response Ok Type "text/html" Length 0:int Cache None } }
+	$	RespOkXML Misc.Dist		{ Value { Key Response Response Ok Type "text/xml;charset=utf-8" Length 0:int Cache None } }
+
+	% Invalid location
+	!	Namespace/OnNotFound/OnFire			RespNotFound/Fire
+
+	% MISCN: Send response
+	$	OnRespond Misc.Dist {}
+		!	RespNotFound/OnFire					OnRespond/Fire
+		!	RespNoContent/OnFire					OnRespond/Fire
+
+	% ADTN: Store the socket in with the response
+	$	StoreRespSkt Adt.Store { Key Socket }
+		!	LoadReqSkt/OnFire						StoreRespSkt/Value
+		!	OnRespond/OnFire						StoreRespSkt/Dictionary
+		!	OnRespond/OnFire						StoreRespSkt/Fire
+
+	% Send response
+%	!	StoreRespSkt/OnFire						Debug/Fire
+	!	StoreRespSkt/OnFire						Server/Respond/Fire
+
+	%% Valid namespace location
+
+	% Debug
+%	!	Namespace/OnValue/OnFire				RespNotFound/Fire
+
+	% Subgraph: Strings to stream
+	#	StrsToStm									Lib/Comm/StrMemStm/ {}
+%		!	StrsToStm/String/OnFire				Debug/Fire
+%		!	StrsToStm/OnLength/Fire				Debug/Fire
+%		!	StrsToStm/OnStream/Fire				Debug/Fire
+
+	%% Analyze the namespace location
+
+	% MISCN: Value retreived
+	$	OnValue Misc.Dist {}
+		!	Namespace/OnValue/OnFire			OnValue/Fire
+%		!	OnValue/OnFire							Debug/Fire
+
+	% MISCN: Document header.  Make sure browser does not cache page as namespace browsing is live.
+	$	ValueTitlePre Misc.Dist { Value "<!DOCTYPE html><html><head><title>" }
+		!	ValueTitlePre/OnFire					StrsToStm/String/Fire
+	$	ValuePath Misc.Dist {}
+		!	Namespace/OnLocation/OnFire		ValuePath/Value
+		!	ValuePath/OnFire						StrsToStm/String/Fire
+	$	ValueTitlePost Misc.Dist { Value "</title><META HTTP-EQUIV=\"Pragma\" CONTENT=\"no-cache\"></head><body>" }
+		!	ValueTitlePost/OnFire				StrsToStm/String/Fire
+	$	ValueBodyPost Misc.Dist { Value "</body></html>" }
+		!	ValueBodyPost/OnFire					StrsToStm/String/Fire
+	$	ValueNewLine Misc.Dist { Value "<br>" }
+		!	ValueNewLine/OnFire					StrsToStm/String/Fire
+	$	ValueHREFPre Misc.Dist { Value "<A HREF=\"" }
+		!	ValueHREFPre/OnFire					StrsToStm/String/Fire
+	$	ValueHREFPrePost Misc.Dist { Value "\">" }
+		!	ValueHREFPrePost/OnFire				StrsToStm/String/Fire
+	$	ValueHREFPost Misc.Dist { Value "</A>" }
+		!	ValueHREFPost/OnFire					StrsToStm/String/Fire
+	$	ValueCenterPre Misc.Dist { Value "<center>" }
+		!	ValueCenterPre/OnFire				StrsToStm/String/Fire
+	$	ValueCenterPost Misc.Dist { Value "</center>" }
+		!	ValueCenterPost/OnFire				StrsToStm/String/Fire
+	$	ValueHeadingPre Misc.Dist { Value "<H3>" }
+		!	ValueHeadingPre/OnFire				StrsToStm/String/Fire
+	$	ValueHeadingPost Misc.Dist { Value "</H3>" }
+		!	ValueHeadingPost/OnFire				StrsToStm/String/Fire
+
+	%% List of items ?
+
+	% MISCN: List of items at location ?
+	$	IsDct Misc.Type { Type Dictionary }
+		!	OnValue/OnFire							IsDct/Fire
+
+	% Returning HTML
+	!	IsDct/OnEqual								RespOk/Fire
+
+	% Header
+	!	IsDct/OnEqual								ValueTitlePre/Fire
+	!	IsDct/OnEqual								ValuePath/Fire
+	!	IsDct/OnEqual								ValueTitlePost/Fire
+	!	IsDct/OnEqual								ValueCenterPre/Fire
+	!	IsDct/OnEqual								ValueHeadingPre/Fire
+	!	IsDct/OnEqual								ValuePath/Fire
+	!	IsDct/OnEqual								ValueHeadingPost/Fire
+	!	IsDct/OnEqual								ValueCenterPost/Fire
+
+	% MISCN: Always add an 'up' location
+	$	ValueUp Misc.Dist { Value "../" }
+		!	IsDct/OnEqual							ValueUp/Fire
+		!	ValueUp/OnFire							ValueCenterPre/Fire
+		!	ValueUp/OnFire							ValueHREFPre/Fire
+		!	ValueUp/OnFire							StrsToStm/String/Fire
+		!	ValueUp/OnFire							ValueHREFPrePost/Fire
+		!	ValueUp/OnFire							StrsToStm/String/Fire
+		!	ValueUp/OnFire							ValueHREFPost/Fire
+		!	ValueUp/OnFire							ValueCenterPost/Fire
+
+	% ADTN: Iterate found items
+	$	DctIt Adt.Iterate {}
+		!	IsDct/OnEqual							DctIt/Container
+		!	IsDct/OnEqual							DctIt/First
+%		!	DctIt/OnKey								Debug/Fire
+%		!	DctIt/OnNext							Debug/Fire
+
+	% MISCN: String version of key
+	$	KeyToStr Misc.Type { Type String }
+		!	DctIt/OnKey								KeyToStr/Convert
+
+	% MISCN: Current name
+	$	ValueName Misc.Dist {}
+		!	KeyToStr/OnFire						ValueName/Value
+
+	% MATHN: If location, slash will be added
+	$	AppendLoc Math.Binary { Right "/" }
+		!	KeyToStr/OnFire						AppendLoc/Left
+		!	AppendLoc/OnFire						ValueName/Value
+
+	% MISCN: Receptor ? Do not display
+	$	IsRecepE Misc.Compare { Left Receptor }
+		!	DctIt/OnNext							IsRecepE/Fire
+
+	% MISCN: Value ?
+	$	IsValE Misc.Compare { Left Value }
+		!	IsRecepE/OnNotEqual					IsValE/Fire
+
+	% Everyting but a value is a 'location'
+	!	IsValE/OnNotEqual							AppendLoc/Fire
+	!	IsRecepE/OnNotEqual						ValueName/Fire
+
+	% Default is a location
+
+	% Emit name
+	!	ValueName/OnFire							ValueCenterPre/Fire
+	!	ValueName/OnFire							ValueHREFPre/Fire
+
+	% MISCN: Convert special characters to HTTP encodings
+	$	CharSubst Misc.StringOp { Map {
+			" " "\%20" "<" "\%3C" ">" "\%3E" "#" "\%23" "\%" "\%25" "{" "\%7B" "}" "\%7D" "|" "\%7C"
+			"\\" "\%5C" "^" "\%5E" "~" "\%7E" "[" "\%5B" "]" "\%5D" "`" "\%60" ";" "\%3B"
+			"?" "\%3F" ":" "\%3A" "@" "\%40" "=" "\%3D" "&" "\%26" "$" "\%24" } }
+		!	ValueName/OnFire						CharSubst/Replace
+
+	% End URL
+	!	CharSubst/OnFire							StrsToStm/String/Fire
+	!	ValueName/OnFire							ValueHREFPrePost/Fire
+	!	ValueName/OnFire							StrsToStm/String/Fire
+	!	ValueName/OnFire							ValueHREFPost/Fire
+	!	ValueName/OnFire							ValueCenterPost/Fire
+
+	% Next item
+	!	DctIt/OnNext								DctIt/Next
+
+	% End of result
+	!	IsDct/OnEqual								ValueBodyPost/Fire
+
+	%% Emitter
+
+	% MISCN: Is retrieved location an emitter ?
+	$	IsEmit Misc.Type { Type Emitter }
+		!	IsDct/OnNotEqual						IsEmit/Fire
+%		!	IsEmit/Equal							Debug/Fire
+
+	% Returning XML if emitter value or just a value
+	!	IsEmit/OnEqual								RespOkXML/Fire
+	!	IsEmit/OnNotEqual							RespOkXML/Fire
+
+	% NSPC: Obtain latest value from emitter
+	$	GetEmitVal Nspc.Connectors {}
+		!	IsEmit/OnEqual							GetEmitVal/Get
+%		!	GetEmitVal/Get							Debug/Fire
+
+	% MISCN: Create parser for XML output
+	$	CreatePrsrXML Misc.Create { Id IO.StmPrsXML }
+		!	Initialize/OnFire						CreatePrsrXML/Fire
+
+	% MISCN: Persist value to stream
+	$	ValToStm IO.Persist {}
+		!	CreatePrsrXML/OnFire					ValToStm/Parser
+		!	StrsToStm/CreateStm/OnFire			ValToStm/Stream
+		!	GetEmitVal/OnGet						ValToStm/Save
+		!	IsEmit/OnNotEqual						ValToStm/Save
+%		!	ValToStm/Save							Debug/Fire
+
+	% Send result
+	!	OnValue/OnFire								StrsToStm/End/Fire
+
+	% ADTN: Store length of content
+	$	StoreRespLen Adt.Store { Key Length }
+		!	RespOk/OnFire							StoreRespLen/Dictionary
+		!	RespOkXML/OnFire						StoreRespLen/Dictionary
+		!	StrsToStm/OnLength/OnFire			StoreRespLen/Fire
+
+	% ADTN: Store content
+	$	StoreRespData Adt.Store { Key Content }
+		!	RespOk/OnFire							StoreRespData/Dictionary
+		!	RespOkXML/OnFire						StoreRespData/Dictionary
+		!	StrsToStm/OnStream/OnFire			StoreRespData/Fire
+
+	% Response
+	!	StoreRespData/OnFire						OnRespond/Fire
+

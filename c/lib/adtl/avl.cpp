@@ -206,10 +206,10 @@ void AVL :: deleteNode ( AVLNode **ppNode )
 //		adtValue::type((*ppNode)->key) == VTYPE_STR &&
 //		(*ppNode)->key.pstr != NULL)
 //		dbgprintf(L"AVL::deleteNode:%s\r\n", (*ppNode)->key.pstr );
-	if (	adtValue::type ( (*ppNode)->key ) == VTYPE_STR &&
-			(*ppNode)->key.pstr != NULL &&
-			!WCASECMP((*ppNode)->key.pstr,L"OnNext") )
-		dbgprintf ( L"Hi\r\n" );
+//	if (	adtValue::type ( (*ppNode)->key ) == VTYPE_STR &&
+//			(*ppNode)->key.pstr != NULL &&
+//			!WCASECMP((*ppNode)->key.pstr,L"OnNext") )
+//		dbgprintf ( L"Hi\r\n" );
 
 	// Done
 	(*ppNode)->pParent	= NULL;
