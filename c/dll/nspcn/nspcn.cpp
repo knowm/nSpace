@@ -6,7 +6,6 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#define	INITGUID
 #define	CCL_OBJ_PREFIX		L"nSpace"
 #define	CCL_OBJ_MODULE		L"nSpc"
 #include "../../lib/nspcl/nspcl_.h"

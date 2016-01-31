@@ -6,6 +6,7 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
+#define	INITGUID
 #include "nshl_.h"
 
 HRESULT strToVal ( const adtString &str, ADTVALUE &v )

@@ -184,9 +184,9 @@ HRESULT StringFormat :: formatString ( IUnknown *pSpecs,
 
 							// Comparison to specific sizes is done to handle negative numbers
 							else if (iSz == 2)
-								swprintf ( SWPF(wNumBfr,20), L"%02llX", (U8)(vValue.vlong) );
+								swprintf ( SWPF(wNumBfr,20), L"%02X", (U16)(vValue.vlong) );
 							else if (iSz == 4)
-								swprintf ( SWPF(wNumBfr,20), L"%04llX", (U16)(vValue.vlong) );
+								swprintf ( SWPF(wNumBfr,20), L"%04lX", (U32)(vValue.vlong) );
 							else
 								swprintf ( SWPF(wNumBfr,20), L"%0*llX", (U32)(iSz), vValue.vlong );
 							}	// if

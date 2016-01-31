@@ -167,6 +167,9 @@
     <ProjectReference Include="..\..\lib\netl\netl.2015.vcxproj">
       <Project>{1dde8a69-b646-4786-a636-6d840c603695}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\lib\nspcl\nspcl.2015.vcxproj">
+      <Project>{422e909b-a304-47a3-a2e6-8959ff5bc156}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\lib\sysl\sysl.2015.vcxproj">
       <Project>{8532deaa-56d3-4ff4-8fb8-664efe6eef83}</Project>
     </ProjectReference>

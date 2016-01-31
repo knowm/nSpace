@@ -6,7 +6,6 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#define	INITGUID
 #include "nsh.h"
 #include "../../lib/nshl/nshl_.h"
 #include <stdio.h>

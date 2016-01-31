@@ -11,6 +11,7 @@
 #define	_WIN32_WINNT		0x0400					// Win95+
 #endif
 
+#define	INITGUID
 #include "sysl_.h"
 #include <stdio.h>
 #if	defined(_WIN32) && !defined(UNDER_CE)

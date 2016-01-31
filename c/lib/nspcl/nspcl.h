@@ -41,33 +41,6 @@
 #define	STR_NSPC_REF			L"_Reference"
 
 // Pre-generated string reference objects
-#ifdef	INITGUID
-adtStringSt	strnRefName		( STR_NSPC_NAME );
-adtStringSt	strnRefNames	( STR_NSPC_NAMES );
-adtStringSt	strnRefItms		( STR_NSPC_ITEMS );
-adtStringSt	strnRefBehave	( STR_NSPC_BEHAVE );
-adtStringSt	strnRefLocn		( STR_NSPC_LOC );
-adtStringSt	strnRefType		( STR_NSPC_TYPE );
-adtStringSt	strnRefMod		( STR_NSPC_MOD );
-adtStringSt	strnRefDesc		( STR_NSPC_DESC );
-adtStringSt	strnRefOnDesc	( STR_NSPC_ONDESC );
-adtStringSt	strnRefPar		( STR_NSPC_PARENT );
-adtStringSt	strnRefNspc		( STR_NSPC_NSPC );
-adtStringSt	strnRefConn		( STR_NSPC_CONN );
-adtStringSt	strnRefConntr	( STR_NSPC_CONNTR );
-adtStringSt	strnRefPers		( STR_NSPC_PERS );
-adtStringSt	strnRefAct		( STR_NSPC_ACTIVE );
-adtStringSt	strnRefRcvr		( STR_NSPC_RCVR );
-adtStringSt	strnRefRef		( STR_NSPC_REF );
-
-adtStringSt	strnRefFrom		( L"From" );
-adtStringSt	strnRefTo		( L"To" );
-adtStringSt	strnRefRO		( L"ReadOnly" );
-adtStringSt	strnRefLoc		( L"Location" );
-adtStringSt	strnRefKey		( L"Key" );
-adtStringSt	strnRefVal		( L"Value" );
-
-#else
 extern	adtStringSt	strnRefName;
 extern	adtStringSt	strnRefNames;
 extern	adtStringSt	strnRefItms;
@@ -92,7 +65,6 @@ extern	adtStringSt	strnRefRO;
 extern	adtStringSt	strnRefLoc;
 extern	adtStringSt	strnRefKey;
 extern	adtStringSt strnRefVal;
-#endif
 
 //
 // BEGIN_BEHAVIOUR	- Begin a node behaviour
