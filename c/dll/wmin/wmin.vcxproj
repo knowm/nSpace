@@ -87,15 +87,6 @@
     <ClCompile Include="wmin.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\lib\adtl\adtl.vcxproj">
-      <Project>{b8de1218-452b-46ce-a380-4b11f3d8c1da}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\lib\ccl\ccl.vcxproj">
-      <Project>{8d6e6dc8-bfc1-4d67-8b35-25a94c97bceb}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\lib\sysl\sysl.vcxproj">
-      <Project>{8532deaa-56d3-4ff4-8fb8-664efe6eef83}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\..\lib\wmil\wmil.vcxproj">
       <Project>{20a2401b-cb2f-4bc0-bd99-a742ee5abf7b}</Project>
     </ProjectReference>

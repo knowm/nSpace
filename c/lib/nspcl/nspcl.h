@@ -141,7 +141,7 @@ extern	adtStringSt strnRefVal;
 			if (pnDesc != NULL)	pnDesc->Release();					\
 			}
 
-#ifdef	__GNUC__
+#if		defined(__GNUC__) || _MSC_VER >= 1900
 
 #define	DEFINE_EMT(a)														\
 			CCLTRY(pnSpc->connection ( pnLoc, L"On" #a,				\
