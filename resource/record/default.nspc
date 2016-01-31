@@ -19,7 +19,7 @@
 %			"/App/AutoSub/Default/"
 
 			% Basic namespace server
-			"/Lib/Namespace/Service/Default/"
+%			"/Lib/Namespace/Service/Default/"
 
 			% HTTP namespace browser
 %			"/Lib/Comm/Network/Ip/Tcp/Http/Browser/Default/"
