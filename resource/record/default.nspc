@@ -22,7 +22,7 @@
 %			"/Lib/Namespace/Service/Default/"
 
 			% HTTP namespace browser
-%			"/Lib/Comm/Network/Ip/Tcp/Http/Browser/Default/"
+			"/Lib/Comm/Network/Ip/Tcp/Http/Browser/Default/"
 
 			% Portal
 %			"/Lib/Namespace/Portal/Inst/Default/"
