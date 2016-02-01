@@ -85,11 +85,20 @@
     <ClCompile Include="miscn.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\lib\adtl\adtl.vcxproj">
+      <Project>{b8de1218-452b-46ce-a380-4b11f3d8c1da}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\lib\ccl\ccl.vcxproj">
+      <Project>{8d6e6dc8-bfc1-4d67-8b35-25a94c97bceb}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\lib\miscl\miscl.vcxproj">
       <Project>{789616ad-b765-4211-9acc-0ca60deb4bd2}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\lib\nspcl\nspcl.vcxproj">
       <Project>{422e909b-a304-47a3-a2e6-8959ff5bc156}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\lib\sysl\sysl.vcxproj">
+      <Project>{8532deaa-56d3-4ff4-8fb8-664efe6eef83}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

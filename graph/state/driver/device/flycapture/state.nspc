@@ -1,0 +1,21 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								STATE.NSPC
+%
+%					State for the FlyCapture driver
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% NSPC: Index of camera to use
+	$	Index			Nspc.Value { Value 0:int Type Integer }
+
+	% NSPC: Camera information
+	$	Version		Nspc.Value { Value "N/A" }
+	$	VersionDate	Nspc.Value { Value "N/A" }
+	$	Serial		Nspc.Value { Value "N/A" }
+	$	Model			Nspc.Value { Value "N/A" }
+	$	Vendor		Nspc.Value { Value "N/A" }
+	$	Sensor		Nspc.Value { Value "N/A" }
+	$	Resolution	Nspc.Value { Value "N/A" }

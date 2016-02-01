@@ -1,0 +1,59 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								FLYCAPTURE.NSPC
+%
+%				FlyCapture SDK / camera driver instance
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+
+	% Actions
+	$	Initialize			Misc.Dist {}		% Initialize
+	$	Uninitialize		Misc.Dist {}		% Uninitialize
+
+	% Notifications
+
+	% DEBUG
+	$	Debug Misc.Debug {}
+		!	Initialize/OnFire						Debug/Fire
+		!	Uninitialize/OnFire					Debug/Fire
+
+ 	%%%%%%%%
+	% Setup
+	%%%%%%%%
+
+	% Subgraph: Driver state
+	#	State											State/Driver/Device/FlyCapture/State/ {}
+
+	%%%%%%%%%%%%%%%%
+	% Communication
+	%%%%%%%%%%%%%%%%
+
+	% FLYC: Camera (API)
+	$	Camera FlyCapture.Camera {}
+		!	State/Index/OnFire					Camera/Index
+		!	Camera/OnInfo							Debug/Fire
+		!	Camera/OnImage							Debug/Fire
+
+	% Retrieve information about the camera for the state
+	!	Initialize/OnFire							Camera/Info
+
+	% ADTN: Distribute info to state
+	$	LoadInfoKeys Adt.Keys { Keys ( SerialNumber Model Vendor Sensor Resolution FirmwareRev FirmwareDate ) }
+		!	Camera/OnInfo							LoadInfoKeys/Dictionary
+		!	Camera/OnInfo							LoadInfoKeys/Load
+		!	LoadInfoKeys/OnSerialNumber		State/Serial/Fire
+		!	LoadInfoKeys/OnModel					State/Model/Fire
+		!	LoadInfoKeys/OnVendor				State/Vendor/Fire
+		!	LoadInfoKeys/OnSensor				State/Sensor/Fire
+		!	LoadInfoKeys/OnResolution			State/Resolution/Fire
+		!	LoadInfoKeys/OnFirmwareRev			State/Version/Fire
+		!	LoadInfoKeys/OnFirmwareDate		State/VersionDate/Fire
+
+	% For now start capture on startup of driver
+	!	Initialize/OnFire							Camera/Start
+	!	Uninitialize/OnFire						Camera/Stop
+

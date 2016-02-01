@@ -295,7 +295,7 @@ HRESULT Camera :: receive ( IReceptor *pr, const WCHAR *pl,
 			{
 			// Fill context for camera
 			CCLTRY ( pInfo->store ( adtString(L"Index"),				adtInt(iIdx) ) );
-			CCLTRY ( pInfo->store ( adtString(L"Serial number"),	adtInt(info.serialNumber) ) );
+			CCLTRY ( pInfo->store ( adtString(L"SerialNumber"),	adtInt(info.serialNumber) ) );
 			CCLTRY ( pInfo->store ( adtString(L"Model"),				adtString(info.modelName) ) );
 			CCLTRY ( pInfo->store ( adtString(L"Vendor"),			adtString(info.vendorName) ) );
 			CCLTRY ( pInfo->store ( adtString(L"Sensor"),			adtString(info.sensorInfo) ) );
