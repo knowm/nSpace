@@ -5,7 +5,7 @@
 2534d004-8628-11d2-868c-006008addfed				//	IID_IList (adtl)
 2534d005-8628-11d2-868c-006008addfed				//	IID_IDictionary (adtl)
 2534d006-8628-11d2-868c-006008addfed				//	CLSID_TemporalImpl (nspcl)
-2534d007-8628-11d2-868c-006008addfed				//	
+2534d007-8628-11d2-868c-006008addfed				//	IID_ILocations (iol)
 2534d008-8628-11d2-868c-006008addfed				//	IID_IByteStream (iol)
 2534d009-8628-11d2-868c-006008addfed				//	CLSID_Dictionary (adtl)
 2534d00a-8628-11d2-868c-006008addfed				//	CLSID_StmSrcFile (adtl)
@@ -14,8 +14,8 @@
 2534d00d-8628-11d2-868c-006008addfed				//	IID_IStreamParser (iol)
 2534d00e-8628-11d2-868c-006008addfed				//	CLSID_StmPrsBin (iol)
 2534d00f-8628-11d2-868c-006008addfed				//	CLSID_List (adtl)
-2534d010-8628-11d2-868c-006008addfed				//
-2534d011-8628-11d2-868c-006008addfed				//
+2534d010-8628-11d2-868c-006008addfed				//	CLSID_GnuPlot (plotl)
+2534d011-8628-11d2-868c-006008addfed				//	
 2534d012-8628-11d2-868c-006008addfed				//
 2534d013-8628-11d2-868c-006008addfed				//
 2534d014-8628-11d2-868c-006008addfed				// 

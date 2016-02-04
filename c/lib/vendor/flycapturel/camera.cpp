@@ -166,7 +166,7 @@ HRESULT Camera :: receive ( IReceptor *pr, const WCHAR *pl,
 
 		// Attempt connection to the camera
 		CCLTRY ( pgrError ( cam.Connect ( &id ) ) );
-/*
+
 		// BIN testing
 		if (hr == S_OK)
 			{
@@ -175,6 +175,10 @@ HRESULT Camera :: receive ( IReceptor *pr, const WCHAR *pl,
 
 			// Test for 8-bit mono, 2x2 binning
 			info.mode = FlyCapture2::MODE_1;
+
+			// Test for 8-bit mono, 2x2 decimation
+			info.mode = FlyCapture2::MODE_0;
+
 			CCLTRY ( pgrError ( cam.GetFormat7Info ( &info, &bSupp ) ) );
 
 			// Supported ?
@@ -186,7 +190,8 @@ HRESULT Camera :: receive ( IReceptor *pr, const WCHAR *pl,
 
 				// Desired settings
 				memset ( &set, 0, sizeof(set) );
-				set.mode				= FlyCapture2::MODE_1;
+				set.mode				= FlyCapture2::MODE_0;	// Decimation
+//				set.mode				= FlyCapture2::MODE_1;	// Binning
 				set.width			= 1928/2;				// Full res for the test camera
 				set.height			= 1448/2;				// Full res for the test camera
 				set.pixelFormat	= FlyCapture2::PIXEL_FORMAT_MONO8;
@@ -201,7 +206,6 @@ HRESULT Camera :: receive ( IReceptor *pr, const WCHAR *pl,
 
 				}	// if
 			}	// if
-*/
 
 		// Begin capture with own callback and object
 		CCLTRY ( pgrError ( cam.StartCapture ( onImage, this ) ) );

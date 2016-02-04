@@ -36,7 +36,7 @@
 	$	Camera FlyCapture.Camera {}
 		!	State/Index/OnFire					Camera/Index
 		!	Camera/OnInfo							Debug/Fire
-		!	Camera/OnImage							Debug/Fire
+%		!	Camera/OnImage							Debug/Fire
 
 	% Retrieve information about the camera for the state
 	!	Initialize/OnFire							Camera/Info
