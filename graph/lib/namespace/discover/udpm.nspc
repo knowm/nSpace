@@ -1,0 +1,183 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								UDPM.NSPC
+%
+%			Remote namespace UDP multicast discovery
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+	$	AddressMulti		Misc.Dist {}		% Multicast address
+	$	PortOut				Misc.Dist {}		% Port from which to transmit
+	$	IdThis				Misc.Dist {}		% Id of this namespace
+
+	% Actions
+	$	Initialize			Misc.Dist {}		% Initialize
+	$	Uninitialize		Misc.Dist {}		% Uninitialize
+	$	Start					Misc.Dist {}		% Start discovery
+	$	Stop					Misc.Dist {}		% Stop discovery
+
+	% Notifications
+	$	OnAddress			Misc.Dist {}		% Active source address
+	$	OnArrive				Misc.Dist {}		% Namespace arrival
+	$	OnDepart				Misc.Dist {}		% Namespace departure
+
+	% DEBUG
+	$	Debug Misc.Debug {}
+%		!	Initialize/OnFire						Debug/Fire
+
+	%%%%%%%%
+	% Setup
+	%%%%%%%%
+
+	% Subgraph: Multicast support for discovery
+	#	Multicast									Lib/Comm/Network/Ip/Multicast/ {}
+		!	AddressMulti/OnFire					Multicast/AddressMulti/Fire
+		!	PortOut/OnFire							Multicast/PortLocal/Fire
+		!	Multicast/OnAddress/OnFire			OnAddress/Fire
+
+	% Subgraph: Network interfaces
+	#	Intfs											Lib/Comm/Network/IntfWatch/ {}
+		!	Start/OnFire							Intfs/Start/Fire
+		!	Stop/OnFire								Intfs/Stop/Fire
+
+	% Add/remove interfaces to/from multicast
+	!	Intfs/OnAdd/OnFire						Multicast/AddressIntf/Fire
+	!	Intfs/OnAdd/OnFire						Multicast/Add/Fire
+	!	Intfs/OnRemove/OnFire					Multicast/AddressIntf/Fire
+	!	Intfs/OnRemove/OnFire					Multicast/Remove/Fire
+
+	% MISCN: Create binary parser	for persistence
+	$	CreatePrsr Misc.Create { Id IO.StmPrsBin } 
+		!	Initialize/OnFire						CreatePrsr/Fire
+
+	% MISCN: Create dictionary for pending discoveries
+	$	CreatePendDct Misc.Create { Id Adt.Dictionary }
+		!	Initialize/OnFire						CreatePendDct/Fire
+
+	%%%%%%%%%%%
+	% Transmit
+	%%%%%%%%%%%
+
+	% MISCN: Transmit/broadcast a message
+	$	Transmit		Misc.Dist {}
+	$	Broadcast	Misc.Dist {}
+
+	% MISCN: Create stream to receive value
+	$	CreateStm Misc.Create { Id IO.StmMemory }
+
+	% ION: Persist value to stream
+	$	PersistTo IO.Persist {}
+		!	CreatePrsr/OnFire						PersistTo/Parser
+		!	Transmit/OnFire						PersistTo/Value
+		!	Broadcast/OnFire						PersistTo/Value
+		!	CreateStm/OnFire						PersistTo/Stream
+		!	CreateStm/OnFire						PersistTo/Save
+%		!	PersistTo/Save							Debug/Fire
+
+	% Datagram
+	!	PersistTo/OnSave							Multicast/Stream/Fire
+
+	% MISCN: Get length of stream
+	$	StmLenTx Io.StreamOp { Offset 0:int Origin Current }
+		!	PersistTo/OnSave						StmLenTx/Seek
+
+	% MISCN: Reset stream position
+	$	StmPosTx Io.StreamOp { Offset 0:int Origin Set }
+		!	PersistTo/OnSave						StmPosTx/Seek
+
+	% Transmit
+	!	Transmit/OnFire							CreateStm/Fire
+	!	Broadcast/OnFire							CreateStm/Fire
+	!	Transmit/OnFire							Multicast/Transmit/Fire
+	!	Broadcast/OnFire							Multicast/Broadcast/Fire
+
+	% MISCN: Response address for last received message
+	$	ValueAddrResp Misc.Dist {}
+		!	Multicast/OnAddress/OnFire			ValueAddrResp/Value
+		!	ValueAddrResp/OnFire					Multicast/Address/Fire
+
+	%%%%%%%%%%
+	% Receive
+	%%%%%%%%%%
+
+	% ION: Persist value from datagram stream
+	$	PersistFrom IO.Persist {}
+		!	CreatePrsr/OnFire						PersistFrom/Parser
+		!	Multicast/OnStream/OnFire			PersistFrom/Stream
+		!	Multicast/OnStream/OnFire			PersistFrom/Load
+%		!	PersistFrom/OnLoad					Debug/Fire
+
+	% MISCN: Process message
+	$	DemuxVerb Misc.Demux { Key Verb Values ( Arrive Depart ) }
+		!	PersistFrom/OnLoad					DemuxVerb/Dictionary
+		!	PersistFrom/OnLoad					DemuxVerb/Fire
+
+	%%%%%%%%%%%
+	% Announce
+	%%%%%%%%%%%
+
+	%% Announce this namespace on/off network.
+
+	% MISCN: Verb to announce arrival
+	$	VerbArrive Misc.Dist { Value { Verb Arrive } }
+		!	Start/OnFire							VerbArrive/Fire
+	$	VerbDepart Misc.Dist { Value { Verb Depart } }
+		!	Stop/OnFire								VerbDepart/Fire
+
+	% ADTN: Store namespace Id in message
+	$	StoreAnnId Adt.Store { Key Id }
+		!	VerbArrive/OnFire						StoreAnnId/Dictionary
+		!	VerbArrive/OnFire						StoreAnnId/Fire
+		!	VerbDepart/OnFire						StoreAnnId/Dictionary
+		!	VerbDepart/OnFire						StoreAnnId/Fire
+		!	IdThis/OnFire							StoreAnnId/Value
+
+	% Announce arrival
+%	!	StoreAnnId/OnFire							Debug/Fire
+	!	StoreAnnId/OnFire							Broadcast/Fire
+
+	%% Another namespace is announcing its arrival on the network
+
+	%% For namespaces other than this one, response to an announcement directly
+	%% by announcing this namespace to the source.
+
+	% ADTN: Load the Id of the remote namespace
+	$	LoadArriveId Adt.Load { Key Id }
+		!	DemuxVerb/OnArrive					LoadArriveId/Dictionary
+		!	DemuxVerb/OnArrive					LoadArriveId/Fire
+
+	% Arrival
+	!	LoadArriveId/OnFire						OnArrive/Fire
+
+	% MISCN: This one ?
+	$	IsThis Misc.Compare { Left "" }
+		!	IdThis/OnFire							IsThis/Left
+		!	LoadArriveId/OnFire					IsThis/Fire
+
+	% Arrival
+%	!	IsThis/OnNotEqual							OnArrive/Fire
+
+	% MISCN: Arrive response
+	$	ValueAnnResp Misc.Dist {}
+		!	StoreAnnId/OnFire						ValueAnnResp/Value
+		!	IsThis/OnNotEqual						ValueAnnResp/Fire
+
+	% Set response address and transmit this arrival
+	!	ValueAnnResp/OnFire						ValueAddrResp/Fire
+	!	ValueAnnResp/OnFire						Transmit/Fire
+
+	%%%%%%%%%
+	% Depart
+	%%%%%%%%%
+
+	% ADTN: Load the Id of the remote namespace
+	$	LoadDepartId Adt.Load { Key Id }
+		!	DemuxVerb/OnDepart					LoadDepartId/Dictionary
+		!	DemuxVerb/OnDepart					LoadDepartId/Fire
+
+	% Notify
+	!	LoadDepartId/OnFire						OnDepart/Fire
+

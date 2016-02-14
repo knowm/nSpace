@@ -1,0 +1,84 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								INST.NSPC
+%
+%					Namespace locator implemenation
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+
+	% Actions
+	$	Initialize			Misc.Dist {}		% Initialize
+	$	Uninitialize		Misc.Dist {}		% Uninitialize
+
+	% Notifications
+
+	% DEBUG
+	$	Debug Misc.Debug {}
+		!	Initialize/OnFire						Debug/Fire
+
+	%%%%%%%%
+	% Setup
+	%%%%%%%%
+
+	% Subgraph: State
+	#	State											State/Namespace/Locate/State/ {}
+
+	% Subgraph: Interface
+	#	Interface									State/Namespace/Locate/Interface/ {}
+		!	State/IdThis/OnFire					Interface/IdThis/Element/Default/Value/Fire
+
+	%%%%%%%%%%%
+	% Handlers
+	%%%%%%%%%%%
+
+	% Subgraph: Locator handlers
+	#	Handlers										State/List/ {}
+
+	% Subgraph: List management
+	#	ListHandler									Lib/Graph/Dict/ {}
+		!	ListHandler/OnStore/OnFire			Debug/Fire
+
+	% MISCN: Location of list to manage
+	$	ValueListHandler Misc.Dist { Value "./Handlers/" }
+		!	Initialize/OnFire						ValueListHandler/Fire
+		!	ValueListHandler/OnFire				ListHandler/Location/Fire
+
+	%% Install the predefined handlers to handle discovery
+
+	% ADTN: Iterate handlers
+	$	HandleIt Adt.Iterate {}
+		!	State/Handlers/OnFire				HandleIt/Container
+		!	Initialize/OnFire						HandleIt/First
+		!	HandleIt/OnNext						Debug/Fire
+
+	% Add handler
+	!	HandleIt/OnKey								ListHandler/Key/Fire
+	!	HandleIt/OnNext							ListHandler/Definition/Fire
+	!	HandleIt/OnNext							ListHandler/Store/Fire
+
+	% Next handler
+	!	HandleIt/OnNext							HandleIt/Next
+
+	%% Link locator interface to handlers
+
+	% MATNN: Generate location to run-time state
+	$	AppendIntfState_ Math.Binary { Left "./Handlers/" }
+		!	ListHandler/OnStore/OnFire			AppendIntfState_/Right
+		!	ListHandler/OnStore/OnFire			AppendIntfState_/Fire
+		!	ListHandler/OnRemove/OnFire		AppendIntfState_/Right
+		!	ListHandler/OnRemove/OnFire		AppendIntfState_/Fire
+	$	AppendIntfState Math.Binary { Right "/Interface/" }
+		!	AppendIntfState_/OnFire				AppendIntfState/Left
+		!	AppendIntfState_/OnFire				AppendIntfState/Fire
+		!	AppendIntfState/OnFire				Debug/Fire
+
+	% NSPC: Perform link
+	$	LinkIntf Nspc.Link { Source "./Interface/" }
+		!	AppendIntfState/OnFire				LinkIntf/Destination
+		!	ListHandler/OnStore/OnFire			LinkIntf/Link
+		!	ListHandler/OnRemove/OnFire		LinkIntf/UnLink
+

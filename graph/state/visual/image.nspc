@@ -1,0 +1,15 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								IMAGE.NSPC
+%
+%				State definition for an image
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Subgraph: Visual element
+	#	Element										State/Visual/Element/ {}
+
+	% Subgraph: Interface for element
+	#	Interface									State/Interface/Image/ {}

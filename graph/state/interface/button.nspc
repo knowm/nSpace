@@ -1,0 +1,19 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								BUTTON.NSPC
+%
+%		A context representing a button interface element
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% MISCN: Button state
+%	$	State Nspc.Value { Value Default Allowed ( Default Activate Check Uncheck ) }
+
+	% MISCN: Activate button
+	$	Activate Nspc.Value {}
+
+	% Subgraph: Interface element
+	#	Element										State/Interface/Element/ {}
+

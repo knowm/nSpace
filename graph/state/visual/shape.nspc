@@ -1,0 +1,19 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								SHAPE.NSPC
+%
+%			State definition for a visual shape element.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% NSPC: Shape name
+	$	Name Nspc.Value { Value Box Allowed ( Box Sphere Cylinder Cone ) }
+
+	% Subgraph: Visual element
+	#	Element										State/Visual/Element/ {}
+
+	% Subgraph: Interface for element
+	#	Interface									State/Interface/Element/ {}
+

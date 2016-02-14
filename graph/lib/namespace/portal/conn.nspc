@@ -1,0 +1,462 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								CONN.NSPC
+%
+%				Connection management for portal
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+
+	% Actions
+	$	Initialize			Misc.Dist {}		% Initialize
+		
+	% Notifications
+
+	% DEBUG
+	$	Debug Misc.Debug {}
+		!	Initialize/OnFire						Debug/Fire
+
+	%%%%%%%%
+	% State
+	%%%%%%%%
+
+	% Subgraph: Run-time state for portal
+	#	Shared										State/Namespace/Portal/Shared/ {}
+
+	% Subgraph: I/O state linked to connection
+	#	Io												State/Comm/Io/ {}
+%		!	Io/Status/OnFire						Debug/Fire
+%		!	Io/Read/Status/OnFire				Debug/Fire
+%		!	Io/Write/Status/OnFire				Debug/Fire
+
+	% MISCN: Use value transfer modes
+	$	ValueModeV Misc.Dist { Value Value }
+		!	Io/~Link/OnFire						ValueModeV/Fire
+		!	ValueModeV/OnFire						Io/Read/Mode/Fire
+		!	ValueModeV/OnFire						Io/Write/Mode/Fire
+
+	% MISCN: Enabled for status changes
+	$	StatusBool Misc.Toggle { Default false:bool }
+		!	Io/~Link/OnFire						StatusBool/True
+		!	Io/~Unlink/OnFire						StatusBool/False
+
+	% MISCN: Decode the status
+	$	DecodeStatus Misc.Decode { Values ( Idle Opened Close Error ) }
+		!	Io/Status/OnFire						DecodeStatus/Select
+		!	Io/Status/OnFire						StatusBool/Fire
+		!	Io/~Link/OnFire						DecodeStatus/Fire
+		!	StatusBool/OnTrue						DecodeStatus/Fire
+
+	% MISCN: Status
+	$	ValueOpen Misc.Dist { Value Open }
+		!	ValueOpen/OnFire						Io/Status/Fire
+
+	% MISCN: Create a parser to use for values
+	$	CreatePrsr Misc.Create { Id Io.StmPrsBin } 
+		!	Initialize/OnFire						CreatePrsr/Fire
+
+	% MISCN: Create dictionary mappings
+	$	CreateFromToDct Misc.Create { Id Adt.Dictionary }
+		!	Initialize/OnFire						CreateFromToDct/Fire
+	$	CreateToFromDct Misc.Create { Id Adt.Dictionary }
+		!	Initialize/OnFire						CreateToFromDct/Fire
+
+	%%%%%%%
+	% Read
+	%%%%%%%
+
+	% MISCN: Decode read status
+	$	DecodeStatusRd Misc.Decode { Values ( Complete Error ) }
+		!	Io/Read/Status/OnFire				DecodeStatusRd/Select
+		!	Io/Read/Status/OnFire				DecodeStatusRd/Fire
+
+	% DEBUG
+	$	DebugRead Misc.Debug {}
+
+	% MISCN: Value received
+	$	OnRead Misc.Dist {}
+		!	Io/Read/Value/OnFire					OnRead/Value
+		!	DecodeStatusRd/OnComplete			OnRead/Fire
+%		!	OnRead/OnFire							DebugRead/Fire
+
+	%%%%%%%%
+	% Write
+	%%%%%%%%
+
+	%% Use a synchrounous queue since writes will come faster than the channel
+	%% can handle.  Use the write status to step forward writes.
+
+	% DEBUG
+	$	DebugWriteIn	Misc.Debug {}
+	$	DebugWriteOut	Misc.Debug {}
+
+	% MISCN: Send value
+	$	OnWrite Misc.Dist {}
+
+	% MISCN: Decode the write status
+	$	DecodeStatusWr Misc.Decode { Values ( Complete Error Idle ) }
+		!	Io/Write/Status/OnFire				DecodeStatusWr/Select
+		!	Io/Write/Status/OnFire				DecodeStatusWr/Fire
+
+	% Subgraph: Write queue
+	#	WrQ											Lib/Sync_Value_QA/ {}
+		!	Initialize/OnFire						WrQ/Start/Fire
+%		!	OnWrite/OnFire							DebugWriteIn/Fire
+		!	OnWrite/OnFire							WrQ/Value/Fire
+%		!	WrQ/OnValue/OnFire					DebugWriteOut/Fire
+
+	% Value writes
+	!	DecodeStatusWr/OnComplete				WrQ/Next/Fire
+	!	DecodeStatusWr/OnError					WrQ/Next/Fire
+	!	DecodeStatusWr/OnIdle					WrQ/Next/Fire
+
+	% Write value
+	!	WrQ/OnValue/OnFire						Io/Write/Value/Fire
+
+	% MISCN: Change to 'pending' to request transfer
+	$	ValuePendingWr Misc.Dist { Value Pending }
+		!	ValuePendingWr/OnFire				Io/Write/Status/Fire
+		!	WrQ/OnValue/OnFire					ValuePendingWr/Fire
+
+	%%%%%%%
+	% Open
+	%%%%%%%
+
+	%% Connection handlers are created because they are needed to handle a portal
+	%% interface so if connection is not open yet, open it.
+
+	% Open connection if necessary
+	!	DecodeStatus/OnIdle						ValueOpen/Fire
+
+	%%%%%%%%%
+	% Opened
+	%%%%%%%%%
+
+	%% When channel is open to remote end, send local namespace Id.
+%	!	DecodeStatus/OnOpened					Debug/Fire
+
+	% MISCN: Verb to announce arrival
+	$	VerbArrive Misc.Dist { Value { Verb Arrive } }
+		!	DecodeStatus/OnOpened				VerbArrive/Fire
+
+	% ADTN: Store namespace Id in message
+	$	StoreAnnId Adt.Store { Key Id Value "" }
+		!	VerbArrive/OnFire						StoreAnnId/Dictionary
+		!	VerbArrive/OnFire						StoreAnnId/Fire
+		!	Shared/IdThis/OnFire					StoreAnnId/Value
+%		!	StoreAnnId/OnFire						Debug/Fire
+
+	% Transmit arrival
+	!	StoreAnnId/OnFire							OnWrite/Fire
+
+	%%%%%%%%%%%%%%
+	%% Messages %%
+	%%%%%%%%%%%%%%
+
+	% MISCN: Demux received verbs
+	$	DemuxVerb Misc.Demux { Key Verb Values ( Arrive Listen Listened Value Store ) }
+		!	OnRead/OnFire							DemuxVerb/Dictionary
+		!	OnRead/OnFire							DemuxVerb/Fire
+
+	%%%%%%%%%
+	% Arrive
+	%%%%%%%%%
+%	!	DemuxVerb/OnArrive						Debug/Fire
+
+	%% Register this connection for the namespace if not already claimed
+
+	% ADTN: Load the Id of the remote namespace
+	$	LoadArriveId Adt.Load { Key Id }
+		!	DemuxVerb/OnArrive					LoadArriveId/Dictionary
+		!	DemuxVerb/OnArrive					LoadArriveId/Fire
+
+	% MISCN: Is namespace already registerd ?
+	$	LoadIdChk Adt.Load {}
+		!	Shared/Nspc/OnFire					LoadIdChk/Dictionary
+		!	LoadArriveId/OnFire					LoadIdChk/Key
+		!	LoadArriveId/OnFire					LoadIdChk/Fire
+
+	% ADTN: Claim namespace for this connection
+	$	StoreIdConn Adt.Store {}
+		!	Shared/Nspc/OnFire					StoreIdConn/Dictionary
+		!	Initialize/OnFire						StoreIdConn/Value
+		!	LoadIdChk/OnNotFound					StoreIdConn/Key
+		!	StoreIdConn/OnFire					Debug/Fire
+
+	%% Search shares and set up reflection for every 'from' share that matches the remote namespace Id
+
+	% ADTN: Iterate shares
+	$	SharesIt Adt.Iterate {}
+		!	Shared/Shares/OnFire					SharesIt/Container
+		!	StoreIdConn/OnFire					SharesIt/First
+		!	SharesIt/OnKey							Debug/Fire
+		!	SharesIt/OnNext						Debug/Fire
+
+	% ADTN: Access 'from'
+	$	LoadFrom Adt.Load { Key From }
+		!	SharesIt/OnNext						LoadFrom/Dictionary
+
+	% MAATHN: Extract Id
+	$	FromPre Misc.StringOp { From 0:int To 38:int }
+		!	LoadFrom/OnFire						FromPre/Source
+%		!	FromPre/OnFire							Debug/Fire
+
+	% MISCN: Matching Id ?
+	$	IsFromId Misc.Compare { Left "" }
+		!	LoadIdChk/OnNotFound					IsFromId/Left
+		!	FromPre/OnFire							IsFromId/Fire
+%		!	IsFromId/OnEqual						Debug/Fire
+
+	% MAATHN: Extract remote path
+	$	FromPost Misc.StringOp { From 38:int }
+		!	LoadFrom/OnFire						FromPost/Source
+		!	IsFromId/OnEqual						FromPost/Substring
+%		!	FromPost/OnFire						Debug/Fire
+
+	%% Update location mapping
+
+	% ADTN: Access 'to'
+	$	LoadTo Adt.Load { Key To }
+		!	SharesIt/OnNext						LoadTo/Dictionary
+%		!	LoadTo/OnFire							Debug/Fire
+
+	% ADTN: Store from vs to
+	$	StoreFromTo Adt.Store {}
+		!	CreateFromToDct/OnFire				StoreFromTo/Dictionary
+		!	FromPost/OnFire						StoreFromTo/Key
+		!	LoadTo/OnFire							StoreFromTo/Fire
+
+	% ADTN: Store to vs from
+	$	StoreToFrom Adt.Store {}
+		!	CreateToFromDct/OnFire				StoreToFrom/Dictionary
+		!	FromPost/OnFire						StoreToFrom/Value
+		!	LoadTo/OnFire							StoreToFrom/Key
+		!	LoadTo/OnFire							StoreToFrom/Fire
+
+	% Latent connections
+	!	FromPost/OnFire							LoadTo/Fire
+
+	%% Issue a listen request for the remote location
+
+	% MISCN: Verb to listen to location
+	$	VerbListen Misc.Dist { Value { Verb Listen } }
+		!	Initialize/OnFire						VerbListen/Fire
+
+	% ADTN: Store location of listen
+	$	StoreListenLoc Adt.Store { Key Location }
+		!	VerbListen/OnFire						StoreListenLoc/Dictionary
+		!	FromPost/OnFire						StoreListenLoc/Fire
+
+	% Send request
+%	!	StoreListenLoc/OnFire					Debug/Fire
+	!	StoreListenLoc/OnFire					OnWrite/Fire
+
+	% Latent connections
+	!	LoadFrom/OnFire							FromPre/Substring
+	!	SharesIt/OnNext							LoadFrom/Fire
+	!	LoadIdChk/OnNotFound						StoreIdConn/Fire
+
+	% Next share
+	!	SharesIt/OnNext							SharesIt/Next
+
+	%%%%%%%%%
+	% Listen
+	%%%%%%%%%
+
+	%% A listen for the specified location has been received.
+
+	% NSPC: A reflection node is used for listens
+	$	Listen Nspc.Reflect {}
+%		!	Listen/OnRoot							Debug/Fire
+%		!	Listen/OnLocation						Debug/Fire
+%		!	Listen/OnValue							Debug/Fire
+
+	% ADTN: Load the location
+	$	LoadListenLoc Adt.Load { Key Location }
+		!	DemuxVerb/OnListen					LoadListenLoc/Dictionary
+		!	DemuxVerb/OnListen					LoadListenLoc/Fire
+%		!	LoadListenLoc/OnFire					Debug/Fire
+
+	% Add listen
+	!	LoadListenLoc/OnFire						Listen/Root
+	!	LoadListenLoc/OnFire						Listen/Add
+
+	%% If location is successfully 'listened to' then send result.
+
+	% MISCN: Create dictionary for verb
+	$	CreateListenedDct Misc.Create { Id Adt.Dictionary }
+		!	Listen/OnAdd							CreateListenedDct/Fire
+
+	% MISCN: Listened verb
+	$	ValueListened Misc.Dist { Value Listened }
+		!	Initialize/OnFire						ValueListened/Fire
+
+	% ADTN: Store information about listened location
+	$	StoreListenedKeys Adt.Keys { Keys ( Verb Root ) }
+		!	CreateListenedDct/OnFire			StoreListenedKeys/Dictionary
+		!	ValueListened/OnFire					StoreListenedKeys/Verb
+		!	Listen/OnAdd							StoreListenedKeys/Root
+		!	Listen/OnAdd							StoreListenedKeys/Store
+
+	% Send result
+%	!	StoreListenedKeys/OnStore				Debug/Fire
+	!	StoreListenedKeys/OnStore				OnWrite/Fire
+
+	%% Values.  As values from a listened location are emitted, send
+	%% to remote namespace.
+
+	% MISCN: Create dictionary for verb
+	$	CreateValueDct Misc.Create { Id Adt.Dictionary }
+		!	Listen/OnValue							CreateValueDct/Fire
+
+	% MISCN: Value verb
+	$	ValueValue Misc.Dist { Value Value }
+		!	Initialize/OnFire						ValueValue/Fire
+
+	% ADTN: Store information about Value value
+	$	StoreValueKeys Adt.Keys { Keys ( Verb Root Location Value ) }
+		!	CreateValueDct/OnFire				StoreValueKeys/Dictionary
+		!	ValueValue/OnFire						StoreValueKeys/Verb
+
+	% Store reflection values
+	!	Listen/OnRoot								StoreValueKeys/Root
+	!	Listen/OnLocation							StoreValueKeys/Location
+	!	Listen/OnValue								StoreValueKeys/Value
+	!	Listen/OnValue								StoreValueKeys/Store
+
+	% Send result
+%	!	StoreValueKeys/OnStore					Debug/Fire
+	!	StoreValueKeys/OnStore					OnWrite/Fire
+
+	%%%%%%%%%%%
+	% Listened
+	%%%%%%%%%%%
+
+	%% A request location has been listened to.  It is time to listen to the
+	%% mapped local location so that updates can 'flow' both ways.
+%	!	DemuxVerb/OnListened						Debug/Fire
+
+	% NSPC: Reflected location
+	$	Reflected Nspc.Reflect {}
+%		!	Reflected/OnRoot						Debug/Fire
+%		!	Reflected/OnLocation					Debug/Fire
+%		!	Reflected/OnValue						Debug/Fire
+
+	% ADTN: Load the listend location
+	$	LoadListenedRoot Adt.Load { Key Root }
+		!	DemuxVerb/OnListened					LoadListenedRoot/Dictionary
+		!	DemuxVerb/OnListened					LoadListenedRoot/Fire
+%		!	LoadListenedRoot/OnFire				Debug/Fire
+
+	% ADTN: Load the 'to' location for which the listen applies
+	$	LoadFromToL Adt.Load {}
+		!	CreateFromToDct/OnFire				LoadFromToL/Dictionary
+		!	LoadListenedRoot/OnFire				LoadFromToL/Key
+		!	LoadListenedRoot/OnFire				LoadFromToL/Fire
+%		!	LoadFromToL/OnFire					Debug/Fire
+
+	%% Listen to the local location.  Ignore initial emission of values
+	%% since this will happen during initial reflection and since the 'to'
+	%% location is the destination, the source/from location is not interested
+	%% in the current state.
+
+	% MISCN: True to send local values, false to not
+	$	LocalBool Misc.Toggle {}
+
+	% Ignore initial reflection
+	!	LoadFromToL/OnFire						LocalBool/False
+
+	% Set up reflection of local 'to' location
+	!	LoadFromToL/OnFire						Reflected/Root
+	!	LoadFromToL/OnFire						Reflected/Add
+
+	% From now on reflect values to other side
+	!	LoadFromToL/OnFire						LocalBool/True
+
+	%% Store values from local / 'to' location and send to remote namespace
+
+	% MISCN: Create dictionary for verb
+	$	CreateStoreDct Misc.Create { Id Adt.Dictionary }
+		!	Listen/OnValue							CreateStoreDct/Fire
+
+	% MISCN: Store verb
+	$	ValueStore Misc.Dist { Value Store }
+		!	Initialize/OnFire						ValueStore/Fire
+
+	% ADTN: Store information about Value value
+	$	StoreStoreKeys Adt.Keys { Keys ( Verb Root Location Value ) }
+		!	CreateStoreDct/OnFire				StoreStoreKeys/Dictionary
+		!	ValueStore/OnFire						StoreStoreKeys/Verb
+
+	% ADTN: Map the local 'to' location to the remote 'from' location
+	$	LoadToFromDct Adt.Load {}
+		!	CreateToFromDct/OnFire				LoadToFromDct/Dictionary
+		!	Reflected/OnRoot						LoadToFromDct/Key
+
+	% Store values
+	!	Reflected/OnLocation						StoreStoreKeys/Location
+	!	Reflected/OnValue							LocalBool/Fire
+	!	LocalBool/OnTrue							StoreStoreKeys/Value
+	!	LocalBool/OnTrue							LoadToFromDct/Fire
+	!	LoadToFromDct/OnFire						CreateStoreDct/Fire
+	!	LoadToFromDct/OnFire						StoreStoreKeys/Root
+	!	LoadToFromDct/OnFire						StoreStoreKeys/Store
+
+	% Send request
+%	!	StoreStoreKeys/OnStore					Debug/Fire
+	!	StoreStoreKeys/OnStore					OnWrite/Fire
+
+	%%%%%%%%
+	% Value
+	%%%%%%%%
+
+	%% A 'listened' location has generated a value.
+%	!	DemuxVerb/OnValue							Debug/Fire
+
+	% ADTN: Load the value information
+	$	LoadValueKeys Adt.Keys { Keys ( Location Value Root ) }
+		!	DemuxVerb/OnValue						LoadValueKeys/Dictionary
+		!	DemuxVerb/OnValue						LoadValueKeys/Load
+%		!	LoadValueKeys/OnRoot					Debug/Fire
+%		!	LoadValueKeys/OnLocation			Debug/Fire
+%		!	LoadValueKeys/OnValue				Debug/Fire
+
+	% ADTN: Load the 'to' location for which the listen applies
+	$	LoadFromTo Adt.Load {}
+		!	CreateFromToDct/OnFire				LoadFromTo/Dictionary
+		!	LoadValueKeys/OnRoot					LoadFromTo/Key
+		!	LoadValueKeys/OnRoot					LoadFromTo/Fire
+%		!	LoadFromTo/OnFire						Debug/Fire
+
+	% Store value at root and location
+	!	LoadValueKeys/OnLocation				Reflected/Location
+	!	LoadValueKeys/OnValue					Reflected/Value
+	!	LoadFromTo/OnFire							Reflected/Root
+	!	LoadFromTo/OnFire							Reflected/Store
+
+	%%%%%%%%
+	% Store
+	%%%%%%%%
+
+	%% A location can request a value be stored into a location
+%	!	DemuxVerb/OnStore							Debug/Fire
+
+	% ADTN: Load the store information
+	$	LoadStoreKeys Adt.Keys { Keys ( Root Location Value ) }
+		!	DemuxVerb/OnStore						LoadStoreKeys/Dictionary
+		!	DemuxVerb/OnStore						LoadStoreKeys/Load
+%		!	LoadStoreKeys/OnRoot					Debug/Fire
+%		!	LoadStoreKeys/OnLocation			Debug/Fire
+%		!	LoadStoreKeys/OnValue				Debug/Fire
+
+	% Store value at root and location
+	!	LoadStoreKeys/OnRoot						Listen/Root
+	!	LoadStoreKeys/OnLocation				Listen/Location
+	!	LoadStoreKeys/OnValue					Listen/Value
+	!	LoadStoreKeys/OnValue					Listen/Store
+
+
+

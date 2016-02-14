@@ -1,0 +1,25 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								IMAGE.NSPC
+%
+%		State definition for an image interface element.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Subgraph: Interface element
+	#	Element										State/Interface/Element/ {}
+
+	% NSPC: A context specific reference tag to identify the image
+	$	Tag		Nspc.Value {}
+
+	% MISCN: Original image size
+%	$	Width		Nspc.Value { Value 0:int }
+%	$	Height	Nspc.Value { Value 0:int }
+
+	% MISCN: Format of bits (R8G8B8,etc)
+%	$	Format Nspc.Value { Value B8G8R8 }
+
+	% MISCN: Image bits
+%	$	Bits Nspc.Value { Value 0:int }

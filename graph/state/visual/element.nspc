@@ -1,0 +1,31 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								ELEMENT.NSPC
+%
+%			State definition for a visual interface element.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Subgraph: Element transform
+	#	Transform									State/Math/Transform3/ {}
+
+	% NSPC: Label for element
+%	$	Label Nspc.Value {}
+
+	% NSPC: Ambient color of element
+	$	Color Nspc.Value { Value 0xff202020:int }
+
+	% NSPC: Visible
+	$	Visible Nspc.Value { Value true:bool }
+
+	% Subgraph: Input for element
+	#	Input											State/Visual/Input/Element/ {}
+
+	% Subgraph: Drag/drop support
+	#	DragDrop										State/Visual/DragDrop/ {}
+
+	% NSPC: Visual parent location
+%	$	Parent Nspc.Value {}
+

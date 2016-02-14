@@ -1,0 +1,16 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%							ELEMENT.NSPC
+%
+%			State definition for an interface element.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% MISCN: Element states
+	$	Enable Nspc.Value { Value true:bool }
+
+	% Subgraph: Default value associated with element
+	#	Default										State/Value/ {}
+

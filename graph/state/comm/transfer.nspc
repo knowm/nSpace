@@ -1,0 +1,18 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%							TRANSFER.nspc
+%
+%						Communication transfers.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% MISCN: Transfer value
+	$	Value		Nspc.Value {}
+
+	% MISCN: Transfer mode (Byte stream,value)
+	$	Mode		Nspc.Value { Value Stream Allowed ( Value Stream ) }
+
+	% MISCN: Transfer status (Idle,Pending,Complete,Error)
+	$	Status	Nspc.Value { Value Idle }

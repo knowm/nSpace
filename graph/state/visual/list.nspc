@@ -1,0 +1,25 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								LIST.NSPC
+%
+%			State definition for a visual list element.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Subgraph: Visual element
+	#	Element										State/Visual/Element/ {}
+
+	% Subgraph: Interface for element
+	#	Interface									State/Interface/List/ {}
+
+	% NSPC: Top index being displayed
+	$	Top Nspc.Value { Value 1:int }
+
+	% NSPC: Number of displayed elements
+	$	Count Nspc.Value { Value 10:int }
+
+	% Subgraph: Input for list
+	#	Input											State/Visual/Input/List/ {}
+

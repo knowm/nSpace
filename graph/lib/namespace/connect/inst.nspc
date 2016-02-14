@@ -1,0 +1,200 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								INST.NSPC
+%
+%					Namespace connector implemenation
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+
+	% Actions
+	$	Initialize			Misc.Dist {}		% Initialize
+	$	Uninitialize		Misc.Dist {}		% Uninitialize
+
+	% Notifications
+	$	OnId					Misc.Dist {}		% Namespace Id
+	$	OnConnectAdd		Misc.Dist {}		% Namespace connection
+
+	% DEBUG
+	$	Debug Misc.Debug {}
+		!	Initialize/OnFire						Debug/Fire
+		!	OnId/OnFire								Debug/Fire
+		!	OnConnectAdd/OnFire					Debug/Fire
+
+	%%%%%%%%
+	% Setup
+	%%%%%%%%
+
+	% Subgraph: State
+	#	State											State/Namespace/Connect/State/ {}
+
+	%% Connector interface
+
+	% Subgraph: Interface
+	#	Interface									State/Namespace/Connect/Interface/ {}
+
+	% Subgraph: Interface management
+%	#	IntfConns									Lib/Interface/Dict/ {}
+
+	% MISCN: Location of dictionary to manage
+%	$	ValueIntfConns Misc.Dist { Value "./Interface/Connections/" }
+%		!	Initialize/OnFire						ValueIntfConns/Fire
+%		!	ValueIntfConns/OnFire				IntfConns/Location/Fire
+
+	%% Locator interface
+
+	% Subgraph: Locations interface
+%	#	LocatorIntf									State/Namespace/Locate/Interface/ {}
+
+	% Same namespace Id
+%	!	LocatorIntf/IdThis/Element/Default/Value/OnFire
+%														Interface/IdThis/Element/Default/Value/Fire
+
+	% Subgraph: Interface management
+%	#	IntfLocs										Lib/Interface/Dict/ {}
+%		!	IntfLocs/OnStoreKey/OnFire			OnId/Fire
+%		!	IntfLocs/OnStore/OnFire				OnConnectAdd/Fire
+
+	% MISCN: Location of dictionary to manage
+%	$	ValueIntfLocs Misc.Dist { Value "./LocatorIntf/Locations/" }
+%		!	Initialize/OnFire						ValueIntfLocs/Fire
+%		!	ValueIntfLocs/OnFire					IntfLocs/Location/Fire
+
+	% NSPC: Link owner interface to default namespace locator service
+%	$	LinkLocator Nspc.Link	{	Source		"/Lib/Namespace/Locate/Inst/Default/Interface/"
+%											Destination	"./LocatorIntf/" }
+%		!	Initialize/OnFire						LinkLocator/Link
+
+	%%%%%%%%%%%%%
+	% Transports
+	%%%%%%%%%%%%%
+
+	%% Create the specified transport handlers for connections.
+
+	% Subgraph: Connector handlers
+	#	Handlers										State/List/ {}
+
+	% Subgraph: List management
+	#	ListHandler									Lib/Graph/Dict/ {}
+		!	ListHandler/OnStore/OnFire			Debug/Fire
+
+	% MISCN: Location of list to manage
+	$	ValueListHandler Misc.Dist { Value "./Handlers/" }
+		!	Initialize/OnFire						ValueListHandler/Fire
+		!	ValueListHandler/OnFire				ListHandler/Location/Fire
+
+	%% Link handlers to interface
+
+	% MATHN: Generate location to interface inside handler
+	$	AppendDstIntf_ Math.Binary { Left "./Handlers/" }
+		!	ListHandler/OnStore/OnFire			AppendDstIntf_/Right
+		!	ListHandler/OnStore/OnFire			AppendDstIntf_/Fire
+	$	AppendDstIntf Math.Binary { Right "/Interface/" }
+		!	AppendDstIntf_/OnFire				AppendDstIntf/Left
+		!	AppendDstIntf_/OnFire				AppendDstIntf/Fire
+		!	AppendDstIntf/OnFire					Debug/Fire
+
+	% NSPC: Link interface
+	$	LinkIntf Nspc.Link { Source "./Interface/" }
+		!	AppendDstIntf/OnFire					LinkIntf/Destination
+		!	ListHandler/OnStore/OnFire			LinkIntf/Link
+
+	%% Install the predefined handlers to handle discovery
+
+	% ADTN: Iterate handlers
+	$	HandleIt Adt.Iterate {}
+		!	State/Transport/OnFire				HandleIt/Container
+		!	Initialize/OnFire						HandleIt/First
+		!	HandleIt/OnNext						Debug/Fire
+
+	% Add handler
+	!	HandleIt/OnKey								ListHandler/Key/Fire
+	!	HandleIt/OnNext							ListHandler/Definition/Fire
+	!	HandleIt/OnNext							ListHandler/Store/Fire
+
+	% Next handler
+	!	HandleIt/OnNext							HandleIt/Next
+
+	%%%%%%%%%%%%%%
+	% Connections
+	%%%%%%%%%%%%%%
+
+	%% Connection interface list can accept 
+
+	%% External requests to establish a namespace connection
+
+	%% This service ensure there is a namespace connection state available
+	%% for every located namespace.  This namespace state is linked to the appropriate
+	%% transport specific connection state.
+
+	% Subgraph: Connections
+%	#	Connection									State/List/ {}
+
+	% Subgraph: List management
+%	#	ListConntn									Lib/Graph/Dict/ {}
+		
+	% MISCN: Location of state to manage
+%	$	ValueListConntn Misc.Dist { Value "./Connection/" }
+%		!	Initialize/OnFire						ValueListConntn/Fire
+%		!	ValueListConntn/OnFire				ListConntn/Location/Fire
+
+	% Connection is named by its namespace Id
+%	!	OnId/OnFire									ListConntn/Key/Fire
+
+	%% Link connection handlers to locations interface
+%%	!	ListConntn/OnStore/OnFire				Debug/Fire
+
+
+	%% Extract transport from connection string to get name of handler graph.
+
+	% Subgraph: URL
+%	#	URL											Lib/Url/ {}
+%		!	URL/OnTransport/OnFire				Debug/Fire
+%		!	URL/OnAddress/OnFire					Debug/Fire
+
+	% Extract the transport
+%	!	OnConnectAdd/OnFire						URL/URL/Fire
+%	!	OnConnectAdd/OnFire						URL/Break/Fire
+
+	% MATHN: Append transport to location of handlers
+%	$	AppendTrans Math.Binary { Left "Lib/Namespace/Connect/" }
+%		!	URL/OnTransport/OnFire				AppendTrans/Right
+%		!	URL/OnAddress/OnFire					AppendTrans/Fire
+%		!	AppendTrans/OnFire					Debug/Fire
+
+	% Definition for handler
+%	!	AppendTrans/OnFire						ListConntn/Definition/Fire
+
+	%% Add/remove connection handlers for each located namespace.
+
+	% Add handler for connection
+%	!	OnConnectAdd/OnFire						ListConntn/Store/Fire
+
+	% Add connection information to interface
+%	!	OnId/OnFire									IntfConns/Key/Fire
+%	!	AppendConnIntf__/OnFire					IntfConns/Value/Fire
+%	!	OnConnectAdd/OnFire						IntfConns/Store/Fire
+
+	% Remove handler for connection
+
+	%%%%%%%%%%%%%
+	% Transports
+	%%%%%%%%%%%%%
+
+	%% Esablish transport specific connection and link to namespace connection.
+
+	% Subgraph: Transports
+%	#	Connection									State/List/ {}
+
+	% Subgraph: List management
+%	#	ListConntn									Lib/Graph/Dict/ {}
+		
+	% MISCN: Location of state to manage
+%	$	ValueListConntn Misc.Dist { Value "./Connection/" }
+%		!	Initialize/OnFire						ValueListConntn/Fire
+%		!	ValueListConntn/OnFire				ListConntn/Location/Fire
+
+

@@ -1,0 +1,20 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								DICT.NSPC
+%
+%		State representing a dictionary interface element
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Subgraph: Dictionary contents will be stored under this key
+	#	Dict											State/Empty/ {}
+
+	% MISCN: Path has been 'activated'
+	$	Activate	Nspc.Value { Value { Type String } }
+
+	% Subgraph: Interface element
+	% Selected item is by path in Element/Default/Value
+	#	Element										State/Interface/Element/ {}
+
