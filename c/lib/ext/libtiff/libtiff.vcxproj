@@ -10,24 +10,85 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="mkg3states.c" />
+    <ClCompile Include="tif_aux.c" />
+    <ClCompile Include="tif_close.c" />
+    <ClCompile Include="tif_codec.c" />
+    <ClCompile Include="tif_color.c" />
+    <ClCompile Include="tif_compress.c" />
+    <ClCompile Include="tif_dir.c" />
+    <ClCompile Include="tif_dirinfo.c" />
+    <ClCompile Include="tif_dirread.c" />
+    <ClCompile Include="tif_dirwrite.c" />
+    <ClCompile Include="tif_dumpmode.c" />
+    <ClCompile Include="tif_error.c" />
+    <ClCompile Include="tif_extension.c" />
+    <ClCompile Include="tif_fax3.c" />
+    <ClCompile Include="tif_fax3sm.c" />
+    <ClCompile Include="tif_flush.c" />
+    <ClCompile Include="tif_getimage.c" />
+    <ClCompile Include="tif_jbig.c" />
+    <ClCompile Include="tif_jpeg.c" />
+    <ClCompile Include="tif_jpeg_12.c" />
+    <ClCompile Include="tif_luv.c" />
+    <ClCompile Include="tif_lzma.c" />
+    <ClCompile Include="tif_lzw.c" />
+    <ClCompile Include="tif_next.c" />
+    <ClCompile Include="tif_ojpeg.c" />
+    <ClCompile Include="tif_open.c" />
+    <ClCompile Include="tif_packbits.c" />
+    <ClCompile Include="tif_pixarlog.c" />
+    <ClCompile Include="tif_predict.c" />
+    <ClCompile Include="tif_print.c" />
+    <ClCompile Include="tif_read.c" />
+    <ClCompile Include="tif_stream.cxx" />
+    <ClCompile Include="tif_strip.c" />
+    <ClCompile Include="tif_swab.c" />
+    <ClCompile Include="tif_thunder.c" />
+    <ClCompile Include="tif_tile.c" />
+    <ClCompile Include="tif_version.c" />
+    <ClCompile Include="tif_warning.c" />
+    <ClCompile Include="tif_win32.c" />
+    <ClCompile Include="tif_write.c" />
+    <ClCompile Include="tif_zip.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="t4.h" />
+    <ClInclude Include="tiff.h" />
+    <ClInclude Include="tiffconf.h" />
+    <ClInclude Include="tiffconf.vc.h" />
+    <ClInclude Include="tiffconf.wince.h" />
+    <ClInclude Include="tiffio.h" />
+    <ClInclude Include="tiffio.hxx" />
+    <ClInclude Include="tiffiop.h" />
+    <ClInclude Include="tiffvers.h" />
+    <ClInclude Include="tif_config.h" />
+    <ClInclude Include="tif_config.vc.h" />
+    <ClInclude Include="tif_config.wince.h" />
+    <ClInclude Include="tif_dir.h" />
+    <ClInclude Include="tif_fax3.h" />
+    <ClInclude Include="tif_predict.h" />
+    <ClInclude Include="uvcode.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{3E543F5B-ED48-4EE5-B31E-4412B1E2BCFD}</ProjectGuid>
+    <ProjectGuid>{EA960234-7A49-4F69-A725-65EDCA57F825}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>flycapturen</RootNamespace>
+    <RootNamespace>libtiff</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v110</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v110</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -39,32 +100,19 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LinkIncremental>true</LinkIncremental>
-    <LibraryPath>C:\Program Files %28x86%29\Point Grey Research\FlyCapture2\lib;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);</LibraryPath>
-    <IncludePath>$(SDK_FLYCAPTURE)\include;$(IncludePath)</IncludePath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LinkIncremental>false</LinkIncremental>
-    <LibraryPath>C:\Program Files %28x86%29\Point Grey Research\FlyCapture2\lib;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);</LibraryPath>
-    <IncludePath>$(FLYCAPTURESDK);$(IncludePath)</IncludePath>
-  </PropertyGroup>
+  <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;FLYCAPTUREN_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <RegisterOutput>true</RegisterOutput>
-      <ModuleDefinitionFile>..\..\dll.def</ModuleDefinitionFile>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);FlyCapture2.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -75,40 +123,16 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;FLYCAPTUREN_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <RegisterOutput>true</RegisterOutput>
-      <ModuleDefinitionFile>..\..\dll.def</ModuleDefinitionFile>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);FlyCapture2.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="flycapturen.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\lib\adtl\adtl.vcxproj">
-      <Project>{b8de1218-452b-46ce-a380-4b11f3d8c1da}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\lib\api\flycapturel\flycapturel.vcxproj">
-      <Project>{03d2a464-d4c2-4519-b814-d516323afa75}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\lib\ccl\ccl.vcxproj">
-      <Project>{8d6e6dc8-bfc1-4d67-8b35-25a94c97bceb}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\lib\nspcl\nspcl.vcxproj">
-      <Project>{422e909b-a304-47a3-a2e6-8959ff5bc156}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\lib\sysl\sysl.vcxproj">
-      <Project>{8532deaa-56d3-4ff4-8fb8-664efe6eef83}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
