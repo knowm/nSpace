@@ -20,6 +20,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "app", "app", "{960C88F6-B83
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "state", "state", "{5A572578-54D6-40FE-93BC-F8E838082B52}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\state\value.nspc = ..\graph\state\value.nspc
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "graph", "graph", "{23602D14-1F03-4690-B5C4-2022E21B057E}"
 	ProjectSection(SolutionItems) = preProject
@@ -150,6 +153,72 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "usbl.2015", "lib\usbl\usbl.2015.vcxproj", "{66F466A4-342A-48F4-B1A6-785C636457D1}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wmil.2015", "lib\wmil\wmil.2015.vcxproj", "{20A2401B-CB2F-4BC0-BD99-A742EE5ABF7B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "comm", "comm", "{BB56DF02-AE58-4038-BB0D-DAE32A42E33B}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\state\comm\device.nspc = ..\graph\state\comm\device.nspc
+		..\graph\state\comm\transfer.nspc = ..\graph\state\comm\transfer.nspc
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "usb", "usb", "{4A25F3BD-4696-4D2D-8AD3-5FC86FCF4C36}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\state\comm\usb\device.nspc = ..\graph\state\comm\usb\device.nspc
+		..\graph\state\comm\usb\setup.nspc = ..\graph\state\comm\usb\setup.nspc
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "driver", "driver", "{FF374AE5-D75B-46F6-A439-EFC0BAEAB103}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "device", "device", "{CB135757-4130-44DC-A10D-7566F0B9AD6C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "flycapture", "flycapture", "{A6E11ED7-0BBC-45F6-91EC-29C3598E0D0B}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\state\driver\device\flycapture\state.nspc = ..\graph\state\driver\device\flycapture\state.nspc
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "interface", "interface", "{F75749BF-5C55-4DB8-BDEF-374D3686B20C}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\state\interface\button.nspc = ..\graph\state\interface\button.nspc
+		..\graph\state\interface\dict.nspc = ..\graph\state\interface\dict.nspc
+		..\graph\state\interface\edit.nspc = ..\graph\state\interface\edit.nspc
+		..\graph\state\interface\element.nspc = ..\graph\state\interface\element.nspc
+		..\graph\state\interface\image.nspc = ..\graph\state\interface\image.nspc
+		..\graph\state\interface\label.nspc = ..\graph\state\interface\label.nspc
+		..\graph\state\interface\list.nspc = ..\graph\state\interface\list.nspc
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "visual", "visual", "{1E75DF97-E505-48FA-B6BA-416097A4BEE2}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\state\visual\button.nspc = ..\graph\state\visual\button.nspc
+		..\graph\state\visual\edit.nspc = ..\graph\state\visual\edit.nspc
+		..\graph\state\visual\element.nspc = ..\graph\state\visual\element.nspc
+		..\graph\state\visual\image.nspc = ..\graph\state\visual\image.nspc
+		..\graph\state\visual\label.nspc = ..\graph\state\visual\label.nspc
+		..\graph\state\visual\list.nspc = ..\graph\state\visual\list.nspc
+		..\graph\state\visual\shape.nspc = ..\graph\state\visual\shape.nspc
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "connect", "connect", "{4DE33B95-B6D3-47AE-99D3-1C8C77100D56}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\lib\namespace\connect\inst.nspc = ..\graph\lib\namespace\connect\inst.nspc
+		..\graph\lib\namespace\connect\tcp.nspc = ..\graph\lib\namespace\connect\tcp.nspc
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "discover", "discover", "{63A95A69-4970-4BB7-A49E-F73445CDFBEB}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\lib\namespace\discover\udpm.nspc = ..\graph\lib\namespace\discover\udpm.nspc
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "locate", "locate", "{76182E65-4E95-4ACC-97C1-6246820732C4}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\lib\namespace\locate\inst.nspc = ..\graph\lib\namespace\locate\inst.nspc
+		..\graph\lib\namespace\locate\udpm.nspc = ..\graph\lib\namespace\locate\udpm.nspc
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "portal", "portal", "{6247C9CE-62BD-4306-AD5E-D86377F991FC}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\lib\namespace\portal\conn.nspc = ..\graph\lib\namespace\portal\conn.nspc
+		..\graph\lib\namespace\portal\inst.nspc = ..\graph\lib\namespace\portal\inst.nspc
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -425,5 +494,16 @@ Global
 		{422E909B-A304-47A3-A2E6-8959FF5BC156} = {4560AF12-FA84-49FA-94E4-19CB5A898DF0}
 		{66F466A4-342A-48F4-B1A6-785C636457D1} = {4560AF12-FA84-49FA-94E4-19CB5A898DF0}
 		{20A2401B-CB2F-4BC0-BD99-A742EE5ABF7B} = {4560AF12-FA84-49FA-94E4-19CB5A898DF0}
+		{BB56DF02-AE58-4038-BB0D-DAE32A42E33B} = {5A572578-54D6-40FE-93BC-F8E838082B52}
+		{4A25F3BD-4696-4D2D-8AD3-5FC86FCF4C36} = {BB56DF02-AE58-4038-BB0D-DAE32A42E33B}
+		{FF374AE5-D75B-46F6-A439-EFC0BAEAB103} = {5A572578-54D6-40FE-93BC-F8E838082B52}
+		{CB135757-4130-44DC-A10D-7566F0B9AD6C} = {FF374AE5-D75B-46F6-A439-EFC0BAEAB103}
+		{A6E11ED7-0BBC-45F6-91EC-29C3598E0D0B} = {CB135757-4130-44DC-A10D-7566F0B9AD6C}
+		{F75749BF-5C55-4DB8-BDEF-374D3686B20C} = {5A572578-54D6-40FE-93BC-F8E838082B52}
+		{1E75DF97-E505-48FA-B6BA-416097A4BEE2} = {5A572578-54D6-40FE-93BC-F8E838082B52}
+		{4DE33B95-B6D3-47AE-99D3-1C8C77100D56} = {10AC39FC-B398-48A3-9C9C-95A4E07D9A48}
+		{63A95A69-4970-4BB7-A49E-F73445CDFBEB} = {10AC39FC-B398-48A3-9C9C-95A4E07D9A48}
+		{76182E65-4E95-4ACC-97C1-6246820732C4} = {10AC39FC-B398-48A3-9C9C-95A4E07D9A48}
+		{6247C9CE-62BD-4306-AD5E-D86377F991FC} = {10AC39FC-B398-48A3-9C9C-95A4E07D9A48}
 	EndGlobalSection
 EndGlobal
