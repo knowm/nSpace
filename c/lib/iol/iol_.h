@@ -106,6 +106,7 @@ class Lock :
 //
 class MemoryBlock :
 	public CCLObject,										// Base class
+	public ICloneable,									// Interface
 	public IMemoryMapped									// Interface
 	{
 	public :
@@ -118,9 +119,13 @@ class MemoryBlock :
 	STDMETHOD(stream)		( IByteStream ** );
 	STDMETHOD(unlock)		( void * );
 
+	// 'ICloneable' members
+	STDMETHOD(clone)		( IUnknown ** );
+
 	// CCL
 	CCL_OBJECT_BEGIN(MemoryBlock)
 		CCL_INTF(IMemoryMapped)
+		CCL_INTF(ICloneable)
 	CCL_OBJECT_END()
 	virtual void destruct		( void );			// Destruct object
 

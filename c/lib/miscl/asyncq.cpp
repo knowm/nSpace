@@ -211,7 +211,7 @@ HRESULT AsyncQ :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 					CCLOK  ( evWork.signal(); )
 					}	// if
 				}	// if
-			else
+			else if (bBlock)
 				dbgprintf ( L"AsyncQ::receive:WARNING Queue full\r\n" );
 
 			// Clean up

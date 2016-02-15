@@ -30,6 +30,57 @@ MemoryBlock :: MemoryBlock ( void )
 	hMap		= NULL;
 	}	// MemoryBlock
 
+HRESULT MemoryBlock :: clone ( IUnknown **ppUnk )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	OVERLOAD
+	//	FROM		ICloneable
+	//
+	//	PURPOSE
+	//		-	Clones the object.
+	//
+	//	PARAMETERS
+	//		-	ppUnk will receive the cloned object
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT		hr			= S_OK;
+	MemoryBlock	*pDst		= NULL;
+	VOID			*pvDst	= NULL;
+
+	// Cloning a memory block creates a copy of the data.
+
+	// Create another instance of this object
+	CCLTRYE	( (pDst = new MemoryBlock()) != NULL, E_OUTOFMEMORY );
+	CCLOK		( pDst->AddRef(); )
+	CCLTRY	( pDst->construct(); )
+
+	// Valid size ?
+	if (hr == S_OK && szBlk > 0)
+		{
+		// Copy bits
+		CCLTRY	( pDst->setSize ( szBlk ) );
+		CCLTRY	( pDst->lock ( 0, 0, &pvDst, NULL ) );
+		CCLOK		( memcpy ( pvDst, pcBlk, szBlk ); )
+		_UNLOCK  ( pDst, pvDst );
+		}	// if
+
+	// Result
+	if (hr == S_OK)
+		{
+		(*ppUnk) = (IMemoryMapped *) pDst;
+		_ADDREF((*ppUnk));
+		}	// if
+
+	// Clean up
+	_RELEASE(pDst);
+
+	return hr;
+	}	// clone
+
 void MemoryBlock :: destruct ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
