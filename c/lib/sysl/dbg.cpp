@@ -12,12 +12,12 @@
 #include <stdarg.h>
 
 // Globals
-static wchar_t wDbgBfr[32768];
-static wchar_t wFmt[32768];
+static WCHAR	wDbgBfr[32768];
+static WCHAR	wFmt[32768];
 static sysCS	csDbgprintf;
 
 extern "C"
-int dbgprintf ( const wchar_t *format, ... )
+int dbgprintf ( const WCHAR *format, ... )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -41,20 +41,20 @@ int dbgprintf ( const wchar_t *format, ... )
 	// Format string
 	va_start ( args, format );
 	#ifdef	_WIN32
-	len = _vsnwprintf_s ( wDbgBfr, sizeof(wDbgBfr)/sizeof(wchar_t), _TRUNCATE, format, args );
+	len = _vsnwprintf_s ( wDbgBfr, sizeof(wDbgBfr)/sizeof(WCHAR), _TRUNCATE, format, args );
 	#elif		__unix__ || __APPLE__
 	// Under WIN32 the '%s' modifier defaults to wide string for wide functions.
 	// Under GNUC the '%s' modifier remains as ASCII.  The equivalent modifier
 	// is '%ls' or '%S'.  Since Win32 was first, adjust format string for GNUC.
 	wcscpy ( wFmt, format );
-	for (len = 0;wFmt[len] != wchar_t('\0');++len)
+	for (len = 0;wFmt[len] != WCHAR('\0');++len)
 		{
-		if 		(wFmt[len] == wchar_t('\%') && wFmt[len+1] == wchar_t('s'))
-			wFmt[len+1] = wchar_t('S');
-		else if 	(wFmt[len] == wchar_t('\%') && wFmt[len+1] == wchar_t('S'))
-			wFmt[len+1] = wchar_t('s');
+		if 		(wFmt[len] == WCHAR('\%') && wFmt[len+1] == WCHAR('s'))
+			wFmt[len+1] = WCHAR('S');
+		else if 	(wFmt[len] == WCHAR('\%') && wFmt[len+1] == WCHAR('S'))
+			wFmt[len+1] = WCHAR('s');
 		}	// for
-	len = vswprintf ( wDbgBfr, sizeof(wDbgBfr)/sizeof(wchar_t), wFmt, args );
+	len = vswprintf ( wDbgBfr, sizeof(wDbgBfr)/sizeof(WCHAR), wFmt, args );
 	#endif
 	va_end ( args );
 

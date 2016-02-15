@@ -92,7 +92,7 @@ S32 sysStringRelease ( sysSTRING *pstr )
 	return pstr->refcnt;
 	}	// sysStringRelease
 
-sysSTRING *sysStringAlloc ( const wchar_t *pStr )
+sysSTRING *sysStringAlloc ( const WCHAR *pStr )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -110,7 +110,7 @@ sysSTRING *sysStringAlloc ( const wchar_t *pStr )
 	return sysStringAllocLen ( pStr, (pStr) ? (U32)wcslen(pStr) : 0 );
 	}	// sysStringAlloc
 
-sysSTRING *sysStringAllocLen ( const wchar_t *pStr, U32 cch )
+sysSTRING *sysStringAllocLen ( const WCHAR *pStr, U32 cch )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -130,15 +130,15 @@ sysSTRING *sysStringAllocLen ( const wchar_t *pStr, U32 cch )
 
 	// Allocate memory for the structure and the string (plus null termination)
 	if ( (ret = (sysSTRING *) _ALLOCMEM (	sizeof(sysSTRING) +
-														((cch+1)*sizeof(wchar_t)) ) ) != NULL )
+														((cch+1)*sizeof(WCHAR)) ) ) != NULL )
 		{
-		wchar_t	*cp,*str;
+		WCHAR	*cp,*str;
 
 		// Initialize structure
 		ret->refcnt	= 1;
 		ret->nalloc = cch;
-		str			= (wchar_t *) &(ret[1]);
-		str[0]		= wchar_t('\0');
+		str			= (WCHAR *) &(ret[1]);
+		str[0]		= WCHAR('\0');
 
 		// Copy requested length from source string if specified
 		if (pStr != NULL)
@@ -178,7 +178,7 @@ sysSTRING *sysStringReallocLen ( sysSTRING *str, U32 cch )
 
 	// Allocate memory for the structure and the string (plus null termination)
 	else if ( (ret = (sysSTRING *) sysMemRealloc ( str, sizeof(sysSTRING) +
-												((cch+1)*sizeof(wchar_t)) ) ) != NULL )
+												((cch+1)*sizeof(WCHAR)) ) ) != NULL )
 		ret->nalloc = cch;
 
 	return ret;

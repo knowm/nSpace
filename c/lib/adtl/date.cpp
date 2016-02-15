@@ -173,7 +173,7 @@ HRESULT adtDate :: toSystemTime ( double date, SYSTEMTIME *st )
 
 #endif
 
-HRESULT adtDate :: fromString ( const wchar_t *s, ADTVALUE &v )
+HRESULT adtDate :: fromString ( const WCHAR *s, ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

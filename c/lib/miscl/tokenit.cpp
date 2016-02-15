@@ -23,8 +23,8 @@ TokenIt :: TokenIt ( void )
 	ptokLast = NULL;
 	}	// TokenIt
 
-wchar_t *TokenIt :: iwcstok ( wchar_t *strToken,
-										const wchar_t *strDelimit )
+WCHAR *TokenIt :: iwcstok (	WCHAR *strToken,
+										const WCHAR *strDelimit )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -40,8 +40,8 @@ wchar_t *TokenIt :: iwcstok ( wchar_t *strToken,
 	//		Ptr. to next token
 	//
 	////////////////////////////////////////////////////////////////////////
-	wchar_t			*token;
-	const wchar_t	*ctl;
+	WCHAR			*token;
+	const WCHAR	*ctl;
 
 	// If no strToken, continue with previous one
 	if (strToken == NULL)

@@ -2,7 +2,7 @@
 //
 //										FLYCAPTUREL.H
 //
-//					Windows Management Instrumentation library
+//					Point Grey FlyCapture SDK library
 //
 ////////////////////////////////////////////////////////////////////////
 

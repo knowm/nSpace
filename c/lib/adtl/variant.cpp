@@ -179,14 +179,14 @@ adtVariant :: adtVariant ( long val )
 	llVal	= val;
 	}	// adtVariant
 
-adtVariant :: adtVariant ( wchar_t *val )
+adtVariant :: adtVariant ( WCHAR *val )
 	{
 	adtVariant::adtVariant();
 	vt			= VT_BSTR;
 	bstrVal	= SysAllocString ( val );
 	}	// adtVariant
 
-adtVariant :: adtVariant ( const wchar_t *val )
+adtVariant :: adtVariant ( const WCHAR *val )
 	{
 	adtVariant::adtVariant();
 	vt			= VT_BSTR;
@@ -212,7 +212,7 @@ adtVariant :: adtVariant ( const ADTVALUE &val )
 // Operators
 //
 
-adtVariant& adtVariant::operator= ( const wchar_t *val )
+adtVariant& adtVariant::operator= ( const WCHAR *val )
 	{
 	VariantClear(this);
 	vt			= VT_BSTR;

@@ -11,7 +11,7 @@
 #define	CCL_OBJ_MODULE		L"FlyCapture"
 
 // Library implementations
-#include "../../../lib/vendor/flycapturel/flycapturel_.h"
+#include "../../../lib/api/flycapturel/flycapturel_.h"
 
 // Objects in this module
 CCL_OBJLIST_BEGIN()

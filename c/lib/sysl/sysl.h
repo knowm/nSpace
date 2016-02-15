@@ -343,9 +343,9 @@ void			*sysMemRealloc			( void *, U32 );
 void			sysMemUse				( sysALLOC * );
 S32			sysStringAddRef		( sysSTRING * );
 S32			sysStringRelease		( sysSTRING * );
-sysSTRING	*sysStringAlloc		( const wchar_t * );
+sysSTRING	*sysStringAlloc		( const WCHAR * );
 sysSTRING	*sysStringReallocLen	( sysSTRING *, U32 );
-sysSTRING	*sysStringAllocLen	( const wchar_t *, U32 );
+sysSTRING	*sysStringAllocLen	( const WCHAR *, U32 );
 
 //////////////
 // Interfaces
@@ -479,7 +479,7 @@ class sysCS : private sysEvent
 class sysDl
 	{
 	public :
-	sysDl	( const wchar_t * );							// Constructor
+	sysDl	( const WCHAR * );							// Constructor
 	~sysDl( void );										// Destructor
 
 	// Utilities
@@ -508,7 +508,7 @@ class sysDl
 // Prototypes
 extern "C"
 	{
-	int		dbgprintf	( const wchar_t *, ... );
+	int		dbgprintf	( const WCHAR *, ... );
 	}
 
 // Logging system
@@ -532,9 +532,9 @@ extern "C"
 class cLogEntry
 	{
 	public :
-	cLogEntry ( const wchar_t *, int,				// Constructor
-					const wchar_t *, int, 
-					const wchar_t * );
+	cLogEntry ( const WCHAR *, int,					// Constructor
+					const WCHAR *, int, 
+					const WCHAR * );
 	virtual ~cLogEntry ( void );						// Destructor
 
 	// Run-time data
@@ -563,8 +563,8 @@ class cLogInfo
 	void flush ( cLogEntry ** );						// Flush entry to callback
 
 	// Run-time data
-	wchar_t		wLogBfr[32768];						// Buffers
-	wchar_t		wLogFmt[32768];						// Buffers
+	WCHAR			wLogBfr[32768];						// Buffers
+	WCHAR			wLogFmt[32768];						// Buffers
 	sysCS			csLog;									// Critical section
 	logCallback	pCB;										// Callback
 	void			*pvCB;									// Callback parameter
@@ -574,7 +574,7 @@ class cLogInfo
 
 extern "C"
 	{
-	int	logPrintf	( const wchar_t *, int, const wchar_t *, int, const wchar_t *, ... );
+	int	logPrintf	( const WCHAR *, int, const WCHAR *, int, const WCHAR *, ... );
 	void	logSink		( logCallback, void * );
 	}
 

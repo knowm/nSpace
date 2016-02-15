@@ -100,7 +100,7 @@ void Camera :: onImage ( FlyCapture2::Image *pImg )
 
 	// Format TODO: Support other formats as necessary
 	if (pImg->GetPixelFormat() == FlyCapture2::PIXEL_FORMAT_MONO8)
-		hr = pDctImg->store ( adtString(L"Format"), adtString(L"Grey8") );
+		hr = pDctImg->store ( adtString(L"Format"), adtString(L"U8X1") );
 	else
 		hr = pDctImg->store ( adtString(L"Format"), adtString(L"Unknown") );
 

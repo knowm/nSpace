@@ -312,7 +312,7 @@ class Debug :
 	private :
 
 	// Internal utilities
-	void appendDbg ( const wchar_t * );
+	void appendDbg ( const WCHAR * );
 
 	// Logging callback
 	static void logCallback	( cLogEntry *, void * );
@@ -866,7 +866,7 @@ class TokenIt :
 
 	// Run-time data
 	adtString	strOrg,strCpy,strDelim;				// Parameters
-	wchar_t		*ptokLast;								// Last token
+	WCHAR		*ptokLast;								// Last token
 
 	// CCL
 	CCL_OBJECT_BEGIN(TokenIt)
@@ -894,7 +894,7 @@ class TokenIt :
 	private :
 
 	// Internal utilities
-	wchar_t	*iwcstok ( wchar_t *, const wchar_t *);
+	WCHAR	*iwcstok ( WCHAR *, const WCHAR *);
 	};
 
 //

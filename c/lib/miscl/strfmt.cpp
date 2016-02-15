@@ -12,7 +12,7 @@
 #define	HEX2WCHAR(a)													\
 	(((a) < 10) ? ((a) + WCHAR('0')) : ((a) - 10 + WCHAR('A')))
 #define	SIZE_BFR		4096
-#define	COUNT_BFR	(SIZE_BFR/sizeof(wchar_t))
+#define	COUNT_BFR	(SIZE_BFR/sizeof(WCHAR))
 
 StringFormat :: StringFormat ( void )
 	{

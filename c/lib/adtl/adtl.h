@@ -97,7 +97,7 @@ class adtValue : public ADTVALUE
 	static	HRESULT		copy			( const ADTVALUE &, ADTVALUE &, bool = false );
 	static	bool			empty			( const ADTVALUE &v )
 													{ return (v.vtype == VTYPE_EMPTY) ? true : false; }
-	static	HRESULT		fromString	( const wchar_t *, VALUETYPE, ADTVALUE & );
+	static	HRESULT		fromString	( const WCHAR *, VALUETYPE, ADTVALUE & );
 	static	HRESULT		toString		( const ADTVALUE &, adtString & );
 	static	HRESULT		toType		( const ADTVALUE &, VALUETYPE, ADTVALUE & );
 	inline
@@ -199,7 +199,7 @@ class adtDate : public ADTVALUE
 
 	// Utilities
 	static	HRESULT fromEpochSeconds( S32, S32, DATE * );
-	static	HRESULT fromString		( const wchar_t *, ADTVALUE & );
+	static	HRESULT fromString		( const WCHAR *, ADTVALUE & );
 	#ifdef	_WIN32
 	static	HRESULT fromSystemTime	( SYSTEMTIME *, DATE * );
 	static	HRESULT toSystemTime		( double, SYSTEMTIME * );
@@ -365,8 +365,8 @@ class adtVariant : public ::tagVARIANT
 	adtVariant ( IUnknown * );							// Constructor
 	adtVariant ( int );									// Constructor
 	adtVariant ( long );									// Constructor
-	adtVariant ( wchar_t * );							// Constructor
-	adtVariant ( const wchar_t * );					// Constructor
+	adtVariant ( WCHAR * );							// Constructor
+	adtVariant ( const WCHAR * );					// Constructor
 	adtVariant ( const ADTVALUE & );					// Constructor
 	adtVariant ( bool );									// Constructor
 	adtVariant ( const VARIANT * );					// Constructor
@@ -377,13 +377,13 @@ class adtVariant : public ::tagVARIANT
 	HRESULT	clear		( void );						// Clear contents
 
 	// Operators
-	adtVariant&	operator= ( const wchar_t * );	// Assignment
+	adtVariant&	operator= ( const WCHAR * );	// Assignment
 	adtVariant& operator= ( const ADTVALUE & );	// Assignment
 	adtVariant& operator= ( const VARIANT * );	// Assignment
 
 	// Extractors
-	inline operator wchar_t *()			const	{ return bstrVal; }
-	inline operator const wchar_t *()	const	{ return (bstrVal != NULL) ? bstrVal : L""; }
+	inline operator WCHAR *()			const	{ return bstrVal; }
+	inline operator const WCHAR *()	const	{ return (bstrVal != NULL) ? bstrVal : L""; }
 
 	private :
 	IUnknown			*punkPrsrL,*punkPrsrS;			// Cached parser

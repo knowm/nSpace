@@ -42,10 +42,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <LibraryPath>C:\Program Files %28x86%29\Point Grey Research\FlyCapture2\lib;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);</LibraryPath>
+    <IncludePath>$(SDK_FLYCAPTURE)\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <LibraryPath>C:\Program Files %28x86%29\Point Grey Research\FlyCapture2\lib;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);</LibraryPath>
+    <IncludePath>$(FLYCAPTURESDK);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -55,6 +57,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;FLYCAPTUREN_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -74,6 +77,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;FLYCAPTUREN_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -92,6 +96,9 @@
     <ProjectReference Include="..\..\..\lib\adtl\adtl.vcxproj">
       <Project>{b8de1218-452b-46ce-a380-4b11f3d8c1da}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\lib\api\flycapturel\flycapturel.vcxproj">
+      <Project>{03d2a464-d4c2-4519-b814-d516323afa75}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\lib\ccl\ccl.vcxproj">
       <Project>{8d6e6dc8-bfc1-4d67-8b35-25a94c97bceb}</Project>
     </ProjectReference>
@@ -100,9 +107,6 @@
     </ProjectReference>
     <ProjectReference Include="..\..\..\lib\sysl\sysl.vcxproj">
       <Project>{8532deaa-56d3-4ff4-8fb8-664efe6eef83}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\lib\vendor\flycapturel\flycapturel.vcxproj">
-      <Project>{03d2a464-d4c2-4519-b814-d516323afa75}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

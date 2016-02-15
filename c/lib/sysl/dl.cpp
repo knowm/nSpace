@@ -12,7 +12,7 @@
 #include	<sys/time.h>
 #endif
 
-sysDl :: sysDl ( const wchar_t *_pwLib )
+sysDl :: sysDl ( const WCHAR *_pwLib )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

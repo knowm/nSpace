@@ -174,7 +174,7 @@ HRESULT DictParse :: parse ( IContainer *pFmt )
 		else if (hr == S_OK && !WCASECMP ( L"String", sType ))
 			{
 			// Converting to internal string from assumed ASCII.
-			wchar_t		*pwStr	= NULL;
+			WCHAR			*pwStr	= NULL;
 			U8				c;
 			adtString	sEnd;
 			U32			i,j,uAllocd;
@@ -197,7 +197,7 @@ HRESULT DictParse :: parse ( IContainer *pFmt )
 					{
 					// Re-allocate buffer
 					uAllocd	+= 128;
-					pwStr		= (wchar_t *) _REALLOCMEM ( pwStr, (uAllocd+1)*sizeof(wchar_t) );
+					pwStr		= (WCHAR *) _REALLOCMEM ( pwStr, (uAllocd+1)*sizeof(WCHAR) );
 					}	// if
 
 				// Add character

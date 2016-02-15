@@ -425,7 +425,7 @@ HRESULT adtValue :: copy ( const ADTVALUE &src, ADTVALUE &dst, bool bDeref )
 	return hr;
 	}	// copy
 
-HRESULT adtValue :: fromString ( const wchar_t *s, VALUETYPE type, 
+HRESULT adtValue :: fromString ( const WCHAR *s, VALUETYPE type, 
 											ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -458,9 +458,9 @@ HRESULT adtValue :: fromString ( const wchar_t *s, VALUETYPE type,
 			// Convert based on hex or decimal...
 			if (s != NULL)
 				{
-				if (	s[0] == wchar_t('0') &&
-						(	s[1] == wchar_t('x') ||
-							s[1] == wchar_t('X') ) )
+				if (	s[0] == WCHAR('0') &&
+						(	s[1] == WCHAR('x') ||
+							s[1] == WCHAR('X') ) )
 					oInt = (U32)(wcstoul ( s+2, NULL, 16 ));
 				else
 					oInt = (U32)(wcstoul ( s, NULL, 10 ));
@@ -474,9 +474,9 @@ HRESULT adtValue :: fromString ( const wchar_t *s, VALUETYPE type,
 			// Convert based on hex or decimal...
 			if (s != NULL)
 				{
-				if (	s[0] == wchar_t('0') &&
-						(	s[1] == wchar_t('x') ||
-							s[1] == wchar_t('X') ) )
+				if (	s[0] == WCHAR('0') &&
+						(	s[1] == WCHAR('x') ||
+							s[1] == WCHAR('X') ) )
 					oLong = (U32)(wcstoul ( s+2, NULL, 16 ));
 				else
 					oLong = (U32)(wcstoul ( s, NULL, 10 ));

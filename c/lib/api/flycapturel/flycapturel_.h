@@ -2,7 +2,7 @@
 //
 //										FLYCAPTUREL_.H
 //
-//				Implementation include file for USB library
+//		Implementation include file for the Point Grey FlyCapture SDK
 //
 ////////////////////////////////////////////////////////////////////////
 
@@ -14,7 +14,12 @@
 #include "../../../lib/nspcl/nspcl.h"
 
 // 3rd party includes
-#include "\Program Files (x86)\Point Grey Research\FlyCapture2\include\FlyCapture2.h"
+//#include "\Program Files (x86)\Point Grey Research\FlyCapture2\include\FlyCapture2.h"
+#include <FlyCapture2.h>
+
+//#ifdef	_FRED
+//#error	YouCanByteMeNow
+//#endif // YOUCANBYTEMENOW
 
 ///////////
 // Objects
@@ -112,3 +117,4 @@ class Enum :
 HRESULT pgrError ( FlyCapture2::Error );
 
 #endif
+

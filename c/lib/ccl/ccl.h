@@ -79,7 +79,7 @@ typedef struct tagCCLENTRY
 	{
 	const GUID		*clsid;								// Class ID
 	CCLObject *		(*create)();						// Creation function
-	const wchar_t 	*progid;								// Prog ID of class
+	const WCHAR 	*progid;								// Prog ID of class
 	} CCLENTRY;
 
 //
@@ -189,7 +189,7 @@ class CCLFactory :
 	{
 	public :
 	CCLFactory ( const CLSID * = NULL );			// Constructor
-	CCLFactory ( const wchar_t * );					// Constructor
+	CCLFactory ( const WCHAR * );						// Constructor
 
 	// Run-time data
 	U32		objidx;										// Index of object into CCLENTRY table
@@ -226,7 +226,7 @@ class CCLFactoriesCache
 	HRESULT	AddRef	( void );						// Increment usage count
 	HRESULT	Create	( REFCLSID, IUnknown *,		// Create specified object
 								REFIID, void ** );
-	HRESULT	Create	( const wchar_t *,			// Create specified object from Prog ID
+	HRESULT	Create	( const WCHAR *,				// Create specified object from Prog ID
 								IUnknown *, REFIID,
 								void ** );
 	HRESULT	Release	( void );						// Decrement usage count
@@ -277,11 +277,11 @@ DECLARE_INTERFACE_(IObjectFactory,IUnknown)
 BOOL		cclDllMain	( HANDLE, U32 );
 #if      __unix__ || __APPLE__
 extern "C"
-HRESULT CLSIDFromProgID	( const wchar_t *, CLSID * );
+HRESULT CLSIDFromProgID	( const WCHAR *, CLSID * );
 #endif
 extern "C"
-HRESULT cclCreateObject	( const wchar_t *, IUnknown *, REFIID, void ** );
+HRESULT cclCreateObject	( const WCHAR *, IUnknown *, REFIID, void ** );
 extern "C"
-HRESULT cclGetFactory 	( const wchar_t *, REFIID, void ** );
+HRESULT cclGetFactory 	( const WCHAR *, REFIID, void ** );
 #endif
 

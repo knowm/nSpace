@@ -24,7 +24,7 @@ LONG			dwDtd[255];									// Destructed
 #endif
 
 // Prototypes
-STDAPI cclRegister	( CLSID, const wchar_t *, bool );
+STDAPI cclRegister	( CLSID, const WCHAR *, bool );
 
 #ifdef	_WIN32
 
@@ -72,7 +72,7 @@ BOOL cclDllMain ( HANDLE _hInst, U32 dwReason )
 	}	// cclDllMain
 
 extern "C"
-HRESULT cclCreateObject ( const wchar_t *pId, IUnknown *pOuter, 
+HRESULT cclCreateObject ( const WCHAR *pId, IUnknown *pOuter, 
 									REFIID iid, void **ppv )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -124,7 +124,7 @@ HRESULT cclCreateObject ( const wchar_t *pId, IUnknown *pOuter,
 	}	// cclCreateObject
 
 extern "C"
-HRESULT cclGetFactory ( const wchar_t *pId, REFIID iid, void **ppv )
+HRESULT cclGetFactory ( const WCHAR *pId, REFIID iid, void **ppv )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -314,7 +314,7 @@ BOOL cclDllMain ( HANDLE _hInst, U32 dwReason )
 	return TRUE;
 	}	// cclDllMain
 
-STDAPI cclGetClassObject ( const wchar_t *pwId, REFIID refiid, void **ppv )
+STDAPI cclGetClassObject ( const WCHAR *pwId, REFIID refiid, void **ppv )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

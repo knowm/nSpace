@@ -844,6 +844,7 @@ HRESULT Shell :: tickBegin ( void )
 		strExec = vL;
 
 	// DEBUG
+	#ifdef _DEBUG
    #ifdef   _WIN32
 	CCLTRY ( definitions ( L"c:/dev/nspace/graph/" ) );
    #elif    __unix__
@@ -851,6 +852,12 @@ HRESULT Shell :: tickBegin ( void )
    #elif    __APPLE__
    CCLTRY ( definitions ( L"/Users/username/dev/nspace/graph/" ) );
    #endif
+
+	// To support a 'compiler-less' mode of graph development in release mode, 
+	// scan for graph definitions at startup in the working directory
+	#else
+//	CCLTRY ( definitions ( L"./graph/" ) );
+	#endif
 
 	/////////////
 	// Namespace

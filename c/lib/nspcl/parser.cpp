@@ -464,9 +464,9 @@ HRESULT PersistTxt :: toValue ( U32 uIdxB, U32 uIdxE, ADTVALUE &Value )
 				{
 				adtInt	oInt;
 				// Convert based on hex or decimal...
-				if (	paStart[0] == wchar_t('0') &&
-						(	paStart[1] == wchar_t('x') ||
-							paStart[1] == wchar_t('X') ) )
+				if (	paStart[0] == WCHAR('0') &&
+						(	paStart[1] == WCHAR('x') ||
+							paStart[1] == WCHAR('X') ) )
 					oInt = (U32)(strtoul ( paStart+2, NULL, 16 ));
 				else
 					oInt = (U32)(strtoul ( paStart, NULL, 10 ));
@@ -477,9 +477,9 @@ HRESULT PersistTxt :: toValue ( U32 uIdxB, U32 uIdxE, ADTVALUE &Value )
 				{
 				adtLong	oLong;
 				// Convert based on hex or decimal...
-				if (	paStart[0] == wchar_t('0') &&
-						(	paStart[1] == wchar_t('x') ||
-							paStart[1] == wchar_t('X') ) )
+				if (	paStart[0] == WCHAR('0') &&
+						(	paStart[1] == WCHAR('x') ||
+							paStart[1] == WCHAR('X') ) )
 					oLong = (U32)(strtoul ( paStart+2, NULL, 16 ));
 				else
 					oLong = (U32)(strtoul ( paStart, NULL, 10 ));

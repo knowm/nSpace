@@ -83,7 +83,7 @@ adtString :: adtString ( const char *v )
 	*this = v;
 	}	// adtString
 
-adtString :: adtString ( const wchar_t *v )
+adtString :: adtString ( const WCHAR *v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -151,7 +151,7 @@ HRESULT adtString :: allocate ( U32 len )
 		}	// if
 
 	// New string ptr.
-	CCLOK ( pstr = (wchar_t *)(sys+1); )
+	CCLOK ( pstr = (WCHAR *)(sys+1); )
 
 	return hr;
 	}	// allocate
@@ -456,7 +456,7 @@ adtString &adtString :: operator= ( const WCHAR *str )
 
 		// Reference string
 		vtype = VTYPE_STR|VTYPE_BYREF; 
-		pstr	= (wchar_t *) str;
+		pstr	= (WCHAR *) str;
 		}	// else
 
 	return *this;
@@ -552,14 +552,14 @@ void adtString :: own ( U32 min )
 
 	// Copy contents
 	if (pstrCpy != NULL && len > 0)
-		WCSCPY ( (wchar_t *)(pstrCpy+1), len+1, pstr );
+		WCSCPY ( (WCHAR *)(pstrCpy+1), len+1, pstr );
 
 	// Release previous string
 	adtValue::clear(*this);
 
 	// New string
 	vtype	= VTYPE_STR;
-	pstr	= (wchar_t *)(pstrCpy+1);
+	pstr	= (WCHAR *)(pstrCpy+1);
 	}	// own
 
 HRESULT adtString :: prepend ( const WCHAR *strP )
@@ -784,7 +784,7 @@ void adtString :: toLower ( void )
 	own();
 
 	// Convert
-	for (wchar_t *pc = pstr;pc != NULL && *pc != '\0';++pc)
+	for (WCHAR *pc = pstr;pc != NULL && *pc != '\0';++pc)
 		*pc = towlower ( (*pc) );
 
 	}	// toLower
@@ -875,7 +875,7 @@ void adtString :: toUpper ( void )
 	own();
 
 	// Convert
-	for (wchar_t *pc = pstr;pc != NULL && *pc != '\0';++pc)
+	for (WCHAR *pc = pstr;pc != NULL && *pc != '\0';++pc)
 		*pc = towupper ( (*pc) );
 
 	}	// toUpper

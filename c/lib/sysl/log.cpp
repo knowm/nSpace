@@ -14,7 +14,7 @@
 // Globals
 static cLogInfo	*pLogInfo	= NULL;
 static WCHAR		wDbgBfr[32768];
-static wchar_t		wFmt[32768];
+static WCHAR		wFmt[32768];
 
 void logOpen ( void )
 	{
@@ -104,8 +104,8 @@ void logSink ( logCallback pCB, void *pvCB )
 	}	// logSink
 
 extern "C"
-int logPrintf ( const wchar_t *file, int line, const wchar_t *func, 
-						int level , const wchar_t *fmt, ... )
+int logPrintf ( const WCHAR *file, int line, const WCHAR *func, 
+						int level , const WCHAR *fmt, ... )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -133,20 +133,20 @@ int logPrintf ( const wchar_t *file, int line, const wchar_t *func,
 	// Format string to buffer
 	va_start ( args, fmt );
 	#ifdef	_WIN32
-	len = _vsnwprintf_s ( wDbgBfr, sizeof(wDbgBfr)/sizeof(wchar_t), _TRUNCATE, fmt, args );
+	len = _vsnwprintf_s ( wDbgBfr, sizeof(wDbgBfr)/sizeof(WCHAR), _TRUNCATE, fmt, args );
 	#elif		__unix__ || __APPLE__
 	// Under WIN32 the '%s' modifier defaults to wide string for wide functions.
 	// Under GNUC the '%s' modifier remains as ASCII.  The equivalent modifier
 	// is '%ls' or '%S'.  Since Win32 was first, adjust format string for GNUC.
 	wcscpy ( wFmt, fmt );
-	for (len = 0;wFmt[len] != wchar_t('\0');++len)
+	for (len = 0;wFmt[len] != WCHAR('\0');++len)
 		{
-		if 		(wFmt[len] == wchar_t('\%') && wFmt[len+1] == wchar_t('s'))
-			wFmt[len+1] = wchar_t('S');
-		else if 	(wFmt[len] == wchar_t('\%') && wFmt[len+1] == wchar_t('S'))
-			wFmt[len+1] = wchar_t('s');
+		if 		(wFmt[len] == WCHAR('\%') && wFmt[len+1] == WCHAR('s'))
+			wFmt[len+1] = WCHAR('S');
+		else if 	(wFmt[len] == WCHAR('\%') && wFmt[len+1] == WCHAR('S'))
+			wFmt[len+1] = WCHAR('s');
 		}	// for
-	len = vswprintf ( wDbgBfr, sizeof(wDbgBfr)/sizeof(wchar_t), wFmt, args );
+	len = vswprintf ( wDbgBfr, sizeof(wDbgBfr)/sizeof(WCHAR), wFmt, args );
 	#endif
 	va_end ( args );
 
@@ -204,8 +204,8 @@ int logPrintf ( const wchar_t *file, int line, const wchar_t *func,
 // cLogEntry
 /////////////
 
-cLogEntry :: cLogEntry ( const wchar_t *_file, int _line, const wchar_t *_func, 
-									int _level , const wchar_t *_str )
+cLogEntry :: cLogEntry ( const WCHAR *_file, int _line, const WCHAR *_func, 
+									int _level , const WCHAR *_str )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

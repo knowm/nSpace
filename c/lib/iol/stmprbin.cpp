@@ -202,6 +202,7 @@ HRESULT StmPrsBin :: load ( IByteStream *pStm, ADTVALUE &v )
 			CCLTRY ( adtValue::copy ( adtIUnknown(pUnk), v ) );
 
 			// Clean up
+			_RELEASE(pMap);
 			_RELEASE(pDct);
 			_RELEASE(pLst);
 			_RELEASE(pUnk);
@@ -391,15 +392,15 @@ HRESULT StmPrsBin :: readStr ( IByteStream *pStm, adtString &str )
 	// Allocate for string
 	CCLTRY ( str.allocate ( len ) );
 
-	// Size of local 'wchar_t' when written
+	// Size of local 'WCHAR' when written
 	CCLTRY ( read ( pStm, &wsz ) );
 
 	// Different environments have different size unicode characters.
-	// Example: Windows sizeof(wchar_t) = 2, OSX sizeof(wchar_t) = 4
+	// Example: Windows sizeof(WCHAR) = 2, OSX sizeof(WCHAR) = 4
 	if (hr == S_OK)
 		{
 		// Same size, read directly
-		if (wsz == sizeof(wchar_t))
+		if (wsz == sizeof(WCHAR))
 			hr = read ( pStm, &str.at(), len*wsz );
 
 		// 1 byte per character
@@ -509,7 +510,7 @@ HRESULT StmPrsBin :: save ( IByteStream *pStm, const ADTVALUE &v )
 		case VTYPE_STR :
 			{
 			// Ptr. to string
-			const wchar_t *str = (adtValue::type(v) == VTYPE_STR) ? v.pstr : NULL;
+			const WCHAR *str = (adtValue::type(v) == VTYPE_STR) ? v.pstr : NULL;
 
 			// Valid string ?
 			CCLTRYE	( str != NULL, E_UNEXPECTED );
@@ -852,11 +853,11 @@ HRESULT StmPrsBin :: writeStr ( IByteStream *pStm, const WCHAR *pstr )
 	CCLTRY	( write ( pStm, &len ) );
 
 	// Size of local 'wchar'
-	CCLOK		( wsz = sizeof(wchar_t); )
+	CCLOK		( wsz = sizeof(WCHAR); )
 	CCLTRY	( write ( pStm, &wsz ) );
 			
 	// Write string
-	CCLTRY	( write ( pStm, pstr, len*sizeof(wchar_t) ) );
+	CCLTRY	( write ( pStm, pstr, len*sizeof(WCHAR) ) );
 
 	return hr;
 	}	// writeStr
