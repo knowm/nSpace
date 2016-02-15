@@ -1,0 +1,17 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								EDIT.NSPC
+%
+%			State definition for a visual text edit element.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Font, etc
+
+	% Subgraph: Visual element
+	#	Element										State/Visual/Element/ {}
+
+	% Subgraph: Interface for element
+	#	Interface									State/Interface/Edit/ {}

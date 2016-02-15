@@ -1,0 +1,16 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%									SETUP.NSPC
+%
+%							USB device setup definition
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% NSPC: Local path to USB device
+	$	Path Nspc.Value {}
+
+	% NSPC: Vendor and product Id
+	$	VendorId Nspc.Value { Value 0:int }
+	$	ProductId Nspc.Value { Value 0:int }

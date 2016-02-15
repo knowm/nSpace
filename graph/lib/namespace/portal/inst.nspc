@@ -1,0 +1,263 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								INST.NSPC
+%
+%					Namespace portal implemenation
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+
+	% Actions
+	$	Initialize			Misc.Dist {}		% Initialize
+	$	Uninitialize		Misc.Dist {}		% Uninitialize
+
+	% Notifications
+	$	OnId					Misc.Dist {}		% Namespace Id
+	$	OnConnectAdd		Misc.Dist {}		% Namespace connection
+
+	% DEBUG
+	$	Debug Misc.Debug {}
+		!	Initialize/OnFire						Debug/Fire
+
+	%%%%%%%%
+	% Setup
+	%%%%%%%%
+
+	% Subgraph: State for portal
+	#	State											State/Namespace/Portal/State/ {}
+
+	% Subgraph: Interface for portal
+	#	Interface									State/Namespace/Portal/Interface/ {}
+
+	% Subgraph: Shared run-time state
+	#	Shared										State/Namespace/Portal/Shared/ {}
+
+	% State
+	!	State/Shares/OnFire						Shared/Shares/Fire
+	!	State/IdThis/OnFire						Shared/IdThis/Fire
+	!	State/IdThis/OnFire						Interface/IdThis/Element/Default/Value/Fire
+
+	% Subgraph: Interface management
+	#	IntfShares									Lib/Interface/Dict/ {}
+%		!	IntfShares/OnStoreKey/OnFire		Debug/Fire
+%		!	IntfShares/OnStore/OnFire			Debug/Fire
+
+	% MISCN: Location of dictionary to manage
+	$	ValueIntfShares Misc.Dist { Value "./Interface/Shares/" }
+		!	Initialize/OnFire						ValueIntfShares/Fire
+		!	ValueIntfShares/OnFire				IntfShares/Location/Fire
+
+	%%%%%%%%%
+	% Shares
+	%%%%%%%%%
+
+	%% Shares are used to 'import' remote namespace locations into the local namespace
+	%% The 'From' share has the format : {Namespace Id}/<Path in remote namespace>
+	%% The 'To' is a path to the local namespace.
+
+	% ADTN: Iterate the shares
+	$	SharesIt Adt.Iterate {}
+		!	State/Shares/OnFire					SharesIt/Container
+		!	State/Shares/OnFire					SharesIt/First
+%		!	SharesIt/OnKey							Debug/Fire
+%		!	SharesIt/OnNext						Debug/Fire
+
+	% ADTN: Access 'from'
+	$	LoadFrom Adt.Load { Key From }
+		!	SharesIt/OnNext						LoadFrom/Dictionary
+		!	SharesIt/OnNext						LoadFrom/Fire
+
+	% Key for share interface
+	!	LoadFrom/OnFire							IntfShares/Key/Fire
+
+	% ADTN: Access 'to'
+	$	LoadTo Adt.Load { Key To }
+		!	SharesIt/OnNext						LoadTo/Dictionary
+		!	SharesIt/OnNext						LoadTo/Fire
+
+	% Value for share interface
+	!	LoadTo/OnFire								IntfShares/Value/Fire
+	!	LoadTo/OnFire								IntfShares/Store/Fire
+
+	% Next share
+	!	SharesIt/OnNext							SharesIt/Next
+
+	%%%%%%%%%%%%
+	% Connector
+	%%%%%%%%%%%%
+
+	%% Namespace connector interface
+
+	% Subgraph: Connector interface
+	#	ConnectorIntf								State/Namespace/Connect/Interface/ {}
+
+	% Subgraph: Interface management
+	#	IntfConns									Lib/Interface/Dict/ {}
+%		!	IntfConns/OnStoreKey/OnFire		Debug/Fire
+%		!	IntfConns/OnStore/OnFire			Debug/Fire
+
+	% MISCN: Location of dictionary to manage
+	$	ValueIntfConns Misc.Dist { Value "./ConnectorIntf/Connections/" }
+		!	Initialize/OnFire						ValueIntfConns/Fire
+		!	ValueIntfConns/OnFire				IntfConns/Location/Fire
+
+	% NSPC: Link owner interface to default namespace connector service
+	$	LinkConnector Nspc.Link	{	Source		"/Lib/Namespace/Connect/Inst/Default/Interface/"
+											Destination	"./ConnectorIntf/" }
+		!	Initialize/OnFire						LinkConnector/Link
+
+	%%%%%%%%%%
+	% Locator
+	%%%%%%%%%%
+
+	%% Namespace locator interface
+
+	% Subgraph: Locator interface
+	#	LocatorIntf									State/Namespace/Locate/Interface/ {}
+
+	% Subgraph: Interface management
+	#	IntfLocs										Lib/Interface/Dict/ {}
+
+	% MISCN: Location of dictionary to manage
+	$	ValueIntfLocs Misc.Dist { Value "./LocatorIntf/Locations/" }
+		!	Initialize/OnFire						ValueIntfLocs/Fire
+		!	ValueIntfLocs/OnFire					IntfLocs/Location/Fire
+
+	% NSPC: Link owner interface to default namespace Locator service
+	$	LinkLocator Nspc.Link	{	Source		"/Lib/Namespace/Locate/Inst/Default/Interface/"
+											Destination	"./LocatorIntf/" }
+		!	Initialize/OnFire						LinkLocator/Link
+
+	%% When the locator locates a namespace, check if the namespace Id
+	%% is specified in one of the shares.  It is request a connection to the
+	%% namespace.
+
+	% ADTN: Check if portal Id is listed in the shares
+	$	LoadLocateChk Adt.Load {}
+		!	IntfShares/OnRoot/OnFire			LoadLocateChk/Dictionary
+		!	IntfLocs/OnStoreKey/OnFire			LoadLocateChk/Key
+%		!	LoadLocateChk/OnFire					Debug/Fire
+%		!	LoadLocateChk/OnNotFound			Debug/Fire
+
+	% ADTN: Check if connection is already active
+	$	LoadConnChk Adt.Load {}
+		!	IntfConns/OnRoot/OnFire				LoadConnChk/Dictionary
+		!	IntfLocs/OnStore/OnFire				LoadConnChk/Key
+		!	LoadLocateChk/OnFire					LoadConnChk/Fire
+
+	% MISCN: Request a connection by storing the connection string
+	$	ValueConnReq Misc.Dist { Value "" }
+		!	ValueConnReq/OnFire					IntfConns/Value/Fire
+		!	ValueConnReq/OnFire					IntfConns/Store/Fire
+
+	% Request connection if necessary
+	!	LoadConnChk/OnNotFound					IntfConns/Key/Fire
+	!	LoadConnChk/OnNotFound					ValueConnReq/Fire
+
+	% Latent connections
+	!	IntfLocs/OnStore/OnFire					LoadLocateChk/Fire
+
+	%%%%%%%%%%%%%%
+	% Connections
+	%%%%%%%%%%%%%%
+
+	%% Create a handler for every namespace connection.
+
+	% Subgraph: Connection handlers
+	#	Connection									State/List/ {}
+
+	% Subgraph: List management
+	#	ListConntn									Lib/Graph/Dict/ {}
+		
+	% MISCN: Location of state to manage
+	$	ValueListConntn Misc.Dist { Value "./Connection/" }
+		!	Initialize/OnFire						ValueListConntn/Fire
+		!	ValueListConntn/OnFire				ListConntn/Location/Fire
+
+	% MISCN: Definition of handler
+	$	ValueConntnDef Misc.Dist { Value "Lib/Namespace/Portal/Conn/" }
+		!	Initialize/OnFire						ValueConntnDef/Fire
+		!	ValueConntnDef/OnFire				ListConntn/Definition/Fire
+
+	%% Link shared state
+
+	% MATNN: Generate location to run-time state
+	$	AppendShared_ Math.Binary { Left "./Connection/" }
+		!	ListConntn/OnStore/OnFire			AppendShared_/Right
+		!	ListConntn/OnStore/OnFire			AppendShared_/Fire
+		!	ListConntn/OnRemove/OnFire			AppendShared_/Right
+		!	ListConntn/OnRemove/OnFire			AppendShared_/Fire
+	$	AppendShared Math.Binary { Right "/Shared/" }
+		!	AppendShared_/OnFire					AppendShared/Left
+		!	AppendShared_/OnFire					AppendShared/Fire
+%		!	AppendShared/OnFire					Debug/Fire
+
+	% NSPC: Perform link
+	$	LinkShared Nspc.Link { Source "./Shared/" }
+		!	AppendShared/OnFire					LinkShared/Destination
+		!	ListConntn/OnStore/OnFire			LinkShared/Link
+		!	ListConntn/OnRemove/OnFire			LinkShared/UnLink
+
+	%% Link I/O states 
+
+	% MATHN: Append location of state
+	$	AppendIoDst_ Math.Binary { Left "./Connection/" }
+		!	ListConntn/OnStore/OnFire			AppendIoDst_/Right
+		!	ListConntn/OnStore/OnFire			AppendIoDst_/Fire
+	$	AppendIoDst Math.Binary { Right "/Io/" }
+		!	AppendIoDst_/OnFire					AppendIoDst/Left
+		!	AppendIoDst_/OnFire					AppendIoDst/Fire
+%		!	AppendIoDst/OnFire					Debug/Fire
+
+	% NSPC: Link connection states
+	$	LinkIo Nspc.Link {}
+		!	AppendIoDst/OnFire					LinkIo/Destination
+		!	AppendIoDst/OnFire					LinkIo/Link
+
+	%% Link connection handlers to locations interface
+%	!	ListConntn/OnStore/OnFire				Debug/Fire
+
+	% MATHN: Generate location to interface inside handler
+%	$	AppendConnIntf_ Math.Binary { Left "./Connection/" }
+%		!	ListConntn/OnStore/OnFire			AppendConnIntf_/Right
+%		!	ListConntn/OnStore/OnFire			AppendConnIntf_/Fire
+%	$	AppendConnIntf__ Math.Binary { Right "/" }
+%		!	AppendConnIntf_/OnFire				AppendConnIntf__/Left
+%		!	AppendConnIntf_/OnFire				AppendConnIntf__/Fire
+%	$	AppendConnIntf Math.Binary { Right "Interface/" }
+%		!	AppendConnIntf__/OnFire				AppendConnIntf/Left
+%		!	AppendConnIntf__/OnFire				AppendConnIntf/Fire
+%		!	AppendConnIntf/OnFire				Debug/Fire
+
+	% NSPC: Link interface
+%	$	LinkConnIntf Nspc.Link { Source "./Interface/" }
+%		!	AppendConnIntf/OnFire				LinkConnIntf/Destination
+%		!	ListConntn/OnStore/OnFire			LinkConnIntf/Link
+
+	%% Load a handler for each connection that the namespace connector creates.
+
+	% Use address label as handler name
+	!	IntfConns/OnStoreKey/OnFire			ListConntn/Key/Fire
+
+	% MISCN: Valid I/O path ?
+	$	IoNull Misc.Compare { Left "" }
+		!	IntfConns/OnStore/OnFire			IoNull/Fire
+
+	% Link to source I/O state
+	!	IoNull/OnNotEqual							LinkIo/Source
+
+	% Create handler
+	!	IoNull/OnNotEqual							ListConntn/Store/Fire
+
+	%%%%%%%
+	% Open
+	%%%%%%%
+
+	%% When a connection is open
+%	!	Shared/OnOpen/OnFire						Debug/Fire
+%	!	Shared/OnOpen/OnFire						Debug/Fire
+%	!	Shared/OnOpen/OnFire						Debug/Fire
+%	!	Shared/OnOpen/OnFire						Debug/Fire

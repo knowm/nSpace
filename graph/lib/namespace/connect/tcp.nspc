@@ -1,0 +1,257 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%							TCP.NSPC
+%
+%	TCP/IP transport handler for namespace connector service.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+
+	% Actions
+	$	Initialize			Misc.Dist {}		% Initialize
+
+	% Notifications
+
+	% DEBUG
+	$	Debug Misc.Debug {}
+		!	Initialize/OnFire						Debug/Fire
+
+	%%%%%%%%
+	% Setup
+	%%%%%%%%
+
+	% Subgraph: Interface
+	#	Interface									State/Namespace/Connect/Interface/ {}
+
+	% Subgraph: Interface management
+	#	IntfConns									Lib/Interface/Dict/ {}
+%		!	IntfConns/OnStoreKey/OnFire		Debug/Fire
+%		!	IntfConns/OnStore/OnFire			Debug/Fire
+
+	% MISCN: Location of dictionary to manage
+	$	ValueIntfConns Misc.Dist { Value "./Interface/Connections/" }
+		!	Initialize/OnFire						ValueIntfConns/Fire
+		!	ValueIntfConns/OnFire				IntfConns/Location/Fire
+
+	%%%%%%%%%%%%%%%%
+	% TCP/IP server
+	%%%%%%%%%%%%%%%%
+
+	%% Use a predefined general TCP/IP server to handle outgoing
+	%% and incoming connections for the portal.
+
+	%% Link to the server's connection interface to monitor connections.
+
+	% Subgraph: Connections interface
+	#	ConnectTCP									State/Comm/Connections/Interface/ {}
+
+	% Subgraph: Interface management
+	#	IntfConnsTCP								Lib/Interface/Dict/ {}
+%		!	IntfConnsTCP/OnStoreKey/OnFire	Debug/Fire
+%		!	IntfConnsTCP/OnStore/OnFire		Debug/Fire
+
+	% MISCN: Location of dictionary to manage
+	$	ValueIntfConnsTCP Misc.Dist { Value "./ConnectTCP/Connections/" }
+		!	Initialize/OnFire						ValueIntfConnsTCP/Fire
+		!	ValueIntfConnsTCP/OnFire			IntfConnsTCP/Location/Fire
+
+	% NSPC: Link to predefined TCP/IP server interface
+	$	LinkConnectTCP Nspc.Link	{			Source		"/Lib/Comm/Network/Ip/Tcp/Server/Inst/Namespace/Connections/"
+														Destination	"./ConnectTCP/" }
+		!	Initialize/OnFire						LinkConnectTCP/Link
+
+	%% Connections are store as <Connection> = <Relative path to I/O state>
+
+	% MISCN: Valid connection ?
+	$	IsTCPNull Misc.Compare { Left "" }
+		!	IntfConnsTCP/OnStore/OnFire		IsTCPNull/Fire
+
+	% MATHN: Prepend transport to connection 
+	$	AppendConnTrans Math.Binary { Left "tcp:" }
+		!	IntfConnsTCP/OnStoreKey/OnFire	AppendConnTrans/Right
+		!	IsTCPNull/OnNotEqual					AppendConnTrans/Fire
+		!	AppendConnTrans/OnFire				Debug/Fire
+
+	% MATHN: Generate the full path to the I/O state for the new connection
+	$	AppendConnTCP Math.Binary { Left	"/Lib/Comm/Network/Ip/Tcp/Server/Inst/Namespace/" }
+		!	IsTCPNull/OnNotEqual					AppendConnTCP/Right
+		!	IsTCPNull/OnNotEqual					AppendConnTCP/Fire
+		!	AppendConnTCP/OnFire					Debug/Fire
+
+	% Store connection in connector interface
+	!	AppendConnTrans/OnFire					IntfConns/Key/Fire
+	!	AppendConnTCP/OnFire						IntfConns/Value/Fire
+	!	AppendConnTCP/OnFire						IntfConns/Store/Fire
+
+	%%%%%%%%%%
+	% Request
+	%%%%%%%%%%
+
+	%% External entities can request connections via connector interface.
+	%% Determine if incoming connection request is for this transport
+
+	% MISCN: New connection ?
+	$	IsConnNull Misc.Compare { Left "" }
+		!	IntfConns/OnStore/OnFire			IsConnNull/Fire
+
+	% MISCN: Extract prefix
+	$	ConnPre Misc.StringOp { From 0:int To 4:int }
+		!	IntfConns/OnStoreKey/OnFire		ConnPre/Source
+		!	IsConnNull/OnEqual					ConnPre/Substring
+
+	% MISCN: This transport ?
+	$	IsConnThis Misc.Compare { Left "tcp:" }
+		!	ConnPre/OnFire							IsConnThis/Fire
+
+	% MISCN: Extract postfix
+	$	ConnPost Misc.StringOp { From 4:int }
+		!	IntfConns/OnStoreKey/OnFire		ConnPost/Source
+		!	IsConnThis/OnEqual					ConnPost/Substring
+
+	% ADTN: Check if connection already exists in TCP server
+	$	LoadTCPChk Adt.Load {}
+		!	IntfConnsTCP/OnRoot/OnFire			LoadTCPChk/Dictionary
+		!	ConnPost/OnFire						LoadTCPChk/Key
+		!	ConnPost/OnFire						LoadTCPChk/Fire
+
+	% If connection is new, request to be established in the TCP server.
+
+	% MISCN: Request a connection by storing the connection string
+	$	ValueConnReq Misc.Dist { Value "" }
+		!	ValueConnReq/OnFire					IntfConnsTCP/Value/Fire
+		!	ValueConnReq/OnFire					IntfConnsTCP/Store/Fire
+
+	% Request connection if necessary
+	!	LoadTCPChk/OnNotFound					IntfConnsTCP/Key/Fire
+	!	LoadTCPChk/OnNotFound					ValueConnReq/Fire
+
+
+	%% This should not happen but set connection status back t
+
+
+
+	%% Since discovery of namespace is required, use a predefined 
+
+	% Subgraph: Namespace connection state
+%	#	State											State/Namespace/Connect/Connection/ {}
+%		!	State/Status/OnFire					Debug/Fire
+
+	% Subgraph: TCP/IP server connection state
+%	#	StateTCP										State/Comm/Network/Ip/Tcp/Connection/ {}
+%		!	StateTCP/Status/OnFire				Debug/Fire
+
+	% Subgraph: Locations interface
+%	#	LocatorIntf									State/Namespace/Locate/Interface/ {}
+
+	% Subgraph: Interface management
+%	#	IntfLocs										Lib/Interface/Dict/ {}
+%		!	IntfLocs/OnStoreKey/OnFire			Debug/Fire
+%		!	IntfLocs/OnStore/OnFire				Debug/Fire
+
+	% MISCN: Location of dictionary to manage
+%	$	ValueIntfLocs Misc.Dist { Value "./LocatorIntf/Locations/" }
+%		!	Initialize/OnFire						ValueIntfLocs/Fire
+%		!	ValueIntfLocs/OnFire					IntfLocs/Location/Fire
+
+	% MISCN: Connection status
+%	$	ValueIdle Misc.Dist { Value Idle }
+%		!	ValueIdle/OnFire						State/Status/Fire
+%	$	ValueOpd Misc.Dist { Value Opened }
+%		!	ValueOpd/OnFire						State/Status/Fire
+%	$	ValueOpTCP Misc.Dist { Value Open }
+%		!	ValueOpTCP/OnFire						Debug/Fire
+%		!	ValueOpTCP/OnFire						StateTCP/Status/Fire
+%		!	ValueOpTCP/OnFire						Debug/Fire
+
+	%%%%%%%%%%%%%
+	% Connection
+	%%%%%%%%%%%%%
+
+	%% Watch for changes to the namespace Id for this instance.
+
+	% MISCN: Connection string stored
+%	$	IsNspcSt Misc.Compare { Left "" }	
+%		!	Initialize/OnFire						IsNspcSt/Left
+%		!	IntfLocs/OnStoreKey/OnFire			IsNspcSt/Right
+
+	% MISCN: Connection string
+%	$	ValueConnSt Misc.Dist {}
+%		!	IntfLocs/OnStore/OnFire				ValueConnSt/Value
+%		!	IsNspcSt/OnEqual						ValueConnSt/Fire
+
+	% Latent connections
+%	!	IntfLocs/OnStore/OnFire					IsNspcSt/Fire
+
+	% MISCN: Decode the connection status
+%	$	DecodeStatus Misc.Decode { Values ( Open Opened Idle Close Error ) }
+%		!	State/Status/OnFire					DecodeStatus/Select
+%		!	State/Status/OnFire					DecodeStatus/Fire
+%		!	DecodeStatus/OnOpen					Debug/Fire
+%		!	DecodeStatus/OnOpen					Debug/Fire
+
+	% MISCN: Decode the connection status
+%	$	DecodeStatusTCP Misc.Decode { Values ( Open Idle Opened ) }
+%		!	StateTCP/Status/OnFire				DecodeStatusTCP/Select
+%		!	StateTCP/Status/OnFire				DecodeStatusTCP/Fire
+
+	%%%%%%%
+	% Open
+	%%%%%%%
+
+	% MISCN: True if connection need to be open, false if not
+%	$	OpenBool Misc.Toggle {}
+%		!	Initialize/OnFire						OpenBool/False
+%		!	DecodeStatus/OnOpen					OpenBool/Fire
+%		!	OpenBool/OnFalse						Debug/Fire
+
+	% Open status
+%	!	DecodeStatus/OnOpened					OpenBool/True
+%	!	DecodeStatus/OnIdle						OpenBool/False
+%	!	DecodeStatus/OnClose						OpenBool/False
+%	!	DecodeStatus/OnError						OpenBool/False
+
+	%% Using the default namespace TCP/IP server, ensure a connection exists for the 
+	%% connection string.
+
+
+	% Extract the transport
+%	!	ValueConnSt/OnFire						URL/URL/Fire
+%	!	OpenBool/OnFalse							URL/Break/Fire
+
+	% Request a connection state of the specified address
+%	!	URL/OnAddress/OnFire						
+%		/Lib/Comm/Network/Ip/Tcp/Server/Inst/Namespace/Interface/Connection/Element/Default/Value/Fire
+
+	% MATHN: Generate path to TCP connection state for linking
+%	$	AppendConn_ Math.Binary { Left "/Lib/Comm/Network/Ip/Tcp/Server/Inst/Namespace/Handlers/" }
+%		!	URL/OnAddress/OnFire					AppendConn_/Right
+%		!	URL/OnAddress/OnFire					AppendConn_/Fire
+%	$	AppendConn Math.Binary { Right "/State/" }
+%		!	AppendConn_/OnFire					AppendConn/Left
+%		!	AppendConn_/OnFire					AppendConn/Fire
+%		!	AppendConn/OnFire						Debug/Fire
+
+	% NSPC: Link own state to TCP state
+%	$	LinkTCP Nspc.Link { Destination "./StateTCP/" }
+%		!	AppendConn/OnFire						LinkTCP/Source
+%		!	AppendConn/OnFire						LinkTCP/Link
+
+	%% When linked, if the connection is not open/connected, connect it.
+
+	% MISCN: Need to be opened ?
+%	$	IsOpenTCP Misc.Compare { Left Opened }
+%		!	StateTCP/Status/OnFire				IsOpenTCP/Right
+%		!	AppendConn/OnFire						IsOpenTCP/Fire
+
+	% Request opening of connection
+%	!	IsOpenTCP/OnNotEqual						ValueOpTCP/Fire
+
+	% When TCP connection is open, so is this connection
+%	!	DecodeStatusTCP/OnOpened				ValueOpd/Fire
+
+	%%%%%%%%
+	% Close
+	%%%%%%%%

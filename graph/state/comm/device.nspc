@@ -1,0 +1,22 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%									DEVICE.NSPC
+%
+%				Generic device with open/read/write capabilities.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% MISCN: Device status
+	% Idle	- Idle.
+	% Open	- Device is requesting interface to open
+	% Opened - Communication channel is open and ready for transfers.
+	% Close	- Device is requesting interface to close
+	% Error	- Error opening device
+	$	Status	Nspc.Value { Value Idle }
+
+	% Subgraph: I/O
+	#	Read											State/Comm/Transfer/ {}
+	#	Write											State/Comm/Transfer/ {}
+

@@ -1,0 +1,25 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								LABEL.NSPC
+%
+%			State definition for a visual label element.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Font, etc
+
+	% NSPC: Alignment
+	$	AlignHorz Nspc.Value { Value Center Allowed ( Left Center Right ) }
+	$	AlignVert Nspc.Value { Value Center Allowed ( Bottom Center Top ) }
+
+	% NSPC: Caret position for editable labels, -1 = no caret
+	$	Caret Nspc.Value { Value -1:int }
+
+	% Subgraph: Visual element
+	#	Element										State/Visual/Element/ {}
+
+	% Subgraph: Interface for element
+	#	Interface									State/Interface/Label/ {}
+

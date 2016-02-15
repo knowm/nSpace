@@ -1,0 +1,19 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								LIST.NSPC
+%
+%			State representing a list interface element
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% MISCN: Strings in list
+	$	List		Nspc.Value { Value {} }
+
+	% MISCN: Select by value (Element/Default/Value represents the selected index)
+	$	Select	Nspc.Value {}
+
+	% Subgraph: Interface element
+	#	Element										State/Interface/Element/ {}
+

@@ -1,0 +1,21 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								BUTTON.NSPC
+%
+%			State definition for a visual button element.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Subgraph: Visual element
+	#	Element										State/Visual/Element/ {}
+
+	% MISCN: Button type
+	$	Type Nspc.Value { Value Default Allowed ( Default Push Check AutoCheck Radio AutoRadio Groupbox ) }
+
+	% MISCN: Highlight state
+	$	Highlight Nspc.Value { Value false:bool Type Boolean }
+
+	% Subgraph: Interface for element
+	#	Interface									State/Interface/Button/ {}
