@@ -856,7 +856,7 @@ HRESULT Shell :: tickBegin ( void )
 	// To support a 'compiler-less' mode of graph development in release mode, 
 	// scan for graph definitions at startup in the working directory
 	#else
-//	CCLTRY ( definitions ( L"./graph/" ) );
+	CCLTRY ( definitions ( L"./graph/" ) );
 	#endif
 
 	/////////////

@@ -36,7 +36,7 @@ typedef unsigned	int		U32;
 typedef signed		int		S32;
 typedef unsigned	__int64	U64;
 typedef signed		__int64	S64;
-typedef wchar_t				WCHAR;
+typedef U16						WCHAR;
 #endif
 
 #if defined(__APPLE__) || defined(__unix__)

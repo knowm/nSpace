@@ -92,7 +92,7 @@ HRESULT image_fft ( IDictionary *pImg )
 		merge ( matPlanes, 2, matCmplx );
 
 		// Compute DFT
-		dft ( matCmplx, matCmplx );
+		dft ( matCmplx, matCmplx, DFT_ROWS );
 
 		// Separate real/imaginary results
 		split ( matCmplx, matPlanes );
@@ -141,6 +141,18 @@ HRESULT image_fft ( IDictionary *pImg )
 		// Update descriptor
 		CCLTRY ( pImg->store ( adtString(L"Width"), adtInt(w) ) );
 		CCLTRY ( pImg->store ( adtString(L"Height"), adtInt(h) ) );
+
+		// DEBUG
+		static bool bFirst = true;
+		if (bFirst)
+			{
+			bFirst = false;
+			FILE *f = NULL;
+			fopen_s ( &f, "c:\\temp\\mag.txt", "w" );
+			for (U32 i = 0;i < w;++i)
+				fprintf ( f, "%d, %g\r\n", i, matMag.at<float>(Point(i,10)) );
+			fclose(f);
+			}	// if
 
 		// For now, convert back into the original format.  
 		// This requires normalization and conversion
