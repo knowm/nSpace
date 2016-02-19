@@ -846,7 +846,7 @@ HRESULT Shell :: tickBegin ( void )
 	// DEBUG
 	#ifdef _DEBUG
    #ifdef   _WIN32
-	CCLTRY ( definitions ( L"c:/dev/nspace/graph/" ) );
+	CCLTRY ( definitions ( L"/dev/nspace/graph/" ) );
    #elif    __unix__
 	CCLTRY ( definitions ( L"/home/jhoy/dev/nspace/graph/" ) );
    #elif    __APPLE__
