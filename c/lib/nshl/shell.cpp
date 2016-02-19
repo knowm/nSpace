@@ -845,16 +845,32 @@ HRESULT Shell :: tickBegin ( void )
 
 	// DEBUG
 	#ifdef _DEBUG
-   #ifdef   _WIN32
-	CCLTRY ( definitions ( L"/dev/nspace/graph/" ) );
-   #elif    __unix__
-	CCLTRY ( definitions ( L"/home/jhoy/dev/nspace/graph/" ) );
-   #elif    __APPLE__
-   CCLTRY ( definitions ( L"/Users/username/dev/nspace/graph/" ) );
-   #endif
+	// Currently the source tree is laid out such that the 'graph' directory is
+	// at the same relative location to either debug or release EXE.  Use relative
+	// directory in order to support different source trees.
+	if (hr == S_OK)
+		{
+		adtString	strLocDef;
+
+		// Use the same root as the default file system root for the storage object
+		CCLTRY ( _QI(pStmSrc,IID_IDictionary,&pDct) );
+		CCLTRY ( pDct->load ( adtString(L"Root"), vL ) );
+		CCLTRY ( adtValue::toString ( vL, strLocDef ) );
+
+		// Relative location to definitions
+		CCLTRY ( strLocDef.append ( L"../../graph/" ) );
+
+		// Scan for definitions
+		CCLTRY ( definitions ( strLocDef ) );
+
+		// Clean up
+		_RELEASE(pDct);
+		}	// if
 
 	// To support a 'compiler-less' mode of graph development in release mode, 
-	// scan for graph definitions at startup in the working directory
+	// scan for graph definitions at startup in the working directory in case
+	// someone wants to just drop some graphs under the binaries and make
+	// changes to just those definitions.
 	#else
 	CCLTRY ( definitions ( L"./graph/" ) );
 	#endif
