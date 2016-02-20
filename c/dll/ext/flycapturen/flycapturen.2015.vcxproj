@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{3E543F5B-ED48-4EE5-B31E-4412B1E2BCFD}</ProjectGuid>
+    <ProjectGuid>{FCDA7CE4-E203-487D-9EEB-3217C2120409}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>flycapturen</RootNamespace>
   </PropertyGroup>
@@ -97,9 +97,6 @@
     </ProjectReference>
     <ProjectReference Include="..\..\..\lib\sysl\sysl.2015.vcxproj">
       <Project>{8532deaa-56d3-4ff4-8fb8-664efe6eef83}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\lib\vendor\flycapturel\flycapturel.2015.vcxproj">
-      <Project>{03d2a464-d4c2-4519-b814-d516323afa75}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

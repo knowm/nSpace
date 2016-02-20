@@ -858,7 +858,11 @@ HRESULT Shell :: tickBegin ( void )
 		CCLTRY ( adtValue::toString ( vL, strLocDef ) );
 
 		// Relative location to definitions
+		#ifdef	_WIN64
+		CCLTRY ( strLocDef.append ( L"../../../graph/" ) );
+		#else
 		CCLTRY ( strLocDef.append ( L"../../graph/" ) );
+		#endif
 
 		// Scan for definitions
 		CCLTRY ( definitions ( strLocDef ) );
