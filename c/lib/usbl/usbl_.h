@@ -72,7 +72,8 @@ class Device :
 
 class Endpoint :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public IBehaviour,									// Interface
+	public ITickable										// Interface
 	{
 	public :
 	Endpoint ( void );									// Constructor
@@ -86,6 +87,15 @@ class Endpoint :
 	U8				*pcBfrPkt;								// Packet buffer
 	adtInt		iSzPkt;									// Packet size
 	HANDLE		hevWr,hevRd;							// I/O events
+	adtBool		bAsync;									// Asynchronous reads ?
+	IThread		*pThrd;									// Asynchronous read thread
+	HANDLE		hevStop,hevRst;						// Stop/reset
+
+	// 'ITickable' members
+	STDMETHOD(tick)		( void );
+	STDMETHOD(tickAbort)	( void );
+	STDMETHOD(tickBegin)	( void );
+	STDMETHOD(tickEnd)	( void );
 
 	// CCL
 	CCL_OBJECT_BEGIN(Endpoint)

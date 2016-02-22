@@ -403,6 +403,7 @@ HRESULT NamespaceX :: store ( BSTR bstrPath, VARIANT *var )
 	IReceptor	*pRecep	= NULL;
 	adtValue		vR,vSt;
 	adtIUnknown	unkV;
+	adtString	strVar;
 
 	// State check
 	CCLTRYE ( pShell != NULL, ERROR_INVALID_STATE );
@@ -414,6 +415,10 @@ HRESULT NamespaceX :: store ( BSTR bstrPath, VARIANT *var )
 	// Convert to local value type
 	CCLOK ( varS = var; )
 	CCLTRY( varS.toValue(vSt) );
+
+	// Debug
+	adtValue::toString ( vSt, strVar );
+//	dbgprintf ( L"NamespaceX::store:%s:%s\r\n", bstrPath, (LPCWSTR) strVar );
 
 	// Receive value into namespace
 	CCLTRY ( pRecep->receive ( NULL, bstrPath, vSt ) );
