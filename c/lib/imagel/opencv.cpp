@@ -143,7 +143,7 @@ HRESULT image_fft ( IDictionary *pImg )
 		CCLTRY ( pImg->store ( adtString(L"Height"), adtInt(h) ) );
 
 		// DEBUG
-		static bool bFirst = true;
+/*		static bool bFirst = true;
 		if (bFirst)
 			{
 			bFirst = false;
@@ -153,6 +153,7 @@ HRESULT image_fft ( IDictionary *pImg )
 				fprintf ( f, "%d, %g\r\n", i, matMag.at<float>(Point(i,10)) );
 			fclose(f);
 			}	// if
+*/
 
 		// For now, convert back into the original format.  
 		// This requires normalization and conversion
