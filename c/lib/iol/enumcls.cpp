@@ -153,8 +153,6 @@ HRESULT EnumDevClass :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE
 		if (hr == S_OK)
 			{
 			memset ( &ifdata, 0, sizeof(ifdata) );
-			memset ( &didata, 0, sizeof(didata) );
-			didata.cbSize	= sizeof(didata);
 			ifdata.cbSize	= sizeof(ifdata);
 			hr = (sdedi ( hEnum, NULL, &guidClass, idx,
 							&ifdata) == TRUE) ? S_OK : GetLastError();
@@ -176,6 +174,8 @@ HRESULT EnumDevClass :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE
 		if (hr == S_OK)
 			{
 			pDetail->cbSize	= sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA);
+			memset ( &didata, 0, sizeof(didata) );
+			didata.cbSize		= sizeof(didata);
 			didata.cbSize		= sizeof(didata);
 			hr = (sdgdid ( hEnum, &ifdata, pDetail,
 								sz, NULL, &didata) == TRUE) ? S_OK : GetLastError();

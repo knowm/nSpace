@@ -193,12 +193,12 @@ HRESULT StringParse :: parseString ( IUnknown *pSpecs,
 				// Load type
 				if ( pDict->load ( adtString(L"Type"), strType ) == S_OK )
 					{
-					if			(!wcscmp ( strType, L"Integer" ))	Value.vtype	= VTYPE_I4;
-					else if	(!wcscmp ( strType, L"Long" ))		Value.vtype	= VTYPE_I8;
-					else if	(!wcscmp ( strType, L"Float" ))		Value.vtype	= VTYPE_R4;
-					else if	(!wcscmp ( strType, L"Double" ))		Value.vtype	= VTYPE_R8;
-					else if	(!wcscmp ( strType, L"String" ))		Value.vtype = VTYPE_STR;
-					else if	(!wcscmp ( strType, L"Binary" ))		Value.vtype = VTYPE_UNK;
+					if			(!WCASECMP ( strType, L"Integer" ))	Value.vtype	= VTYPE_I4;
+					else if	(!WCASECMP ( strType, L"Long" ))		Value.vtype	= VTYPE_I8;
+					else if	(!WCASECMP ( strType, L"Float" ))		Value.vtype	= VTYPE_R4;
+					else if	(!WCASECMP ( strType, L"Double" ))		Value.vtype	= VTYPE_R8;
+					else if	(!WCASECMP ( strType, L"String" ))		Value.vtype = VTYPE_STR;
+					else if	(!WCASECMP ( strType, L"Binary" ))		Value.vtype = VTYPE_UNK;
 					else														hr				= E_NOTIMPL;
 					}	// if
 				else
