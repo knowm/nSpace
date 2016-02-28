@@ -33,6 +33,7 @@
 												STDMETHOD(InnerQueryInterface)( REFIID iid, void **ppv )		\
 													{ return _InnerQueryInterface(_getIntfs(),iid,ppv ); }	\
 												typedef a _intf_class;													\
+												/** \brief Returns ptr to the supported interfaces table */	\
 												const static CCLINTF *_getIntfs() {									\
 												static const CCLINTF _intfs[] = {
 #define	CCL_OBJECT_BEGIN(a)			static CCLObject *CreateObject ( void )							\

@@ -85,9 +85,13 @@ extern	adtStringSt strnRefVal;
 			DECLARE_EMT(a)
 
 #define	BEGIN_BEHAVIOUR()													\
+	/** \brief Namespace object for which the node belongs. */	\
 	INamespace		*pnSpc;													\
+	/** \brief Location at which the node is installed. */		\
 	IDictionary		*pnLoc;													\
+	/** \brief Descriptor for the node, that contains the node properties */ \
 	IDictionary		*pnDesc;													\
+	/** \brief Contains a cached version of the user defined node name */ \
  	adtString		strnName;												\
 	STDMETHOD(receive)	( IReceptor *, const WCHAR *,				\
 									const ADTVALUE & );						\

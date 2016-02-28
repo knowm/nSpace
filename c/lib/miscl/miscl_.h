@@ -168,22 +168,35 @@ class Compare :
 	Compare ( void );										// Constructor
 
 	// Run-time data
-	adtValue			vLeft,vRight;						// 'Left' and 'Right' values
+
+	//! 'Left' and 'Right' values
+	adtValue			vLeft,vRight;						
 
 	// CCL
 	CCL_OBJECT_BEGIN(Compare)
 		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 
-	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Perform comparison between the left and right values and emit the result.
+	//!	If a right side has not been specified, the value fired into the node will be used.
 	DECLARE_RCP(Fire)
+	//! Specifies the left side of future comparisons
 	DECLARE_RCP(Left)
+	//! Specifies the right side of future comparisons
 	DECLARE_RCP(Right)
+	//! Emits the right value if left = right.
 	DECLARE_EMT(Equal)
+	//! Emits an error if the values cannot be compared
 	DECLARE_EMT(Error)
+	//! Emits the right side value if left > right.
 	DECLARE_EMT(Greater)
+	//! Emits the right side value if left < right.
 	DECLARE_EMT(Less)
+	//! Emits the right side value if left <> right.
 	DECLARE_EMT(NotEqual)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_RCP(Fire)
 		DEFINE_RCP(Left)

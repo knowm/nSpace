@@ -129,8 +129,16 @@ class adtString : public ADTVALUE
 	virtual ~adtString ( void );						// Destructor
 
 	// Utilities
+
+	/** Allocate space for the specified number of characters */
 	HRESULT		allocate		( U32 len );
+
+	/** Generate a string composes of this string plus the specified string and place
+			into the destination string */
 	HRESULT		append		( const WCHAR *, adtString &v );
+
+	/**	Append a constant string to this object.  Additional space is
+		*	allocated for the string if necessary and ownership of the string is taken. */
 	HRESULT		append		( const WCHAR * );
 	WCHAR &		at				( size_t = 0 );
 	S32			indexOf		( WCHAR, S32 = 0 );
@@ -406,10 +414,15 @@ DEFINE_GUID	(	IID_IIt, 0x2534d000, 0x8628, 0x11d2, 0x86, 0x8c,
 DECLARE_INTERFACE_(IIt,IUnknown)
 	{
 	public :
+	//! Place the iterator at the beginning of the container.
 	STDMETHOD(begin)	( void )			PURE;
+	//! Place the iterator at the end of the container.
 	STDMETHOD(end)		( void )			PURE;
+	//! Move to the next value in the container.
 	STDMETHOD(next)	( void )			PURE;
+	//! Move to the previous value in the container.
 	STDMETHOD(prev)	( void )			PURE;
+	//! Read the value at the current iterator position.
 	STDMETHOD(read)	( ADTVALUE & )	PURE;
 	};
 
