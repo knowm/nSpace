@@ -142,6 +142,8 @@ HRESULT image_fft ( IDictionary *pImg )
 		CCLTRY ( pImg->store ( adtString(L"Width"), adtInt(w) ) );
 		CCLTRY ( pImg->store ( adtString(L"Height"), adtInt(h) ) );
 
+		// DEBUG.  For now zero the DC component.
+
 		// DEBUG
 /*		static bool bFirst = true;
 		if (bFirst)
@@ -169,7 +171,7 @@ HRESULT image_fft ( IDictionary *pImg )
 //			matReal.copyTo ( *pmImg );
 			normalize ( matMag, matMag, 0, 0xffff, NORM_MINMAX );
 			matMag.convertTo ( *pmImg, CV_16UC1 );
-			matMag.copyTo ( *pmImg );
+//			matMag.copyTo ( *pmImg );
 			}	// if
 		else 
 			hr = ERROR_NOT_SUPPORTED;
