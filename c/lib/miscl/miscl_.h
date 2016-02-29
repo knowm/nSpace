@@ -18,7 +18,8 @@
 #endif
 
 //
-// Class - AsyncEmit.  An asynchronous emission node.
+// Class - AsyncEmit.  
+//! \brief An asynchronous emission node.
 //
 
 class AsyncEmit :
@@ -57,7 +58,8 @@ class AsyncEmit :
 	};
 
 //
-// Class - AsyncQ.  An asynchronous queue node.
+// Class - AsyncQ.  
+//! \brief An asynchronous queue node.
 //
 
 class AsyncQ :
@@ -123,7 +125,8 @@ class AsyncQ :
 	};
 
 //
-// Class - Clone.  A node to clone values.
+// Class - Clone.  
+//! \brief A node to clone values.
 //
 
 class Clone :
@@ -157,7 +160,8 @@ class Clone :
 	};
 
 //
-// Class - Compare.  A node to compare two values.
+// Class - Compare.  
+//! \brief A node to compare two values.
 //
 
 class Compare :
@@ -214,7 +218,8 @@ class Compare :
 	};
 
 //
-// Class - Create.  A node to create objects.
+// Class - Create.  
+//! \brief A node to create objects.
 //
 
 class Create :
