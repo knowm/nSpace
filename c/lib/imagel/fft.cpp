@@ -21,6 +21,7 @@ FFT :: FFT ( void )
 	//
 	////////////////////////////////////////////////////////////////////////
 	pDctImg	= NULL;
+	bZeroDC	= false;
 	}	// FFT
 
 HRESULT FFT :: onAttach ( bool bAttach )
@@ -45,8 +46,8 @@ HRESULT FFT :: onAttach ( bool bAttach )
 		adtValue		vL;
 
 		// Defaults
-//		if (pnDesc->load ( adtString(L"Id"), vL ) == S_OK)
-//			iPipe = vL;
+		if (pnDesc->load ( adtString(L"ZeroDC"), vL ) == S_OK)
+			bZeroDC = adtBool(vL);
 		}	// if
 
 	// Detach
@@ -96,7 +97,7 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			}	// if
 
 		// Execute
-		CCLTRY ( image_fft ( pDctUse ) );
+		CCLTRY ( image_fft ( pDctUse, bZeroDC ) );
 
 		// Debug
 		DWORD dwNow = GetTickCount();

@@ -18,7 +18,7 @@
 // Globals
 using namespace cv;
 
-HRESULT image_fft ( IDictionary *pImg )
+HRESULT image_fft ( IDictionary *pImg, bool bZeroDC )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -27,6 +27,7 @@ HRESULT image_fft ( IDictionary *pImg )
 	//
 	//	PARAMETERS
 	//		-	pImg contains the image data.
+	//		-	bZeroDC is true to zero the DC component of the FFT
 	//
 	//	RETURN VALUE
 	//		S_OK if successful
@@ -111,11 +112,17 @@ HRESULT image_fft ( IDictionary *pImg )
 		// Rearrange the quadrants of Fourier image so that the origin is at the image center
 		cx = matMag.cols/2;
 		cy = matMag.rows/2;
-	
+
+		/*	
+		// In OpenCV FFT example, however do not currently need all 4 quadrants.
+		// Just use matQ[2] which contains the positive going frequency components.
+
 		// ROIs for quadrants
 		matQ[0] = matMag ( Rect ( 0, 0, cx, cy ) );
 		matQ[1] = matMag ( Rect ( cx, 0, cx, cy ) );
+		*/
 		matQ[2] = matMag ( Rect ( 0, cy, cx, cy ) );
+		/*
 		matQ[3] = matMag ( Rect ( cx, cy, cx, cy ) );
 
 		// Swap quadrants
@@ -126,6 +133,18 @@ HRESULT image_fft ( IDictionary *pImg )
 		matQ[1].copyTo ( matTmp );
 		matQ[2].copyTo ( matQ[1] );
 		matTmp.copyTo  ( matQ[2] );
+		*/
+
+		// Zero the DC component on request
+		if (bZeroDC)
+			{
+			// First column of each row = zero
+			for (int r = 0;r < cy;++r)
+				matMag.at<float>(Point(0,r)) = 0.0f;
+			// Last row of each column = zero
+			for (int c = 0;c < cx;++c)
+				matMag.at<float>(Point(c,cy-1)) = 0.0f;
+			}	// if
 
 		// Done with original image object
 		delete pmImg;
@@ -133,10 +152,10 @@ HRESULT image_fft ( IDictionary *pImg )
 
 		// Ensure original bits have room for the possibly grown magnitude
 		_UNLOCK(pBits,pvBits);
-		CCLTRY(pBits->setSize ( matMag.rows*matMag.cols*bpp ));
+		CCLTRY(pBits->setSize ( matQ[2].rows*matQ[2].cols*bpp ));
 		CCLTRY(pBits->lock ( 0, 0, &pvBits, NULL ));
-		CCLOK ( w = matMag.cols; )
-		CCLOK ( h = matMag.rows; )
+		CCLOK ( w = matQ[2].cols; )
+		CCLOK ( h = matQ[2].rows; )
 
 		// Update descriptor
 		CCLTRY ( pImg->store ( adtString(L"Width"), adtInt(w) ) );
@@ -169,7 +188,7 @@ HRESULT image_fft ( IDictionary *pImg )
 			// Normalize, convert, and copy
 //			matReal.convertTo ( *pmImg, CV_16UC1 );
 //			matReal.copyTo ( *pmImg );
-			normalize ( matMag, matMag, 0, 0xffff, NORM_MINMAX );
+			normalize ( matQ[2], matQ[2], 0, 0xffff, NORM_MINMAX );
 			matMag.convertTo ( *pmImg, CV_16UC1 );
 //			matMag.copyTo ( *pmImg );
 			}	// if

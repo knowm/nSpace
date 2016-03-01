@@ -38,6 +38,7 @@ class FFT :
 
 	// Run-time data
 	IDictionary	*pDctImg;								// Image dictionary
+	adtBool		bZeroDC;									// Zero DC component
 
 	// CCL
 	CCL_OBJECT_BEGIN(FFT)
@@ -56,6 +57,6 @@ class FFT :
 	};
 
 // Prototypes
-HRESULT image_fft ( IDictionary * );
+HRESULT image_fft ( IDictionary *, bool );
 
 #endif
