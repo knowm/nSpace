@@ -178,6 +178,7 @@ HRESULT NamespaceX :: listen ( BSTR bstrPath, IListenX *pR )
 	adtValue			vL;
 	adtString		strPath(bstrPath);
 	adtIUnknown		unkV;
+	U32				len;
 
 	// Debug
 //	dbgprintf ( L"NamespaceX::listen:bstrPath %s:pR %p\r\n", bstrPath, pR );
@@ -188,6 +189,10 @@ HRESULT NamespaceX :: listen ( BSTR bstrPath, IListenX *pR )
 	//
 	// Location
 	//
+
+	// Allow caller to leave off the slash, e.g. XXX/OnFire = XXX/OnFire/
+	if (hr == S_OK && strPath[(len = strPath.length())-1] != '/')
+		hr = strPath.append ( L"/" );
 
 	// Load specified path from namespace
 	CCLTRY ( pShell->pSpc->get ( strPath, vL, NULL ) );
@@ -279,15 +284,30 @@ HRESULT NamespaceX :: load ( BSTR bstrPath, VARIANT *var )
 	////////////////////////////////////////////////////////////////////////
 	HRESULT			hr			= S_OK;
 	adtValue			vL;
+	adtString		strPath(bstrPath);
+	U32				len;
 
 	// State check
 	CCLTRYE ( pShell != NULL, ERROR_INVALID_STATE );
 
 	// Path must currently be a 'root' path (current working path ?)
-	CCLTRYE ( bstrPath[0] == WCHAR('/'), E_INVALIDARG );
+	// Minimum path length : /X/OnFire
+	CCLTRYE (	(len = strPath.length()) > 8 && bstrPath[0] == WCHAR('/'), 
+					E_INVALIDARG );
+
+	// Since loading only values (not locations) is supported through this interface,
+	// allow caller to just specify '/OnFire' at the end of the path.
+	// Full path needs to be 'XXX/OnFire/Value/'
+	if (hr == S_OK && strPath[len-1] != '/')
+		{
+		CCLTRY ( strPath.append ( L"/" ) );
+		CCLOK  ( ++len; )
+		}	// if
+	if (hr == S_OK && !WCASECMP(&strPath[len-7],L"OnFire/"))
+		hr = strPath.append ( L"Value/" );
 
 	// Load the value from the path
-	CCLTRY ( pShell->pSpc->get ( bstrPath, vL, NULL ) );
+	CCLTRY ( pShell->pSpc->get ( strPath, vL, NULL ) );
 
 	// Convert to variant and copy
 	CCLOK ( varL = vL; )
@@ -404,9 +424,24 @@ HRESULT NamespaceX :: store ( BSTR bstrPath, VARIANT *var )
 	adtValue		vR,vSt;
 	adtIUnknown	unkV;
 	adtString	strVar;
+	adtString	strPath(bstrPath);
+	U32			len;
 
 	// State check
 	CCLTRYE ( pShell != NULL, ERROR_INVALID_STATE );
+
+	// Since storing only values (not locations) is supported through this interface,
+	// allow caller to just specify '/Fire' at the end of the path.
+	// Full path needs to be 'XXX/Fire/Value'
+	if (hr == S_OK && strPath[(len=strPath.length())-1] == '/')
+		strPath.at(--len) = '\0';
+	if (hr == S_OK && WCASECMP(&strPath[len-6],L"/Value"))
+		hr = strPath.append ( L"/Value" );
+
+	// Perform a 'load' first on the path before the store.  This allows any
+	// auto-instancing to occur before the store.  Let the store fail, not this.
+//	if (hr == S_OK)
+//		hr = pShell->pSpc->get ( strPath, vL, NULL );
 
 	// Access root namespace location/receptor
 	CCLTRY(pShell->pSpc->get(L"/",vR,NULL));
