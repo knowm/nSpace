@@ -113,37 +113,38 @@ HRESULT image_fft ( IDictionary *pImg, bool bZeroDC )
 		cx = matMag.cols/2;
 		cy = matMag.rows/2;
 
-		/*	
 		// In OpenCV FFT example, however do not currently need all 4 quadrants.
 		// Just use matQ[2] which contains the positive going frequency components.
 
 		// ROIs for quadrants
-		matQ[0] = matMag ( Rect ( 0, 0, cx, cy ) );
-		matQ[1] = matMag ( Rect ( cx, 0, cx, cy ) );
-		*/
+//		matQ[0] = matMag ( Rect ( 0, 0, cx, cy ) );
+//		matQ[1] = matMag ( Rect ( cx, 0, cx, cy ) );
 		matQ[2] = matMag ( Rect ( 0, cy, cx, cy ) );
-		/*
-		matQ[3] = matMag ( Rect ( cx, cy, cx, cy ) );
+//		matQ[3] = matMag ( Rect ( cx, cy, cx, cy ) );
 
 		// Swap quadrants
-		matQ[0].copyTo ( matTmp );
+/*		matQ[0].copyTo ( matTmp );
 		matQ[3].copyTo ( matQ[0] );
 		matTmp.copyTo  ( matQ[3] );
 
 		matQ[1].copyTo ( matTmp );
 		matQ[2].copyTo ( matQ[1] );
 		matTmp.copyTo  ( matQ[2] );
-		*/
+*/
+		matMag	= matQ[2];
 
 		// Zero the DC component on request
 		if (bZeroDC)
 			{
+			// Middle column of each row = zero
+//			for (int r = 0;r < matMag.rows;++r)
+//				matMag.at<float>(Point(cx,r)) = 0.0f;
 			// First column of each row = zero
-			for (int r = 0;r < cy;++r)
+			for (int r = 0;r < matMag.rows;++r)
 				matMag.at<float>(Point(0,r)) = 0.0f;
 			// Last row of each column = zero
-			for (int c = 0;c < cx;++c)
-				matMag.at<float>(Point(c,cy-1)) = 0.0f;
+//			for (int c = 0;c < cx;++c)
+//				matMag.at<float>(Point(c,cy-1)) = 0.0f;
 			}	// if
 
 		// Done with original image object
@@ -152,10 +153,10 @@ HRESULT image_fft ( IDictionary *pImg, bool bZeroDC )
 
 		// Ensure original bits have room for the possibly grown magnitude
 		_UNLOCK(pBits,pvBits);
-		CCLTRY(pBits->setSize ( matQ[2].rows*matQ[2].cols*bpp ));
+		CCLTRY(pBits->setSize ( matMag.rows*matMag.cols*bpp ));
 		CCLTRY(pBits->lock ( 0, 0, &pvBits, NULL ));
-		CCLOK ( w = matQ[2].cols; )
-		CCLOK ( h = matQ[2].rows; )
+		CCLOK ( w = matMag.cols; )
+		CCLOK ( h = matMag.rows; )
 
 		// Update descriptor
 		CCLTRY ( pImg->store ( adtString(L"Width"), adtInt(w) ) );
@@ -188,7 +189,7 @@ HRESULT image_fft ( IDictionary *pImg, bool bZeroDC )
 			// Normalize, convert, and copy
 //			matReal.convertTo ( *pmImg, CV_16UC1 );
 //			matReal.copyTo ( *pmImg );
-			normalize ( matQ[2], matQ[2], 0, 0xffff, NORM_MINMAX );
+			normalize ( matMag, matMag, 0, 0xffff, NORM_MINMAX );
 			matMag.convertTo ( *pmImg, CV_16UC1 );
 //			matMag.copyTo ( *pmImg );
 			}	// if
