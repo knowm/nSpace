@@ -48,9 +48,13 @@ class AsyncEmit :
 	CCL_OBJECT_END()
 	virtual void		destruct		( void );		// Destruct object
 
-	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Asynchronously emit a value.  If no value was previously specified, the provided value is used.
 	DECLARE_CON(Fire)
+	//!	\brief Specifies a value for subsequent emissions.
 	DECLARE_RCP(Value)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_CON(Fire)
 		DEFINE_RCP(Value)
@@ -99,14 +103,27 @@ class AsyncQ :
 	CCL_OBJECT_END()
 	virtual void		destruct		( void );		// Destruct object
 
-	// Connections
 	DECLARE_CON(Fire)
+	//!	\brief Specifies a value for subsequent emissions.
+	DECLARE_RCP(Value)
+
+	//! \name Connections 
+	//@{
+	//! \brief Queue the specified value for asynchronous emission.
+	DECLARE_CON(Fire)
+	//! \brief Specifies a queue Id for future operations.
 	DECLARE_CON(Id)
+	//! \brief Emit the next queued value if it is available.
 	DECLARE_RCP(Next)
+	//! \brief Re-emit the current value in the front of the queue.
 	DECLARE_RCP(Retry)
+	//! \brief Start accepting and asynchronously emitting values
 	DECLARE_RCP(Start)
+	//! \brief Shutdown queueing and emission of values.
 	DECLARE_RCP(Stop)
+	//! \brief Emit a signal when the queue becomes empty.
 	DECLARE_EMT(Empty)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_CON(Fire)
 		DEFINE_CON(Id)
@@ -145,10 +162,19 @@ class Clone :
 		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 
-	// Connections
+	//! \name Connections 
 	DECLARE_CON(Fire)
+	//!	\brief Specifies a value for subsequent emissions.
 	DECLARE_RCP(Value)
+	//@{
+	//!	\brief Perform a clone by creating a new object and performing a deep copy.  If no value 
+	//!	was previously specified, the provided value is used.
+	DECLARE_CON(Fire)
+	//!	\brief Specify a value for future cloning.
+	DECLARE_RCP(Value)
+	//!	\brief Emits a value when cloning is unsuccessful.
 	DECLARE_EMT(Error)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_CON(Fire)
 		DEFINE_RCP(Value)
@@ -239,10 +265,15 @@ class Create :
 		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 
-	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Create an object with the specified Id (e.g. "Adt.Dictionary")
 	DECLARE_CON(Fire)
+	//!	\brief Specifies an object Id for future creations.
 	DECLARE_RCP(Id)
+	//!	\brief Emits a value if there is an error when creating an object.
 	DECLARE_EMT(Error)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_CON(Fire)
 		DEFINE_RCP(Id)
@@ -254,7 +285,8 @@ class Create :
 	};
 
 //
-// Class - Decode.  A node that selects an output from a single input value.
+// Class - Decode.  
+//! \brief A node that selects a single emitter from a single input value.
 //
 
 class Decode :
@@ -278,11 +310,18 @@ class Decode :
 	CCL_OBJECT_END()
 	virtual void		destruct		( void );		// Destruct object
 
-	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Emit a value out a specific emitter selected by the latest selection.
 	DECLARE_CON(Fire)
+	//!	\brief Specifies a value to use when selecting and output.  The string version of
+	//!	of this selection is mapped to an emitter name.
 	DECLARE_RCP(Select)
+	//!	\brief Specifies a value to emit for future decodings.
 	DECLARE_RCP(Value)
+	//!	\brief Emits the current value if there was no emitter matching the current selection.
 	DECLARE_EMT(Default)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_CON(Fire)
 		DEFINE_RCP(Select)
@@ -292,7 +331,8 @@ class Decode :
 	};
 
 //
-// Class - Debug.  A node to display debug information.
+// Class - Debug.  
+//! \brief A node to assist in debugging a graph.  Displays values and can initiate a debugger break.
 //
 
 class Debug :
@@ -313,12 +353,18 @@ class Debug :
 		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 
-	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Initiate a break in the program flow inside a debugger.  On Windows is calls 'DebugBreak'.
 	DECLARE_RCP(Break)
+	//!	\brief Print out a string version of the received value to the debug output.
 	DECLARE_RCP(Fire)
 //	DECLARE_CON(Log)
+	//!	\brief Print out the time difference between the last Reset signal and now to the debug output.
 	DECLARE_RCP(Mark)
+	//!	\brief Reset the initial time used when marking time.
 	DECLARE_RCP(Reset)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_RCP(Break)
 		DEFINE_RCP(Fire)
@@ -338,8 +384,8 @@ class Debug :
 	};
 
 //
-// Class - Demux.  A node that selects an output based
-//		on a single input value (keyed from a context).
+// Class - Demux.  
+//!	\brief A node that selects an output based on a single input value loaded from a dictionary.
 //
 
 class Demux :
@@ -363,11 +409,17 @@ class Demux :
 		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 
-	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Specifes the dictionary to use for future key lookups.
 	DECLARE_RCP(Dictionary)
+	//!	\brief Emit a value out a specific emitter matching the current value associated with the key in the dictionary.
 	DECLARE_CON(Fire)
+	//!	\brief Specifies the key to use for future value lookups in the dictionary.
 	DECLARE_RCP(Key)
+	//!	\brief Emits the current dictionary if there was no emitter matching the current value.
 	DECLARE_CON(Default)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_RCP(Dictionary)
 		DEFINE_CON(Fire)
@@ -377,7 +429,8 @@ class Demux :
 	};
 
 //
-// Class - DictFormat.  A node to format a dictionary into a string or stream.
+// Class - DictFormat.  
+//!	\brief A node to format and write values in a dictionary into a byte stream.
 //
 
 class DictFormat :
@@ -420,7 +473,8 @@ class DictFormat :
 	};
 
 //
-// Class - DictParse.  A node to parse a string or stream into a dictionary.
+// Class - DictParse.  
+//!	\brief A node to read bytes from a stream and format into dictionary values 
 //
 
 class DictParse :
@@ -463,6 +517,7 @@ class DictParse :
 
 //
 // Class - Dist.  A distribution node emits received values.
+//!	\brief A node that emits a received value unmodified.  A constant value can also be declared and emitted.
 //
 
 class Dist :
@@ -529,7 +584,8 @@ class Path :
 	};
 
 //
-// Class - StringFormat.  Formats a string from a dictionary.
+// Class - StringFormat.  
+//!	\brief Formats and writes values from a dictionary into a string.
 //
 
 class StringFormat :
@@ -568,7 +624,8 @@ class StringFormat :
 	};
 
 //
-// Class - StringOp.  Node for generic string operations.
+// Class - StringOp.  
+//!	\brief A node for generic string operations such as generating substrings and searching existing strings.
 //
 
 class StringOp :
@@ -629,7 +686,8 @@ class StringOp :
 	};
 
 //
-// Class - StringParse.  Parser a string with a given format.
+// Class - StringParse.
+//!	\brief A node to extract values into a dictionary from a string using the specified format.
 //
 
 class StringParse :
@@ -670,7 +728,8 @@ class StringParse :
 	};
 
 //
-// Class - StringStream.  Handles conversion of strings to and from streams.
+// Class - StringStream.  
+//!	\brief A node to handles transfers strings to streams and vice verse.
 //
 
 class StringStream :
@@ -723,7 +782,8 @@ class StringStream :
 	};
 
 //
-// Class - TimeOp.  A node to deal with time.
+// Class - TimeOp.
+//!	\brief A node to handle dates and times.
 //
 
 class TimeOp :
@@ -772,7 +832,8 @@ class TimeOp :
 	};
 
 //
-// Class - Timer.  A node that that emits at a given interval.
+// Class - Timer.  
+//!	\brief A node that asynchronously emits a signal at a given interval.
 //
 
 class Timer :
@@ -837,7 +898,8 @@ class Timer :
 	};
 
 //
-// Class - Toggle.  A node to handle a toggle value.
+// Class - Toggle.  
+//!	\brief A node to manipulate and emit a boolean value.  Values emit out true or false emitters.
 //
 
 class Toggle :
@@ -872,7 +934,8 @@ class Toggle :
 	};
 
 //
-// Class - TokenIt.  Node to iteratre through substrings.
+// Class - TokenIt.  
+//!	\brief A node to iterate through substrings with a given delimiter.
 //
 
 class TokenIt :
@@ -884,7 +947,7 @@ class TokenIt :
 
 	// Run-time data
 	adtString	strOrg,strCpy,strDelim;				// Parameters
-	WCHAR		*ptokLast;								// Last token
+	WCHAR			*ptokLast;								// Last token
 
 	// CCL
 	CCL_OBJECT_BEGIN(TokenIt)
@@ -916,7 +979,8 @@ class TokenIt :
 	};
 
 //
-// Class - Type.  Determines/queries for value types.
+// Class - Type.  
+//!	\brief A node to query and convert value types.
 //
 
 class Type :
@@ -957,12 +1021,6 @@ class Type :
 		DEFINE_EMT(Error)
 		DEFINE_EMT(NotEqual)
 	END_BEHAVIOUR_NOTIFY()
-
-	// Documentation
-
-//	MACRO("Determine, check, or convert a value from valid types.")
-
-// Fire,"Check if the value has the specified type."
 
 	private :
 

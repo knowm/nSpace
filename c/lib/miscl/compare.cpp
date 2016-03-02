@@ -48,15 +48,15 @@ HRESULT Compare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
-	//	PURPOSE
-	//		-	The node has received a value on the specified receptor.
-	//
-	//	PARAMETERS
-	//		-	pr is the receptor
-	//		-	v is the value
-	//
-	//	RETURN VALUE
-	//		S_OK if successful
+	//!	\brief The node has received a value on the specified receptor.
+	//!	\param pr is a ptr. to the receptor to which the value was received.
+	//!	\param pl is the key path into which the value was received 
+	//!	\param v is the received value
+	//!	\return S_OK if succesful
+	//!
+	//!	This function is the main entry point for all received values 
+	//!	into the node for this behaviour.  For behaviours 'pl' is
+	//!	always the string 'Value'.
 	//
 	////////////////////////////////////////////////////////////////////////
 	HRESULT	hr = S_OK;
