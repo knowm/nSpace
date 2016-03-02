@@ -456,7 +456,7 @@ HRESULT NamespaceX :: store ( BSTR bstrPath, VARIANT *var )
 //	dbgprintf ( L"NamespaceX::store:%s:%s\r\n", bstrPath, (LPCWSTR) strVar );
 
 	// Receive value into namespace
-	CCLTRY ( pRecep->receive ( NULL, bstrPath, vSt ) );
+	CCLTRY ( pRecep->receive ( NULL, strPath, vSt ) );
 
 	// Clean up
 	if (hr != S_OK)

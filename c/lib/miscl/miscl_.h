@@ -103,10 +103,6 @@ class AsyncQ :
 	CCL_OBJECT_END()
 	virtual void		destruct		( void );		// Destruct object
 
-	DECLARE_CON(Fire)
-	//!	\brief Specifies a value for subsequent emissions.
-	DECLARE_RCP(Value)
-
 	//! \name Connections 
 	//@{
 	//! \brief Queue the specified value for asynchronous emission.
@@ -162,10 +158,6 @@ class Clone :
 		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 
-	//! \name Connections 
-	DECLARE_CON(Fire)
-	//!	\brief Specifies a value for subsequent emissions.
-	DECLARE_RCP(Value)
 	//@{
 	//!	\brief Perform a clone by creating a new object and performing a deep copy.  If no value 
 	//!	was previously specified, the provided value is used.
