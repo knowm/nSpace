@@ -94,6 +94,7 @@ HRESULT image_fft ( IDictionary *pImg, bool bZeroDC )
 
 		// Compute DFT
 		dft ( matCmplx, matCmplx, DFT_ROWS );
+//		dft ( matCmplx, matCmplx, 0 );
 
 		// Separate real/imaginary results
 		split ( matCmplx, matPlanes );
