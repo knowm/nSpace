@@ -1,0 +1,34 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%									RAW.NSPC
+%
+%							USB raw I/O state
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% NSPC: Running state
+	$	Run				Nspc.Value { Value Idle Allowed ( Idle Start Stop ) }
+
+	% NSPC: Target device information
+	$	ClassId			Nspc.Value { Type String }
+	$	VendorId			Nspc.Value { Value 0x03eb:int Type Integer }
+	$	ProductId		Nspc.Value { Value 0xf002:int Type Integer }
+	$	AltSetting		Nspc.Value { Value 1:int Type Integer }
+
+	% NSPC: Endpoint type to use for I/O
+	$	Type				Nspc.Value { Value Bulk Allowed ( Interrupt Bulk ) }
+
+	% NSPC: Write a hex string to the endpoint
+	% Format is pairs of hex digits (8-bits) such as 00A3453F
+	$	Write				Nspc.Value { Type String }
+
+	% NSPC: A packet has been read from the end point
+	% Format is pairs of hex digits (8-bits) such as 00A3453F
+	$	OnRead			Nspc.Value { Type String }
+
+	% NSPC: Status messages
+	$	OnStatus			Nspc.Value { Type String }
+
+

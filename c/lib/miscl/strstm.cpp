@@ -9,11 +9,6 @@
 #include "miscl_.h"
 #include <stdio.h>
 
-#define	WCHAR2HEX(a)																	\
-	((a) >= WCHAR('0') && (a) <= WCHAR('9')) ? (a)-WCHAR('0') 		:		\
-	((a) >= WCHAR('a') && (a) <= WCHAR('f')) ? (a)-WCHAR('a')+10 	:		\
-	((a) >= WCHAR('A') && (a) <= WCHAR('F')) ? (a)-WCHAR('A')+10	: 0
-
 #define	SIZE_STRALLOC		100						// Alloc increments
 
 StringStream :: StringStream ( void )
@@ -29,6 +24,7 @@ StringStream :: StringStream ( void )
 	nstr			= 0;
 	nalloc		= 0;
 	bTerm			= false;
+	bHex			= false;
 	sCodePage	= L"ANSI";
 	}	// StringStream
 
@@ -114,6 +110,7 @@ HRESULT StringStream :: onAttach ( bool bAttach )
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
+	adtValue vL;
 
 	// Attach ?
 	if (!bAttach) return S_OK;
@@ -122,6 +119,10 @@ HRESULT StringStream :: onAttach ( bool bAttach )
 	pnDesc->load ( adtString ( L"Terminator" ),	sTerm );
 	pnDesc->load ( adtString ( L"Terminate" ),	bTerm );
 	pnDesc->load ( adtString ( L"CodePage" ),		sCodePage );
+
+	// Support ASCII-encoded binary. i.e. "0AF3" = ( 10, 243 );
+	if (pnDesc->load ( adtString(L"Hex"), vL ) == S_OK)
+		bHex = adtBool(vL);
 
 	return S_OK;
 	}	// onAttach
@@ -157,8 +158,8 @@ HRESULT StringStream :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE
 		// Continue reading bytes from stream until a string has been extracted.
 		while (hr == S_OK && pStm->read ( &c, 1, NULL ) == S_OK)
 			{
-			// Need bigger string ?
-			if (hr == S_OK && nstr == nalloc)
+			// Need bigger string ? (Leave room for possible double character for byte (hex)
+			if (hr == S_OK && nstr+1 >= nalloc)
 				{
 				// Place upper limit on how big the string can grow.  Make this
 				// a node property if someone needs a larger limit.
@@ -173,8 +174,17 @@ HRESULT StringStream :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE
 				}	// if
 
 			// Add to string
-			CCLOK ( pbStr[nstr++] = c; )
-			CCLOK ( pbStr[nstr] = '\0'; )
+			if (hr == S_OK && bHex == false)
+				{
+				pbStr[nstr++] = c;
+				pbStr[nstr] = '\0';
+				}	// if
+			else if (hr == S_OK)
+				{
+				pbStr[nstr++] = HEX2WCHAR( ((c>>4) & 0xf) );
+				pbStr[nstr++] = HEX2WCHAR( ((c>>0) & 0xf) );
+				pbStr[nstr] = '\0';
+				}	// else
 
 			// Not really efficient to keep decoding the string after every character
 			// but it seems to have to be done before proper termination and such can be checked for.
@@ -226,6 +236,24 @@ HRESULT StringStream :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE
 
 			}	// while
 
+		// If the end of the stream has been reached and string data was
+		// accumulated, transmit.
+		if (hr == S_OK && nstr > 0)
+			{
+			adtString	sStr;
+
+			// Convert string
+			if (sCodePage.length() > 0)
+				decodeStr ( sStr );
+			else
+				sStr = (char *) pbStr;
+
+			// Result
+			nstr			= 0;
+			pbStr[nstr] = '\0';
+			_EMT(Fire,sStr);
+			}	// if
+
 		// End of stream has been reached
 //		CCLOK ( _EMT(End,adtIUnknown(pStm)); )
 		}	// if
@@ -237,14 +265,10 @@ HRESULT StringStream :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE
 		U32		tlen	= sTerm.length();
 		U32		i,j;
 		U64		opos;
-		adtBool	bHex(false);
 		U8			c;
 
 		// State check
 		CCLTRYE ( (pStm != NULL), ERROR_INVALID_STATE );
-
-		// Support ASCII-encoded binary. i.e. "0AF3" = ( 10, 243 );
-		CCLOK ( pnDesc->load ( adtString(L"Hex"), bHex ); )
 
 		// Support writing in the middle of a stream for 'append' mode but
 		// still need to avoid sending out the stream with unwanted 'extra' bytes.

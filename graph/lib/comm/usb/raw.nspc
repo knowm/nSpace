@@ -1,0 +1,196 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								RAW.NSPC
+%
+%		A raw I/O USB utility graph that can write/read hex
+%		strings to/from endpoints on a device.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+
+	% Actions
+	$	Initialize			Misc.Dist {}		% Initialize
+	$	Uninitialize		Misc.Dist {}		% Uninitialize
+
+	% Notifications
+	
+	% DEBUG
+	$	Debug Misc.Debug {}
+
+	%%%%%%%%
+	% Setup
+	%%%%%%%%
+
+	% Subgraph: State for graph
+	#	State											State/Comm/Usb/Raw/ {}
+		!	State/Run/OnFire						Debug/Fire
+
+	% MISCN: Run states
+	$	ValueIdle Misc.Dist { Value Idle }
+		!	ValueIdle/OnFire						State/Run/Fire
+
+	% MISCN: Status
+	$	ValueNotF Misc.Dist { Value "A USB device with the provided vendor and product Ids was not found" }
+		!	ValueNotF/OnFire						State/OnStatus/Fire
+	$	ValueOpened Misc.Dist { Value "USB device and endpoints successfully opened" }
+		!	ValueOpened/OnFire					State/OnStatus/Fire
+	$	ValueWrErr Misc.Dist { Value "An error was detected during the write" }
+		!	ValueWrErr/OnFire						State/OnStatus/Fire
+	$	ValueRdErr Misc.Dist { Value "An error was detected during the read" }
+		!	ValueRdErr/OnFire						State/OnStatus/Fire
+
+	%%%%%%%%%%%%%%
+	% Open device
+	%%%%%%%%%%%%%%
+
+	% Subgraph: Open USB device by Ids
+	#	OpenId										Lib/Comm/Usb/Open_By_Id/ {}
+		!	OpenId/OnFound/OnFire				Debug/Fire
+		!	OpenId/OnEndpoint/OnFire			Debug/Fire
+
+	% Feed Ids to utility
+	!	State/VendorId/OnFire					OpenId/VendorId/Fire
+	!	State/ProductId/OnFire					OpenId/ProductId/Fire
+	!	State/AltSetting/OnFire					OpenId/AltSetting/Fire
+
+	%% Open
+
+	% MISCN: Start ?
+	$	IsStart Misc.Compare { Left Start }
+		!	State/Run/OnFire						IsStart/Fire
+
+	% Search for a target USB device
+	!	IsStart/OnEqual							Debug/Fire
+	!	IsStart/OnEqual							Debug/Fire
+	!	IsStart/OnEqual							OpenId/Find/Fire
+	
+	% Nothing found
+	!	OpenId/OnNotFound/OnFire				ValueNotF/Fire
+	!	OpenId/OnNotFound/OnFire				ValueIdle/Fire
+
+	%% Close
+
+	% MISCN: Stop ?
+	$	IsStop Misc.Compare { Left Stop }
+		!	IsStart/OnNotEqual					IsStop/Fire
+
+	% Complete
+	!	IsStop/OnEqual								OpenId/Close/Fire
+	!	IsStop/OnEqual								ValueIdle/Fire
+
+	%%%%%%%%%%%%
+	% Endpoints
+	%%%%%%%%%%%%
+
+	% MISCN: Demux direction of endpoint on type match
+	$	DemuxDir Misc.Demux { Key Direction Values ( In Out ) }
+		!	OpenId/OnEndpoint/OnFire			DemuxDir/Dictionary
+		!	OpenId/OnEndpoint/OnFire			DemuxDir/Default
+
+	% ADTN: Load the enumerated endpoint type 
+	$	LoadType Adt.Load { Key Type }
+		!	OpenId/OnEndpoint/OnFire			LoadType/Dictionary
+		!	OpenId/OnEndpoint/OnFire			LoadType/Fire
+
+	% MISCN: Match specified type ?
+	$	IsType Misc.Compare { Left "" }
+		!	State/Type/OnFire						IsType/Left
+		!	LoadType/OnFire						IsType/Fire
+
+	% Use endpoint
+	!	IsType/OnEqual								DemuxDir/Fire
+
+	%%%%%%%%%
+	% Writes
+	%%%%%%%%%
+
+	% MISCN: Endpoint output
+	$	EndPtOut Usb.Endpoint {}
+		!	OpenId/OnFound/OnFire				EndPtOut/Device
+		!	DemuxDir/OnOut							EndPtOut/Endpoint
+		!	EndPtOut/OnWrite						Debug/Fire
+
+	% Status
+	!	EndPtOut/OnError							ValueWrErr/Fire
+
+	%% Format the provided string into a stream for transmission
+
+	% MISCN: Write string
+	$	OnWrite Misc.Dist {}
+		!	State/Write/OnFire					OnWrite/Fire
+		!	OnWrite/OnFire							Debug/Fire
+
+	% MISCN: Create byte stream for output
+	$	CreateStmWr Misc.Create { Id Io.StmMemory }
+		!	OnWrite/OnFire							CreateStmWr/Fire
+
+	% MISCN: Write the string to the stream as hex value
+	$	ToStm Misc.StringStream { Hex true:bool }
+		!	CreateStmWr/OnFire					ToStm/Stream
+		!	OnWrite/OnFire							ToStm/String
+		!	OnWrite/OnFire							ToStm/To
+
+	% MISCN: Reset position of stream and calculate size
+	$	StmPosWr Io.StreamOp { Origin Set Offset 0:int }
+		!	ToStm/OnFire							StmPosWr/Stream
+		!	ToStm/OnFire							StmPosWr/Seek
+		!	ToStm/OnFire							StmPosWr/Available
+
+	% Write out endpoint
+	!	StmPosWr/OnAvailable						EndPtOut/Size
+	!	ToStm/OnFire								EndPtOut/Stream
+	!	ToStm/OnFire								EndPtOut/Write
+
+	%%%%%%%%
+	% Reads
+	%%%%%%%%
+
+	% MISCN: Create a stream to use for reads
+	$	CreateStmRd Misc.Create { Id Io.StmMemory }
+		!	Initialize/OnFire						CreateStmRd/Fire
+
+	% MISCN: Reset position of read stream 
+	$	StmPosRd Io.StreamOp { Origin Set Offset 0:int }
+		!	CreateStmRd/OnFire					StmPosRd/Stream
+
+	% ADTN: Read one packet at a time
+	$	LoadMaxSz Adt.Load { Key MaximumPacketSize }
+		!	DemuxDir/OnIn							LoadMaxSz/Dictionary
+		!	DemuxDir/OnIn							LoadMaxSz/Fire
+
+	% MISCN: Endpoint input.  Perform asynchronously to handle unannounced packets
+	$	EndPtIn Usb.Endpoint { AsyncRead true:bool }
+		!	OpenId/OnFound/OnFire				EndPtIn/Device
+		!	DemuxDir/OnIn							EndPtIn/Endpoint
+		!	CreateStmRd/OnFire					EndPtIn/Stream
+		!	LoadMaxSz/OnFire						EndPtIn/Size
+		!	EndPtIn/OnRead							Debug/Fire
+
+	% Status
+	!	EndPtIn/OnError							ValueRdErr/Fire
+
+	% Reset position for conversion
+	!	EndPtIn/OnRead								StmPosRd/Seek
+
+	% MISCN: Extract from stream into string as hex values
+	$	ToStr Misc.StringStream { Hex true:bool }
+		!	CreateStmRd/OnFire					ToStr/Stream
+		!	EndPtIn/OnRead							ToStr/From
+
+	% Result
+	!	ToStr/OnFire								State/OnRead/Fire
+
+	%%%%%%%%%%%%%%%%%%%
+	% Startup/shutdown
+	%%%%%%%%%%%%%%%%%%%
+
+	% Assuming only one device matches so use first type around
+	!	OpenId/OnFound/OnFire					ValueOpened/Fire
+	!	OpenId/OnFound/OnFire					OpenId/Open/Fire
+
+	% Done with device on shutdown
+	!	Uninitialize/OnFire						OpenId/Close/Fire
+

@@ -53,7 +53,7 @@
 		!	Close/OnFire							ResClose/Close
 
 	% MISCN: Enumerate USB devices.  Class Id for Custom USB devices
-	$	EnumDev Io.EnumDevClass {}
+	$	EnumDev Io.EnumDevClass { Class "{58D07210-27C1-11DD-BD0B-0800200c9a66}" }
 		!	ClassId/OnFire							EnumDev/Class
 		!	Find/OnFire								EnumDev/First
 		!	OnNext/OnFire							EnumDev/Next

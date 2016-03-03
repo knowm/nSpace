@@ -90,6 +90,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "usb", "usb", "{61445C3B-660C-4937-B736-3CD2B0F35A58}"
 	ProjectSection(SolutionItems) = preProject
 		..\graph\lib\comm\usb\open_by_id.nspc = ..\graph\lib\comm\usb\open_by_id.nspc
+		..\graph\lib\comm\usb\raw.nspc = ..\graph\lib\comm\usb\raw.nspc
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "network", "network", "{28385124-81B3-481C-A669-0B261946ACB4}"
@@ -164,6 +165,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "usb", "usb", "{8A293E20-BE4E-4587-AFD7-878265581C12}"
 	ProjectSection(SolutionItems) = preProject
 		..\graph\state\comm\usb\device.nspc = ..\graph\state\comm\usb\device.nspc
+		..\graph\state\comm\usb\raw.nspc = ..\graph\state\comm\usb\raw.nspc
 		..\graph\state\comm\usb\setup.nspc = ..\graph\state\comm\usb\setup.nspc
 	EndProjectSection
 EndProject

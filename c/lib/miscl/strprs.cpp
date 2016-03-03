@@ -12,11 +12,6 @@
 #include	<wctype.h>
 #endif
 
-#define	WCHAR2HEX(a)																	\
-	((a) >= WCHAR('0') && (a) <= WCHAR('9')) ? (a)-'0' 				:		\
-	((a) >= WCHAR('a') && (a) <= WCHAR('f')) ? (a)-WCHAR('a')+10 	:		\
-	((a) >= WCHAR('A') && (a) <= WCHAR('F')) ? (a)-WCHAR('A')+10	: 0
-
 StringParse :: StringParse ( void )
 	{
 	////////////////////////////////////////////////////////////////////////

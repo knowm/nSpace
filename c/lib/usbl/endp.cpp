@@ -246,7 +246,7 @@ HRESULT Endpoint :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v 
 		CCLOK  ( update (pEndp); )
 
 		// If endpoint is valid and asynchronous reads are requested, start thread
-		if (hr == S_OK && iPipe != -1)
+		if (hr == S_OK && iPipe != -1 && bAsync == true)
 			{
 			// Create read thread
 			CCLOK(ResetEvent(hevStop);)
@@ -322,6 +322,13 @@ HRESULT Endpoint :: tick ( void )
 
 	// Debug
 	dbgprintf ( L"Endpoint::tick {\n" );
+
+	// Sanity check to avoid fast looping
+	if (hr == S_OK && iSzIo == 0)
+		{
+		dbgprintf ( L"Endpoint::tick:WARNING no transfer size specified\r\n" );
+		Sleep(1000);
+		}	// if
 
 	// Perform one 'block' of transfers
 	uLeft = iSzIo;

@@ -17,6 +17,13 @@
 #include <sys/time.h>
 #endif
 
+#define	WCHAR2HEX(a)																	\
+	((a) >= WCHAR('0') && (a) <= WCHAR('9')) ? (a)-WCHAR('0') 		:		\
+	((a) >= WCHAR('a') && (a) <= WCHAR('f')) ? (a)-WCHAR('a')+10 	:		\
+	((a) >= WCHAR('A') && (a) <= WCHAR('F')) ? (a)-WCHAR('A')+10	: 0
+#define	HEX2WCHAR(a)													\
+	(((a) < 10) ? ((a) + WCHAR('0')) : ((a) - 10 + WCHAR('A')))
+
 //
 // Class - AsyncEmit.  
 //! \brief An asynchronous emission node.
@@ -738,6 +745,7 @@ class StringStream :
 	BYTE			*pbStr;									// Current string
 	U32			nalloc,nstr;							// Sizes
 	adtString	sCodePage;								// Code page for string
+	bool			bHex;										// Hex mode ?
 
 	// CCL
 	CCL_OBJECT_BEGIN(StringStream)
