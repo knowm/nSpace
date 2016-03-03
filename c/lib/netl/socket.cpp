@@ -260,7 +260,7 @@ if (true)
 											!= SOCKET_ERROR, WSAGetLastError() );
 
 		// Result
-		CCLOK ( dbgprintf ( L"Socket::receive:Port %d(%d)\r\n", sockaddr.sin_port, ntohs ( sockaddr.sin_port ) ); )
+//		CCLOK ( dbgprintf ( L"Socket::receive:Port %d(%d)\r\n", sockaddr.sin_port, ntohs ( sockaddr.sin_port ) ); )
 		CCLOK	( _EMT(Address,adtInt ( ntohl ( sockaddr.sin_addr.s_addr ) ) ); )
 		CCLOK	( _EMT(Port,adtInt ( ntohs ( sockaddr.sin_port ) ) ); )
 
@@ -270,7 +270,7 @@ if (true)
 													!= SOCKET_ERROR )
 			{
 			// Result
-			dbgprintf ( L"Socket::receive:Peer Port %d(%d)\r\n", sockaddr.sin_port, ntohs ( sockaddr.sin_port ) );
+//			dbgprintf ( L"Socket::receive:Peer Port %d(%d)\r\n", sockaddr.sin_port, ntohs ( sockaddr.sin_port ) );
 			CCLOK	( _EMT(PeerAddress,adtInt ( ntohl ( sockaddr.sin_addr.s_addr ) ) ); )
 			CCLOK	( _EMT(PeerPort,adtInt ( ntohs ( sockaddr.sin_port ) ) ); )
 			}	// if

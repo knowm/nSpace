@@ -216,9 +216,13 @@
 		!	KeyToStr/OnFire						AppendLoc/Left
 		!	AppendLoc/OnFire						ValueName/Value
 
+	% MISCN: Object ?
+	$	IsObjE Misc.Type { Type Object }
+		!	DctIt/OnNext							IsObjE/Fire
+
 	% MISCN: Receptor ? Do not display
 	$	IsRecepE Misc.Compare { Left Receptor }
-		!	DctIt/OnNext							IsRecepE/Fire
+		!	IsObjE/OnNotEqual						IsRecepE/Fire
 
 	% MISCN: Value ?
 	$	IsValE Misc.Compare { Left Value }

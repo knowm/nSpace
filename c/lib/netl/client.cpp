@@ -121,8 +121,8 @@ HRESULT Client :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			}	// if
 
 		// Result
-		dbgprintf ( L"Client::receive:Connect:skt %d Addr 0x%x:Port %d:0x%x\r\n", 
-						skt, iAddr.vint, iPort.vint, hr );
+//		dbgprintf ( L"Client::receive:Connect:skt %d Addr 0x%x:Port %d:0x%x\r\n", 
+//						skt, iAddr.vint, iPort.vint, hr );
 
 		// Connection completed immediately
 		if (hr == S_OK)
@@ -180,8 +180,8 @@ HRESULT Client :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		CCLTRY ( pSkt->store ( adtString(L"Socket"), adtLong(skt) ) );
 
 		// Result
-		dbgprintf ( L"Client::receive:Accept:sktSrvr %d skt %d\r\n", 
-						sktSrvr, skt );
+//		dbgprintf ( L"Client::receive:Accept:sktSrvr %d skt %d\r\n", 
+//						sktSrvr, skt );
 		if (hr == S_OK)
 			_EMT(Accept,adtIUnknown(pSkt) );
 		else

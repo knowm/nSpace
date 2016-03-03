@@ -228,6 +228,7 @@ HRESULT Endpoint :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v 
 		CCLTRY ( _QISAFE(unkV,IID_IDictionary,&pDev) );
 		CCLTRY ( pDev->load ( adtString(L"Interface"), vL ) );
 		CCLOK  ( hIntf = (WINUSB_INTERFACE_HANDLE)(U64)adtLong(vL); )
+		_RELEASE(pDev);
 		}	// else if
 	else if (_RCP(Endpoint))
 		{

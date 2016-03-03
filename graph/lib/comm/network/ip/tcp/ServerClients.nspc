@@ -135,7 +135,7 @@
 		!	ConnectCli/OnPending					StoreSktPend/Fire
 
 	% Connection pending, wait for 'writability'
-	!	ConnectCli/OnPending						Debug/Fire
+%	!	ConnectCli/OnPending						Debug/Fire
 	!	ConnectCli/OnPending						AvailWr/Socket
 	!	ConnectCli/OnPending						AvailWr/Add
 
@@ -267,5 +267,5 @@
 	!	Uninitialize/OnFire						Stop/Fire
 
 	% Debug
-	!	OnConnect/OnFire							Debug/Fire
+%	!	OnConnect/OnFire							Debug/Fire
 

@@ -241,7 +241,7 @@ HRESULT NetSkt_Receive ( SOCKET skt, void *pvBfr, U32 nio, U32 *pnio, U32 toms )
 	#if	defined(_DEBUG) || defined(DEBUG)
 	if (hr != S_OK)
 		{
-		dbgprintf ( L"Net_Receive:skt 0x%x hr 0x%x len %d nio %d\n", skt, hr, len, nio );
+//		dbgprintf ( L"Net_Receive:skt 0x%x hr 0x%x len %d nio %d\n", skt, hr, len, nio );
 		}	// if
 	#endif
 

@@ -225,6 +225,7 @@ HRESULT Device :: receive ( IReceptor *pr, const WCHAR *pl,
 			_EMT(Error,adtInt(hr));
 
 		// Clean up
+		_RELEASE(pEndpts);
 		_RELEASE(pInfo);
 		}	// else if
 

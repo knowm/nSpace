@@ -307,7 +307,9 @@ HRESULT NamespaceX :: load ( BSTR bstrPath, VARIANT *var )
 		hr = strPath.append ( L"Value/" );
 
 	// Load the value from the path
+	dbgprintf ( L"NamespaceX::load:strPath %s:hr 0x%x\r\n", (LPCWSTR)strPath, hr );
 	CCLTRY ( pShell->pSpc->get ( strPath, vL, NULL ) );
+//hr = S_FALSE;
 
 	// Convert to variant and copy
 	CCLOK ( varL = vL; )

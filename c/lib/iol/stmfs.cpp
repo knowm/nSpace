@@ -328,8 +328,8 @@ HRESULT StmFile :: open ( IDictionary *pOpts )
 
 		// If there was an error, perhaps the path to the file does not exist ?
 		if (hr != S_OK)
-			dbgprintf ( L"StmFile::open:Writable file access failed:%s\r\n",
-								(const WCHAR *) strLoc );
+			dbgprintf ( L"StmFile::open:Writable file access failed:%s,0x%x\r\n",
+								(const WCHAR *) strLoc, GetLastError() );
 		}	// else if
 
 	// Result

@@ -195,7 +195,7 @@ HRESULT Type :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 
 			// Objects
 			if (!WCASECMP(L"Object",sType))
-				bMatch = (	pUseV->vtype == VTYPE_UNK && pUseV->punk != NULL );
+				bMatch = (	adtValue::type(*pUseV) == VTYPE_UNK && pUseV->punk != NULL );
 			else if (!WCASECMP(L"Location",sType))
 				bMatch = (	pUseV->vtype == VTYPE_UNK && pUseV->punk != NULL &&
 								_QI(pUseV->punk,IID_ILocation,&pLoc) == S_OK );

@@ -24,8 +24,8 @@
 		!	PortSrvr/OnFire						Debug/Fire
 		!	Initialize/OnFire						Debug/Fire
 		!	Uninitialize/OnFire					Debug/Fire
-		!	Respond/OnFire							Debug/Fire
-		!	OnRequest/OnFire						Debug/Fire
+%		!	Respond/OnFire							Debug/Fire
+%		!	OnRequest/OnFire						Debug/Fire
 
 	%%%%%%%%
 	% Setup
@@ -100,7 +100,7 @@
 		!	CreateDctHdr/OnFire					ParseHdr/Dictionary
 		!	CreateDctHdr/OnFire					ParseHdr/Fire
 		!	Fmt/ValueIn/OnFire					ParseHdr/Format
-		!	ParseHdr/OnFire						Debug/Fire
+%		!	ParseHdr/OnFire						Debug/Fire
 
 	%% Copy results into request
 

@@ -73,7 +73,7 @@ HRESULT Compare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 //		if (	hr == S_OK && vLeft.vtype == VTYPE_STR && vLeft.pstr != NULL &&
 //			!WCASECMP(vLeft.pstr, L"State/Graph/Instance" ))
 //		dbgprintf ( L"Hi\r\n" );
-//		if (!WCASECMP(strnName,L"IsPort"))
+//		if (!WCASECMP(strnName,L"IsRecepE"))
 //			dbgprintf ( L"Hi\r\n" );
 
 		// Compare values

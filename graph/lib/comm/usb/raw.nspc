@@ -181,7 +181,11 @@
 		!	EndPtIn/OnRead							ToStr/From
 
 	% Result
+	!	ToStr/OnFire								Debug/Fire
 	!	ToStr/OnFire								State/OnRead/Fire
+
+	% Reset position for re-use
+	!	EndPtIn/OnRead								StmPosRd/Seek
 
 	%%%%%%%%%%%%%%%%%%%
 	% Startup/shutdown

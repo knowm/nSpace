@@ -13,8 +13,8 @@
 
 	% NSPC: Target device information
 	$	ClassId			Nspc.Value { Type String }
-	$	VendorId			Nspc.Value { Value 0x03eb:int Type Integer }
-	$	ProductId		Nspc.Value { Value 0xf002:int Type Integer }
+	$	VendorId			Nspc.Value { Value 0x0000:int Type Integer }
+	$	ProductId		Nspc.Value { Value 0x0000:int Type Integer }
 	$	AltSetting		Nspc.Value { Value 1:int Type Integer }
 
 	% NSPC: Endpoint type to use for I/O

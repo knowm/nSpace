@@ -34,33 +34,35 @@
 	%%%%%%%%%%%%%%
 
 	% Subgraph: USB Raw I/O
-	#	Raw											Lib/Comm/Usb/Raw/ {}
-		!	Raw/State/OnStatus/OnFire			Debug/Fire
-		!	Raw/State/OnRead/OnFire				Debug/Fire
+%	#	Raw											Lib/Comm/Usb/Raw/ {}
+%		!	Raw/State/OnStatus/OnFire			Debug/Fire
+%		!	Raw/State/OnRead/OnFire				Debug/Fire
 
 	% MISCN: Device under test
-	$	ValueClassId Misc.Dist { Value "{58D07210-27C1-11DD-BD0B-0800200c9a66}" }
-		!	Initialize/OnFire						ValueClassId/Fire
-		!	ValueClassId/OnFire					Raw/State/ClassId/Fire
-	$	ValueVendorId Misc.Dist { Value 0x03eb:int }
-		!	Initialize/OnFire						ValueVendorId/Fire
-		!	ValueVendorId/OnFire					Raw/State/VendorId/Fire
-	$	ValueProductId Misc.Dist { Value 0xf000:int }
-		!	Initialize/OnFire						ValueProductId/Fire
-		!	ValueProductId/OnFire				Raw/State/ProductId/Fire
+%	$	ValueClassId Misc.Dist { Value "{58D07210-27C1-11DD-BD0B-0800200c9a66}" }
+%		!	Initialize/OnFire						ValueClassId/Fire
+%		!	ValueClassId/OnFire					Raw/State/ClassId/Fire
+%	$	ValueVendorId Misc.Dist { Value 0x03eb:int }
+%		!	Initialize/OnFire						ValueVendorId/Fire
+%		!	ValueVendorId/OnFire					Raw/State/VendorId/Fire
+%	$	ValueProductId Misc.Dist { Value 0xf000:int }
+%		!	Initialize/OnFire						ValueProductId/Fire
+%		!	ValueProductId/OnFire				Raw/State/ProductId/Fire
 
 	% MISCN: Start test
-	$	ValueStart Misc.Dist { Value Start }
-		!	Initialize/OnFire						ValueStart/Fire
-		!	ValueStart/OnFire						Raw/State/Run/Fire
+%	$	ValueStart Misc.Dist { Value Start }
+%		!	Initialize/OnFire						ValueStart/Fire
+%		!	ValueStart/OnFire						Raw/State/Run/Fire
 
 	% MISCN: Write test string
-	$	ValueWr Misc.Dist { Value "00" }
-		!	Initialize/OnFire						ValueWr/Fire
-		!	ValueWr/OnFire							Raw/State/Write/Fire
+%	$	ValueWr Misc.Dist { Value "00" }
+%		!	Initialize/OnFire						ValueWr/Fire
+%		!	ValueWr/OnFire							Raw/State/Write/Fire
 
 	% MISCN: Shutdown on read
-	$	ValueStop Misc.Dist { Value Stop }
-		!	Raw/State/OnRead/OnFire				ValueStop/Fire
-		!	ValueStop/OnFire						Raw/State/Run/Fire
+%	$	ValueStop Misc.Dist { Value Stop }
+%		!	Raw/State/OnRead/OnFire				ValueStop/Fire
+%		!	ValueStop/OnFire						Debug/Fire
+%		!	ValueStop/OnFire						Debug/Fire
+%		!	ValueStop/OnFire						Raw/State/Run/Fire
 
