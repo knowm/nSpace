@@ -67,6 +67,12 @@ HRESULT image_fft ( IDictionary *pImg, bool bZeroDC )
 							E_OUTOFMEMORY );
 			CCLOK   ( bpp = 2; )
 			}	// if
+		else if (hr == S_OK && !WCASECMP(strFmt,L"S16X2"))
+			{
+			CCLTRYE ( (pmImg = new Mat ( h, w, CV_16SC1, pvBits )) != NULL,
+							E_OUTOFMEMORY );
+			CCLOK   ( bpp = 2; )
+			}	// if
 		else 
 			hr = ERROR_NOT_SUPPORTED;
 
@@ -181,7 +187,7 @@ HRESULT image_fft ( IDictionary *pImg, bool bZeroDC )
 		// For now, convert back into the original format.  
 		// This requires normalization and conversion
 		// NOTE: Add needed formats over time
-		if (hr == S_OK && !WCASECMP(strFmt,L"U16X2"))
+		if (hr == S_OK && (!WCASECMP(strFmt,L"U16X2") || !WCASECMP(strFmt,L"S16X2")))
 			{
 			// New image object for destination
 			CCLTRYE ( (pmImg = new Mat ( h, w, CV_16UC1, pvBits )) != NULL,
