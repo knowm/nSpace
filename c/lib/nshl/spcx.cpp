@@ -498,6 +498,10 @@ HRESULT NamespaceX :: unlisten (	BSTR bstrPath, IListenX *pR )
 	// State check
 	CCLTRYE ( pShell != NULL, ERROR_INVALID_STATE );
 
+	// Allow caller to leave off the slash, e.g. XXX/OnFire = XXX/OnFire/
+	if (hr == S_OK && strPath[strPath.length()-1] != '/')
+		hr = strPath.append ( L"/" );
+
 	// Load specified path from catalog
 	CCLTRY ( pShell->pSpc->get ( bstrPath, vL, NULL ) );
 
