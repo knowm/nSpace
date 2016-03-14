@@ -205,8 +205,10 @@ HRESULT StringStream :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE
 					nstr	= 0;
 				}	// if
 
-			// Termination check.  If no terminination string is specified allow 'nulls'
-			if (hr == S_OK && ((tlen > 0 && nstr >= tlen) || (tlen == 0 && c == '\0')))
+			// Termination check.  
+			// Defaulting to null termination does not make sense when converting
+			// from binary streams, do not assume null termination.
+			if (hr == S_OK && (tlen > 0 && nstr >= tlen))// || (tlen == 0 && c == '\0')))
 				{
 				// Search for matching termination
 				for (i = 0;hr == S_OK && i < tlen;++i)
