@@ -1,15 +1,15 @@
 ////////////////////////////////////////////////////////////////////////
 //
-//									ENUMCLS.CPP
+//									ENUMDEVS.CPP
 //
-//					Implementation of the device class enumeration node
+//					Implementation of the device enumeration node
 //
 ////////////////////////////////////////////////////////////////////////
 
 #include "iol_.h"
 #include <stdio.h>
 
-EnumDevClass :: EnumDevClass ( void ) : dl ( L"SETUPAPI.DLL" )
+EnumDevices :: EnumDevices ( void ) : dl ( L"SETUPAPI.DLL" )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -21,9 +21,9 @@ EnumDevClass :: EnumDevClass ( void ) : dl ( L"SETUPAPI.DLL" )
 	hEnum			= INVALID_HANDLE_VALUE;
 	idx			= 0;
 	sdddil		= NULL;
-	}	// EnumDevClass
+	}	// EnumDevices
 
-HRESULT EnumDevClass :: onAttach ( bool bAttach )
+HRESULT EnumDevices :: onAttach ( bool bAttach )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -72,9 +72,13 @@ HRESULT EnumDevClass :: onAttach ( bool bAttach )
 							!= NULL, GetLastError() );
 			}	// if
 
-		// Possible default class
+		// Defaults
 		if (	pnDesc->load ( adtString(L"Class"), vL ) == S_OK )
-			receive ( prClass, L"Value", vL );
+			{
+			adtString	strClass(vL);
+			if (strClass.length() > 0)
+				CLSIDFromString ( strClass, &guidClass );
+			}	// if
 		}	// if
 
 	// Detach
@@ -90,7 +94,7 @@ HRESULT EnumDevClass :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT EnumDevClass :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT EnumDevices :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -125,11 +129,12 @@ HRESULT EnumDevClass :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE
 		// State check
 		CCLTRYE ( guidClass != GUID_NULL, ERROR_INVALID_STATE );
 
-		// Enumeration handle
+		// Enumeration handle.  A device class or an enumerator string
+		// can be specified.
 		#if	!defined(UNDER_CE)
 		CCLTRYE ( (hEnum = sdgcd ( &guidClass, NULL, NULL,
-									DIGCF_PRESENT | DIGCF_DEVICEINTERFACE )) != 
-									INVALID_HANDLE_VALUE, GetLastError() );
+							DIGCF_PRESENT | DIGCF_DEVICEINTERFACE )) != 
+							INVALID_HANDLE_VALUE, GetLastError() );
 		#endif
 
 		// Next item
@@ -303,12 +308,6 @@ HRESULT EnumDevClass :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE
 		}	// else if
 
 	// Class
-	else if (_RCP(Class))
-		{
-		adtString	strClass(v);
-		if (strClass.length() > 0)
-			CLSIDFromString ( strClass, &guidClass );
-		}	// else if
 	else
 		hr = ERROR_NO_MATCH;
 

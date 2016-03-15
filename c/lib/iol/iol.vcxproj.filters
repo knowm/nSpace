@@ -18,9 +18,6 @@
     <ClCompile Include="bytecach.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="enumcls.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="lock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -55,6 +52,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="stream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="enumdevs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

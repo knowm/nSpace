@@ -66,3 +66,17 @@
 %		!	ValueStop/OnFire						Debug/Fire
 %		!	ValueStop/OnFire						Raw/State/Run/Fire
 
+	%%%%%%%%%%%%%%
+	% Enumeration
+	%%%%%%%%%%%%%%
+
+	% ION: Enumerate devices (USB Device class)
+	$	EnumUSB Io.EnumDevices { Class "{A5DCBF10-6530-11D2-901F-00C04FB951ED}" }
+		!	Initialize/OnFire						EnumUSB/First
+		!	EnumUSB/OnNext							Debug/Fire
+		!	EnumUSB/OnName							Debug/Fire
+		!	EnumUSB/OnNext							EnumUSB/Next
+
+	% 
+
+

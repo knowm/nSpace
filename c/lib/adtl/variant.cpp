@@ -83,8 +83,12 @@ HRESULT adtVariant :: toValue ( ADTVALUE &v )
 			v.vflt	= fltVal;
 			break;
 		case VT_R8:
-			v.vtype = VTYPE_R8;
-			v.vdbl = dblVal;
+			v.vtype	= VTYPE_R8;
+			v.vdbl	= dblVal;
+			break;
+		case VT_I2:
+			v.vtype	= VTYPE_I4;
+			v.vint	= this->iVal;
 			break;
 		case VT_I4:
 			v.vtype = VTYPE_I4;

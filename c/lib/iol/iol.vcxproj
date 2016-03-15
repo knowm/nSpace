@@ -12,7 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="bytecach.cpp" />
-    <ClCompile Include="enumcls.cpp" />
+    <ClCompile Include="enumdevs.cpp" />
     <ClCompile Include="lock.cpp" />
     <ClCompile Include="memblck.cpp" />
     <ClCompile Include="persist.cpp" />

@@ -26,7 +26,7 @@ CCL_OBJLIST_BEGIN()
 
 	// Nodes
 	#ifdef	_WIN32
-	CCL_OBJLIST_ENTRY	(EnumDevClass)
+	CCL_OBJLIST_ENTRY	(EnumDevices)
 	#endif
 	CCL_OBJLIST_ENTRY	(Resource)
 	CCL_OBJLIST_ENTRY	(Persist)

@@ -370,16 +370,15 @@ class StmPrsXML :
 
 #if	defined(_WIN32)
 //
-// Class - EnumDevClass.  Node to iterate through system devices
-//		of a particular class.
+// Class - EnumDevices.  Node to enumerator through system devices.
 //
 
-class EnumDevClass :
+class EnumDevices :
 	public CCLObject,										// Base class
 	public IBehaviour										// Interface
 	{
 	public :
-	EnumDevClass ( void );								// Constructor
+	EnumDevices ( void );								// Constructor
 
 	// Run-time data
 	GUID			guidClass;								// Class ID
@@ -388,18 +387,16 @@ class EnumDevClass :
 	sysDl			dl;										// Library
 
 	// CCL
-	CCL_OBJECT_BEGIN(EnumDevClass)
+	CCL_OBJECT_BEGIN(EnumDevices)
 		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 
 	// Connections
-	DECLARE_RCP(Class)
 	DECLARE_RCP(First)
 	DECLARE_CON(Next)
 	DECLARE_EMT(End)
 	DECLARE_EMT(Name)
 	BEGIN_BEHAVIOUR()
-		DEFINE_RCP(Class)
 		DEFINE_EMT(End)
 		DEFINE_RCP(First)
 		DEFINE_EMT(Name)
