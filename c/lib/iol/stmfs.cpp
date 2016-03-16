@@ -303,9 +303,9 @@ HRESULT StmFile :: open ( IDictionary *pOpts )
 							NULL, OPEN_EXISTING, 
 							(bAsync) ? FILE_FLAG_OVERLAPPED : 0, NULL )) != 
 							INVALID_HANDLE_VALUE, GetLastError() );
-//		if (hr != S_OK)
-//			dbgprintf ( L"StmFile::open:Read only access failed:%s\r\n",
-//								(const WCHAR *) strLoc );
+		if (hr != S_OK)
+			dbgprintf ( L"StmFile::open:Read only access failed:%s\r\n",
+								(const WCHAR *) strLoc );
 		}	// if
 
 	// Writable file

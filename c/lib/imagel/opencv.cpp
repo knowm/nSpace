@@ -12,11 +12,14 @@
 // OpenCV
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/gpu/gpu.hpp>
 //#include <opencv2/highgui/highgui.hpp>
 //#include <opencv2/features2d/features2d.hpp>
 
 // Globals
 using namespace cv;
+static bool bInit = false;
+static bool bGPU	= false;
 
 HRESULT image_fft ( IDictionary *pImg, bool bZeroDC )
 	{
@@ -41,10 +44,11 @@ HRESULT image_fft ( IDictionary *pImg, bool bZeroDC )
 	adtIUnknown		unkV;
 	U32				w,h,bpp	= 0;
 
-	// Open CV
-	Mat	*pmImg	= NULL;
-	Mat	matPad,matDft,matPlanes[2],matCmplx,matQ[4],matTmp,matMag,matReal;
-	int	m,n,cx,cy;
+	// Open CV.  Make GPU more general.
+	Mat			*pmImg	= NULL;
+	Mat			matPad,matDft,matPlanes[2],matCmplx,matQ[4],matTmp,matMag,matReal;
+	gpu::GpuMat	gpuPad,gpuDft,gpuPlanes[2],gpuCmplx,gpuQ[4],gpuTmp,gpuMag,gpuReal;
+	int			m,n,cx,cy;
 
 	// Access image information
 	CCLTRY ( pImg->load ( adtString(L"Width"), vL ) );
@@ -56,6 +60,13 @@ HRESULT image_fft ( IDictionary *pImg, bool bZeroDC )
 	CCLTRY ( pImg->load ( adtString(L"Bits"), vL ) );
 	CCLTRY ( _QISAFE((unkV=vL),IID_IMemoryMapped,&pBits) );
 	CCLTRY ( pBits->lock ( 0, 0, &pvBits, NULL ) );
+
+	// GPU enable ?
+	if (hr == S_OK && !bInit)
+		{
+		bGPU = (gpu::getCudaEnabledDeviceCount() > 0);
+		bInit = true;
+		}	// if
 
 	// Open CV uses exceptions
 	try
@@ -78,6 +89,8 @@ HRESULT image_fft ( IDictionary *pImg, bool bZeroDC )
 
 		// Convert source image to 32-bit floating point to match logic below
 		pmImg->convertTo ( matTmp, CV_32FC1 );
+		if (bGPU)
+			gpuTmp.upload ( matTmp );
 
 		// Compute DFT (make "rows" an option)
 //		dft ( matTmp, matReal, DFT_REAL_OUTPUT|DFT_ROWS );
@@ -90,35 +103,82 @@ HRESULT image_fft ( IDictionary *pImg, bool bZeroDC )
 		// Create a windowed version of the image
 		m = getOptimalDFTSize ( matTmp.rows );
 		n = getOptimalDFTSize ( matTmp.cols );
-		copyMakeBorder ( matTmp, matPad, 0, m - matTmp.rows, 0, n - matTmp.cols, 
-								BORDER_CONSTANT, Scalar::all(0) );
+		if (!bGPU)
+			copyMakeBorder ( matTmp, matPad, 0, m - matTmp.rows, 0, n - matTmp.cols, 
+									BORDER_CONSTANT, Scalar::all(0) );
+		else 
+			gpu::copyMakeBorder ( gpuTmp, gpuPad, 0, m - gpuTmp.rows, 0, n - gpuTmp.cols, 
+											BORDER_CONSTANT, Scalar::all(0) );
 
 		// Produce a real and (zeroed) imaginary pair
 		matPlanes[0] = Mat_<float>(matPad);
 		matPlanes[1] = Mat::zeros ( matPad.size(), CV_32F );
-		merge ( matPlanes, 2, matCmplx );
+		if (!bGPU)
+			merge ( matPlanes, 2, matCmplx );
+		else
+			{
+			gpuPlanes[0].upload ( matPlanes[0] );
+			gpuPlanes[1].upload ( matPlanes[1] );
+			gpu::merge ( gpuPlanes, 2, gpuCmplx );
+			}	// else
 
 		// Compute DFT
-		dft ( matCmplx, matCmplx, DFT_ROWS );
+		if (!bGPU)
+			dft ( matCmplx, matCmplx, DFT_ROWS );
+		else
+			gpu::dft ( gpuCmplx, gpuCmplx, gpuCmplx.size(), DFT_ROWS );
+
 //		dft ( matCmplx, matCmplx, 0 );
 
 		// Separate real/imaginary results
-		split ( matCmplx, matPlanes );
+		if (!bGPU)
+			split ( matCmplx, matPlanes );
+		else
+			gpu::split ( gpuCmplx, gpuPlanes );
 
 		// Compute the magnitude of DFT
-		magnitude ( matPlanes[0], matPlanes[1], matPlanes[0] );
-		matMag = matPlanes[0];
+		if (!bGPU)
+			{
+			magnitude ( matPlanes[0], matPlanes[1], matPlanes[0] );
+			matMag = matPlanes[0];
+			}	// if
+		else
+			{
+			magnitude ( gpuPlanes[0], gpuPlanes[1], gpuPlanes[0] );
+			gpuMag = gpuPlanes[0];
+			}	// else
 	
 		// Switch to log scale
-		matMag += Scalar::all(1);
-		log ( matMag, matMag );
+		if (!bGPU)
+			{
+			// Log scale
+			matMag += Scalar::all(1);
+			log ( matMag, matMag );
 
-		// Crop the spectrum if it has an odd number of rows or columns
-		matMag = matMag ( Rect ( 0, 0, matMag.cols & -2, matMag.rows & -2 ) );
+			// Crop the spectrum if it has an odd number of rows or columns
+			matMag = matMag ( Rect ( 0, 0, matMag.cols & -2, matMag.rows & -2 ) );
+			}	// if
+		else
+			{
+			// Log scale
+			gpu::add ( gpuMag, Scalar::all(1), gpuMag );
+			gpu::log ( gpuMag, gpuMag );
+
+			// Crop the spectrum if it has an odd number of rows or columns
+			gpuMag = gpuMag ( Rect ( 0, 0, gpuMag.cols & -2, gpuMag.rows & -2 ) );
+			}	// else
 
 		// Rearrange the quadrants of Fourier image so that the origin is at the image center
-		cx = matMag.cols/2;
-		cy = matMag.rows/2;
+		if (!bGPU)
+			{
+			cx = matMag.cols/2;
+			cy = matMag.rows/2;
+			}	// if
+		else
+			{
+			cx = gpuMag.cols/2;
+			cy = gpuMag.rows/2;
+			}	// else
 
 		// In OpenCV FFT example, however do not currently need all 4 quadrants.
 		// Just use matQ[2] which contains the positive going frequency components.
@@ -126,7 +186,10 @@ HRESULT image_fft ( IDictionary *pImg, bool bZeroDC )
 		// ROIs for quadrants
 //		matQ[0] = matMag ( Rect ( 0, 0, cx, cy ) );
 //		matQ[1] = matMag ( Rect ( cx, 0, cx, cy ) );
-		matQ[2] = matMag ( Rect ( 0, cy, cx, cy ) );
+		if (!bGPU)
+			matQ[2] = matMag ( Rect ( 0, cy, cx, cy ) );
+		else
+			gpuQ[2] = gpuMag ( Rect ( 0, cy, cx, cy ) );
 //		matQ[3] = matMag ( Rect ( cx, cy, cx, cy ) );
 
 		// Swap quadrants
@@ -138,7 +201,10 @@ HRESULT image_fft ( IDictionary *pImg, bool bZeroDC )
 		matQ[2].copyTo ( matQ[1] );
 		matTmp.copyTo  ( matQ[2] );
 */
-		matMag	= matQ[2];
+		if (!bGPU)
+			matMag	= matQ[2];
+		else
+			gpuMag	= gpuQ[2];
 
 		// Zero the DC component on request
 		if (bZeroDC)
@@ -147,8 +213,12 @@ HRESULT image_fft ( IDictionary *pImg, bool bZeroDC )
 //			for (int r = 0;r < matMag.rows;++r)
 //				matMag.at<float>(Point(cx,r)) = 0.0f;
 			// First column of each row = zero
-			for (int r = 0;r < matMag.rows;++r)
-				matMag.at<float>(Point(0,r)) = 0.0f;
+			if (!bGPU)
+				{
+				for (int r = 0;r < matMag.rows;++r)
+					matMag.at<float>(Point(0,r)) = 0.0f;
+				}	// if
+
 			// Last row of each column = zero
 //			for (int c = 0;c < cx;++c)
 //				matMag.at<float>(Point(c,cy-1)) = 0.0f;
@@ -160,10 +230,11 @@ HRESULT image_fft ( IDictionary *pImg, bool bZeroDC )
 
 		// Ensure original bits have room for the possibly grown magnitude
 		_UNLOCK(pBits,pvBits);
-		CCLTRY(pBits->setSize ( matMag.rows*matMag.cols*bpp ));
+		CCLTRY(pBits->setSize ( (!bGPU) ?	matMag.rows*matMag.cols*bpp : 
+														gpuMag.rows*gpuMag.cols*bpp ));
 		CCLTRY(pBits->lock ( 0, 0, &pvBits, NULL ));
-		CCLOK ( w = matMag.cols; )
-		CCLOK ( h = matMag.rows; )
+		CCLOK ( w = (!bGPU) ? matMag.cols : gpuMag.cols; )
+		CCLOK ( h = (!bGPU) ? matMag.rows : gpuMag.rows; )
 
 		// Update descriptor
 		CCLTRY ( pImg->store ( adtString(L"Width"), adtInt(w) ) );
@@ -196,8 +267,18 @@ HRESULT image_fft ( IDictionary *pImg, bool bZeroDC )
 			// Normalize, convert, and copy
 //			matReal.convertTo ( *pmImg, CV_16UC1 );
 //			matReal.copyTo ( *pmImg );
-			normalize ( matMag, matMag, 0, 0xffff, NORM_MINMAX );
-			matMag.convertTo ( *pmImg, CV_16UC1 );
+			if (!bGPU)
+				{
+				normalize ( matMag, matMag, 0, 0xffff, NORM_MINMAX );
+				matMag.convertTo ( *pmImg, CV_16UC1 );
+				}	// if
+			else
+				{
+				gpu::normalize ( gpuMag, gpuMag, 0, 0xffff, NORM_MINMAX );
+				gpuMag.convertTo ( gpuMag, CV_16UC1 );
+				gpuMag.download ( *pmImg );
+				}	// if
+
 //			matMag.copyTo ( *pmImg );
 			}	// if
 		else 
