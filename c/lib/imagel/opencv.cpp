@@ -64,7 +64,9 @@ HRESULT image_fft ( IDictionary *pImg, bool bZeroDC )
 	// GPU enable ?
 	if (hr == S_OK && !bInit)
 		{
-		bGPU = (gpu::getCudaEnabledDeviceCount() > 0);
+		U32 
+		cnt	= gpu::getCudaEnabledDeviceCount();
+		bGPU	= (cnt > 0);
 		bInit = true;
 		}	// if
 
