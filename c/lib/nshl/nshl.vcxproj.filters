@@ -57,7 +57,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="nshle.idl">
+    <Midl Include="nshl.idl">
       <Filter>Resource Files</Filter>
     </Midl>
   </ItemGroup>

@@ -27,9 +27,4 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
-  <ItemGroup>
-    <Midl Include="nshle.idl">
-      <Filter>Resource Files</Filter>
-    </Midl>
-  </ItemGroup>
 </Project>

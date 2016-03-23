@@ -25,9 +25,6 @@
     <ClCompile Include="client.cpp" />
     <ClCompile Include="nshle_i.c" />
   </ItemGroup>
-  <ItemGroup>
-    <Midl Include="nshle.idl" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8738FDAD-B4A1-48ED-B021-6FAAB9AB5072}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
