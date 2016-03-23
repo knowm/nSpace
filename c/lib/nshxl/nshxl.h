@@ -14,7 +14,7 @@
 
 // Generated .H from IDL file
 #ifdef 	_WIN32
-#include "../nshl/nshle_h.h"
+#include "../nshl/nshl_h.h"
 #endif
 
 // Size of byte cache for persisted values

@@ -19,11 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\nshl\nshl_h.h" />
     <ClInclude Include="nshxl.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\nshl\nshl_i.c" />
     <ClCompile Include="client.cpp" />
-    <ClCompile Include="nshle_i.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8738FDAD-B4A1-48ED-B021-6FAAB9AB5072}</ProjectGuid>

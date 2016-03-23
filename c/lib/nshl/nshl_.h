@@ -22,7 +22,7 @@
 //namespace embed
 //	{
 	#ifdef	_WIN32
-	#include "nshle_h.h"
+	#include "nshl_h.h"
 	#endif
 //	}
 
