@@ -144,7 +144,8 @@
 		!	LoadEnumIdx/OnFire					StoreEnum/Fire
 		!	StoreEnum/OnFire						Debug/Fire
 
+	% This is a test
+
 	% Next device
 	!	Enum/OnNext									Enum/Next
 %	!	EnumDev/OnNext								EnumDev/Next
-
