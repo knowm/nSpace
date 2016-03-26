@@ -19,7 +19,8 @@ library nSpace
 	] 
 	interface IListenX : IUnknown
 		{
-		HRESULT receive	( [in] BSTR szPath, [in] BSTR szLoc, [in] VARIANT * );
+		HRESULT receive	(	[in] BSTR szPath, [in] BSTR szLoc, 
+									[in] VARIANT *pVar );
 		};
 
 	// INamespaceX
@@ -32,9 +33,9 @@ library nSpace
 	] 
 	interface INamespaceX : IUnknown
 		{
-		HRESULT load		( [in] BSTR szPath, [out] VARIANT * );
+		HRESULT load		( [in] BSTR szPath, [out] VARIANT *pVar );
 		HRESULT listen		( [in] BSTR szPath, [in] IListenX *ppL );
-		HRESULT store		( [in] BSTR szPath, [in] VARIANT * );
+		HRESULT store		( [in] BSTR szPath, [in] VARIANT *pVar );
 		HRESULT unlisten	( [in] BSTR szPath, [in] IListenX *pL );
 		};
 
@@ -48,7 +49,8 @@ library nSpace
 	] 
 	interface IShellX : IUnknown
 		{
-		HRESULT open ( [in] BSTR szCmdLine, [in] BOOL bShare, [out] INamespaceX **ppSpc );
+		HRESULT open ( [in] BSTR szCmdLine, [in] BOOL bShare, 
+							[out] INamespaceX **ppSpc );
 		};
 
 	// ShellX

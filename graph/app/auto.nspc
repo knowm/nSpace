@@ -105,47 +105,53 @@
 	%% SP devices
 
 	% SPDN: Enumerate devices
-	$	Enum Abbott.Spd.Enum {}
-		!	Initialize/OnFire						Enum/First
-		!	Enum/OnNext								Debug/Fire
-		!	Enum/OnEnd								Debug/Fire
+%	$	Enum Abbott.Spd.Enum {}
+%		!	Initialize/OnFire						Enum/First
+%		!	Enum/OnNext								Debug/Fire
+%		!	Enum/OnEnd								Debug/Fire
 
 	% MISCN: Create enumeration context for the unit
-	$	CreateEnumDct Misc.Create { Id Adt.Dictionary }
-		!	Enum/OnNext								CreateEnumDct/Fire
+%	$	CreateEnumDct Misc.Create { Id Adt.Dictionary }
+%		!	Enum/OnNext								CreateEnumDct/Fire
 
 	% ADTN: Store the definition needed for the instance
-	$	StoreEnumDef Adt.Store { Key Definition Value "Abbott/Driver/Oct/Spd/Inst/" }
-		!	CreateEnumDct/OnFire					StoreEnumDef/Dictionary
-		!	CreateEnumDct/OnFire					StoreEnumDef/Fire
+%	$	StoreEnumDef Adt.Store { Key Definition Value "Abbott/Driver/Oct/Spd/Inst/" }
+%		!	CreateEnumDct/OnFire					StoreEnumDef/Dictionary
+%		!	CreateEnumDct/OnFire					StoreEnumDef/Fire
 
 	% ADTN: Device type
-	$	StoreEnumType Adt.Store { Key Type Value Oct }
-		!	CreateEnumDct/OnFire					StoreEnumType/Dictionary
-		!	CreateEnumDct/OnFire					StoreEnumType/Fire
+%	$	StoreEnumType Adt.Store { Key Type Value Oct }
+%		!	CreateEnumDct/OnFire					StoreEnumType/Dictionary
+%		!	CreateEnumDct/OnFire					StoreEnumType/Fire
 
 	% MISCN: Create a state context for the unit
-	$	CreateStateDct Misc.Create { Id Adt.Dictionary }
-		!	Enum/OnNext								CreateStateDct/Fire
+%	$	CreateStateDct Misc.Create { Id Adt.Dictionary }
+%		!	Enum/OnNext								CreateStateDct/Fire
 
 	% ADTN: Store state context in enumeration
-	$	StoreStateDct Adt.Store { Key State }
-		!	CreateEnumDct/OnFire					StoreStateDct/Dictionary
-		!	CreateStateDct/OnFire				StoreStateDct/Fire
+%	$	StoreStateDct Adt.Store { Key State }
+%		!	CreateEnumDct/OnFire					StoreStateDct/Dictionary
+%		!	CreateStateDct/OnFire				StoreStateDct/Fire
 
 	% ADTN: Load the relevant parameters from the information
-	$	LoadEnumIdx Adt.Load { Key Index }
-		!	Enum/OnNext								LoadEnumIdx/Dictionary
-		!	Enum/OnNext								LoadEnumIdx/Fire
+%	$	LoadEnumIdx Adt.Load { Key Index }
+%		!	Enum/OnNext								LoadEnumIdx/Dictionary
+%		!	Enum/OnNext								LoadEnumIdx/Fire
 
 	% ADTN: Store value in enumeration dictionary
-	$	StoreEnum Adt.Store { Key "State/Index" }
-		!	CreateStateDct/OnFire				StoreEnum/Dictionary
-		!	LoadEnumIdx/OnFire					StoreEnum/Fire
-		!	StoreEnum/OnFire						Debug/Fire
+%	$	StoreEnum Adt.Store { Key "State/Index" }
+%		!	CreateStateDct/OnFire				StoreEnum/Dictionary
+%		!	LoadEnumIdx/OnFire					StoreEnum/Fire
+%		!	StoreEnum/OnFire						Debug/Fire
 
 	% This is a test
 
 	% Next device
-	!	Enum/OnNext									Enum/Next
+%	!	Enum/OnNext									Enum/Next
 %	!	EnumDev/OnNext								EnumDev/Next
+
+	%%%%%
+	% UI
+	%%%%%
+
+	% UIN:

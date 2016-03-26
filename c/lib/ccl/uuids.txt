@@ -74,7 +74,7 @@
 2534d049-8628-11d2-868c-006008addfed				// CLSID_Persist (IO)
 2534d04a-8628-11d2-868c-006008addfed				// CLSID_Stream (IO)
 2534d04b-8628-11d2-868c-006008addfed				// CLSID_StringStream (miscl)
-2534d04c-8628-11d2-868c-006008addfed				// CLSID_Window (gdil)
+2534d04c-8628-11d2-868c-006008addfed				// CLSID_Window (widgetl)
 2534d04d-8628-11d2-868c-006008addfed				// CLSID_Socket (netl)
 2534d04e-8628-11d2-868c-006008addfed				//	CLSID_Client (netl)
 2534d04f-8628-11d2-868c-006008addfed				// IID_IThread

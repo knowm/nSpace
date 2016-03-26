@@ -37,7 +37,7 @@
     <ClInclude Include="nshl_.h" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="nshle.idl" />
+    <Midl Include="nshl.idl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A58C30ED-DB36-4390-BEEF-3F050BDD601E}</ProjectGuid>
