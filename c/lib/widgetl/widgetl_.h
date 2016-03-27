@@ -16,6 +16,36 @@
 
 // For internal math functions
 #include "../mathl/mathl.h"
+
+//
+// Class - gdiWindow.  GDI window base class.
+//
+
+class gdiWindow
+	{
+	public :
+	gdiWindow ( void );									// Constructor
+	virtual ~gdiWindow ( void );						// Destructor
+
+	// Run-time data
+	HINSTANCE	ui_hInst;								// Application instance
+	HWND			ui_hWnd;									// Window handle
+
+	// 'gdiWindow' members
+	STDMETHOD(classInfo)		( WNDCLASSEX * );
+	STDMETHOD(create)			( HWND, LPCWSTR, DWORD );
+	STDMETHOD(onMessage)		( UINT, WPARAM, LPARAM );
+
+	// Extractors
+	operator HWND()		const	{ return ui_hWnd; }
+	operator HINSTANCE() const	{ return ui_hInst; }
+
+	protected :
+
+	// Win32 window callback
+	static LRESULT CALLBACK windowProc	( HWND, UINT, WPARAM, LPARAM );
+	};
+
 /*
 // Forward dec.
 class gdiWindow;
