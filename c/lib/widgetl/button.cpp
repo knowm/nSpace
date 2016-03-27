@@ -23,7 +23,6 @@ Button :: Button ( void )
 	////////////////////////////////////////////////////////////////////////
 	pDct	= NULL;
 	pOwn	= NULL;
-	hWnd	= NULL;
 	}	// Button
 
 HRESULT Button :: onAttach ( bool bAttach )

@@ -32,9 +32,9 @@ class gdiWindow
 	HWND			ui_hWnd;									// Window handle
 
 	// 'gdiWindow' members
-	STDMETHOD(classInfo)		( WNDCLASSEX * );
-	STDMETHOD(create)			( HWND, LPCWSTR, DWORD );
-	STDMETHOD(onMessage)		( UINT, WPARAM, LPARAM );
+	STDMETHOD(classInfo)				( WNDCLASSEX * );
+	STDMETHOD(create)					( HWND, LPCWSTR, DWORD );
+	STDMETHOD_(LRESULT,onMessage)	( UINT, WPARAM, LPARAM );
 
 	// Extractors
 	operator HWND()		const	{ return ui_hWnd; }
@@ -365,12 +365,12 @@ class Bezier :
 */
 
 //
-// Class - Button.  Node for a button.
+// Class - Button.  Behaviour for a button.
 //
 
 class Button :
 	public CCLObject,										// Base class
-//	public gdiButton,										// Base class
+	public gdiWindow,										// Base class
 	public IBehaviour										// Interface
 	{
 	public :
@@ -378,10 +378,11 @@ class Button :
 
 	// Run-time data
 	IDictionary	*pDct,*pOwn;							// Run-time data
-	HWND			hWnd;										// Window handle
 
-	// 'gdiButton' members
-//	virtual LRESULT	onClicked ( IDictionary * );	// Button clicked
+	// 'gdiWindow' members
+//	STDMETHOD(classInfo)				( WNDCLASSEX * );
+//	STDMETHOD(create)					( HWND, LPCWSTR, DWORD );
+//	STDMETHOD_(LRESULT,onMessage)	( UINT, WPARAM, LPARAM );
 
 	// CCL
 	CCL_OBJECT_BEGIN(Button)
@@ -405,9 +406,7 @@ class Button :
 		DEFINE_RCP(Enable)
 		DEFINE_RCP(Highlight)
 		DEFINE_RCP(Owner)
-
 	END_BEHAVIOUR_NOTIFY()
-
 	};
 
 /*
