@@ -1,0 +1,68 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%										SYNC_VALUE_QA.NSPC
+%
+%				An asynchronous version of a synchronous value queue.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+
+	% Actions
+	$	Start					Misc.Dist {}		% Start queue
+	$	Stop					Misc.Dist {}		% Stop queue
+	$	Value					Misc.Dist {}		% Add a value to the queue
+	$	Retry					Misc.Dist {}		% Re-emit latest value
+	$	Next					Misc.Dist {}		% Return the next value
+	$	Uninitialize		Misc.Dist {}		% Uninitialize
+
+	% Notifications
+	$	OnValue			Misc.Dist {}			% A value is available
+	$	OnEmpty			Misc.Dist {}			% Value queue empty
+
+	% Subgraph: Synchronous value queue
+%	#	Q												Lib/Sync_Value_Q/ {}
+
+	% DEBUG
+%	$	Debug Misc.Debug {}
+%		!	OnValue/Fire							Debug/Fire
+
+	%%%%%%%%%
+	% Values
+	%%%%%%%%%
+
+	%% Turn the synchronous queue into an asynchronous queue by emitting
+	%% values on its own thread.
+
+	% Clear queue
+%	!	Start/OnFire								Q/Reset/Fire
+
+	% MISCN: Async queue
+	$	AsyncQ Misc.AsyncQ { Block false:bool Size 10000:int Timeout 10000:int }
+		!	Start/OnFire							AsyncQ/Start
+		!	Stop/OnFire								AsyncQ/Stop
+
+	% Signals
+	!	Value/OnFire								AsyncQ/Fire
+	!	Next/OnFire									AsyncQ/Next
+	!	Retry/OnFire								AsyncQ/Retry
+
+	% Values
+%	!	AsyncQ/OnFire								Debug/Fire
+	!	AsyncQ/OnFire								OnValue/Fire
+
+	% Async queue signals
+%	!	Q/OnValue/OnFire							Debug/Fire
+%	!	Q/OnValue/OnFire							AsyncQ/Next
+%	!	Q/OnValue/OnFire							AsyncQ/Fire
+
+	% Sync queue signals
+%	!	Value/OnFire								Q/Value/Fire
+%	!	Next/OnFire									Q/Next/Fire
+%	!	Retry/OnFire								Q/Retry/Fire
+%	!	Q/OnEmpty/OnFire							OnEmpty/Fire
+
+	% Auto shutdown
+	!	Uninitialize/OnFire						Stop/Fire

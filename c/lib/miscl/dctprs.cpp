@@ -176,22 +176,23 @@ HRESULT DictParse :: parse ( IContainer *pFmt )
 			// Converting to internal string from assumed ASCII.
 			WCHAR			*pwStr	= NULL;
 			U8				c;
+			adtValue		vL;
 			adtString	sEnd;
-			U32			i,j,uAllocd;
+			U32			i,j,uAllocd,elen;
 
 			// If the size is set to zero, an ending sequence of
 			// characters can be specified.
 			uAllocd = 0;
-			if (hr == S_OK && uSz == 0)
-				hr = pDictSpec->load ( adtString(L"End"), sEnd );
+			if (	hr == S_OK && 
+					uSz == 0  &&
+					pDictSpec->load ( adtString(L"End"), vL ) == S_OK )
+				hr = adtValue::toString ( vL, sEnd );
+			elen = sEnd.length();
 
 			// Pre-allocate space for string
 			i = 0;
-			while (hr == S_OK)
+			while (hr == S_OK && pStm->read ( &c, 1, NULL ) == S_OK)
 				{
-				// Next character
-				CCLTRY(pStm->read ( &c, 1, NULL ));
-
 				// Ensure enough space in buffer
 				if (hr == S_OK && i >= uAllocd)
 					{
@@ -207,17 +208,24 @@ HRESULT DictParse :: parse ( IContainer *pFmt )
 				if (hr == S_OK && uSz > 0 && i >= uSz)
 					break;
 
-				// Ending sequence ?
-				if (hr == S_OK && uSz == 0 && i >= sEnd.length())
+				// Check for ending sequence ?
+				if (hr == S_OK && uSz == 0)
 					{
-					bool	bMatch = true;
-					for (j = 0;j < sEnd.length() && bMatch;++j)
-						if (pwStr[i-sEnd.length()+j] != sEnd.at(j))
-							bMatch = false;
-
-					// Match ?
-					if (bMatch)
+					// Special case is the end string is a 0 length string
+					// which means end at null termination
+					if (elen == 0 && c == '\0')
 						break;
+					else if (elen > 0 && i >= elen)
+						{
+						bool	bMatch = true;
+						for (j = 0;j < sEnd.length() && bMatch;++j)
+							if (pwStr[i-sEnd.length()+j] != sEnd.at(j))
+								bMatch = false;
+
+						// Match ?
+						if (bMatch)
+							break;
+						}	// else if
 					}	// if
 
 				}	// for

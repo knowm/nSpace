@@ -322,7 +322,7 @@ HRESULT Endpoint :: tick ( void )
 	DWORD			dwRet,uXfer,uLeft;
 
 	// Debug
-	dbgprintf ( L"Endpoint::tick {\n" );
+//	dbgprintf ( L"Endpoint::tick {\n" );
 
 	// Sanity check to avoid fast looping
 	if (hr == S_OK && iSzIo == 0)
@@ -393,7 +393,7 @@ HRESULT Endpoint :: tick ( void )
 		_EMT(Error,adtInt(hr));
 
 	// Debug
-	dbgprintf ( L"} Endpoint::tick (0x%x)\n", hr );
+//	dbgprintf ( L"} Endpoint::tick (0x%x)\n", hr );
 
 	return hr;
 	}	// tick

@@ -17,8 +17,8 @@
 
 	% DEBUG
 	$	Debug Misc.Debug {}
-%		!	Stream/Fire								Debug/Fire
-%		!	OnDict/Fire								Debug/Fire
+%		!	Stream/OnFire							Debug/Fire
+%		!	OnDict/OnFire							Debug/Fire
 
 	%%%%%%%%%%%%%
 	% Conversion
@@ -26,15 +26,15 @@
 
 	% MISCN: Create a dictionary to receive the parsed information
 	$	CreateDct Misc.Create { Id Adt.Dictionary }
-		!	Stream/Fire								CreateDct/Fire
+		!	Stream/OnFire							CreateDct/Fire
 
 	% MISCN: Parse stream into dictionary
 	$	DctPrs Misc.DictParse {}
-		!	Format/Fire								DctPrs/Format
-		!	CreateDct/Fire							DctPrs/Dictionary
-		!	Stream/Fire								DctPrs/Stream
-		!	Stream/Fire								DctPrs/Fire
+		!	Format/OnFire							DctPrs/Format
+		!	CreateDct/OnFire						DctPrs/Dictionary
+		!	Stream/OnFire							DctPrs/Stream
+		!	Stream/OnFire							DctPrs/Fire
 
 	% Result
-	!	DctPrs/Fire									OnDict/Fire
+	!	DctPrs/OnFire								OnDict/Fire
 

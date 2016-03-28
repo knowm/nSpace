@@ -1,0 +1,63 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%										SYNC_VALUE_Q.NSPC
+%
+%	Synchronous value queue.  Value queueing can occur at any time, but value
+%	dequeueing is synchronized with owner.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+
+	% Actions
+	$	Initialize		Misc.Dist {}			% Initialize graph
+	$	Value				Misc.Dist {}			% Add a value to the queue
+	$	Retry				Misc.Dist {}			% Re-emit latest value
+	$	Next				Misc.Dist {}			% Return the next value
+	$	Reset				Misc.Dist {}			% Reset/clear contents
+
+	% Notifications
+	$	OnValue			Misc.Dist {}			% A value is available
+	$	OnEmpty			Misc.Dist {}			% Value queue empty
+
+	%%%%%%%%
+	% Queue
+	%%%%%%%%
+
+	% CREATE: Create command queue on startup
+	$	CreateValueQ Misc.Create { Id Adt.Queue }
+		!	Initialize/OnFire						CreateValueQ/Fire 
+
+	% WRITE: Write values to queue on arrival
+	$	WriteValueQ Adt.Write {}
+		!	CreateValueQ/OnFire					WriteValueQ/List
+		!	Value/OnFire							WriteValueQ/Fire
+
+	% ADTN: Iterator for value queue
+	$	ValueQIt Adt.Iterate {}
+		!	CreateValueQ/OnFire					ValueQIt/Container
+		!	ValueQIt/OnNext						OnValue/Fire
+
+	% MISCN: True if last attempt to get a value failed.
+	$	FirstToggle Misc.Toggle {}
+		!	Initialize/OnFire						FirstToggle/True
+		!	OnValue/OnFire							FirstToggle/False
+		!	FirstToggle/OnTrue					ValueQIt/First
+
+	% VALUE: Allows retry of last value
+	$	RetryValue Misc.Dist {}
+		!	OnValue/OnFire							RetryValue/Value
+		!	Retry/OnFire							RetryValue/Fire
+		!	RetryValue/OnFire						OnValue/Fire
+
+	% If value queue is empty, enable first value gate
+	!	ValueQIt/OnLast							FirstToggle/True
+	!	ValueQIt/OnLast							OnEmpty/Fire
+
+	% First value may need to be sent on new value
+	!	Value/OnFire								FirstToggle/Fire
+
+	% Latest value in queue
+	!	Next/OnFire									ValueQIt/First
