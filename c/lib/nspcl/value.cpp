@@ -23,6 +23,7 @@ Value :: Value ( void )
 	//		-	Constructor for the node
 	//
 	////////////////////////////////////////////////////////////////////////
+	pDsc = NULL;
 	}	// Value
 
 HRESULT Value :: onAttach ( bool bAttach )
@@ -51,8 +52,18 @@ HRESULT Value :: onAttach ( bool bAttach )
 			receive ( prFire, L"Value", vL );
 		if (	pnDesc->load ( strRefType, vL )	== S_OK )
 			strType = vL;
+
+		// The descriptor is emitted for this value so the outside world
+		// can monitor value attributes (minimum,maximum,type,etc).
+		pDsc = pnDesc;
+		_ADDREF(pDsc);
+		_EMT(Descriptor,adtIUnknown(pDsc));
 		}	// if
 
+	else
+		{
+		_RELEASE(pDsc);
+		}	// else
 	return hr;
 	}	// onAttach
 
@@ -81,13 +92,21 @@ HRESULT Value :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		{
 		// Validate
 		if (strType[0] != '\0')
-			validate ( pnDesc, v, vE );
+			validate ( pDsc, v, vE );
 		else
 			adtValue::copy ( v, vE );
 
 		// Updated value
 		_EMT(Fire,vE);
 		}	// if
+
+	// Descriptor
+	else if (_RCP(Descriptor))
+		{
+		adtIUnknown unkV(v);
+		_RELEASE(pDsc);
+		_QISAFE(unkV,IID_IDictionary,&pDsc);
+		}	// else if
 	else
 		hr = ERROR_NO_MATCH;
 

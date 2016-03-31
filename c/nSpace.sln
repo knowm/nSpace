@@ -56,6 +56,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "app", "app", "{960C88F6-B83
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "state", "state", "{5A572578-54D6-40FE-93BC-F8E838082B52}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\state\value.nspc = ..\graph\state\value.nspc
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "graph", "graph", "{23602D14-1F03-4690-B5C4-2022E21B057E}"
 	ProjectSection(SolutionItems) = preProject

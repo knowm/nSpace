@@ -12,5 +12,9 @@
 	$	Enable Nspc.Value { Value true:bool }
 
 	% Subgraph: Default value associated with element
-	#	Default										State/Value/ {}
+%	#	Default										State/Value/ {}
+
+	% NSPC: Default value associated with element
+	$	Default Nspc.Value {}
+
 

@@ -1375,6 +1375,7 @@ class Value :
 	adtValue		vE,vL;									// Internal
 	adtString	strT,strV;								// Internal
 	adtString	strType;									// Value type
+	IDictionary	*pDsc;									// Active descriptor
 
 	// Utilities
 	HRESULT validate ( IDictionary *, const ADTVALUE &, ADTVALUE & );
@@ -1385,8 +1386,10 @@ class Value :
 	CCL_OBJECT_END()
 
 	// Connections
+	DECLARE_CON(Descriptor)
 	DECLARE_CON(Fire)
 	BEGIN_BEHAVIOUR()
+		DEFINE_CON(Descriptor)
 		DEFINE_CON(Fire)
 	END_BEHAVIOUR_NOTIFY()
 
