@@ -106,6 +106,9 @@ HRESULT Value :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		adtIUnknown unkV(v);
 		_RELEASE(pDsc);
 		_QISAFE(unkV,IID_IDictionary,&pDsc);
+
+		// Forward through emitter
+		_EMT(Descriptor,v);
 		}	// else if
 	else
 		hr = ERROR_NO_MATCH;
