@@ -89,7 +89,7 @@ class Endpoint :
 	HANDLE		hevWr,hevRd;							// I/O events
 	adtBool		bAsync;									// Asynchronous reads ?
 	IThread		*pThrd;									// Asynchronous read thread
-	HANDLE		hevStop,hevRst;						// Stop/reset
+	HANDLE		hevStop;									// Stop event for read thread
 
 	// 'ITickable' members
 	STDMETHOD(tick)		( void );
@@ -107,7 +107,6 @@ class Endpoint :
 	DECLARE_RCP(Endpoint)
 	DECLARE_EMT(Error)
 	DECLARE_CON(Read)
-	DECLARE_RCP(Size)
 	DECLARE_RCP(Stream)
 	DECLARE_CON(Write)
 	BEGIN_BEHAVIOUR()
@@ -115,13 +114,15 @@ class Endpoint :
 		DEFINE_RCP(Endpoint)
 		DEFINE_EMT(Error)
 		DEFINE_CON(Read)
-		DEFINE_RCP(Size)
 		DEFINE_RCP(Stream)
 		DEFINE_CON(Write)
 	END_BEHAVIOUR_NOTIFY()
 
 	private :
-	void update ( IDictionary * );					// Update internal state
+
+	// Internal utilities
+	HRESULT	pktIo  ( BOOL, DWORD, DWORD, DWORD * );
+	void		update ( IDictionary * );					// Update internal state
 
 	};
 

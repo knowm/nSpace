@@ -27,7 +27,6 @@ Endpoint :: Endpoint ( void )
 	hevWr		= NULL;
 	hevRd		= NULL;
 	hevStop	= NULL;
-	hevRst	= NULL;
 	bAsync	= false;
 	}	// Endpoint
 
@@ -57,13 +56,13 @@ HRESULT Endpoint :: onAttach ( bool bAttach )
 			iPipe = vL;
 		if (pnDesc->load ( adtString(L"AsyncRead"), vL ) == S_OK)
 			bAsync = vL;
+		if (pnDesc->load ( adtString(L"Size"), vL ) == S_OK)
+			iSzIo = adtInt(vL);
 
 		// I/O events
 		CCLTRYE ( (hevWr = CreateEvent ( NULL, FALSE, FALSE, NULL )) != NULL,
 						GetLastError() );
 		CCLTRYE ( (hevRd = CreateEvent ( NULL, FALSE, FALSE, NULL )) != NULL,
-						GetLastError() );
-		CCLTRYE ( (hevRst = CreateEvent ( NULL, FALSE, FALSE, NULL )) != NULL,
 						GetLastError() );
 		CCLTRYE ( (hevStop = CreateEvent ( NULL, TRUE, FALSE, NULL )) != NULL,
 						GetLastError() );
@@ -95,17 +94,92 @@ HRESULT Endpoint :: onAttach ( bool bAttach )
 			CloseHandle ( hevStop );
 			hevStop = NULL;
 			}	// if
-		if (hevRst != NULL)
-			{
-			CloseHandle ( hevRst );
-			hevRst = NULL;
-			}	// if
 		_FREEMEM(pcBfrPkt);
 		_RELEASE(pStmIo);
 		}	// else
 
 	return hr;
 	}	// onAttach
+
+HRESULT Endpoint :: pktIo  ( BOOL bWr, DWORD uIo, DWORD uTo, DWORD *puIo )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Unified asynchronous I/O for packet buffer.
+	//
+	//	PARAMETERS
+	//		-	bWr is TRUE to write, FALSE to read.
+	//		-	uIo is the size of the requested transfer
+	//		-	uTo is the timeout in milliseconds
+	//		-	puIo will receive the actual amount transferred.
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT		hr = S_OK;
+	HANDLE		hevs[2]	= { (bWr) ? hevWr : hevRd, hevStop };
+	OVERLAPPED	ov;
+	DWORD			dwRet,uXfer;
+
+	// Debug
+	dbgprintf ( L"Endpoint::pktIo:bWr %d:uIo %d\r\n", bWr, uIo );
+
+	// I/O is always overlapped since that it the way USB devices are opened.
+	memset ( &ov, 0, sizeof(ov) );
+	ov.hEvent = hevs[0];
+	if (hr == S_OK && bWr)
+		{
+		// Begin a write
+		CCLTRYE ( WinUsb_WritePipe (	hIntf, iPipe, pcBfrPkt, uIo,
+												NULL, &ov ) == TRUE, GetLastError() );
+		}	// if
+	else if (hr == S_OK)
+		{
+		// Begin a read
+		CCLTRYE ( WinUsb_ReadPipe (	hIntf, iPipe, pcBfrPkt, uIo,
+												NULL, &ov ) == TRUE, GetLastError() );
+		}	// else if
+
+	// I/O is still pending, must wait
+	if (hr == ERROR_IO_PENDING)
+		{
+		// Wait for completion or signal to stop
+		hr		= S_OK;
+		dwRet = WaitForMultipleObjects ( 2, hevs, FALSE, INFINITE );
+
+		// Success ?
+		if (dwRet != WAIT_OBJECT_0)
+			{
+			// Stop event detected
+			if (dwRet == WAIT_OBJECT_0+1)
+				hr = S_FALSE;
+
+			// Timeout
+			else if (dwRet == WAIT_TIMEOUT)
+				hr = ERROR_TIMEOUT;
+
+			// ??
+			else
+				hr = GetLastError();
+			}	// if
+
+		}	// if
+
+	// Amount transfered
+	CCLTRYE ( WinUsb_GetOverlappedResult ( hIntf, &ov, &uXfer, TRUE ) == TRUE,
+					GetLastError() );
+
+	// Result
+	if (hr == S_OK && puIo != NULL)
+		*puIo = uXfer;
+
+	// Debug
+	dbgprintf ( L"Endpoint::pktIo:bWr %d:uXfer %d:hr 0x%x\r\n", bWr, uXfer, hr );
+
+	return hr;
+	}	// pktIo
 
 HRESULT Endpoint :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	{
@@ -127,9 +201,9 @@ HRESULT Endpoint :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v 
 	// Write
 	if (_RCP(Write))
 		{
-		U32	uLeft	= 0;
-		U64	uXferd;
-		ULONG uXfer;
+		U32			uLeft	= 0;
+		U64			uXferd;
+		ULONG			uXfer;
 
 		// State check
 		CCLTRYE ( hIntf != INVALID_HANDLE_VALUE,	ERROR_INVALID_STATE );
@@ -141,12 +215,12 @@ HRESULT Endpoint :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v 
 			{
 			U64	uAv = 0;
 			CCLTRY ( pStmIo->available ( &uAv ) );
-			CCLOK  ( iSzIo = (U32) uAv; )
+			CCLOK  ( uLeft = (U32) uAv; )
 			}	// if
+		else if (hr == S_OK)
+			uLeft = iSzIo;
 
-		// TODO: Asynchronous I/O
 		// Write packet size data from stream
-		CCLOK ( uLeft = iSzIo; )
 		while (hr == S_OK && uLeft > 0)
 			{
 			// Amount to write on next transaction
@@ -156,8 +230,8 @@ HRESULT Endpoint :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v 
 			CCLTRY ( pStmIo->read ( pcBfrPkt, uXfer, &uXferd ) );
 
 			// Write out endpoint
-			CCLTRYE ( WinUsb_WritePipe ( hIntf, iPipe, pcBfrPkt, (U32)uXferd,
-													&uXfer, NULL ) == TRUE, GetLastError() );
+			CCLTRY ( pktIo ( TRUE, (DWORD)uXferd, 5000, &uXfer ) );
+
 			// Next block
 			CCLOK ( uLeft -= uXfer; )
 			}	// while
@@ -174,8 +248,8 @@ HRESULT Endpoint :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v 
 	// Read
 	else if (_RCP(Read))
 		{
-		U32	uLeft	= 0;
-		ULONG uXfer;
+		U32			uLeft	= 0;
+		ULONG			uXfer;
 
 		// State check
 		CCLTRYE ( hIntf != INVALID_HANDLE_VALUE,	ERROR_INVALID_STATE );
@@ -192,9 +266,8 @@ HRESULT Endpoint :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v 
 			// Amount to read on next transaction
 			uXfer = (uLeft < iSzPkt) ? uLeft : iSzPkt;
 
-			// Read from end point
-			CCLTRYE ( WinUsb_ReadPipe ( hIntf, iPipe, pcBfrPkt, iSzPkt,
-										&uXfer, NULL ) == TRUE, GetLastError() );
+			// Read from endpoint.
+			CCLTRY ( pktIo ( FALSE, iSzPkt, 5000, &uXfer ) );
 
 			// Write to destination stream
 			CCLTRY ( pStmIo->write ( pcBfrPkt, uXfer, NULL ) );
@@ -264,14 +337,6 @@ HRESULT Endpoint :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v 
 		_RELEASE(pStmIo);
 		_QISAFE(unkV,IID_IByteStream,&pStmIo);
 		}	// else if
-	else if (_RCP(Size))
-		{
-		// New I/O size
-		iSzIo = v;
-
-		// Reset state if async running
-		SetEvent ( hevRst );
-		}	// else if
 	else
 		hr = ERROR_NO_MATCH;
 
@@ -316,10 +381,8 @@ HRESULT Endpoint :: tick ( void )
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	HRESULT		hr			= S_OK;
-	HANDLE		hevs[3]	= { hevRd, hevRst, hevStop };
-	OVERLAPPED	ov;
-	DWORD			dwRet,uXfer,uLeft;
+	HRESULT	hr			= S_OK;
+	DWORD		uXfer,uLeft;
 
 	// Debug
 //	dbgprintf ( L"Endpoint::tick {\n" );
@@ -331,49 +394,12 @@ HRESULT Endpoint :: tick ( void )
 		Sleep(1000);
 		}	// if
 
-	// Perform one 'block' of transfers
+	// Perform transfer
 	uLeft = iSzIo;
 	while (hr == S_OK && uLeft > 0)
 		{
-		// Perform async read
-		memset ( &ov, 0, sizeof(ov) );
-		ov.hEvent = hevRd;
-		CCLTRYE ( WinUsb_ReadPipe (	hIntf, iPipe, pcBfrPkt, iSzPkt,
-												NULL, &ov ) == TRUE, GetLastError() );
-
-		// Waiting for data
-		if (hr == ERROR_IO_PENDING)
-			{
-			// Wait for completion or signal to stop
-			hr		= S_OK;
-			dwRet = WaitForMultipleObjects ( 3, hevs, FALSE, INFINITE );
-
-			// Reset state
-			if (dwRet == WAIT_OBJECT_0+1)
-				{
-				// Reset I/O transfer
-				uLeft = iSzIo;
-				continue;
-				}	// if
-
-			// Stop
-			else if (dwRet == WAIT_OBJECT_0+2)
-				{
-				// Shutting down
-				hr = S_FALSE;
-				}	// else if
-
-			// USB Read complete
-			else if (dwRet != WAIT_OBJECT_0+0)
-				{
-				hr = S_FALSE;
-				}	// else if
-
-			}	// if
-
-		// Amount transfered
-		CCLTRYE ( WinUsb_GetOverlappedResult ( hIntf, &ov, &uXfer, TRUE ) == TRUE,
-						GetLastError() );
+		// Read from end point
+		CCLTRY ( pktIo ( FALSE, iSzPkt, 5000, &uXfer ) );
 
 		// Write to destination stream
 		CCLTRY ( pStmIo->write ( pcBfrPkt, uXfer, NULL ) );
