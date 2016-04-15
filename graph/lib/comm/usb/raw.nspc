@@ -162,7 +162,7 @@
 		!	DemuxDir/OnIn							LoadMaxSz/Fire
 
 	% MISCN: Endpoint input.  Perform asynchronously to handle unannounced packets
-	$	EndPtIn Usb.Endpoint { AsyncRead true:bool }
+	$	EndPtIn Usb.Endpoint { AsyncRead true:bool Size 1024:int }
 		!	OpenId/OnFound/OnFire				EndPtIn/Device
 		!	DemuxDir/OnIn							EndPtIn/Endpoint
 		!	CreateStmRd/OnFire					EndPtIn/Stream

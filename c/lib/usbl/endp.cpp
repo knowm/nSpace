@@ -124,7 +124,7 @@ HRESULT Endpoint :: pktIo  ( BOOL bWr, DWORD uIo, DWORD uTo, DWORD *puIo )
 	DWORD			dwRet,uXfer;
 
 	// Debug
-	dbgprintf ( L"Endpoint::pktIo:bWr %d:uIo %d\r\n", bWr, uIo );
+//	dbgprintf ( L"Endpoint::pktIo:bWr %d:uIo %d\r\n", bWr, uIo );
 
 	// I/O is always overlapped since that it the way USB devices are opened.
 	memset ( &ov, 0, sizeof(ov) );
@@ -176,7 +176,7 @@ HRESULT Endpoint :: pktIo  ( BOOL bWr, DWORD uIo, DWORD uTo, DWORD *puIo )
 		*puIo = uXfer;
 
 	// Debug
-	dbgprintf ( L"Endpoint::pktIo:bWr %d:uXfer %d:hr 0x%x\r\n", bWr, uXfer, hr );
+//	dbgprintf ( L"Endpoint::pktIo:bWr %d:uXfer %d:hr 0x%x\r\n", bWr, uXfer, hr );
 
 	return hr;
 	}	// pktIo
