@@ -30,19 +30,22 @@ class gdiWindow
 	// Run-time data
 	HINSTANCE	ui_hInst;								// Application instance
 	HWND			ui_hWnd;									// Window handle
+	IDictionary	*pCtls;									// Control dictionaries
 
 	// 'gdiWindow' members
+	STDMETHOD(bind)					( IDictionary *, U32 );
 	STDMETHOD(classInfo)				( WNDCLASSEX * );
 	STDMETHOD(create)					( HWND, LPCWSTR, DWORD );
 	STDMETHOD_(LRESULT,onMessage)	( UINT, WPARAM, LPARAM );
 
 	// Extractors
-	operator HWND()		const	{ return ui_hWnd; }
 	operator HINSTANCE() const	{ return ui_hInst; }
+	operator HWND()		const	{ return ui_hWnd; }
 
 	protected :
 
 	// Win32 window callback
+	static LRESULT CALLBACK childProc	( HWND, UINT, WPARAM, LPARAM );
 	static LRESULT CALLBACK windowProc	( HWND, UINT, WPARAM, LPARAM );
 	};
 
