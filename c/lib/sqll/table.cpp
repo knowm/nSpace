@@ -262,7 +262,8 @@ HRESULT SQL2Table :: fieldsRemove ( SQLHANDLE hConn, adtString &sName,
 	return hr;
 	}	// fieldsRemove
 
-HRESULT SQL2Table :: receive ( IReceptor *pR, const adtValue &v )
+HRESULT SQL2Table :: receive ( IReceptor *pr, const WCHAR *pl, 
+											const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

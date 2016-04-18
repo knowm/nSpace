@@ -202,7 +202,8 @@ HRESULT SQLQueryRange :: genQuery ( void )
 	return hr;
 	}	// genQuery
 
-HRESULT SQLQueryRange :: receive ( IReceptor *pR, const adtValue &v )
+HRESULT SQLQueryRange :: receive ( IReceptor *pr, const WCHAR *pl, 
+												const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

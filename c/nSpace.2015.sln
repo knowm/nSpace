@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{4560AF12-FA84-49FA-94E4-19CB5A898DF0}"
 EndProject
@@ -225,6 +225,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "widgetl.2015", "lib\widgetl\widgetl.2015.vcxproj", "{A20E9715-D1CE-4540-A3C5-271CE8E02E9A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "widgetn.2015", "dll\widgetn\widgetn.2015.vcxproj", "{EC41AE88-C0A6-40D0-980F-9C43E66ACEA1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sqll.2015", "lib\sqll\sqll.2015.vcxproj", "{9E63C94E-CD1F-4463-ADD1-9E0863367117}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -475,6 +477,13 @@ Global
 		{EC41AE88-C0A6-40D0-980F-9C43E66ACEA1}.Release|Win32.Build.0 = Release|Win32
 		{EC41AE88-C0A6-40D0-980F-9C43E66ACEA1}.Release|x64.ActiveCfg = Release|x64
 		{EC41AE88-C0A6-40D0-980F-9C43E66ACEA1}.Release|x64.Build.0 = Release|x64
+		{9E63C94E-CD1F-4463-ADD1-9E0863367117}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9E63C94E-CD1F-4463-ADD1-9E0863367117}.Debug|Win32.Build.0 = Debug|Win32
+		{9E63C94E-CD1F-4463-ADD1-9E0863367117}.Debug|x64.ActiveCfg = Debug|x64
+		{9E63C94E-CD1F-4463-ADD1-9E0863367117}.Release|Win32.ActiveCfg = Release|Win32
+		{9E63C94E-CD1F-4463-ADD1-9E0863367117}.Release|Win32.Build.0 = Release|Win32
+		{9E63C94E-CD1F-4463-ADD1-9E0863367117}.Release|x64.ActiveCfg = Release|x64
+		{9E63C94E-CD1F-4463-ADD1-9E0863367117}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -541,5 +550,6 @@ Global
 		{ADE2F4F2-AAE1-4CEC-A132-70C791263D9C} = {060BE89F-4362-4D47-8ED0-67F456629B3C}
 		{A20E9715-D1CE-4540-A3C5-271CE8E02E9A} = {4560AF12-FA84-49FA-94E4-19CB5A898DF0}
 		{EC41AE88-C0A6-40D0-980F-9C43E66ACEA1} = {060BE89F-4362-4D47-8ED0-67F456629B3C}
+		{9E63C94E-CD1F-4463-ADD1-9E0863367117} = {4560AF12-FA84-49FA-94E4-19CB5A898DF0}
 	EndGlobalSection
 EndGlobal

@@ -86,7 +86,7 @@ HRESULT SQLUpdate :: construct ( void )
 	HRESULT		hr			= S_OK;
 
 	// SQL query string buffer
-	CCLTRY ( COCREATEINSTANCE ( CLSID_MemoryBlock, IID_IMemoryMapped, &pQryBfr ) );
+	CCLTRY ( COCREATE ( L"Io.MemoryBlock", IID_IMemoryMapped, &pQryBfr ) );
 	CCLTRY ( pQryBfr->setSize ( SIZE_SQLBFR ) );
 	CCLTRY ( pQryBfr->lock ( 0, 0, (PVOID *) &pwQryBfr, NULL ) );
 
@@ -113,7 +113,8 @@ void SQLUpdate :: destruct ( void )
 	_RELEASE(pQryBfr);
 	}	// destruct
 
-HRESULT SQLUpdate :: receive ( IReceptor *pR, const adtValue &v )
+HRESULT SQLUpdate :: receive ( IReceptor *pr, const WCHAR *pl, 
+											const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

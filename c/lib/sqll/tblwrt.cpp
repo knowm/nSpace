@@ -361,7 +361,8 @@ HRESULT SQLTableWrite :: putData ( SQLHANDLE hStmt, IUnknown *unkP )
 	return hr;
 	}	// putData
 
-HRESULT SQLTableWrite :: receive ( IReceptor *pR, const adtValue &v )
+HRESULT SQLTableWrite :: receive ( IReceptor *pr, const WCHAR *pl, 
+												const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

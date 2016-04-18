@@ -281,7 +281,8 @@ HRESULT SQLRecordEnum :: prepare ( void )
 	return hr;
 	}	// prepare
 
-HRESULT SQLRecordEnum :: receive ( IReceptor *pR, const adtValue &v )
+HRESULT SQLRecordEnum :: receive ( IReceptor *pr, const WCHAR *pl, 
+												const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

@@ -68,6 +68,12 @@
 extern CCLFactoriesCache	FactCache;
 
 // String references
+extern	adtStringSt	strRefTableName;
+extern	adtStringSt	strRefKey;
+extern	adtStringSt	strRefOp;
+extern	adtStringSt	strRefValue;
+
+/*
 DEFINE_REFSTR ( strRefEnv,			L"Environment" );
 DEFINE_REFSTR ( strRefConn,		L"Connection" );
 DEFINE_REFSTR ( strRefTableName,	L"TableName" );
@@ -84,6 +90,7 @@ DEFINE_REFSTR ( strRefValue,		L"Value" );
 DEFINE_REFSTR ( strRefRemFlds,	L"Remove Fields" );
 DEFINE_REFSTR ( strRefFrom,		L"From" );
 DEFINE_REFSTR ( strRefTo,			L"To" );
+*/
 
 #ifdef	USE_ODBC
 
@@ -110,8 +117,8 @@ class SQLHandle :
 	SQLHANDLE	InputHandle;							// Creation input handle
 
 	// 'IHaveValue' members
-	STDMETHOD(getValue)	( adtValue & );
-	STDMETHOD(setValue)	( const adtValue & );
+	STDMETHOD(getValue)	( ADTVALUE & );
+	STDMETHOD(setValue)	( const ADTVALUE & );
 
 	// CCL
 	CCL_OBJECT_BEGIN_INT(SQLHandle)
@@ -130,14 +137,12 @@ class SQLHandle :
 
 class SQLConnection :
 	public CCLObject,										// Base class
-	public INodeBehaviour								// Interface
+	public IBehaviour										// Interface
 	{
 	public :
 	SQLConnection ( void );								// Constructor
 
 	// Run-time data
-	IReceptor		*prConn,*prFire;					// Receptors
-	IEmitter			*peEnv,*peConn;					// Emitters
 	adtString		sConn;								// Connection string
 	#ifdef			USE_ODBC
 	SQLHANDLE		hSQLEnv;								// Environment handle
@@ -147,15 +152,18 @@ class SQLConnection :
 
 	// CCL
 	CCL_OBJECT_BEGIN(SQLConnection)
-		CCL_INTF(INodeBehaviour)
+		CCL_INTF(IBehaviour)	
 	CCL_OBJECT_END()
 	virtual void		destruct	( void );			// Destruct object
 
 	// Connections
+	DECLARE_CON(Connection)
+	DECLARE_RCP(Fire)
+	DECLARE_EMT(Connect)
 	BEGIN_BEHAVIOUR()
-		DECLARE_RECEPTOR	(Connection,prConn)
-		DECLARE_RECEPTOR	(Fire,prFire)
-		DECLARE_EMITTER	(OnConnect,peConn)
+		DEFINE_CON(Connection)
+		DEFINE_RCP(Fire)
+		DEFINE_EMT(Connect)
 	END_BEHAVIOUR()
 
 	private :
@@ -168,27 +176,27 @@ class SQLConnection :
 
 class SQLCreateDatabase :
 	public CCLObject,										// Base class
-	public INodeBehaviour								// Interface
+	public IBehaviour										// Interface
 	{
 	public :
 	SQLCreateDatabase ( void );						// Constructor
 
 	// Run-time data
-	IReceptor		*prLoc,*prFire;					// Receptors
-	IEmitter			*peFire,*peErr;					// Emitters
 	adtString		sDriver,sLoc;						// Parameters
 
 	// CCL
 	CCL_OBJECT_BEGIN(SQLCreateDatabase)
-		CCL_INTF(INodeBehaviour)
+		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 
 	// CreateDatabases
+	DECLARE_RCP(Location)
+	DECLARE_CON(Fire)
+	DECLARE_EMT(Error)
 	BEGIN_BEHAVIOUR()
-		DECLARE_RECEPTOR	(Location,prLoc)
-		DECLARE_RECEPTOR	(Fire,prFire)
-		DECLARE_EMITTER	(OnError,peErr)
-		DECLARE_EMITTER	(OnFire,peFire)
+		DEFINE_RCP(Location)
+		DEFINE_CON(Fire)
+		DEFINE_EMT(Error)
 	END_BEHAVIOUR()
 
 	private :
@@ -203,7 +211,7 @@ class SQLCreateDatabase :
 
 class SQLDelete :
 	public CCLObject,										// Base class
-	public INodeBehaviour								// Interface
+	public IBehaviour										// Interface
 	{
 	public :
 	SQLDelete ( void );									// Constructor
@@ -213,8 +221,8 @@ class SQLDelete :
 	IEmitter			*peFire;								// Emitters
 	IUnknown			*pConn;								// Connection object
 	adtString		sTableName;							// Table name
-	IADTContainer	*pCons;								// Constraints
-	IADTInIt			*pConsIn;							// Constraints
+	IContainer		*pCons;								// Constraints
+	IInIt				*pConsIn;							// Constraints
 	DBBINDING		*pbCons;								// Constraint bindings
 	U32				szCons;								// # of constraints
 	IMemoryMapped	*pSQLBfr;							// SQL buffer
@@ -224,18 +232,18 @@ class SQLDelete :
 
 	// CCL
 	CCL_OBJECT_BEGIN(SQLDelete)
-		CCL_INTF(INodeBehaviour)
+		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 	virtual HRESULT	construct( void );			// Construct object
 	virtual void		destruct	( void );			// Destruct object
 
 	// Connections
 	BEGIN_BEHAVIOUR()
-		DECLARE_RECEPTOR	(Connection,prConn)
-		DECLARE_RECEPTOR	(Constraints,prCons)
-		DECLARE_RECEPTOR	(Fire,prF)
-		DECLARE_RECEPTOR	(Table,prTbl)
-		DECLARE_EMITTER	(OnFire,peFire)
+		DEFINE_RECEPTOR	(Connection,prConn)
+		DEFINE_RECEPTOR	(Constraints,prCons)
+		DEFINE_RECEPTOR	(Fire,prF)
+		DEFINE_RECEPTOR	(Table,prTbl)
+		DEFINE_EMITTER	(OnFire,peFire)
 	END_BEHAVIOUR()
 
 	private :
@@ -250,7 +258,7 @@ class SQLDelete :
 
 class SQLQuery :
 	public CCLObject,										// Base class
-	public INodeBehaviour								// Interface
+	public IBehaviour										// Interface
 	{
 	public :
 	SQLQuery ( void );									// Constructor
@@ -263,41 +271,41 @@ class SQLQuery :
 	IUnknown			*pConn;								// Connection object
 	adtString		sTableName;							// Table name
 	adtBool			bDistinct;							// Distinct record result ?
-	IADTContainer	*pCons;								// Constraints
-	IADTInIt			*pConsIn;							// Constraints
+	IContainer	*pCons;								// Constraints
+	IInIt			*pConsIn;							// Constraints
 	DBBINDING		*pbCons;								// Constraint bindings
 	U32				szCons;								// # of constraints
-	IADTInIt			*pFldsIn;							// Fields to 'select'
+	IInIt			*pFldsIn;							// Fields to 'select'
 	adtBool			bSort;								// Sort result ?
 	adtBool			bCount;								// Count query only ?
 	IMemoryMapped	*pQryBfr;							// Query buffer
 	WCHAR				*pwQryBfr;							// Query buffer
 	IMemoryMapped	*pBfr;								// Internal data buffer
 	U32				uBfrSz;								// Current data buffer size
-	IADTDictionary	*pJoin;								// Join information
+	IDictionary	*pJoin;								// Join information
 	adtString		sSort;								// Sort field ?
 	adtInt			iCount;								// Max. query count
 
 	// CCL
 	CCL_OBJECT_BEGIN(SQLQuery)
-		CCL_INTF(INodeBehaviour)
+		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 	virtual HRESULT	construct( void );			// Construct object
 	virtual void		destruct	( void );			// Destruct object
 
 	// Connections
 	BEGIN_BEHAVIOUR()
-		DECLARE_RECEPTOR	(Connection,prConn)
-		DECLARE_RECEPTOR	(Constraints,prCons)
-		DECLARE_RECEPTOR	(Count,prCnt)
-		DECLARE_RECEPTOR	(Distinct,prDis)
-		DECLARE_RECEPTOR	(Fields,prFlds)
-		DECLARE_RECEPTOR	(Fire,prFire)
-		DECLARE_RECEPTOR	(Join,prJoin)
-		DECLARE_RECEPTOR	(Sort,prSort)
-		DECLARE_RECEPTOR	(Table,prTbl)
-		DECLARE_EMITTER	(OnFail,peFail)
-		DECLARE_EMITTER	(OnFire,peFire)
+		DEFINE_RECEPTOR	(Connection,prConn)
+		DEFINE_RECEPTOR	(Constraints,prCons)
+		DEFINE_RECEPTOR	(Count,prCnt)
+		DEFINE_RECEPTOR	(Distinct,prDis)
+		DEFINE_RECEPTOR	(Fields,prFlds)
+		DEFINE_RECEPTOR	(Fire,prFire)
+		DEFINE_RECEPTOR	(Join,prJoin)
+		DEFINE_RECEPTOR	(Sort,prSort)
+		DEFINE_RECEPTOR	(Table,prTbl)
+		DEFINE_EMITTER	(OnFail,peFail)
+		DEFINE_EMITTER	(OnFire,peFire)
 	END_BEHAVIOUR()
 
 	private :
@@ -312,7 +320,7 @@ class SQLQuery :
 
 class SQLRecordEnum :
 	public CCLObject,										// Base class
-	public INodeBehaviour								// Interface
+	public IBehaviour										// Interface
 	{
 	public :
 	SQLRecordEnum ( void );								// Constructor
@@ -333,19 +341,19 @@ class SQLRecordEnum :
 
 	// CCL
 	CCL_OBJECT_BEGIN(SQLRecordEnum)
-		CCL_INTF(INodeBehaviour)
+		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 	virtual HRESULT	construct( void );			// Construct object
 	virtual void		destruct	( void );			// Destruct object
 
 	// Connections
 	BEGIN_BEHAVIOUR()
-		DECLARE_RECEPTOR	(Context,prCtx)
-		DECLARE_RECEPTOR	(Count,prCnt)
-		DECLARE_RECEPTOR	(Next,prNext)
-		DECLARE_RECEPTOR	(Position,prPos)
-		DECLARE_EMITTER	(OnEnd,peEnd)
-		DECLARE_EMITTER	(OnFire,peFire)
+		DEFINE_RECEPTOR	(Context,prCtx)
+		DEFINE_RECEPTOR	(Count,prCnt)
+		DEFINE_RECEPTOR	(Next,prNext)
+		DEFINE_RECEPTOR	(Position,prPos)
+		DEFINE_EMITTER	(OnEnd,peEnd)
+		DEFINE_EMITTER	(OnFire,peFire)
 	END_BEHAVIOUR()
 
 	private :
@@ -361,7 +369,7 @@ class SQLRecordEnum :
 
 class SQL2Table :
 	public CCLObject,										// Base class
-	public INodeBehaviour								// Interface
+	public IBehaviour										// Interface
 	{
 	public :
 	SQL2Table ( void );									// Constructor
@@ -370,31 +378,31 @@ class SQL2Table :
 	IReceptor			*prCols,*prConn,*prFlds;	// Receptors
 	IReceptor			*prFire;							// Receptors
 	IEmitter				*peFire,*peCols;				// Emitters
-	IADTDictionary		*pFlds;							// Table fields
+	IDictionary		*pFlds;							// Table fields
 	IUnknown				*pConn;							// Connection object
 	adtString			sTableName;						// Table name
 	adtBool				bRemove;							// Remove unused fields ?
 
 	// CCL
 	CCL_OBJECT_BEGIN(SQL2Table)
-		CCL_INTF(INodeBehaviour)
+		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 	virtual void		destruct	( void );			// Destruct object
 
 	// Connections
 	BEGIN_BEHAVIOUR()
-		DECLARE_RECEPTOR	(Columns,prCols)
-		DECLARE_RECEPTOR	(Connection,prConn)
-		DECLARE_RECEPTOR	(Fields,prFlds)
-		DECLARE_RECEPTOR	(Fire,prFire)
-		DECLARE_EMITTER	(OnColumns,peCols)
-		DECLARE_EMITTER	(OnFire,peFire)
+		DEFINE_RECEPTOR	(Columns,prCols)
+		DEFINE_RECEPTOR	(Connection,prConn)
+		DEFINE_RECEPTOR	(Fields,prFlds)
+		DEFINE_RECEPTOR	(Fire,prFire)
+		DEFINE_EMITTER	(OnColumns,peCols)
+		DEFINE_EMITTER	(OnFire,peFire)
 	END_BEHAVIOUR()
 
 	private :
 
 	// Internal utilities
-	HRESULT fieldsAdd		( IUnknown *, DBID *, IADTDictionary * );
+	HRESULT fieldsAdd		( IUnknown *, DBID *, IDictionary * );
 	};
 
 //
@@ -403,7 +411,7 @@ class SQL2Table :
 
 class SQLTableWrite :
 	public CCLObject,										// Base class
-	public INodeBehaviour								// Interface
+	public IBehaviour										// Interface
 	{
 	public :
 	SQLTableWrite ( void );								// Constructor
@@ -412,7 +420,7 @@ class SQLTableWrite :
 	IReceptor			*prConn,*prFlds,*prFire;	// Receptors
 	IEmitter				*peFire;							// Emitters
 	IUnknown				*pConn;							// Connection object
-	IADTDictionary		*pFlds;							// Current fields
+	IDictionary		*pFlds;							// Current fields
 	IMemoryMapped		*pQryBfr;						// Internal query buffer
 	WCHAR					*pwQryBfr;						// Internal query buffer
 	IMemoryMapped		*pBfr;							// Internal buffer
@@ -420,17 +428,17 @@ class SQLTableWrite :
 
 	// CCL
 	CCL_OBJECT_BEGIN(SQLTableWrite)
-		CCL_INTF(INodeBehaviour)
+		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 	virtual HRESULT	construct( void );			// Construct object
 	virtual void		destruct	( void );			// Destruct object
 
 	// Connections
 	BEGIN_BEHAVIOUR()
-		DECLARE_RECEPTOR	(Connection,prConn)
-		DECLARE_RECEPTOR	(Fields,prFlds)
-		DECLARE_RECEPTOR	(Fire,prFire)
-		DECLARE_EMITTER	(OnFire,peFire)
+		DEFINE_RECEPTOR	(Connection,prConn)
+		DEFINE_RECEPTOR	(Fields,prFlds)
+		DEFINE_RECEPTOR	(Fire,prFire)
+		DEFINE_EMITTER	(OnFire,peFire)
 	END_BEHAVIOUR()
 
 	private :
@@ -438,8 +446,8 @@ class SQLTableWrite :
 	};
 
 // Prototypes
-HRESULT OLEDBAppendConstraints	( IADTContainer *, WCHAR * );
-HRESULT OLEDBApplyConstraints		( IADTContainer *, IMemoryMapped *, DBBINDING *, U32 * );
+HRESULT OLEDBAppendConstraints	( IContainer *, WCHAR * );
+HRESULT OLEDBApplyConstraints		( IContainer *, IMemoryMapped *, DBBINDING *, U32 * );
 HRESULT OLEDBBindVariant			( DBORDINAL, adtValue *, DBBINDING *, U32 );
 HRESULT OLEDBCopyVariant			( PVOID, adtValue * );
 
@@ -458,7 +466,7 @@ class SQLCol
 
 	// Run-time data
 	adtString			sName;							// Column name
-	adtValueImpl		sData;							// Column data
+	adtValue				sData;							// Column data
 	SQLINTEGER			uSz;								// Column size
 	SQLSMALLINT			DataType;						// SQL data type
 	TIMESTAMP_STRUCT	TimeStamp;						// For 'datetime' data type
@@ -471,19 +479,17 @@ class SQLCol
 
 class SQLDelete :
 	public CCLObject,										// Base class
-	public INodeBehaviour								// Interface
+	public IBehaviour										// Interface
 	{
 	public :
 	SQLDelete ( void );									// Constructor
 
 	// Run-time data
-	IReceptor		*prConn,*prCons,*prF,*prTbl;	// Receptors
-	IEmitter			*peFire;								// Emitters
 	IHaveValue		*pConn;								// Connection object
 	SQLHANDLE		hConn;								// Connection
 	adtString		sTableName;							// Table name
-	IADTContainer	*pCons;								// Constraints
-	IADTInIt			*pConsIn;							// Constraints
+	IContainer		*pCons;								// Constraints
+	IIt				*pConsIn;							// Constraints
 	SQLCol			*pvCons;								// Constraint values
 	U32				szCons;								// # of constraints
 	IMemoryMapped	*pSQLBfr;							// SQL buffer
@@ -491,18 +497,21 @@ class SQLDelete :
 
 	// CCL
 	CCL_OBJECT_BEGIN(SQLDelete)
-		CCL_INTF(INodeBehaviour)
+		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 	virtual HRESULT	construct( void );			// Construct object
 	virtual void		destruct	( void );			// Destruct object
 
 	// Connections
+	DECLARE_RCP(Connection)
+	DECLARE_RCP(Constraints)
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Table)
 	BEGIN_BEHAVIOUR()
-		DECLARE_RECEPTOR	(Connection,prConn)
-		DECLARE_RECEPTOR	(Constraints,prCons)
-		DECLARE_RECEPTOR	(Fire,prF)
-		DECLARE_RECEPTOR	(Table,prTbl)
-		DECLARE_EMITTER	(OnFire,peFire)
+		DEFINE_RCP(Connection)
+		DEFINE_RCP(Constraints)
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Table)
 	END_BEHAVIOUR()
 
 	private :
@@ -517,53 +526,58 @@ class SQLDelete :
 
 class SQLQuery :
 	public CCLObject,										// Base class
-	public INodeBehaviour								// Interface
+	public IBehaviour										// Interface
 	{
 	public :
 	SQLQuery ( void );									// Constructor
 
 	// Run-time data
-	IReceptor		*prConn,*prCons,*prCnt;			// Receptors
-	IReceptor		*prDis,*prFlds,*prFire;			// Receptors
-	IReceptor		*prJoin,*prSort,*prTbl;			// Receptors
-	IEmitter			*peFire,*peFail;					// Emitters
 	IHaveValue		*pConn;								// Connection object
 	SQLHANDLE		hConn;								// Connection
 	adtString		sTableName;							// Table name
 	adtBool			bDistinct;							// Distinct record result ?
-	IADTContainer	*pCons;								// Constraints
-	IADTInIt			*pConsIn;							// Constraints
+	IContainer		*pCons;								// Constraints
+	IIt				*pConsIn;							// Constraints
 	SQLCol			*pvCons;								// Constraint values
 	U32				szCons;								// # of constraints
-	IADTInIt			*pFldsIn;							// Fields to 'select'
+	IIt				*pFldsIn;							// Fields to 'select'
 	adtBool			bSort;								// Sort result ?
 	adtBool			bCount;								// Count query only ?
 	IMemoryMapped	*pQryBfr;							// Query buffer
 	WCHAR				*pwQryBfr;							// Query buffer
-	IADTContainer	*pJoin;								// Join information
+	IContainer		*pJoin;								// Join information
 	adtString		sSort;								// Sort field ?
 	adtInt			iCount;								// Max. query count
 
 	// CCL
 	CCL_OBJECT_BEGIN(SQLQuery)
-		CCL_INTF(INodeBehaviour)
+		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 	virtual HRESULT	construct( void );			// Construct object
 	virtual void		destruct	( void );			// Destruct object
 
 	// Connections
+	DECLARE_RCP(Connection)
+	DECLARE_RCP(Constraints)
+	DECLARE_RCP(Count)
+	DECLARE_RCP(Distinct)
+	DECLARE_RCP(Fields)
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Join)
+	DECLARE_RCP(Sort)
+	DECLARE_RCP(Table)
+	DECLARE_EMT(Fail)
 	BEGIN_BEHAVIOUR()
-		DECLARE_RECEPTOR	(Connection,prConn)
-		DECLARE_RECEPTOR	(Constraints,prCons)
-		DECLARE_RECEPTOR	(Count,prCnt)
-		DECLARE_RECEPTOR	(Distinct,prDis)
-		DECLARE_RECEPTOR	(Fields,prFlds)
-		DECLARE_RECEPTOR	(Fire,prFire)
-		DECLARE_RECEPTOR	(Join,prJoin)
-		DECLARE_RECEPTOR	(Sort,prSort)
-		DECLARE_RECEPTOR	(Table,prTbl)
-		DECLARE_EMITTER	(OnFail,peFail)
-		DECLARE_EMITTER	(OnFire,peFire)
+		DEFINE_RCP(Connection)
+		DEFINE_RCP(Constraints)
+		DEFINE_RCP(Count)
+		DEFINE_RCP(Distinct)
+		DEFINE_RCP(Fields)
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Join)
+		DEFINE_RCP(Sort)
+		DEFINE_RCP(Table)
+		DEFINE_EMT(Fail)
 	END_BEHAVIOUR()
 
 	private :
@@ -578,14 +592,12 @@ class SQLQuery :
 
 class SQLQueryKey :
 	public CCLObject,										// Base class
-	public INodeBehaviour								// Interface
+	public IBehaviour										// Interface
 	{
 	public :
 	SQLQueryKey ( void );								// Constructor
 
 	// Run-time data
-	IReceptor		*prConn,*prKey,*prFire;			// Receptors
-	IEmitter			*peFire;								// Emitters
 	IHaveValue		*pConn;								// Connection object
 	SQLHANDLE		hConn;								// Connection
 	adtString		sTableName;							// Table name
@@ -597,16 +609,18 @@ class SQLQueryKey :
 
 	// CCL
 	CCL_OBJECT_BEGIN(SQLQueryKey)
-		CCL_INTF(INodeBehaviour)
+		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 	virtual void		destruct	( void );			// Destruct object
 
 	// Connections
+	DECLARE_RCP(Connection)
+	DECLARE_RCP(Key)
+	DECLARE_CON(Fire)
 	BEGIN_BEHAVIOUR()
-		DECLARE_RECEPTOR	(Connection,prConn)
-		DECLARE_RECEPTOR	(Key,prKey)
-		DECLARE_RECEPTOR	(Fire,prFire)
-		DECLARE_EMITTER	(OnFire,peFire)
+		DEFINE_RCP(Connection)
+		DEFINE_RCP(Key)
+		DEFINE_CON(Fire)
 	END_BEHAVIOUR()
 
 	private :
@@ -624,20 +638,18 @@ class SQLQueryKey :
 
 class SQLQueryRange :
 	public CCLObject,										// Base class
-	public INodeBehaviour								// Interface
+	public IBehaviour										// Interface
 	{
 	public :
 	SQLQueryRange ( void );								// Constructor
 
 	// Run-time data
-	IReceptor		*prConn,*prFire,*prL,*prR;		// Receptors
-	IEmitter			*peFire;								// Emitters
 	IHaveValue		*pConn;								// Connection object
 	SQLHANDLE		hConn;								// Connection
 	adtString		sTableName;							// Table name
 	adtString		sKey;									// Range key
-	IADTInIt			*pFlds;								// Field names to query
-	adtValueImpl	vLeft,vRight;						// Desired range
+	IIt				*pFlds;								// Field names to query
+	adtValue			vLeft,vRight;						// Desired range
 	SQLINTEGER		uLeftSz,uRightSz;					// Column sizes
 	adtString		sQuery;								// Current query string
 	adtBool			bSort;								// Sort result ?
@@ -645,17 +657,20 @@ class SQLQueryRange :
 
 	// CCL
 	CCL_OBJECT_BEGIN(SQLQueryRange)
-		CCL_INTF(INodeBehaviour)
+		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 	virtual void		destruct	( void );			// Destruct object
 
 	// Connections
+	DECLARE_RCP(Connection)
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Left)
+	DECLARE_RCP(Right)
 	BEGIN_BEHAVIOUR()
-		DECLARE_RECEPTOR	(Connection,prConn)
-		DECLARE_RECEPTOR	(Fire,prFire)
-		DECLARE_RECEPTOR	(Left,prL)
-		DECLARE_RECEPTOR	(Right,prR)
-		DECLARE_EMITTER	(OnFire,peFire)
+		DEFINE_RCP(Connection)
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Left)
+		DEFINE_RCP(Right)
 	END_BEHAVIOUR()
 
 	private :
@@ -672,14 +687,12 @@ class SQLQueryRange :
 
 class SQLRecordEnum :
 	public CCLObject,										// Base class
-	public INodeBehaviour								// Interface
+	public IBehaviour										// Interface
 	{
 	public :
 	SQLRecordEnum ( void );								// Constructor
 
 	// Run-time data
-	IReceptor		*prCtx,*prCnt,*prNext,*prPos;	// Receptors
-	IEmitter			*peFire,*peEnd;					// Emitters
 	IHaveValue		*pStmt;								// Statement object
 	SQLHANDLE		hStmt;								// Statement
 	SQLCol			*pCols;								// Column info.
@@ -687,23 +700,29 @@ class SQLRecordEnum :
 	bool				bEnd;									// Enumeration done ?
 	IMemoryMapped	*pBfr;								// Internal object loading buffer
 	U32				uBfrSz;								// Current buffer size
-	IParseStm		*pParse;								// Parser
+	IStreamPersist	*pParse;								// Parser
 
 	// CCL
 	CCL_OBJECT_BEGIN(SQLRecordEnum)
-		CCL_INTF(INodeBehaviour)
+		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 	virtual HRESULT	construct( void );			// Construct object
 	virtual void		destruct	( void );			// Destruct object
 
 	// Connections
+	DECLARE_RCP(Context)
+	DECLARE_CON(Count)
+	DECLARE_RCP(Next)
+	DECLARE_RCP(Position)
+	DECLARE_EMT(Fire)
+	DECLARE_EMT(End)
 	BEGIN_BEHAVIOUR()
-		DECLARE_RECEPTOR	(Context,prCtx)
-		DECLARE_RECEPTOR	(Count,prCnt)
-		DECLARE_RECEPTOR	(Next,prNext)
-		DECLARE_RECEPTOR	(Position,prPos)
-		DECLARE_EMITTER	(OnEnd,peEnd)
-		DECLARE_EMITTER	(OnFire,peFire)
+		DEFINE_RCP(Context)
+		DEFINE_CON(Count)
+		DEFINE_RCP(Next)
+		DEFINE_RCP(Position)
+		DEFINE_EMT(Fire)
+		DEFINE_EMT(End)
 	END_BEHAVIOUR()
 
 	private :
@@ -719,15 +738,13 @@ class SQLRecordEnum :
 
 class SQLTableCreate :
 	public CCLObject,										// Base class
-	public INodeBehaviour								// Interface
+	public IBehaviour										// Interface
 	{
 	public :
 	SQLTableCreate ( void );							// Constructor
 
 	// Run-time data
-	IReceptor			*prConn,*prDef,*prFire;		// Receptors
-	IEmitter				*peFire;							// Emitters
-	IADTDictionary		*pDef;							// Table definition
+	IDictionary			*pDef;							// Table definition
 	IHaveValue			*pConn;							// Connection object
 	SQLHANDLE			hConn;							// Connection
 	IMemoryMapped		*pBfr;							// Internal buffer
@@ -735,24 +752,26 @@ class SQLTableCreate :
 
 	// CCL
 	CCL_OBJECT_BEGIN(SQLTableCreate)
-		CCL_INTF(INodeBehaviour)
+		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 	virtual HRESULT	construct( void );			// Construct object
 	virtual void		destruct	( void );			// Destruct object
 
 	// Connections
+	DECLARE_RCP(Connection)
+	DECLARE_RCP(Definition)
+	DECLARE_CON(Fire)
 	BEGIN_BEHAVIOUR()
-		DECLARE_RECEPTOR	(Connection,prConn)
-		DECLARE_RECEPTOR	(Definition,prDef)
-		DECLARE_RECEPTOR	(Fire,prFire)
-		DECLARE_EMITTER	(OnFire,peFire)
+		DEFINE_RCP(Connection)
+		DEFINE_RCP(Definition)
+		DEFINE_CON(Fire)
 	END_BEHAVIOUR()
 
 	private :
 
 	// Internal utilities
-	HRESULT fieldsAdd		( SQLHANDLE, adtString &, IADTDictionary * );
-	HRESULT primaryKey	( SQLHANDLE, adtString &, IADTInIt * );
+	HRESULT fieldsAdd		( SQLHANDLE, adtString &, IDictionary * );
+	HRESULT primaryKey	( SQLHANDLE, adtString &, IIt * );
 	HRESULT tableCreate	( SQLHANDLE, adtString & );
 
 	};
@@ -763,18 +782,15 @@ class SQLTableCreate :
 
 class SQLTableWrite :
 	public CCLObject,										// Base class
-	public INodeBehaviour								// Interface
+	public IBehaviour										// Interface
 	{
 	public :
 	SQLTableWrite ( void );								// Constructor
 
 	// Run-time data
-	IReceptor			*prConn,*prFlds,*prFire;	// Receptors
-	IReceptor			*prTbl;							// Receptors
-	IEmitter				*peFire;							// Emitters
 	IHaveValue			*pConn;							// Connection object
 	SQLHANDLE			hConn;							// Connection
-	IADTDictionary		*pFlds;							// Current fields
+	IDictionary			*pFlds;							// Current fields
 	IMemoryMapped		*pBfr;							// Internal buffer
 	WCHAR					*pwBfr;							// Internal buffer
 	IMemoryMapped		*pStmBfr;						// Internal buffer
@@ -783,18 +799,21 @@ class SQLTableWrite :
 
 	// CCL
 	CCL_OBJECT_BEGIN(SQLTableWrite)
-		CCL_INTF(INodeBehaviour)
+		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 	virtual HRESULT	construct( void );			// Construct object
 	virtual void		destruct	( void );			// Destruct object
 
 	// Connections
+	DECLARE_RCP(Connection)
+	DECLARE_RCP(Fields)
+	DECLARE_RCP(TableName)
+	DECLARE_CON(Fire)
 	BEGIN_BEHAVIOUR()
-		DECLARE_RECEPTOR	(Connection,prConn)
-		DECLARE_RECEPTOR	(Fields,prFlds)
-		DECLARE_RECEPTOR	(Fire,prFire)
-		DECLARE_RECEPTOR	(TableName,prTbl)
-		DECLARE_EMITTER	(OnFire,peFire)
+		DEFINE_RCP(Connection)
+		DEFINE_RCP(Fields)
+		DEFINE_RCP(TableName)
+		DEFINE_CON(Fire)
 	END_BEHAVIOUR()
 
 	private :
@@ -803,7 +822,7 @@ class SQLTableWrite :
 	HRESULT bindVariant	( SQLHANDLE, U32, SQLCol * );
 	HRESULT putData		( SQLHANDLE, IUnknown * );
 	HRESULT streamObj		( IUnknown *, IUnknown ** );
-//	HRESULT fieldsAdd		( SQLHANDLE, adtString &, IADTDictionary * );
+//	HRESULT fieldsAdd		( SQLHANDLE, adtString &, IDictionary * );
 //	HRESULT tableWrite	( SQLHANDLE, adtString & );
 
 	};
@@ -814,16 +833,13 @@ class SQLTableWrite :
 
 class SQL2Index :
 	public CCLObject,										// Base class
-	public INodeBehaviour								// Interface
+	public IBehaviour										// Interface
 	{
 	public :
 	SQL2Index ( void );									// Constructor
 
 	// Run-time data
-	IReceptor			*prConn,*prCr,*prFlds;		// Receptors
-	IReceptor			*prTbl;							// Receptors
-	IEmitter				*peFire;							// Emitters
-	IADTContainer		*pFlds;							// Index definition
+	IContainer			*pFlds;							// Index definition
 	IHaveValue			*pConn;							// Connection object
 	SQLHANDLE			hConn;							// Connection
 	IMemoryMapped		*pQryBfr;						// Internal buffer
@@ -833,25 +849,30 @@ class SQL2Index :
 
 	// CCL
 	CCL_OBJECT_BEGIN(SQL2Index)
-		CCL_INTF(INodeBehaviour)
+		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 	virtual HRESULT	construct( void );			// Construct object
 	virtual void		destruct	( void );			// Destruct object
 
 	// Connections
+	DECLARE_RCP(Connection)
+	DECLARE_RCP(Create)
+	DECLARE_RCP(Fields)
+	DECLARE_RCP(TableName)
+	DECLARE_EMT(Fire)
 	BEGIN_BEHAVIOUR()
-		DECLARE_RECEPTOR	(Connection,prConn)
-		DECLARE_RECEPTOR	(Create,prCr)
-		DECLARE_RECEPTOR	(Fields,prFlds)
-		DECLARE_RECEPTOR	(TableName,prTbl)
-		DECLARE_EMITTER	(OnFire,peFire)
+		DEFINE_RCP(Connection)
+		DEFINE_RCP(Create)
+		DEFINE_RCP(Fields)
+		DEFINE_RCP(TableName)
+		DEFINE_EMT(Fire)
 	END_BEHAVIOUR()
 
 	private :
 
 	// Internal utilities
-//	HRESULT fieldsAdd		( SQLHANDLE, adtString &, IADTDictionary * );
-//	HRESULT primaryKey	( SQLHANDLE, adtString &, IADTInIt * );
+//	HRESULT fieldsAdd		( SQLHANDLE, adtString &, IDictionary * );
+//	HRESULT primaryKey	( SQLHANDLE, adtString &, IInIt * );
 //	HRESULT tableCreate	( SQLHANDLE, adtString & );
 
 	};
@@ -862,16 +883,13 @@ class SQL2Index :
 
 class SQL2Table :
 	public CCLObject,										// Base class
-	public INodeBehaviour								// Interface
+	public IBehaviour										// Interface
 	{
 	public :
 	SQL2Table ( void );									// Constructor
 
 	// Run-time data
-	IReceptor			*prCols,*prConn,*prFlds;	// Receptors
-	IReceptor			*prFire,*prTbl;				// Receptors
-	IEmitter				*peFire,*peCols;				// Emitters
-	IADTDictionary		*pFlds;							// Table fields
+	IDictionary			*pFlds;							// Table fields
 	IHaveValue			*pConn;							// Connection object
 	SQLHANDLE			hConn;							// Connection
 	IMemoryMapped		*pQryBfr;						// Internal buffer
@@ -881,27 +899,30 @@ class SQL2Table :
 
 	// CCL
 	CCL_OBJECT_BEGIN(SQL2Table)
-		CCL_INTF(INodeBehaviour)
+		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 	virtual HRESULT	construct( void );			// Construct object
 	virtual void		destruct	( void );			// Destruct object
 
 	// Connections
+	DECLARE_CON(Columns)
+	DECLARE_RCP(Connection)
+	DECLARE_RCP(Fields)
+	DECLARE_CON(Fire)
+	DECLARE_RCP(TableName)
 	BEGIN_BEHAVIOUR()
-		DECLARE_RECEPTOR	(Columns,prCols)
-		DECLARE_RECEPTOR	(Connection,prConn)
-		DECLARE_RECEPTOR	(Fields,prFlds)
-		DECLARE_RECEPTOR	(Fire,prFire)
-		DECLARE_RECEPTOR	(TableName,prTbl)
-		DECLARE_EMITTER	(OnColumns,peCols)
-		DECLARE_EMITTER	(OnFire,peFire)
+		DEFINE_CON(Columns)
+		DEFINE_RCP(Connection)
+		DEFINE_RCP(Fields)
+		DEFINE_CON(Fire)
+		DEFINE_RCP(TableName)
 	END_BEHAVIOUR()
 
 	private :
 
 	// Internal utilities
-	HRESULT fieldsAdd		( SQLHANDLE, adtString &, IADTDictionary * );
-	HRESULT fieldsRemove	( SQLHANDLE, adtString &, IADTDictionary * );
+	HRESULT fieldsAdd		( SQLHANDLE, adtString &, IDictionary * );
+	HRESULT fieldsRemove	( SQLHANDLE, adtString &, IDictionary * );
 
 	};
 
@@ -911,42 +932,44 @@ class SQL2Table :
 
 class SQLUpdate :
 	public CCLObject,										// Base class
-	public INodeBehaviour								// Interface
+	public IBehaviour										// Interface
 	{
 	public :
 	SQLUpdate ( void );									// Constructor
 
 	// Run-time data
-	IReceptor		*prConn,*prCons,*prFlds;		// Receptors
-	IReceptor		*prFire,*prTbl;					// Receptors
-	IEmitter			*peFire,*peFail;					// Emitters
 	IHaveValue		*pConn;								// Connection object
 	SQLHANDLE		hConn;								// Connection
 	adtString		sTableName;							// Table name
-	IADTContainer	*pCons;								// Constraints
-	IADTInIt			*pConsIn;							// Constraints
+	IContainer		*pCons;								// Constraints
+	IIt				*pConsIn;							// Constraints
 	SQLCol			*pvCons;								// Constraint values
 	U32				szCons;								// # of constraints
-	IADTDictionary	*pFlds;								// Current fields
+	IDictionary		*pFlds;								// Current fields
 	IMemoryMapped	*pQryBfr;							// Query buffer
 	WCHAR				*pwQryBfr;							// Query buffer
 
 	// CCL
 	CCL_OBJECT_BEGIN(SQLUpdate)
-		CCL_INTF(INodeBehaviour)
+		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 	virtual HRESULT	construct( void );			// Construct object
 	virtual void		destruct	( void );			// Destruct object
 
 	// Connections
+	DECLARE_RCP(Connection)
+	DECLARE_RCP(Constraints)
+	DECLARE_RCP(Fields)
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Table)
+	DECLARE_EMT(Fail)
 	BEGIN_BEHAVIOUR()
-		DECLARE_RECEPTOR	(Connection,prConn)
-		DECLARE_RECEPTOR	(Constraints,prCons)
-		DECLARE_RECEPTOR	(Fields,prFlds)
-		DECLARE_RECEPTOR	(Fire,prFire)
-		DECLARE_RECEPTOR	(Table,prTbl)
-		DECLARE_EMITTER	(OnFail,peFail)
-		DECLARE_EMITTER	(OnFire,peFire)
+		DEFINE_RCP(Connection)
+		DEFINE_RCP(Constraints)
+		DEFINE_RCP(Fields)
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Table)
+		DEFINE_EMT(Fail)
 	END_BEHAVIOUR()
 
 	private :
@@ -960,7 +983,7 @@ HRESULT SQLBindVariantParam	( SQLHANDLE, U32, adtValue *, SQLINTEGER * );
 HRESULT SQLHandleError			( SQLSMALLINT, SQLHANDLE, SQLRETURN );
 HRESULT SQLVtToSQLC				( VARTYPE, SQLSMALLINT * );
 HRESULT SQLVtToSQLType			( VARTYPE, SQLSMALLINT * );
-HRESULT SQLStringItLen			( IADTInIt *, U32 *, U32 * );
+HRESULT SQLStringItLen			( IIt *, U32 *, U32 * );
 
 #endif
 

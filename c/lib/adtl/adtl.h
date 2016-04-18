@@ -502,7 +502,6 @@ DECLARE_INTERFACE_(IHaveValue,IUnknown)
 	public :
 	STDMETHOD(getValue)	( ADTVALUE & )			PURE;
 	STDMETHOD(setValue)	( const ADTVALUE & )	PURE;
-	STDMETHOD(setValue)	( IHaveValue * )		PURE;
 	};
 
 ///////////

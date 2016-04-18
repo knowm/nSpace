@@ -64,7 +64,7 @@ SQLCreateDatabase :: SQLCreateDatabase ( void )
 
 #ifdef	USE_ODBC
 
-HRESULT SQLCreateDatabase :: receive ( IReceptor *pR, const adtValue &v )
+HRESULT SQLCreateDatabase :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -82,17 +82,17 @@ HRESULT SQLCreateDatabase :: receive ( IReceptor *pR, const adtValue &v )
 	HRESULT	hr = S_OK;
 
 	// Fire
-	if (prFire == pR)
+	if (_RCP(Fire))
 		{
 		adtString		sConn;
 		BOOL				bRet;	
 
 		// State check
 		if (hr == S_OK && sLoc.length() == 0)
-			hr = pnAttr->load ( adtString ( L"Location" ), sLoc );
+			hr = pnDesc->load ( adtString ( L"Location" ), sLoc );
 		CCLTRYE ( (sLoc.length() > 0), ERROR_INVALID_STATE );
 		if (hr == S_OK && sDriver.length() == 0)
-			hr = pnAttr->load ( adtString ( L"Driver" ), sDriver );
+			hr = pnDesc->load ( adtString ( L"Driver" ), sDriver );
 		CCLTRYE ( (sDriver.length() > 0), ERROR_INVALID_STATE );
 
 		// If given location is 'relative', obtain environment root from storage object
@@ -100,22 +100,22 @@ HRESULT SQLCreateDatabase :: receive ( IReceptor *pR, const adtValue &v )
 				sLoc[0] != WCHAR('\\') &&
 				sLoc[1] != WCHAR(':') )			// Drive letter
 			{
-			IADTDictionary	*pDict	= NULL;
+			IDictionary		*pDict	= NULL;
 			adtString		sLocRel,sRoot;
 			adtIUnknown		unkV;
 
 			// Local copy
-			CCLTRY ( adtValueImpl::copy ( sLocRel, sLoc ) );
+			CCLTRY ( adtValue::copy ( sLoc, sLocRel ) );
 
 			// Root location
-			CCLTRY ( pnAttr->load ( adtString(L"_Storage"), unkV ) );
-			CCLTRY ( _QISAFE(unkV,IID_IADTDictionary,&pDict) );
+			CCLTRY ( pnDesc->load ( adtString(L"_Storage"), unkV ) );
+			CCLTRY ( _QISAFE(unkV,IID_IDictionary,&pDict) );
 			CCLTRY ( pDict->load ( adtString(L"Root"), sRoot ) );
 
 			// Generate full path
 			CCLTRY ( sLoc.allocate ( sLocRel.length() + sRoot.length() ) );
-			CCLOK  ( wcscpy ( &sLoc.at(), sRoot ); )
-			CCLOK	 ( wcscat ( &sLoc.at(), sLocRel ); )
+			CCLTRY ( adtValue::copy ( sRoot, sLoc ) );
+			CCLTRY ( sLoc.append ( sLocRel ) );
 
 			// Clean up
 			_RELEASE(pDict);
@@ -129,10 +129,10 @@ HRESULT SQLCreateDatabase :: receive ( IReceptor *pR, const adtValue &v )
 			{
 			// Allocate/generate configuration string
 			CCLTRY ( sConn.allocate (	(U32)wcslen(wCreate) + sLoc.length() + 3));
-			CCLOK	( wcscpy ( &sConn.at(), wCreate ); )
-			CCLOK ( wcscat ( &sConn.at(), L"\"" ); )
-			CCLOK ( wcscat ( &sConn.at(), sLoc ); )
-			CCLOK ( wcscat ( &sConn.at(), L"\"" ); )
+			CCLOK	 ( sConn = wCreate; )
+			CCLTRY ( sConn.append ( L"\"" ) );
+			CCLTRY ( sConn.append ( sLoc ) );
+			CCLTRY ( sConn.append ( L"\"" ) );
 
 			// API wants double termination
 			CCLOK ( sConn.at(sConn.length()+1) = WCHAR('\0'); )
@@ -146,23 +146,24 @@ HRESULT SQLCreateDatabase :: receive ( IReceptor *pR, const adtValue &v )
 			}	// if
 
 		// Generate connection string for created source
-		CCLTRY ( sConn.allocate ( sDriver.length() +	// Driver name
+		CCLTRY ( sConn.allocate ( (U32) (	
+					sDriver.length() +						// Driver name
 					wcslen(wDriver) +							// Driver specification
 					wcslen(wDBQ) +								// DBQ
 					sLoc.length() +							// Length
-					2 ) );										// +2 for quotes around location
-		CCLOK ( wcscpy ( &sConn.at(), wDriver ); )
-		CCLOK ( wcscat ( &sConn.at(), sDriver ); )
-		CCLOK ( wcscat ( &sConn.at(), wDBQ ); )
-		CCLOK ( wcscat ( &sConn.at(), sLoc ); )
+					2 ) ) );										// +2 for quotes around location
+		CCLOK ( sConn  = wDriver; )
+		CCLTRY( sConn.append ( sDriver ) );
+		CCLTRY( sConn.append ( wDBQ ) );
+		CCLTRY( sConn.append ( sLoc ) );
 
 		// Result
-		if (hr == S_OK)	peFire->emit ( sConn );
-		else					peErr->emit ( adtInt(hr) );
+		if (hr == S_OK)	_EMT(Fire,sConn);
+		else					_EMT(Error,adtInt(hr));
 		}	// if
 
 	// State
-	else if (prLoc == pR)
+	else if (_RCP(Location))
 		sLoc = (LPCWSTR)adtString(v);
 
 	return hr;
@@ -193,7 +194,7 @@ HRESULT SQLCreateDatabase :: receiveFire ( const adtValue &v )
 
 	// State check
 	if (hr == S_OK && sLoc.length() == 0)
-		hr = pnAttr->load ( adtString ( L"Location" ), sLoc );
+		hr = pnDesc->load ( adtString ( L"Location" ), sLoc );
 	CCLTRYE ( (sLoc.length() > 0), ERROR_INVALID_STATE );
 
 	// For now default to Microsoft Access/Jet engine for default

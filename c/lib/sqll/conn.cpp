@@ -79,7 +79,7 @@ void SQLConnection :: destruct ( void )
 
 #ifdef	USE_ODBC
 
-HRESULT SQLConnection :: receive ( IReceptor *pR, const adtValue &v )
+HRESULT SQLConnection :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -97,7 +97,7 @@ HRESULT SQLConnection :: receive ( IReceptor *pR, const adtValue &v )
 	HRESULT	hr = S_OK;
 
 	// Fire
-	if (prFire == pR)
+	if (_RCP(Fire))
 		{
 		SQLHandle	*pConn	= NULL;
 		IHaveValue	*phv;
@@ -105,7 +105,7 @@ HRESULT SQLConnection :: receive ( IReceptor *pR, const adtValue &v )
 
 		// State check
 		if (hr == S_OK && sConn.length() == 0)
-			hr = pnAttr->load ( adtString ( L"Connection" ), sConn );
+			hr = pnDesc->load ( adtString ( L"Connection" ), sConn );
 
 		// Allocate an environment handle for the connection
 		if (hr == S_OK && hSQLEnv == NULL)
@@ -129,14 +129,14 @@ HRESULT SQLConnection :: receive ( IReceptor *pR, const adtValue &v )
 						SQL_NTS, NULL, 0, NULL, SQL_DRIVER_NOPROMPT )) == SQL_SUCCESS, sqlr );
 
 		// Results
-		CCLOK ( peConn->emit ( adtIUnknown((phv = pConn))); )
+		CCLOK ( _EMT(Connect,adtIUnknown((phv = pConn))); ) 
 
 		// Clean up
 		_RELEASE(pConn);
 		}	// if
 
 	// State
-	else if (prConn == pR)
+	else if (_RCP(Connection))
 		sConn = (LPCWSTR)adtString(v);
 
 	return hr;

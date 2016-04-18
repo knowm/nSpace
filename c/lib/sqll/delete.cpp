@@ -85,7 +85,7 @@ HRESULT SQLDelete :: construct ( void )
 	HRESULT		hr			= S_OK;
 
 	// SQL string buffer
-	CCLTRY ( COCREATEINSTANCE ( CLSID_MemoryBlock, IID_IMemoryMapped, &pSQLBfr ) );
+	CCLTRY ( COCREATE ( L"Io.MemoryBlock", IID_IMemoryMapped, &pSQLBfr ) );
 	CCLTRY ( pSQLBfr->setSize ( SIZE_SQLBFR ) );
 	CCLTRY ( pSQLBfr->lock ( 0, 0, (PVOID *) &pwSQLBfr, NULL ) );
 
@@ -111,7 +111,7 @@ void SQLDelete :: destruct ( void )
 	_RELEASE(pSQLBfr);
 	}	// destruct
 
-HRESULT SQLDelete :: receive ( IReceptor *pR, const adtValue &v )
+HRESULT SQLDelete :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -129,22 +129,22 @@ HRESULT SQLDelete :: receive ( IReceptor *pR, const adtValue &v )
 	HRESULT	hr = S_OK;
 
 	// Fire
-	if (prF == pR)
+	if (_RCP(Fire))
 		{
-		IADTDictionary	*pDict	= NULL;
-		SQLHandle		*pStmt	= NULL;
-		IHaveValue		*phv;
-		adtValueImpl	vVal;
-		adtIUnknown		unkV;
-		adtString		strV;
-		U32				idx;
-		bool				bLike;
+		IDictionary	*pDict	= NULL;
+		SQLHandle	*pStmt	= NULL;
+		IHaveValue	*phv;
+		adtValue		vVal;
+		adtIUnknown	unkV;
+		adtString	strV;
+		U32			idx;
+		bool			bLike;
 
 		// State check
 		CCLTRYE ( (hConn != NULL),		ERROR_INVALID_STATE );
 		CCLTRYE ( (pCons != NULL),		ERROR_INVALID_STATE );
 		if (hr == S_OK && sTableName.length() == 0)
-			hr = pnAttr->load ( strRefTableName, sTableName );
+			hr = pnDesc->load ( strRefTableName, sTableName );
 		CCLTRYE ( (sTableName.length() > 0),	ERROR_INVALID_STATE );
 
 		// Our statement handle
@@ -156,10 +156,10 @@ HRESULT SQLDelete :: receive ( IReceptor *pR, const adtValue &v )
 		// Form is : DELETE FROM (Table) WHERE (Constraints)
 
 		// DELETE
-		CCLOK		( wcscpy ( pwSQLBfr, L"DELETE FROM " ); )
+		CCLOK		( WCSCPY ( pwSQLBfr, SIZE_SQLBFR, L"DELETE FROM " ); )
 
 		// Table name
-		CCLOK		( wcscat ( pwSQLBfr, sTableName ); )
+		CCLOK		( WCSCAT ( pwSQLBfr, SIZE_SQLBFR, sTableName ); )
 
 		// Required constraints
 		if (hr == S_OK && szCons == 0)
@@ -175,7 +175,7 @@ HRESULT SQLDelete :: receive ( IReceptor *pR, const adtValue &v )
 		CCLTRYE ( (szCons > 0), ERROR_INVALID_STATE );
 
 		// WHERE
-		CCLOK		( wcscat ( pwSQLBfr, L" WHERE " ); )
+		CCLOK		( WCSCAT ( pwSQLBfr, SIZE_SQLBFR, L" WHERE " ); )
 
 		// Names, values
 		CCLOK		( idx = 0; )
@@ -184,32 +184,32 @@ HRESULT SQLDelete :: receive ( IReceptor *pR, const adtValue &v )
 		while (hr == S_OK && pConsIn->read ( unkV ) == S_OK)
 			{
 			// Properties
-			CCLTRY( _QISAFE(unkV,IID_IADTDictionary,&pDict) );
+			CCLTRY( _QISAFE(unkV,IID_IDictionary,&pDict) );
 
 			// Name
 			CCLTRY( pDict->load ( strRefKey, strV ) );
-			CCLOK ( wcscat ( pwSQLBfr, L"\"" ); )
-			CCLOK	( wcscat ( pwSQLBfr, strV ); )
-			CCLOK ( wcscat ( pwSQLBfr, L"\" " ); )
+			CCLOK ( WCSCAT ( pwSQLBfr, SIZE_SQLBFR, L"\"" ); )
+			CCLOK	( WCSCAT ( pwSQLBfr, SIZE_SQLBFR, strV ); )
+			CCLOK ( WCSCAT ( pwSQLBfr, SIZE_SQLBFR, L"\" " ); )
 
 			// Constraint operator ( <, >, LIKE, etc. )
 			CCLTRY( pDict->load ( strRefOp, strV ) );
-			CCLOK	( wcscat ( pwSQLBfr, strV ); )
+			CCLOK	( WCSCAT ( pwSQLBfr, SIZE_SQLBFR, strV ); )
 			CCLOK ( bLike = (WCASECMP(strV,L"LIKE") == 0); )
 
 			// Value, bind
-			CCLOK ( wcscat ( pwSQLBfr, L" ? " ); )
+			CCLOK ( WCSCAT ( pwSQLBfr, SIZE_SQLBFR, L" ? " ); )
 			CCLTRY( pDict->load ( strRefValue, pvCons[idx].sData ) );
 
 			// If the operator is 'like' and the value is a string, add the wildcards
-			if (hr == S_OK && bLike && pvCons[idx].sData.vtype == VALT_STR)
+			if (hr == S_OK && bLike && adtValue::type(pvCons[idx].sData) == VTYPE_STR)
 				{
 				adtString	sData(pvCons[idx].sData);
 				CCLTRY ( strV.allocate ( sData.length() + 2 ) );
-				CCLOK  ( wcscpy ( &strV.at(), L"%" ); )
-				CCLOK  ( wcscat ( &strV.at(), sData ); )
-				CCLOK  ( wcscat ( &strV.at(), L"%" ); )
-				CCLTRY ( adtValueImpl::copy ( pvCons[idx].sData, strV ) );
+				CCLOK  ( strV = L"%"; )
+				CCLTRY ( strV.append ( sData ) );
+				CCLTRY ( strV.append ( L"%" ) );
+				CCLTRY ( adtValue::copy ( strV, pvCons[idx].sData ) );
 				}	// if
 			CCLTRY( SQLBindVariantParam ( pStmt->Handle, idx+1,
 						&(pvCons[idx].sData), &(pvCons[idx].uSz) ) );
@@ -217,7 +217,7 @@ HRESULT SQLDelete :: receive ( IReceptor *pR, const adtValue &v )
 
 			// Next constraint
 			if (hr == S_OK && idx < szCons)
-				wcscat ( pwSQLBfr, L"AND " );
+				WCSCAT ( pwSQLBfr, SIZE_SQLBFR, L"AND " );
 			_RELEASE(pDict);
 			pConsIn->next();
 			}	// while
@@ -230,14 +230,14 @@ HRESULT SQLDelete :: receive ( IReceptor *pR, const adtValue &v )
 																		(SQLINTEGER)wcslen(pwSQLBfr) )));
 
 		// Result
-		CCLOK ( peFire->emit ( adtIUnknown((phv = pStmt)) ); )
+		CCLOK ( _EMT(Fire,adtIUnknown((phv = pStmt)) ); )
 
 		// Clean up
 		_RELEASE(pStmt);
 		}	// if
 
 	// Connection
-	else if (prConn == pR)
+	else if (_RCP(Connection))
 		{
 		HRESULT		hr = S_OK;
 		adtIUnknown unkV(v);
@@ -254,11 +254,11 @@ HRESULT SQLDelete :: receive ( IReceptor *pR, const adtValue &v )
 		}	// else if
 
 	// Constraints
-	else if (prCons == pR)
+	else if (_RCP(Constraints))
 		{
-		HRESULT			hr			= S_OK;
-		IADTIt			*pIt		= NULL;
-		adtIUnknown		unkV(v);
+		HRESULT		hr			= S_OK;
+		IIt			*pIt		= NULL;
+		adtIUnknown	unkV(v);
 
 		// Previous object
 		_RELEASE(pCons);
@@ -266,15 +266,15 @@ HRESULT SQLDelete :: receive ( IReceptor *pR, const adtValue &v )
 		szCons = 0;
 
 		// New object
-		CCLTRY(_QISAFE(unkV,IID_IADTContainer,&pCons));
+		CCLTRY(_QISAFE(unkV,IID_IContainer,&pCons));
 		CCLTRY(pCons->iterate ( &pIt ));
-		CCLTRY(_QI(pIt,IID_IADTInIt,&pConsIn));
+		CCLTRY(_QI(pIt,IID_IIt,&pConsIn));
 		_RELEASE(pIt);
 		}	// else if
 
 	// State
-	else if (prTbl == pR)
-		hr = adtValueImpl::copy ( sTableName, adtString(v) );
+	else if (_RCP(Table))
+		hr = adtValue::copy ( adtString(v), sTableName );
 
 	return hr;
 	}	// receive
@@ -373,7 +373,7 @@ HRESULT SQLDelete :: receiveFire ( const adtValue &v )
 	ICommandText			*pCmdTxt		= NULL;
 	ICommandPrepare		*pCmdPrep	= NULL;
 	IAccessor				*pAccessor	= NULL;
-	IADTDictionary			*pDict		= NULL;
+	IDictionary			*pDict		= NULL;
 	IColumnsInfo			*pColInfo	= NULL;
 	IRowset					*pRowset		= NULL;
 	U8							*pcBfr		= NULL;

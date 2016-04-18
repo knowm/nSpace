@@ -118,7 +118,8 @@ void SQLQuery :: destruct ( void )
 	_RELEASE(pQryBfr);
 	}	// destruct
 
-HRESULT SQLQuery :: receive ( IReceptor *pR, const adtValue &v )
+HRESULT SQLQuery :: receive ( IReceptor *pr, const WCHAR *pl, 
+										const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

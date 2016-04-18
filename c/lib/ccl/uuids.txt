@@ -184,18 +184,18 @@
 2534d0bd-8628-11d2-868c-006008addfed				// 
 2534d0be-8628-11d2-868c-006008addfed				// 
 2534d0bf-8628-11d2-868c-006008addfed				// 
-2534d0c0-8628-11d2-868c-006008addfed				// 
-2534d0c1-8628-11d2-868c-006008addfed				//	
-2534d0c2-8628-11d2-868c-006008addfed				// 
-2534d0c3-8628-11d2-868c-006008addfed				// 
-2534d0c4-8628-11d2-868c-006008addfed				// 
-2534d0c5-8628-11d2-868c-006008addfed				// 
-2534d0c6-8628-11d2-868c-006008addfed				// 
-2534d0c7-8628-11d2-868c-006008addfed				// 
-2534d0c8-8628-11d2-868c-006008addfed				// 
-2534d0c9-8628-11d2-868c-006008addfed				// 
-2534d0ca-8628-11d2-868c-006008addfed				//	
-2534d0cb-8628-11d2-868c-006008addfed				// 
+2534d0c0-8628-11d2-868c-006008addfed				// CLSID_SQLConnection
+2534d0c1-8628-11d2-868c-006008addfed				//	CLSID_SQLCreateDatabase
+2534d0c2-8628-11d2-868c-006008addfed				// CLSID_SQLDelete
+2534d0c3-8628-11d2-868c-006008addfed				// CLSID_SQLQuery
+2534d0c4-8628-11d2-868c-006008addfed				// CLSID_SQLQueryKey
+2534d0c5-8628-11d2-868c-006008addfed				// CLSID_SQLQueryRange
+2534d0c6-8628-11d2-868c-006008addfed				// CLSID_SQLRecordEnum
+2534d0c7-8628-11d2-868c-006008addfed				// CLSID_SQLTableCreate
+2534d0c8-8628-11d2-868c-006008addfed				// CLSID_SQLTableWrite
+2534d0c9-8628-11d2-868c-006008addfed				// CLSID_SQLUpdate
+2534d0ca-8628-11d2-868c-006008addfed				//	CLSID_SQL2Table
+2534d0cb-8628-11d2-868c-006008addfed				// CLSID_SQL2Index
 2534d0cc-8628-11d2-868c-006008addfed				// 
 2534d0cd-8628-11d2-868c-006008addfed				// 
 2534d0ce-8628-11d2-868c-006008addfed				// 

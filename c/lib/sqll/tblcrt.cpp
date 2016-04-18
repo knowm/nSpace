@@ -255,7 +255,8 @@ HRESULT SQLTableCreate :: primaryKey ( SQLHANDLE hConn, adtString &sName,
 	return hr;
 	}	// primaryKey
 
-HRESULT SQLTableCreate :: receive ( IReceptor *pR, const adtValue &v )
+HRESULT SQLTableCreate :: receive ( IReceptor *pr, const WCHAR *pl, 
+												const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

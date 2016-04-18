@@ -106,7 +106,8 @@ void SQL2Index :: destruct ( void )
 	_RELEASE(pQryBfr);
 	}	// destruct
 
-HRESULT SQL2Index :: receive ( IReceptor *pR, const adtValue &v )
+HRESULT SQL2Index :: receive ( IReceptor *pr, const WCHAR *pl, 
+											const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

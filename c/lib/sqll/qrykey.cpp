@@ -260,7 +260,8 @@ HRESULT SQLQueryKey :: initializeQuery ( void )
 	return hr;
 	}	// initializeQuery
 
-HRESULT SQLQueryKey :: receive ( IReceptor *pR, const adtValue &v )
+HRESULT SQLQueryKey :: receive ( IReceptor *pr, const WCHAR *pl, 
+											const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

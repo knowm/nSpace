@@ -152,7 +152,7 @@ void SQLHandle :: destruct ( void )
 //	OutputDebugString ( wBfr );
 	}	// destruct
 
-HRESULT SQLHandle :: getValue ( adtValue &v )
+HRESULT SQLHandle :: getValue ( ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -169,11 +169,10 @@ HRESULT SQLHandle :: getValue ( adtValue &v )
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	v = adtLong((U64)Handle);
-	return S_OK;
+	return adtValue::copy ( adtLong((U64)Handle), v );
 	}	// getValue
 
-HRESULT SQLHandle :: setValue ( const adtValue &v )
+HRESULT SQLHandle :: setValue ( const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
