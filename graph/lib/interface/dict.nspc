@@ -1,0 +1,278 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%							DICT.NSPC
+%
+%			Dictionary interface state management.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+	$	Key					Misc.Dist {}		% Active key path
+	$	Value					Misc.Dist {}		% Active value
+	$	Location				Misc.Dist {}		% Location of list to manage
+
+	% Actions
+	$	Initialize			Misc.Dist {}		% Initialize
+	$	Uninitialize		Misc.Dist {}		% Uninitialize
+	$	Store					Misc.Dist {}		% Store value under key path
+	$	Reset					Misc.Dist {}		% Reset contents of list
+	$	Load					Misc.Dist {}		% Load/select a path
+	$	Clear					Misc.Dist {}		% Clear selection
+	$	Remove				Misc.Dist {}		% Remove value at path
+
+	% Notifications
+	$	OnRoot				Misc.Dist {}		% Root dictionary
+	$	OnLoadKey			Misc.Dist {}		% Selected key
+%	$	OnLoad				Misc.Dist {}		% Selected value
+	$	OnStoreKey			Misc.Dist {}		% Key of updated value
+	$	OnStore				Misc.Dist {}		% Updated value
+	$	OnClear				Misc.Dist {}		% Selection cleared
+%	$	OnNotFound			Misc.Dist {}		% Loaded value not found
+	$	OnActivate			Misc.Dist {}		% Key activated
+	$	OnRemove				Misc.Dist {}		% Key removed
+
+	% DEBUG
+	$	Debug Misc.Debug {}
+%		!	OnLoadKey/OnFire						Debug/Fire
+%		!	OnLoad/OnFire							Debug/Fire
+%		!	Location/OnFire						Debug/Fire
+%		!	OnNotFound/OnFire						Debug/Fire
+%		!	OnStoreKey/OnFire						Debug/Fire
+%		!	OnStore/OnFire							Debug/Fire
+
+	%%%%%%%%
+	% Setup
+	%%%%%%%%
+
+	% Subgraph: Dictionary state
+	#	State											State/Interface/Dict/ {}
+%		!	State/Activate/OnFire				OnActivate/Fire
+
+	% Subgraph: Dictionary tree
+%	#	Tree											Lib/Dct_Tree/ {}
+%		!	OnRoot/OnFire							Tree/Root/Fire
+
+	%%%%%%%%%%%
+	% Location
+	%%%%%%%%%%%
+
+	%% Link own state to provided location.
+
+	% MATHN: Locations are given relative to parent
+	$	AppendUpLoc Math.Binary { Left "../" }
+		!	Location/OnFire						AppendUpLoc/Right
+		!	Location/OnFire						AppendUpLoc/Fire
+		!	AppendUpLoc/OnFire					Debug/Fire
+
+	% NSPC: Link local state to location
+	$	LinkLoc Nspc.Link { Destination "./State/" }
+		!	AppendUpLoc/OnFire					LinkLoc/Source
+		!	AppendUpLoc/OnFire					LinkLoc/Link
+		!	Uninitialize/OnFire					LinkLoc/Unlink
+
+	%% Provide local access to root dictionary
+
+	% MATHN: Append location to root dictionary
+	$	AppendRootLoc Math.Binary { Right "Dict/" }
+		!	AppendUpLoc/OnFire					AppendRootLoc/Left
+		!	AppendUpLoc/OnFire					AppendRootLoc/Fire
+
+	% NSPC: Load root dictionary as service to parent
+	$	LoadRoot Nspc.This {}
+		!	AppendRootLoc/OnFire					LoadRoot/Location
+		!	AppendRootLoc/OnFire					LoadRoot/Load
+
+	% Notify
+%	!	LoadRoot/OnLoad							Debug/Fire
+	!	LoadRoot/OnLoad							OnRoot/Fire
+
+	%%%%%%%%%%
+	% Reflect
+	%%%%%%%%%%
+
+	% NSPC: Resolve local dictionary
+	$	ResolveDct Nspc.This { Location "./State/Dict/" }
+		!	Initialize/OnFire						ResolveDct/Resolve
+%		!	ResolveDct/OnResolve					Debug/Fire
+
+	% NSPC: Reflect own state dictionary for monitoring/usage
+	$	ReflectDct Nspc.Reflect {}
+		!	ResolveDct/OnResolve					ReflectDct/Root
+		!	ResolveDct/OnResolve					ReflectDct/Add
+%		!	Uninitialize/OnFire					ReflectDct/Remove
+%		!	ReflectDct/OnRoot						Debug/Fire
+%		!	ReflectDct/OnLocation				Debug/Fire
+%		!	ReflectDct/OnValue					Debug/Fire
+
+	%%%%%%%%
+	% Store
+	%%%%%%%%
+
+	%% Store path/value
+
+	% MISCN: Key/value to store
+	$	ValueKeySt Misc.Dist {}
+		!	Key/OnFire								ValueKeySt/Value
+		!	Store/OnFire							ValueKeySt/Fire
+	$	ValueValueSt Misc.Dist {}
+		!	Value/OnFire							ValueValueSt/Value
+		!	Store/OnFire							ValueValueSt/Fire
+
+	% Store value to path
+	!	ValueKeySt/OnFire							ReflectDct/Location
+	!	ValueValueSt/OnFire						ReflectDct/Value
+	!	Store/OnFire								ReflectDct/Store
+
+	%% Notify
+	%% Namespace is being used for general storage so do not
+	%% notify parent of internal key names.
+
+	% Key/value
+	!	ReflectDct/OnLocation					OnStoreKey/Value
+	!	ReflectDct/OnValue						OnStore/Value
+
+	% MISCN: Any reserved names ?
+	$	ResvSt Misc.StringOp { Source "_" }
+		!	ReflectDct/OnLocation				ResvSt/Destination
+		!	ReflectDct/OnValue					ResvSt/IndexOf
+
+	% Not reserved, notify
+	!	ResvSt/OnNotFound							OnStoreKey/Fire
+	!	ResvSt/OnNotFound							OnStore/Fire
+
+	% MISCN: Create a dictionary to use for storage
+%	$	CreateStoreDct Misc.Create { Id Adt.Dictionary }
+%		!	Initialize/OnFire						CreateStoreDct/Fire
+
+	% ADTN: Create store request
+%	$	StoreStoreKeys Adt.Keys { Keys ( Key Value ) }
+%		!	CreateStoreDct/OnFire				StoreStoreKeys/Dictionary
+%		!	Key/OnFire								StoreStoreKeys/Key
+%		!	Value/OnFire							StoreStoreKeys/Value
+
+	% Local store signal triggers actual store
+%	!	Store/OnFire								StoreStoreKeys/Store
+
+	% Send notification through state
+%	!	StoreStoreKeys/OnStore					State/OnStore/Fire
+
+	% ADTN: Load store request
+%	$	LoadStoreKeys Adt.Keys { Keys ( Key Value ) }
+%		!	State/OnStore/OnFire					LoadStoreKeys/Dictionary
+%		!	State/OnStore/OnFire					LoadStoreKeys/Load
+
+	% Local notifications
+%	!	LoadStoreKeys/OnKey						OnStoreKey/Fire
+%	!	LoadStoreKeys/OnValue					OnStore/Fire
+
+	% Update own copy of dictionary on notifications
+%	!	OnStoreKey/OnFire							Tree/Key/Fire
+%	!	OnStore/OnFire								Tree/Value/Fire
+%	!	OnStore/OnFire								Tree/Store/Fire
+
+	%%%%%%%%
+	% Reset
+	%%%%%%%%
+
+	% ADTN: Clear the contents of the dictionary
+%	$	ResetDict Adt.Remove {}
+%		!	OnRoot/OnFire							ResetDict/Container
+%		!	Reset/OnFire							ResetDict/Clear
+
+	% MISCN: On clear, update with now empty dictionary
+%	$	ValueResetDct Misc.Dist {}
+%		!	OnRoot/OnFire							ValueResetDct/Value
+%		!	Reset/OnFire							ValueResetDct/Fire
+
+	% Reset dictionary
+%	!	ValueResetDct/OnFire						State/Dict/Fire
+
+	%%%%%%%%%%%%%%
+	% Load/Select
+	%%%%%%%%%%%%%%
+
+	%% Requested selection
+
+	% MISCN: Path to select
+	$	ValueKeyLd Misc.Dist {}
+		!	Key/OnFire								ValueKeyLd/Value
+		!	Load/OnFire								ValueKeyLd/Fire
+		!	ValueKeyLd/OnFire						State/Element/Default/Value/Fire
+
+	% MISCN: Clear selection
+	$	ValueKeyClr Misc.Dist { Value "" }
+		!	Clear/OnFire							ValueKeyClr/Fire
+		!	ValueKeyClr/OnFire					Key/Fire
+		!	ValueKeyClr/OnFire					Load/Fire
+
+	%% Item selected
+
+	% MISCN: Clear selection ? (Use something other than null string ?)
+	$	SelClr Misc.Compare { Left "" }
+		!	State/Element/Default/Value/OnFire
+														SelClr/Fire
+
+	% Selection cleared
+	!	SelClr/OnEqual								OnClear/Fire
+
+	% MISCN: Selection changed ?
+	$	SelChange Misc.Compare { Left "" }
+		!	SelClr/OnEqual							SelChange/Left
+		!	SelClr/OnNotEqual						SelChange/Fire
+
+	% Selection has changed, will be new selection
+	!	SelChange/OnNotEqual						SelChange/Left
+
+	% Attempt to load value at key path as a service to parent
+	!	SelChange/OnNotEqual						OnLoadKey/Fire
+
+	% MATHN: Append key to location
+%	$	AppendKeyLd Math.Binary {}
+%		!	ResolveDct/OnResolve					AppendKeyLd/Left
+%		!	SelChange/OnNotEqual					AppendKeyLd/Right
+%		!	SelChange/OnNotEqual					AppendKeyLd/Fire
+					
+	% NSPC: Obtain location
+%	$	LoadKey Nspc.This {}
+%		!	AppendKeyLd/OnFire					LoadKey/Location
+%		!	AppendKeyLd/OnFire					LoadKey/Load
+
+	% Results
+%	!	LoadKey/OnLoad								OnLoad/Fire
+%	!	LoadKey/OnNotFound						OnNotFound/Fire
+
+%	!	SelChange/OnNotEqual						Tree/Key/Fire
+%	!	SelChange/OnNotEqual						Tree/Load/Fire
+
+	% Results
+%	!	Tree/OnLoad/OnFire						OnLoad/Fire
+%	!	Tree/OnNotFound/OnFire					OnNotFound/Fire
+
+	%%%%%%%%%
+	% Remove
+	%%%%%%%%%
+
+	% MISCN: Key for removeal
+%	$	ValueKeyRm Misc.Dist {}
+%		!	Key/OnFire								ValueKeyRm/Value
+
+	% Trigger remove
+%	!	Remove/OnFire								ValueKeyRm/Fire
+
+	% Notifications
+%	!	ValueKeyRm/OnFire							State/OnRemove/Fire
+
+	% Load current current path
+%	!	State/OnRemove/OnFire					Tree/Key/Fire
+%	!	State/OnRemove/OnFire					Tree/Load/Fire
+
+	% Local notifications
+%	!	State/OnRemove/OnFire					OnRemove/Fire
+
+	% ADTN: Remove the final key from the final dictionary
+%	$	RemTree Adt.Remove {}
+%		!	Tree/OnLoadDct/OnFire				RemTree/Container
+%		!	Tree/OnLoadKey/OnFire				RemTree/Key
+%		!	State/OnRemove/OnFire				RemTree/Fire

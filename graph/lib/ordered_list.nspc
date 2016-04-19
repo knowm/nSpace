@@ -1,0 +1,326 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								ORDERED_LIST.NSPC
+%
+%	Allows manipulation of an ordered list via a dictionary.
+%	Key,Value pairs: <Index,Value> where Index starts at 1.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+	$	List				Misc.Dist {}			% Active list (dictionary)
+	$	Value				Misc.Dist {}			% Active value for future actions
+	$	Count				Misc.Dist {}			% Active count for future actions
+	$	Index				Misc.Dist {}			% Active index for future actions
+
+	% Actions
+	$	Initialize		Misc.Dist {}			% Reset/initialize a new list
+	$	Add				Misc.Dist {}			% Add value to end of list
+	$	Insert			Misc.Dist {}			% Insert value into list
+	$	Up					Misc.Dist {}			% Move value up in list
+	$	Down				Misc.Dist {}			% Move value down in list
+	$	Remove			Misc.Dist {}			% Remove value at index from list
+	$	Find				Misc.Dist {}			% Find value in list
+	$	Reset				Misc.Dist {}			% Reset content of list
+
+	% Notifications
+	$	OnList			Misc.Dist {}			% Current list
+	$	OnUp				Misc.Dist {}			% Value was moved up
+	$	OnDown			Misc.Dist {}			% Value was moved down
+	$	OnCount			Misc.Dist {}			% Count of current list
+	$	OnIndex			Misc.Dist {}			% Found value
+	$	OnNotFound		Misc.Dist {}			% Value not found
+
+	% DEBUG
+%	$	Debug Misc.Debug { Message "ORDERED_LIST" }
+
+	%%%%%%%%	
+	% Setup
+	%%%%%%%%	
+
+	% MISCN: Create master dictionary for the list
+	$	CreateList Misc.Create { Id Adt.Dictionary }
+		!	Initialize/OnFire						CreateList/Fire
+
+	% Active list
+	!	CreateList/OnFire							OnList/Fire
+	!	List/OnFire									OnList/Fire
+
+	% ADTN: Whenever a list is specified, count the number of elements since its used everywhere
+	$	CountList Adt.Stat {}
+		!	OnList/OnFire							CountList/Container
+		!	OnList/OnFire							CountList/Fire
+
+	% Current count
+	!	CountList/OnCount							OnCount/Fire
+
+	%%%%%%%%%%%%%
+	% Shuffle up
+	%%%%%%%%%%%%%
+
+	%% Internal utility to shuffle values up in the list
+
+	% MISCN: Move value at provided index up one slot
+	$	UpAt Misc.Dist {}
+
+	% MATHN: Subtract one from provided index to get top of list
+	$	SubShUp Math.Binary { Right 1:int Op Sub }
+		!	UpAt/OnFire								SubShUp/Left
+		!	UpAt/OnFire								SubShUp/Fire
+
+	% MISCN: If index dropped below 1 then there is nothing to do ('move up' on first entry does nothing)
+	$	AtTop Misc.Compare { Left 0:int }
+		!	SubShUp/OnFire							AtTop/Fire
+
+	% MATHN: Counter for movement
+	$	CounterUp Math.Counter {}
+		!	AtTop/OnLess							CounterUp/Fire
+		!	AtTop/OnLess							CounterUp/Reset
+
+	% ADTN: Value will be stored at current index
+	$	StoreUp Adt.Store {}
+		!	OnList/OnFire							StoreUp/Dictionary
+		!	CounterUp/OnFire						StoreUp/Key
+
+	% MATHN: Add one to current value
+	$	AddUp Math.Binary { Right 1:int }
+		!	CounterUp/OnFire						AddUp/Left
+		!	CounterUp/OnFire						AddUp/Fire
+
+	% ADTN: Load the value after current index
+	$	LoadUp Adt.Load {}
+		!	OnList/OnFire							LoadUp/Dictionary
+		!	AddUp/OnFire							LoadUp/Key
+		!	AddUp/OnFire							LoadUp/Fire
+
+	% Store value at previous location
+	!	LoadUp/OnFire								StoreUp/Fire
+
+	% MISCN: Done with movement ?
+	$	DoneUp Misc.Compare {}
+		!	OnCount/OnFire							DoneUp/Left
+		!	CounterUp/OnFire						DoneUp/Fire
+
+	% Continue if not at end of list
+	!	DoneUp/OnGreater							CounterUp/Increment
+
+	% ADTN: Remove last element since elements have been move
+	$	RemoveUp Adt.Remove {}
+		!	OnList/OnFire							RemoveUp/Container
+		!	DoneUp/OnEqual							RemoveUp/Key
+		!	DoneUp/OnEqual							RemoveUp/Fire
+
+	%%%%%%%%%%%%%%%
+	% Shuffle down
+	%%%%%%%%%%%%%%%
+
+	%% Internal utility to shuffle values down in the list.
+	%% Values are moved from the bottom of the list first.
+
+	% MISCN: Move value at provided index down one slot
+	$	DownAt Misc.Dist {}
+
+	% MATHN: Counter for movement
+	$	CounterDown Math.Counter {}
+		!	OnCount/OnFire							CounterDown/Fire
+
+	% MATHN: Add one to current index to get new position
+	$	AddShDown Math.Binary { Right 1:int }
+		!	CounterDown/OnFire					AddShDown/Left
+		!	CounterDown/OnFire					AddShDown/Fire
+
+	% ADTN: Load value at the current position
+	$	LoadDown Adt.Load {}
+		!	OnList/OnFire							LoadDown/Dictionary
+		!	CounterDown/OnFire					LoadDown/Key
+		!	CounterDown/OnFire					LoadDown/Fire
+
+	% ADTN: Value will be stored in new position
+	$	StoreDown Adt.Store {}
+		!	OnList/OnFire							StoreDown/Dictionary
+		!	AddShDown/OnFire						StoreDown/Key
+		!	LoadDown/OnFire						StoreDown/Fire
+
+	% MISCN: Done with movement ?
+	$	DoneDown Misc.Compare {}
+		!	DownAt/OnFire							DoneUp/Left
+		!	CounterDown/OnFire					DoneUp/Fire
+
+	% Continue if not at destination
+	!	DoneUp/OnLess								CounterDown/Decrement
+
+	% Latent connections
+	!	DownAt/OnFire								CounterUp/Reset
+
+	%%%%%%
+	% Add
+	%%%%%%
+
+	% MATHN: Add one to count to get new index
+	$	IndexAdd Math.Binary { Right 1:int }
+		!	OnCount/OnFire							IndexAdd/Left
+		!	Add/OnFire								IndexAdd/Fire
+
+	% Current index
+	!	IndexAdd/OnFire							OnIndex/Fire
+
+	% ADTN: Store value in dictionary at index
+	$	StoreAdd Adt.Store {}
+		!	OnList/OnFire							StoreAdd/Dictionary
+		!	Value/OnFire							StoreAdd/Value
+		!	OnIndex/OnFire							StoreAdd/Key
+		!	IndexAdd/OnFire						StoreAdd/Fire
+
+	% Update count
+	!	StoreAdd/OnFire							CountList/Fire
+
+	%%%%%%%%%
+	% Insert
+	%%%%%%%%%
+
+	% MISCN: Move values down one index to make room for new value
+	$	ValueInsert Misc.Dist {}
+		!	Index/OnFire							ValueInsert/Value
+		!	Insert/OnFire							ValueInsert/Fire
+		!	ValueInsert/OnFire					DownAt/Fire
+
+	% ADTN: Store value at created index
+	$	StoreInsert Adt.Store {}
+		!	OnList/OnFire							StoreInsert/Dictionary
+		!	Value/OnFire							StoreInsert/Value
+		!	ValueInsert/OnFire					StoreInsert/Key
+		!	ValueInsert/OnFire					StoreInsert/Fire
+
+	% Update count
+	!	StoreInsert/OnFire						CountList/Fire
+
+	%%%%%%%%%
+	% Remove
+	%%%%%%%%%
+
+	% MATHN: Add one to current index to get index of movement
+	$	RemoveAdd Math.Binary { Right 1:int }
+		!	Index/OnFire							RemoveAdd/Left
+		!	Remove/OnFire							RemoveAdd/Fire
+
+	% Move values up one index.  This will remove/overwrite the requested value.
+	!	RemoveAdd/OnFire							UpAt/Fire
+
+	% Update count
+	!	RemoveAdd/OnFire							CountList/Fire
+
+	%%%%%%%%%%%%%
+	% Find value
+	%%%%%%%%%%%%%
+
+	%% This is a slow, linear search of all items in the list starting from the beginning.
+
+	% ADTN: Search existing values
+	$	FindValIt Adt.Iterate {}
+		!	OnList/OnFire							FindValIt/Container
+		!	Find/OnFire								FindValIt/First
+
+	% MISCN: Index on match
+	$	ValueFindIdx Misc.Dist {}
+		!	FindValIt/OnKey						ValueFindIdx/Value
+		!	ValueFindIdx/OnFire					OnIndex/Fire
+
+	% MISCN: Matching value ?
+	$	FindValMatch Misc.Compare {}
+		!	Value/OnFire							FindValMatch/Left
+		!	FindValIt/OnNext						FindValMatch/Fire
+
+	% Match
+	!	FindValMatch/OnEqual						ValueFindIdx/Fire
+
+	% Continue search
+	!	FindValMatch/OnNotEqual					FindValIt/Next
+
+	% Not found
+	!	FindValIt/OnLast							OnNotFound/Fire
+		
+	%%%%%
+	% Up
+	%%%%%
+
+	% MATHN: Subtract one from provided index to get destination slot
+	$	SubUp Math.Binary { Right 1:int Op Sub }
+		!	Index/OnFire							SubUp/Left
+		!	Up/OnFire								SubUp/Fire
+
+	% ADTN: Load the value currently at the destination (this will fail if already at top of list)
+	$	LoadDstUp Adt.Load {}
+		!	OnList/OnFire							LoadDstUp/Dictionary
+		!	SubUp/OnFire							LoadDstUp/Key
+
+	% ADTN: Load the value at the current position
+	$	LoadSrcUp Adt.Load {}
+		!	OnList/OnFire							LoadSrcUp/Dictionary
+		!	Index/OnFire							LoadSrcUp/Key
+
+	% ADTN: Store value at new position
+	$	StoreSrcUp Adt.Store {}
+		!	OnList/OnFire							StoreSrcUp/Dictionary
+		!	SubUp/OnFire							StoreSrcUp/Key
+		!	LoadSrcUp/OnFire						StoreSrcUp/Fire
+
+	% ADTN: Store previous value at current position
+	$	StoreDstUp Adt.Store {}
+		!	OnList/OnFire							StoreDstUp/Dictionary
+		!	Index/OnFire							StoreDstUp/Key
+		!	LoadDstUp/OnFire						StoreDstUp/Value
+		!	LoadSrcUp/OnFire						StoreDstUp/Fire
+
+	% Latent connections
+	!	LoadDstUp/OnFire							LoadSrcUp/Fire
+	!	SubUp/OnFire								LoadDstUp/Fire
+
+	%%%%%%%
+	% Down
+	%%%%%%%
+
+	% MATHN: Add one to provided index to get destination slot
+	$	AddDown Math.Binary { Right 1:int }
+		!	Index/OnFire							AddDown/Left
+		!	Down/OnFire								AddDown/Fire
+
+	% ADTN: Load the value currently at the destination (this will fail if already at bottom of list)
+	$	LoadDstDown Adt.Load {}
+		!	OnList/OnFire							LoadDstDown/Dictionary
+		!	AddDown/OnFire							LoadDstDown/Key
+
+	% ADTN: Load the value at the current position
+	$	LoadSrcDown Adt.Load {}
+		!	OnList/OnFire							LoadSrcDown/Dictionary
+		!	Index/OnFire							LoadSrcDown/Key
+
+	% ADTN: Store value at new position
+	$	StoreSrcDown Adt.Store {}
+		!	OnList/OnFire							StoreSrcDown/Dictionary
+		!	AddDown/OnFire							StoreSrcDown/Key
+		!	LoadSrcDown/OnFire					StoreSrcDown/Fire
+
+	% ADTN: Store previous value at current position
+	$	StoreDstDown Adt.Store {}
+		!	OnList/OnFire							StoreDstDown/Dictionary
+		!	Index/OnFire							StoreDstDown/Key
+		!	LoadDstDown/OnFire					StoreDstDown/Value
+		!	LoadSrcDown/OnFire					StoreDstDown/Fire
+
+	% Latent connections
+	!	LoadDstDown/OnFire						LoadSrcDown/Fire
+	!	AddDown/OnFire								LoadDstDown/Fire
+
+	%%%%%%%%
+	% Reset
+	%%%%%%%%
+
+	% ADTN: Clear the contents of the list
+	$	ResetList Adt.Remove {}
+		!	OnList/OnFire							ResetList/Container
+		!	Reset/OnFire							ResetList/Clear
+
+	% Update count
+	!	Reset/OnFire								CountList/Fire

@@ -78,6 +78,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "usbn", "dll\usbn\usbn.vcxpr
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{8A6113B8-46B6-46BC-9F17-0EDC02FF5EA6}"
 	ProjectSection(SolutionItems) = preProject
+		..\graph\lib\ordered_list.nspc = ..\graph\lib\ordered_list.nspc
 		..\graph\lib\sync_value_q.nspc = ..\graph\lib\sync_value_q.nspc
 		..\graph\lib\sync_value_qa.nspc = ..\graph\lib\sync_value_qa.nspc
 	EndProjectSection
@@ -218,6 +219,12 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "graph", "graph", "{4A5C9462-493E-4E1F-A168-BC8748BB4499}"
 	ProjectSection(SolutionItems) = preProject
 		..\graph\lib\graph\enum.nspc = ..\graph\lib\graph\enum.nspc
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "interface", "interface", "{A440D259-4C62-4A31-B30C-45F040C66BA6}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\lib\interface\dict.nspc = ..\graph\lib\interface\dict.nspc
+		..\graph\lib\interface\list.nspc = ..\graph\lib\interface\list.nspc
 	EndProjectSection
 EndProject
 Global
@@ -512,6 +519,7 @@ Global
 		{10AC39FC-B398-48A3-9C9C-95A4E07D9A48} = {8A6113B8-46B6-46BC-9F17-0EDC02FF5EA6}
 		{D2A336CD-56B0-4209-A188-8E97F2B74D30} = {8A6113B8-46B6-46BC-9F17-0EDC02FF5EA6}
 		{4A5C9462-493E-4E1F-A168-BC8748BB4499} = {8A6113B8-46B6-46BC-9F17-0EDC02FF5EA6}
+		{A440D259-4C62-4A31-B30C-45F040C66BA6} = {8A6113B8-46B6-46BC-9F17-0EDC02FF5EA6}
 		{61445C3B-660C-4937-B736-3CD2B0F35A58} = {F3C3B639-4A62-49F9-84F2-787AD5D10D20}
 		{28385124-81B3-481C-A669-0B261946ACB4} = {F3C3B639-4A62-49F9-84F2-787AD5D10D20}
 		{136D525D-DB06-4A26-AC78-263CFAE76AAA} = {28385124-81B3-481C-A669-0B261946ACB4}

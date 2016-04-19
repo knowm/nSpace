@@ -1,0 +1,175 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%							LIST.NSPC
+%
+%			List interface state management.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+
+	% Actions
+	$	Add					Misc.Dist {}		% Add a value to list
+	$	Reset					Misc.Dist {}		% Reset contents of list
+	$	RemoveIndex			Misc.Dist {}		% Remove by index
+	$	RemoveValue			Misc.Dist {}		% Remove by value
+	$	SelectIndex			Misc.Dist {}		% Select by index
+	$	SelectValue			Misc.Dist {}		% Select by value
+	$	On						Misc.Dist {}		% Updates on
+	$	Off					Misc.Dist {}		% Updates off
+
+	% Notifications
+	$	OnList				Misc.Dist {}		% Current list
+	$	OnIndex				Misc.Dist {}		% Index selected
+	$	OnValue				Misc.Dist {}		% Value selected
+	$	OnAdd					Misc.Dist {}		% Value added
+	$	OnAddIndex			Misc.Dist {}		% Index added
+	$	OnRemove				Misc.Dist {}		% Value removed
+		
+	% DEBUG
+	$	Debug Misc.Debug {}
+%		!	OnIndex/Fire							Debug/Fire
+%		!	OnValue/Fire							Debug/Fire
+	$	DebugOn Misc.Debug {}
+%		!	On/OnFire								DebugOn/Fire
+	$	DebugOff Misc.Debug {}
+%		!	Off/OnFire								DebugOff/Fire
+
+	%%%%%%%%
+	% Setup
+	%%%%%%%%
+
+	% Subgraph: List state
+	#	State											State/Interface/List/ {}
+		!	State/List/OnFire						OnList/Fire
+
+	% Subgraph: Ordered list management
+	#	List											Lib/Ordered_List/ {}
+		!	OnList/OnFire							List/List/Fire
+
+	%%%%%%%%%%
+	% Updates
+	%%%%%%%%%%
+
+	%% List updates can be turned off in the case of a lot of updates
+	%% to avoid excess updates of the list.
+
+	% MISCN: Updates are on/off
+	$	UpdateBool Misc.Toggle { Default true:bool }
+		!	Off/OnFire								UpdateBool/False
+
+	% MISCN: Update list
+	$	ValueList Misc.Dist {}
+		!	OnList/OnFire							ValueList/Value
+		!	UpdateBool/OnTrue						ValueList/Fire
+		!	ValueList/OnFire						State/List/Fire
+
+	% Updates on, assume out of date
+	!	On/OnFire									UpdateBool/True
+	!	On/OnFire									UpdateBool/Fire
+
+	%%%%%%%%
+	% Reset
+	%%%%%%%%
+
+	% Reset elements in list
+
+	% MISCN: Ensure nothing is selected
+	$	ValueReset Misc.Dist { Value 0:int }
+		!	Reset/OnFire							ValueReset/Fire
+		!	ValueReset/OnFire						State/Element/Default/Fire
+
+	% Clear list 
+	!	Reset/OnFire								List/Reset/Fire
+	!	Reset/OnFire								UpdateBool/Fire
+
+	%%%%%%
+	% Add
+	%%%%%%
+
+	% Add value to list
+	!	Add/OnFire									List/Value/Fire
+	!	Add/OnFire									List/Add/Fire
+	!	Add/OnFire									OnAdd/Fire
+
+	% Notification
+	!	List/OnIndex/OnFire						OnAddIndex/Value
+	!	OnAdd/OnFire								OnAddIndex/Fire
+	!	OnAdd/OnFire								OnAddIndex/Fire
+	!	OnAdd/OnFire								UpdateBool/Fire
+
+	%%%%%%%%%
+	% Remove
+	%%%%%%%%%
+
+	%% Find value
+
+	% MISCN: True if remove find
+	$	RemoveValBool Misc.Toggle {}
+		!	List/OnNotFound/OnFire				RemoveValBool/False
+
+	% Find value index.
+	!	RemoveValue/OnFire						RemoveValBool/True
+	!	RemoveValue/OnFire						List/Value/Fire
+	!	RemoveValue/OnFire						List/Find/Fire
+	!	RemoveValue/OnFire						RemoveValBool/Fire
+
+	% MISCN: Index of located value
+	$	ValueRemIdx Misc.Dist {}
+		!	List/Index/OnFire						ValueRemIdx/Value
+		!	RemoveValBool/OnTrue					ValueRemIdx/Fire
+
+	% Perform remove by index
+	!	ValueRemIdx/OnFire						RemoveIndex/Fire
+
+	%% Remove by index
+
+	% Message
+	!	RemoveIndex/OnFire						OnRemove/Fire
+
+	% Remove from list
+	!	OnRemove/OnFire							List/Index/Fire
+	!	OnRemove/OnFire							List/Remove/Fire
+
+	%%%%%%%%%
+	% Select
+	%%%%%%%%%
+
+	%% Find value
+
+	% MISCN: True if select find
+	$	SelectValBool Misc.Toggle {}
+		!	List/OnNotFound/OnFire				SelectValBool/False
+
+	% Select by value from state
+	!	State/Select/OnFire						SelectValue/Fire
+
+	% Find value index.
+	!	SelectValue/OnFire						SelectValBool/True
+	!	SelectValue/OnFire						List/Value/Fire
+	!	SelectValue/OnFire						List/Find/Fire
+	!	SelectValue/OnFire						SelectValBool/Fire
+
+	% MISCN: Index of located value
+	$	ValueSelIdx Misc.Dist {}
+		!	List/OnIndex/OnFire					ValueSelIdx/Value
+		!	SelectValBool/OnTrue					ValueSelIdx/Fire
+
+	% Perform select by index
+	!	ValueSelIdx/OnFire						SelectIndex/Fire
+
+	%% Selection is the "default" index for the list
+	!	State/Element/Default/OnFire			OnIndex/Fire
+	!	SelectIndex/OnFire						State/Element/Default/Fire
+
+	% ADTN: Access selected value
+	$	LoadValSel Adt.Load {}
+		!	List/OnList/OnFire					LoadValSel/Dictionary
+		!	OnIndex/OnFire							LoadValSel/Key
+		!	OnIndex/OnFire							LoadValSel/Fire
+
+	% Selected value
+	!	LoadValSel/OnFire							OnValue/Fire
+

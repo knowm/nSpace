@@ -152,7 +152,8 @@ HRESULT nSpaceClient :: listen ( const WCHAR *szPath, BOOL bL,
 	CCLTRY ( pathCreate ( szPath, &bstrPath ) );
 
 	// Debug
-	dbgprintf ( L"nSpaceClient::listen:bstrPath %s pCBAlt %p {\r\n", bstrPath, pCBAlt );
+	dbgprintf ( L"nSpaceClient::%s:bstrPath %s pCBAlt %p {\r\n", 
+						(bL) ? L"listen" : L"unlisten", bstrPath, pCBAlt );
 
 	// Listen
 	if (hr == S_OK && bL)
@@ -190,7 +191,8 @@ HRESULT nSpaceClient :: listen ( const WCHAR *szPath, BOOL bL,
 
 	// Debug
 //	if (hr != S_OK)
-		dbgprintf ( L"} nSpaceClient::listen:pLstn %p hr 0x%x\r\n", pLstn, hr );
+		dbgprintf ( L"} nSpaceClient::%s:pLstn %p hr 0x%x\r\n", 
+						(bL) ? L"listen" : L"unlisten", pLstn, hr );
 
 	// Clean up
 	_FREEBSTR(bstrPath);
