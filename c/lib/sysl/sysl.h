@@ -434,7 +434,7 @@ class sysEvent
 	~sysEvent ( void );									// Destructor
 
 	// Utilities
-	bool init 	( void );								// Initialize event
+	bool init 	( BOOL = false );						// Initialize event
 	bool reset	( void );								// Reset event
 	bool signal	( void );								// Signal event
 	bool wait 	( U32 );									// Wait for signal

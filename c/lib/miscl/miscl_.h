@@ -84,18 +84,14 @@ class AsyncQ :
 	// Run-time data
 	IThread		*pThrd;									// AsyncQ thread
 	bool			bRun;										// AsyncQ thread run ?
-	IList			*pQw;										// Work queue
-	IIt			*pQwIt;									// Work queue iterators
-	IDictionary	*pQs;										// Queues by Id
-	IDictionary	*pQvs;									// Latest queue values by Id
-	adtInt		iMaxSz;									// Maximum queue sizes
+	IList			*pQ;										// Value queue
+	IIt			*pQIt;									// Iterator for queue
+	adtInt		iSzMax;									// Maximum queue size
 	adtBool		bBlock;									// Block on full queue ?
-	sysCS			csWork;									// Work protection
-	sysEvent		evWork;									// Work event
-	adtValue		vQId;										// Queue Id
-	adtValue		vIdE,vQE;								// Internal
-	adtValue		vQ;										// Queue variable
-	adtIUnknown	unkV;										// Internal
+	adtInt		iTo;										// Timeout for blocking mode
+	sysCS			csWork;									// Work mutex
+	sysEvent		evNotEmpty,evNotFull;				// Queue events
+	adtValue		vQe;										// Active queue emission
 
 	// 'ITickable' members
 	STDMETHOD(tick)		( void );
@@ -112,36 +108,40 @@ class AsyncQ :
 
 	//! \name Connections 
 	//@{
+	//! \brief	True means incoming values will be blocked until there is room in the queue, 
+	//				false means values will be dropped if queue is full.
+	DECLARE_CON(Block)
 	//! \brief Queue the specified value for asynchronous emission.
 	DECLARE_CON(Fire)
-	//! \brief Specifies a queue Id for future operations.
-	DECLARE_CON(Id)
-	//! \brief Emit the next queued value if it is available.
-	DECLARE_RCP(Next)
 	//! \brief Re-emit the current value in the front of the queue.
 	DECLARE_RCP(Retry)
+	//! \brief Set the maximum size of the queues before values get blocked or dropped
+	DECLARE_RCP(Size)
 	//! \brief Start accepting and asynchronously emitting values
 	DECLARE_RCP(Start)
 	//! \brief Shutdown queueing and emission of values.
 	DECLARE_RCP(Stop)
+	//! \brief If is set to block on full queue, specify a timeout in milliseconds to wait
+	DECLARE_RCP(Timeout)
 	//! \brief Emit a signal when the queue becomes empty.
 	DECLARE_EMT(Empty)
 	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_CON(Fire)
-		DEFINE_CON(Id)
 
-		DEFINE_RCP(Next)
+		DEFINE_RCP(Block)
 		DEFINE_RCP(Retry)
+		DEFINE_RCP(Size)
 		DEFINE_RCP(Start)
 		DEFINE_RCP(Stop)
+		DEFINE_RCP(Timeout)
 		DEFINE_EMT(Empty)
 	END_BEHAVIOUR_NOTIFY()
 
 	private :
 
 	// Internal utilities
-	HRESULT getQ ( const adtValue &, IList ** );
+	HRESULT qValue ( const ADTVALUE & );
 	};
 
 //

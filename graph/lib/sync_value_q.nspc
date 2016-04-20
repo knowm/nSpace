@@ -61,3 +61,11 @@
 
 	% Latest value in queue
 	!	Next/OnFire									ValueQIt/First
+
+	% ADTN: Clear queue
+	$	ResetValueQ Adt.Remove {}
+		!	CreateValueQ/OnFire					ResetValueQ/Container
+		!	Reset/OnFire							ResetValueQ/Clear
+
+	% Next value will be first
+	!	Reset/OnFire								FirstToggle/True

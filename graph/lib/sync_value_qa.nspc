@@ -17,13 +17,15 @@
 	$	Retry					Misc.Dist {}		% Re-emit latest value
 	$	Next					Misc.Dist {}		% Return the next value
 	$	Uninitialize		Misc.Dist {}		% Uninitialize
+	$	Reset					Misc.Dist {}		% Reset/clear contents
 
 	% Notifications
 	$	OnValue			Misc.Dist {}			% A value is available
 	$	OnEmpty			Misc.Dist {}			% Value queue empty
 
 	% Subgraph: Synchronous value queue
-%	#	Q												Lib/Sync_Value_Q/ {}
+	#	Q												Lib/Sync_Value_Q/ {}
+		!	Reset/OnFire							Q/Reset/Fire
 
 	% DEBUG
 %	$	Debug Misc.Debug {}
@@ -37,32 +39,22 @@
 	%% values on its own thread.
 
 	% Clear queue
-%	!	Start/OnFire								Q/Reset/Fire
+	!	Start/OnFire								Q/Reset/Fire
 
-	% MISCN: Async queue
-	$	AsyncQ Misc.AsyncQ { Block false:bool Size 10000:int Timeout 10000:int }
+	% MISCN: Async queue.  Using to emit one value at a time from the contained queue logic.
+	$	AsyncQ Misc.AsyncQ {}
 		!	Start/OnFire							AsyncQ/Start
 		!	Stop/OnFire								AsyncQ/Stop
 
-	% Signals
-	!	Value/OnFire								AsyncQ/Fire
-	!	Next/OnFire									AsyncQ/Next
-	!	Retry/OnFire								AsyncQ/Retry
-
-	% Values
-%	!	AsyncQ/OnFire								Debug/Fire
+	% Emit values from queue asynchronously
+	!	Q/OnValue/OnFire							AsyncQ/Fire
 	!	AsyncQ/OnFire								OnValue/Fire
 
-	% Async queue signals
-%	!	Q/OnValue/OnFire							Debug/Fire
-%	!	Q/OnValue/OnFire							AsyncQ/Next
-%	!	Q/OnValue/OnFire							AsyncQ/Fire
-
 	% Sync queue signals
-%	!	Value/OnFire								Q/Value/Fire
-%	!	Next/OnFire									Q/Next/Fire
-%	!	Retry/OnFire								Q/Retry/Fire
-%	!	Q/OnEmpty/OnFire							OnEmpty/Fire
+	!	Value/OnFire								Q/Value/Fire
+	!	Next/OnFire									Q/Next/Fire
+	!	Retry/OnFire								Q/Retry/Fire
+	!	Q/OnEmpty/OnFire							OnEmpty/Fire
 
 	% Auto shutdown
 	!	Uninitialize/OnFire						Stop/Fire

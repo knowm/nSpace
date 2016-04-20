@@ -44,12 +44,16 @@ sysEvent :: ~sysEvent ( void )
 	#endif
 	}	// ~sysEvent
 
-bool sysEvent :: init ( void )
+bool sysEvent :: init ( BOOL bManRst )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
 	//	PURPOSE
 	//		-	Initializes event
+	//
+	//	PARAMETERS
+	//		-	bManRst is false if the event should auto-reset (default), 
+	//			true for manual reset.
 	//
 	//	RETURN VALUE
 	//		TRUE if successful
@@ -59,7 +63,7 @@ bool sysEvent :: init ( void )
 	if (hEv != NULL)
 		return TRUE;
 	else
-		return ( (hEv = CreateEvent ( NULL, FALSE, FALSE, NULL )) != NULL );
+		return ( (hEv = CreateEvent ( NULL, bManRst, FALSE, NULL )) != NULL );
 	#elif		__unix__ || __APPLE__
 	return 1;
 	#else
