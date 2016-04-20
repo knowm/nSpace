@@ -29,5 +29,8 @@
     <ClCompile Include="opencv.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="persist.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

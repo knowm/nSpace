@@ -911,6 +911,7 @@ class Toggle :
 
 	// Run-time data
 	adtBool		bVal;										// Value
+	adtBool		bValE;									// Value during emission
 
 	// CCL
 	CCL_OBJECT_BEGIN(Toggle)

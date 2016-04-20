@@ -12,6 +12,7 @@
 // OpenCV
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #if		_MSC_VER >= 1900
 #else
 #include <opencv2/gpu/gpu.hpp>
@@ -23,6 +24,9 @@
 using namespace cv;
 static bool bInit = false;
 static bool bGPU	= false;
+
+// Prototypes
+HRESULT image_to_mat	( IDictionary *pDct, Mat ** );
 
 HRESULT image_fft ( IDictionary *pImg, bool bZeroDC )
 	{
@@ -303,4 +307,98 @@ HRESULT image_fft ( IDictionary *pImg, bool bZeroDC )
 	return hr;
 	}	// image_fft
 
+HRESULT image_save ( IDictionary *pImg, const WCHAR *pwLoc )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Save an image to disk.
+	//
+	//	PARAMETERS
+	//		-	pImg contains the image data.
+	//		-	pwLoc is the destination path/filename.
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT		hr			= S_OK;
+	Mat			*pmImg	= NULL;
+	char			*paLoc	= NULL;
+	adtString	strLoc(pwLoc);
 
+	// Convert image to OpenCV
+	CCLTRY ( image_to_mat ( pImg, &pmImg ) );
+
+	// OpenCV needs ASCII
+	CCLTRY ( strLoc.toAscii ( &paLoc ) );
+
+	// 'imwrite' does not seem to work, OpenCV is so flaky
+	//	TODO: Replace with own PNG,BMP,etc persistence
+	CCLOK ( cvSaveImage ( paLoc, &(IplImage(*pmImg)) ); )
+
+	// Clean up
+	_FREEMEM(paLoc);
+	if (pmImg != NULL)
+		delete pmImg;
+
+	return hr;
+	}	// image_save
+
+HRESULT image_to_mat ( IDictionary *pImg, Mat **ppM )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Wrap an image inside an OpenCV matrix.
+	//
+	//	PARAMETERS
+	//		-	pImg contains the image data.
+	//		-	ppM will receive the matrix.
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT			hr			= S_OK;
+	IMemoryMapped	*pBits	= NULL;
+	VOID				*pvBits	= NULL;
+	adtValue			vL;
+	adtString		strFmt;
+	adtIUnknown		unkV;
+	U32				w,h;
+
+	// Setup
+	(*ppM) = NULL;
+
+	// Access image information
+	CCLTRY ( pImg->load ( adtString(L"Width"), vL ) );
+	CCLOK  ( w = adtInt(vL); )
+	CCLTRY ( pImg->load ( adtString(L"Height"), vL ) );
+	CCLOK  ( h = adtInt(vL); )
+	CCLTRY ( pImg->load ( adtString(L"Format"), vL ) );
+	CCLTRYE( (strFmt = vL).length() > 0, E_UNEXPECTED );
+	CCLTRY ( pImg->load ( adtString(L"Bits"), vL ) );
+	CCLTRY ( _QISAFE((unkV=vL),IID_IMemoryMapped,&pBits) );
+	CCLTRY ( pBits->lock ( 0, 0, &pvBits, NULL ) );
+
+	// NOTE: Add needed formats over time
+	if (hr == S_OK && !WCASECMP(strFmt,L"U16X2"))
+		{
+		CCLTRYE ( ((*ppM) = new Mat ( h, w, CV_16UC1, pvBits )) != NULL,
+						E_OUTOFMEMORY );
+		}	// if
+	else if (hr == S_OK && !WCASECMP(strFmt,L"S16X2"))
+		{
+		CCLTRYE ( ((*ppM) = new Mat ( h, w, CV_16SC1, pvBits )) != NULL,
+						E_OUTOFMEMORY );
+		}	// if
+	else 
+		hr = ERROR_NOT_SUPPORTED;
+
+	// Clean up
+	_UNLOCK(pBits,pvBits);
+	_RELEASE(pBits);
+
+	return hr;
+	}	// image_save

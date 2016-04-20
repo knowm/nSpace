@@ -16,7 +16,7 @@
 2534d00f-8628-11d2-868c-006008addfed				//	CLSID_List (adtl)
 2534d010-8628-11d2-868c-006008addfed				//	CLSID_GnuPlot (plotl)
 2534d011-8628-11d2-868c-006008addfed				//	CLSID_FFT (imagel)
-2534d012-8628-11d2-868c-006008addfed				//
+2534d012-8628-11d2-868c-006008addfed				// CLSID_Persist (imagel)
 2534d013-8628-11d2-868c-006008addfed				//
 2534d014-8628-11d2-868c-006008addfed				// 
 2534d015-8628-11d2-868c-006008addfed				// IID_IBehaviour (nspcl)

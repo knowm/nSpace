@@ -25,6 +25,7 @@
   <ItemGroup>
     <ClCompile Include="fft.cpp" />
     <ClCompile Include="opencv.cpp" />
+    <ClCompile Include="persist.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1B31354E-F3FE-445F-9D65-BC410F50B2B0}</ProjectGuid>

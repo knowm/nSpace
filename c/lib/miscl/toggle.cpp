@@ -67,10 +67,13 @@ HRESULT Toggle :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	// Fire
 	if (_RCP(Fire))
 		{
+		// Current value must be cached in case it changes during emission
+		bValE = bVal;
+
 		// Emit state
-		if (bVal == true)	_EMT(True,v );
-		else					_EMT(False,v );
-		_EMT(Fire,bVal);
+		if (bValE== true)	_EMT(True,v);
+		else					_EMT(False,v);
+		_EMT(Fire,bValE);
 		}	// if
 
 	// Invert state
