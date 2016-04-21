@@ -189,27 +189,59 @@ HRESULT image_fft ( IDictionary *pImg, bool bZeroDC )
 			cy = gpuMag.rows/2;
 			}	// else
 
+		// ROIs for quadrants
+		matQ[0] = matMag ( Rect ( 0, 0, cx, cy ) );
+		matQ[1] = matMag ( Rect ( cx, 0, cx, cy ) );
+		matQ[2] = matMag ( Rect ( 0, cy, cx, cy ) );
+		matQ[3] = matMag ( Rect ( cx, cy, cx, cy ) );
+
+		// Swap quadrants
+		matQ[0].copyTo ( matTmp );
+		matQ[1].copyTo ( matQ[0] );
+		matTmp.copyTo  ( matQ[1] );
+
+		matQ[2].copyTo ( matTmp );
+		matQ[3].copyTo ( matQ[2] );
+		matTmp.copyTo  ( matQ[3] );
+
+		// Swap quadrants
+//		matQ[0].copyTo ( matTmp );
+//		matQ[3].copyTo ( matQ[0] );
+//		matTmp.copyTo  ( matQ[3] );
+
+//		matQ[1].copyTo ( matTmp );
+//		matQ[2].copyTo ( matQ[1] );
+//		matTmp.copyTo  ( matQ[2] );
+
+		// Just want to keep the positive frequencies
+		matMag	= matMag ( Rect ( cx, 0, cx, matMag.rows ) );
+//		matQ[0]	= matMag ( Rect ( cx, 0, cx, matMag.rows ) );
+//		matMag	= matQ[0];
+
+		// Zero the DC component on request
+		if (bZeroDC)
+			{
+			// Middle column of each row = zero
+			for (int r = 0;r < matMag.rows;++r)
+				{
+				matMag.at<float>(Point(0,r)) = 0.0f;
+				// Debug
+//				matMag.at<float>(Point(cx-1,r)) = 0.0f;
+//				matMag.at<float>(Point(cx+1,r)) = 0.0f;
+				}	// for
+			// Last row of each column = zero
+//			for (int c = 0;c < cx;++c)
+//				matMag.at<float>(Point(c,cy-1)) = 0.0f;
+			}	// if
+
+/*
 		// In OpenCV FFT example, however do not currently need all 4 quadrants.
 		// Just use matQ[2] which contains the positive going frequency components.
-
-		// ROIs for quadrants
-//		matQ[0] = matMag ( Rect ( 0, 0, cx, cy ) );
-//		matQ[1] = matMag ( Rect ( cx, 0, cx, cy ) );
 		if (!bGPU)
 			matQ[2] = matMag ( Rect ( 0, cy, cx, cy ) );
 		else
 			gpuQ[2] = gpuMag ( Rect ( 0, cy, cx, cy ) );
-//		matQ[3] = matMag ( Rect ( cx, cy, cx, cy ) );
 
-		// Swap quadrants
-/*		matQ[0].copyTo ( matTmp );
-		matQ[3].copyTo ( matQ[0] );
-		matTmp.copyTo  ( matQ[3] );
-
-		matQ[1].copyTo ( matTmp );
-		matQ[2].copyTo ( matQ[1] );
-		matTmp.copyTo  ( matQ[2] );
-*/
 		if (!bGPU)
 			matMag	= matQ[2];
 		else
@@ -232,7 +264,7 @@ HRESULT image_fft ( IDictionary *pImg, bool bZeroDC )
 //			for (int c = 0;c < cx;++c)
 //				matMag.at<float>(Point(c,cy-1)) = 0.0f;
 			}	// if
-
+*/
 		// Done with original image object
 		delete pmImg;
 		pmImg = NULL;
