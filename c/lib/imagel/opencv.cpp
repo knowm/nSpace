@@ -265,6 +265,14 @@ HRESULT image_fft ( IDictionary *pImg, bool bZeroDC )
 //				matMag.at<float>(Point(c,cy-1)) = 0.0f;
 			}	// if
 */
+
+		// TEMPORARY.  This will be moved into a node.
+		// +10 dB to +50 dB
+		CCLOK ( threshold ( matMag, matMag, 10/10.0, 0, THRESH_TOZERO ); )
+		CCLOK ( threshold ( matMag, matMag, 50/10.0, 0, THRESH_TRUNC ); )
+
+//		CCLOK ( threshold ( matMag, matMag, 50/10.0, 50
+
 		// Done with original image object
 		delete pmImg;
 		pmImg = NULL;
