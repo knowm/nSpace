@@ -101,14 +101,6 @@ HRESULT image_fft ( IDictionary *pImg, bool bZeroDC )
 		if (bGPU)
 			gpuTmp.upload ( matTmp );
 
-		// Compute DFT (make "rows" an option)
-//		dft ( matTmp, matReal, DFT_REAL_OUTPUT|DFT_ROWS );
-//		dft ( matTmp, matReal, DFT_REAL_OUTPUT );
-
-		// Switch to log scale
-//		matReal += Scalar::all(1);
-//		log ( matReal, matReal );
-
 		// Create a windowed version of the image
 		m = getOptimalDFTSize ( matTmp.rows );
 		n = getOptimalDFTSize ( matTmp.cols );
@@ -132,12 +124,13 @@ HRESULT image_fft ( IDictionary *pImg, bool bZeroDC )
 			}	// else
 
 		// Compute DFT
+		// TODO: Make scaling an option
 		if (!bGPU)
-			dft ( matCmplx, matCmplx, DFT_ROWS );
+//			idft ( matCmplx, matCmplx, DFT_ROWS|DFT_SCALE );
+//			dft ( matCmplx, matCmplx, DFT_ROWS );
+			dft ( matCmplx, matCmplx, DFT_ROWS|DFT_SCALE );
 		else
-			gpu::dft ( gpuCmplx, gpuCmplx, gpuCmplx.size(), DFT_ROWS );
-
-//		dft ( matCmplx, matCmplx, 0 );
+			gpu::dft ( gpuCmplx, gpuCmplx, gpuCmplx.size(), DFT_ROWS|DFT_SCALE );
 
 		// Separate real/imaginary results
 		if (!bGPU)
@@ -160,9 +153,17 @@ HRESULT image_fft ( IDictionary *pImg, bool bZeroDC )
 		// Switch to log scale
 		if (!bGPU)
 			{
+			// TODO: Log, base, etc. will be moved into own nodes.
+
+			// Ensure no log of zeroes
+			matMag += Scalar::all(1e-20);
+
 			// Log scale
-			matMag += Scalar::all(1);
 			log ( matMag, matMag );
+
+			// Need to take 20*log10(x)
+			// Open CV log is natural log so scale for log10 (2.303)
+			matMag = (20.0/2.303) * matMag;
 
 			// Crop the spectrum if it has an odd number of rows or columns
 			matMag = matMag ( Rect ( 0, 0, matMag.cols & -2, matMag.rows & -2 ) );
@@ -213,7 +214,7 @@ HRESULT image_fft ( IDictionary *pImg, bool bZeroDC )
 //		matQ[2].copyTo ( matQ[1] );
 //		matTmp.copyTo  ( matQ[2] );
 
-		// Just want to keep the positive frequencies
+		// Just keep the positive frequencies
 		matMag	= matMag ( Rect ( cx, 0, cx, matMag.rows ) );
 //		matQ[0]	= matMag ( Rect ( cx, 0, cx, matMag.rows ) );
 //		matMag	= matQ[0];
@@ -266,12 +267,10 @@ HRESULT image_fft ( IDictionary *pImg, bool bZeroDC )
 			}	// if
 */
 
-		// TEMPORARY.  This will be moved into a node.
-		// +10 dB to +50 dB
-		CCLOK ( threshold ( matMag, matMag, 10/10.0, 0, THRESH_TOZERO ); )
-		CCLOK ( threshold ( matMag, matMag, 50/10.0, 0, THRESH_TRUNC ); )
-
-//		CCLOK ( threshold ( matMag, matMag, 50/10.0, 50
+		// TODO: TEMPORARY.  This thresholding will be moved into a node
+		// in dB
+		CCLOK ( threshold ( matMag, matMag, 50, 0, THRESH_TRUNC ); )
+		CCLOK ( threshold ( matMag, matMag, 15, 0, THRESH_TOZERO ); )
 
 		// Done with original image object
 		delete pmImg;

@@ -147,7 +147,7 @@ HRESULT Endpoint :: pktIo  ( BOOL bWr, DWORD uIo, DWORD uTo, DWORD *puIo )
 		{
 		// Wait for completion or signal to stop
 		hr		= S_OK;
-		dwRet = WaitForMultipleObjects ( 2, hevs, FALSE, INFINITE );
+		dwRet = WaitForMultipleObjects ( 2, hevs, FALSE, uTo );
 
 		// Success ?
 		if (dwRet != WAIT_OBJECT_0)
@@ -398,8 +398,8 @@ HRESULT Endpoint :: tick ( void )
 	uLeft = iSzIo;
 	while (hr == S_OK && uLeft > 0)
 		{
-		// Read from end point
-		CCLTRY ( pktIo ( FALSE, iSzPkt, 5000, &uXfer ) );
+		// Read from end point. 
+		CCLTRY (pktIo ( FALSE, iSzPkt, INFINITE, &uXfer ));
 
 		// Write to destination stream
 		CCLTRY ( pStmIo->write ( pcBfrPkt, uXfer, NULL ) );
