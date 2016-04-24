@@ -41,8 +41,6 @@
    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSBILITY OF SUCH DAMAGE.
 */
 
-#define	INITGUID
-#define	INITREFSTR
 #include "sqln_.h"
 
 // Globals

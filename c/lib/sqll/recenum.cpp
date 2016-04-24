@@ -86,10 +86,10 @@ HRESULT SQLRecordEnum :: construct ( void )
 	CCLTRY ( FactCache.AddRef() );
 
 	// Buffer
-	CCLTRY ( COCREATEINSTANCE ( CLSID_MemoryBlock, IID_IMemoryMapped, &pBfr ) );
+	CCLTRY ( COCREATE ( L"Io.MemoryBlock", IID_IMemoryMapped, &pBfr ) );
 
 	// Parser
-	CCLTRY ( COCREATEINSTANCE ( CLSID_SysParserBin, IID_IParseStm, &pParse ) );
+	CCLTRY ( COCREATE ( L"Io.StmPrsBin",  IID_IStreamPersist, &pParse ) );
 
 	return hr;
 	}	// construct
@@ -133,7 +133,7 @@ HRESULT SQLRecordEnum :: getObject ( SQLHANDLE hStmt, SQLUSMALLINT col,
 	IByteStream	*pStm	= NULL;
 	PVOID			pvBfr	= NULL;
 	SQLRETURN	sqlr;
-	SQLINTEGER	len;
+	SQLLEN		len;
 
 	// Call SQLGetData a single time with a zero buffer so we can
 	// get the total amount of data waiting for us
@@ -144,8 +144,8 @@ HRESULT SQLRecordEnum :: getObject ( SQLHANDLE hStmt, SQLUSMALLINT col,
 	// Internal object buffer
 	if (hr == S_OK && len > (SQLINTEGER)uBfrSz)
 		{
-		CCLTRY(pBfr->setSize ( len ));
-		CCLOK (uBfrSz = len;)
+		CCLTRY(pBfr->setSize ( (U32)len ));
+		CCLOK (uBfrSz = (U32)len;)
 		}	// if
 	CCLTRY ( pBfr->lock ( 0, 0, &pvBfr, NULL ) );
 
@@ -154,7 +154,7 @@ HRESULT SQLRecordEnum :: getObject ( SQLHANDLE hStmt, SQLUSMALLINT col,
 
 	// Create a stream based on our memory block and parse it into an object
 	CCLTRY(pBfr->stream ( &pStm ));
-	CCLTRY(pParse->valueLoad ( pStm, vValue ));
+	CCLTRY(pParse->load ( pStm, vValue ));
 
 	// Clean up
 	_RELEASE(pStm);
@@ -178,7 +178,7 @@ HRESULT SQLRecordEnum :: prepare ( void )
 	SQLSMALLINT	ColumnNumber	= 0;
 	SQLSMALLINT	NameLength;
 	SQLSMALLINT	DataType;
-	SQLUINTEGER	ColumnSize;
+	SQLULEN		ColumnSize;
 	SQLSMALLINT	DecimalDigits;
 	SQLSMALLINT	Nullable;
 	SQLSMALLINT	TargetType;
@@ -213,25 +213,25 @@ HRESULT SQLRecordEnum :: prepare ( void )
 		switch (DataType)
 			{
 			case SQL_INTEGER :
-				pCol->sData		= adtInt();
+				adtValue::copy(adtInt(),pCol->sData);
 				pCol->uSz		= sizeof(pCol->sData.vint);
 				TargetType		= SQL_C_ULONG;
 				TargetValuePtr	= &(pCol->sData.vint);
 				break;
 			case SQL_BIGINT :
-				pCol->sData		= adtLong();
+				adtValue::copy(adtLong(),pCol->sData);
 				pCol->uSz		= sizeof(pCol->sData.vlong);
 				TargetType		= SQL_C_UBIGINT;
 				TargetValuePtr	= &(pCol->sData.vlong);
 				break;
 			case SQL_REAL :
-				pCol->sData		= adtFloat();
+				adtValue::copy(adtFloat(),pCol->sData);
 				pCol->uSz		= sizeof(pCol->sData.vflt);
 				TargetType		= SQL_C_FLOAT;
 				TargetValuePtr	= &(pCol->sData.vflt);
 				break;
 			case SQL_DOUBLE :
-				pCol->sData.vtype	= VALT_R8;;
+				adtValue::copy(adtDouble(),pCol->sData);
 				pCol->uSz			= sizeof(pCol->sData.vdbl);
 				TargetType			= SQL_C_DOUBLE;
 				TargetValuePtr		= &(pCol->sData.vdbl);
@@ -248,18 +248,18 @@ HRESULT SQLRecordEnum :: prepare ( void )
 				adtString	sData;
 
 				// Allocate max. size.
-				sData.allocate ( ColumnSize );
+				sData.allocate ( (U32)ColumnSize );
 				sData.at(0)				= WCHAR('\0');
 				TargetValuePtr			= (SQLPOINTER) &sData.at();
-				adtValueImpl::copy ( pCol->sData, sData );
-				pCol->uSz				= ColumnSize*sizeof(WCHAR);
+				adtValue::copy ( sData,  pCol->sData );
+				pCol->uSz				= (U32)ColumnSize*sizeof(WCHAR);
 				TargetType				= SQL_C_WCHAR;
 				}
 				break;
 			case SQL_BINARY :
 			case SQL_VARBINARY :
 			case SQL_LONGVARBINARY :
-				pCol->sData.vtype	= VALT_UNKNOWN;
+				pCol->sData.vtype	= VTYPE_UNK;
 				TargetType		= SQL_C_BINARY;
 				TargetValuePtr	= NULL;
 				break;
@@ -300,12 +300,12 @@ HRESULT SQLRecordEnum :: receive ( IReceptor *pr, const WCHAR *pl,
 	HRESULT	hr = S_OK;
 
 	// Next
-	if (prNext == pR)
+	if (_RCP(Next))
 		{
-		IADTDictionary	*pDict	= NULL;
-		SQLRETURN		sqlr;
-		S32				c;
-		adtValueImpl	vValue;
+		IDictionary	*pDict	= NULL;
+		SQLRETURN	sqlr;
+		S32			c;
+		adtValue		vValue;
 
 		// State check
 		CCLTRYE ( (hStmt != SQL_NULL_HANDLE), ERROR_INVALID_STATE );
@@ -323,8 +323,7 @@ HRESULT SQLRecordEnum :: receive ( IReceptor *pr, const WCHAR *pl,
 		if (hr == S_OK)
 			{
 			// Output dictionary
-			CCLTRY ( COCREATEINSTANCEC ( FactCache, CLSID_ADTDictionary, 
-													IID_IADTDictionary, &pDict ) );
+			CCLTRY ( COCREATE ( L"Adt.Dictionary", IID_IDictionary, &pDict ) );
 
 			// Store all values
 			for (c = 0;hr == S_OK && c < ColumnCount;++c)
@@ -347,12 +346,12 @@ HRESULT SQLRecordEnum :: receive ( IReceptor *pr, const WCHAR *pl,
 
 					// Convert to date
 					CCLTRY ( adtDate::fromSystemTime ( &st, &(pCols[c].sData.vdate) ) );
-					CCLOK  ( pCols[c].sData.vtype = VALT_DATE; )
+					CCLOK  ( pCols[c].sData.vtype = VTYPE_DATE; )
 					}	// if
 
 				// If item is an object, it has been streamed.  Load whatever
 				// value is stored there
-				else if (hr == S_OK && pCols[c].sData.vtype == VALT_UNKNOWN )
+				else if (hr == S_OK && adtValue::type(pCols[c].sData) == VTYPE_UNK )
 					hr = getObject ( hStmt, c+1, pCols[c].sData );
 
 				// Store, do not overwrite duplicates, this means duplicate field names
@@ -360,7 +359,7 @@ HRESULT SQLRecordEnum :: receive ( IReceptor *pr, const WCHAR *pl,
 				if (hr == S_OK && pDict->load ( pCols[c].sName, vValue ) != S_OK)
 					{
 					// Send new refrence of string data
-					if (pCols[c].sData.vtype == VALT_STR && pCols[c].sData.pstr != NULL)
+					if (adtValue::type(pCols[c].sData) == VTYPE_STR && pCols[c].sData.pstr != NULL)
 						hr = pDict->store ( pCols[c].sName, adtString ( (wchar_t *) &(pCols[c].sData.pstr[1]) ) );
 					else
 						hr = pDict->store ( pCols[c].sName, pCols[c].sData );
@@ -369,15 +368,15 @@ HRESULT SQLRecordEnum :: receive ( IReceptor *pr, const WCHAR *pl,
 			}	// if
 
 		// Result
-		if (hr == S_OK)	peFire->emit(adtIUnknown(pDict));
-		else					peEnd->emit(adtInt());
+		if (hr == S_OK)	_EMT(Fire,adtIUnknown(pDict));
+		else					_EMT(End,adtInt());
 
 		// Clean up
 		_RELEASE(pDict);
 		}	// if
 
 	// Position
-	else if (prPos == pR)
+	else if (_RCP(Position))
 		{
 		adtInt			iPos(v);
 
@@ -391,7 +390,7 @@ HRESULT SQLRecordEnum :: receive ( IReceptor *pr, const WCHAR *pl,
 		}	// else if
 
 	// Context
-	else if (prCtx == pR)
+	else if (_RCP(Context))
 		{
 		adtIUnknown unkV(v);
 		adtLong		lTmp;
@@ -634,7 +633,7 @@ HRESULT SQLRecordEnum :: receiveNext ( const adtValue &v )
 	//
 	////////////////////////////////////////////////////////////////////////
 	HRESULT			hr			= S_OK;
-	IADTDictionary	*pDict	= NULL;
+	IDictionary	*pDict	= NULL;
 	U8					*pcBfr	= NULL;
 	U8					*pcBfrNow;
 	HROW				hRows[1];
@@ -662,7 +661,7 @@ HRESULT SQLRecordEnum :: receiveNext ( const adtValue &v )
 		{
 		// Output dictionary
 		CCLTRY ( COCREATEINSTANCEC ( FactCache, CLSID_ADTDictionary, 
-												IID_IADTDictionary, &pDict ) );
+												IID_IDictionary, &pDict ) );
 
 		// Store all values
 		for (c = 0,uPos = 0;hr == S_OK && c < nColumns;++c)

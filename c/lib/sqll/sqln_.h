@@ -72,6 +72,16 @@ extern	adtStringSt	strRefTableName;
 extern	adtStringSt	strRefKey;
 extern	adtStringSt	strRefOp;
 extern	adtStringSt	strRefValue;
+extern	adtStringSt	strRefIndexName;
+extern	adtStringSt strRefFields;
+extern	adtStringSt strRefPrimKey;
+extern	adtStringSt strRefRemFlds;
+extern	adtStringSt strRefLeft;
+extern	adtStringSt strRefRight;
+extern	adtStringSt strRefCount;
+extern	adtStringSt strRefSort;
+extern	adtStringSt strRefFrom;
+extern	adtStringSt strRefTo;
 
 /*
 DEFINE_REFSTR ( strRefEnv,			L"Environment" );
@@ -271,18 +281,18 @@ class SQLQuery :
 	IUnknown			*pConn;								// Connection object
 	adtString		sTableName;							// Table name
 	adtBool			bDistinct;							// Distinct record result ?
-	IContainer	*pCons;								// Constraints
-	IInIt			*pConsIn;							// Constraints
+	IContainer		*pCons;								// Constraints
+	IInIt				*pConsIn;							// Constraints
 	DBBINDING		*pbCons;								// Constraint bindings
 	U32				szCons;								// # of constraints
-	IInIt			*pFldsIn;							// Fields to 'select'
+	IInIt				*pFldsIn;							// Fields to 'select'
 	adtBool			bSort;								// Sort result ?
 	adtBool			bCount;								// Count query only ?
 	IMemoryMapped	*pQryBfr;							// Query buffer
 	WCHAR				*pwQryBfr;							// Query buffer
 	IMemoryMapped	*pBfr;								// Internal data buffer
 	U32				uBfrSz;								// Current data buffer size
-	IDictionary	*pJoin;								// Join information
+	IDictionary		*pJoin;								// Join information
 	adtString		sSort;								// Sort field ?
 	adtInt			iCount;								// Max. query count
 
@@ -378,7 +388,7 @@ class SQL2Table :
 	IReceptor			*prCols,*prConn,*prFlds;	// Receptors
 	IReceptor			*prFire;							// Receptors
 	IEmitter				*peFire,*peCols;				// Emitters
-	IDictionary		*pFlds;							// Table fields
+	IDictionary			*pFlds;							// Table fields
 	IUnknown				*pConn;							// Connection object
 	adtString			sTableName;						// Table name
 	adtBool				bRemove;							// Remove unused fields ?
@@ -391,10 +401,10 @@ class SQL2Table :
 
 	// Connections
 	BEGIN_BEHAVIOUR()
-		DEFINE_RECEPTOR	(Columns,prCols)
-		DEFINE_RECEPTOR	(Connection,prConn)
-		DEFINE_RECEPTOR	(Fields,prFlds)
-		DEFINE_RECEPTOR	(Fire,prFire)
+		DEFINE_RECEPTOR(Columns,prCols)
+		DEFINE_RECEPTOR(Connection,prConn)
+		DEFINE_RECEPTOR(Fields,prFlds)
+		DEFINE_RECEPTOR(Fire,prFire)
 		DEFINE_EMITTER	(OnColumns,peCols)
 		DEFINE_EMITTER	(OnFire,peFire)
 	END_BEHAVIOUR()
@@ -470,7 +480,7 @@ class SQLCol
 	SQLINTEGER			uSz;								// Column size
 	SQLSMALLINT			DataType;						// SQL data type
 	TIMESTAMP_STRUCT	TimeStamp;						// For 'datetime' data type
-	SQLINTEGER			StrLen_or_Ind;					// String len or indicator
+	SQLLEN				StrLen_or_Ind;					// String len or indicator
 	};
 
 //

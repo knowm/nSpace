@@ -90,7 +90,7 @@ HRESULT SQLQuery :: construct ( void )
 	HRESULT		hr			= S_OK;
 
 	// SQL query string buffer
-	CCLTRY ( COCREATEINSTANCE ( CLSID_MemoryBlock, IID_IMemoryMapped, &pQryBfr ) );
+	CCLTRY ( COCREATE ( L"Io.MemoryBlock", IID_IMemoryMapped, &pQryBfr ) );
 	CCLTRY ( pQryBfr->setSize ( SIZE_SQLBFR ) );
 	CCLTRY ( pQryBfr->lock ( 0, 0, (PVOID *) &pwQryBfr, NULL ) );
 
@@ -137,12 +137,12 @@ HRESULT SQLQuery :: receive ( IReceptor *pr, const WCHAR *pl,
 	HRESULT	hr = S_OK;
 
 	// Fire
-	if (prFire == pR)
+	if (_RCP(Fire))
 		{
-		IADTDictionary	*pDict	= NULL;
+		IDictionary		*pDict	= NULL;
 		SQLHandle		*pStmt	= NULL;
 		IHaveValue		*phv;
-		adtValueImpl	vVal;
+		adtValue			vVal;
 		adtIUnknown		unkV;
 		adtString		strV;
 		U32				idx;
@@ -151,10 +151,10 @@ HRESULT SQLQuery :: receive ( IReceptor *pr, const WCHAR *pl,
 		// State check
 		CCLTRYE ( (hConn != NULL),					ERROR_INVALID_STATE );
 		if (hr == S_OK && sTableName.length() == 0)
-			hr = pnAttr->load ( strRefTableName, sTableName );
+			hr = pnDesc->load ( strRefTableName, sTableName );
 		CCLTRYE ( (sTableName.length() > 0),	ERROR_INVALID_STATE );
 		if (hr == S_OK && sSort.length() == 0)
-			pnAttr->load ( strRefSort, sSort );
+			pnDesc->load ( strRefSort, sSort );
 
 		// Our statement handle
 		CCLTRYE	( (pStmt = new SQLHandle ( SQL_HANDLE_STMT, hConn ))
@@ -176,11 +176,11 @@ HRESULT SQLQuery :: receive ( IReceptor *pr, const WCHAR *pl,
 		// Form is : SELECT (Fields) FROM (Table) WHERE (Constraints)
 
 		// SELECT
-		CCLOK		( wcscpy ( pwQryBfr, L"SELECT " ); )
+		CCLOK		( WCSCPY ( pwQryBfr, SIZE_SQLBFR, L"SELECT " ); )
 
 		// Distinct ?
 		if (hr == S_OK && bDistinct == true)
-			wcscat ( pwQryBfr, L"DISTINCT " );
+			WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"DISTINCT " );
 
 		// Fields (F1,F2,...,Fn) or All (*)
 		if (hr == S_OK && pFldsIn != NULL)
@@ -189,10 +189,10 @@ HRESULT SQLQuery :: receive ( IReceptor *pr, const WCHAR *pl,
 			while (hr == S_OK && pFldsIn->read ( vVal ) == S_OK)
 				{
 				// Field name
-//				CCLOK ( wcscat ( pwQryBfr, L"[" ); )
-				CCLOK ( wcscat ( pwQryBfr, adtString(vVal) ); )
-//				CCLOK ( wcscat ( pwQryBfr, L"]," ); )
-				CCLOK ( wcscat ( pwQryBfr, L"," ); )
+//				CCLOK ( WCSCAT ( pwQryBfr, L"[" ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, adtString(vVal) ); )
+//				CCLOK ( WCSCAT ( pwQryBfr, L"]," ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"," ); )
 
 				// Next
 				pFldsIn->next();
@@ -200,10 +200,10 @@ HRESULT SQLQuery :: receive ( IReceptor *pr, const WCHAR *pl,
 			CCLOK ( pwQryBfr[wcslen(pwQryBfr)-1] = WCHAR('\0'); )
 			}	// if
 		else if (hr == S_OK && pFldsIn == NULL)
-			CCLOK ( wcscat ( pwQryBfr, L"*" ); )
+			CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"*" ); )
 
 		// FROM
-		CCLOK		( wcscat ( pwQryBfr, L" FROM " ); )
+		CCLOK		( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L" FROM " ); )
 
 		// Oddity: Access seems to need parathesis, used as embedded joins
 		// Count number of joins and prepend the correct number of left parens.
@@ -213,31 +213,29 @@ HRESULT SQLQuery :: receive ( IReceptor *pr, const WCHAR *pl,
 			CCLTRY ( pJoin->size ( &cnt ) );
 			if (hr == S_OK)
 				for (i = 0;i < cnt;++i)
-					wcscat ( pwQryBfr, L"(" );
+					WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"(" );
 			}	// if
 
 		// Table name
-		CCLOK		( wcscat ( pwQryBfr, sTableName ); )
+		CCLOK		( WCSCAT ( pwQryBfr, SIZE_SQLBFR, sTableName ); )
 
 		// Optional joins
 		if (hr == S_OK && pJoin != NULL)
 			{
-			IADTDictionary	*pCtxJ	= NULL;
-			IADTIt			*pIt		= NULL;
-			IADTInIt			*pIn		= NULL;
-			adtValueImpl	vJ;
-			adtString		sTableJ,sFrom,sTo;
+			IDictionary	*pCtxJ	= NULL;
+			IIt			*pIt		= NULL;
+			adtValue		vJ;
+			adtString	sTableJ,sFrom,sTo;
 		
 			// Iterate join context list
 			CCLTRY ( pJoin->iterate ( &pIt ) );
-			CCLTRY ( _QI(pIt,IID_IADTInIt,&pIn) );
 
 			// Iterate joins
-			while (hr == S_OK && pIn->read ( vJ ) == S_OK)
+			while (hr == S_OK && pIt->read ( vJ ) == S_OK)
 				{
 				// Context
-				CCLTRYE ( vJ.vtype == VALT_UNKNOWN && vJ.punk != NULL, E_UNEXPECTED );
-				CCLTRY  ( _QI(vJ.punk,IID_IADTDictionary,&pCtxJ) );
+				CCLTRYE ( adtValue::type(vJ) == VTYPE_UNK && vJ.punk != NULL, E_UNEXPECTED );
+				CCLTRY  ( _QI(vJ.punk,IID_IDictionary,&pCtxJ) );
 
 				// Check parameters
 				CCLTRY(pCtxJ->load ( strRefTableName, sTableJ ));
@@ -248,36 +246,35 @@ HRESULT SQLQuery :: receive ( IReceptor *pr, const WCHAR *pl,
 				// Format is : JOIN <Join table> ON (<Table>.<From> = <Join table>.<To>)
 
 				// JOIN
-				CCLOK ( wcscat ( pwQryBfr, L" INNER JOIN " ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L" INNER JOIN " ); )
 
 				// Join table
-				CCLOK ( wcscat ( pwQryBfr, sTableJ ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, sTableJ ); )
 
 				// ON
-				CCLOK ( wcscat ( pwQryBfr, L" ON " ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L" ON " ); )
 
 				// <Table>.<From>
-				CCLOK ( wcscat ( pwQryBfr, L"[" ); )
-				CCLOK ( wcscat ( pwQryBfr, sTableName ); )
-				CCLOK ( wcscat ( pwQryBfr, L"].[" ); )
-				CCLOK ( wcscat ( pwQryBfr, sFrom ); )
-				CCLOK ( wcscat ( pwQryBfr, L"]=[" ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"[" ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, sTableName ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"].[" ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, sFrom ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"]=[" ); )
 
 				// <Join table>.<To>
-				CCLOK ( wcscat ( pwQryBfr, sTableJ ); )
-				CCLOK ( wcscat ( pwQryBfr, L"].[" ); )
-				CCLOK ( wcscat ( pwQryBfr, sTo ); )
-				CCLOK ( wcscat ( pwQryBfr, L"])" ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, sTableJ ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"].[" ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, sTo ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"])" ); )
 
 				// Next entry
-				pIn->next();
+				pIt->next();
 
 				// Clean up
 				_RELEASE(pCtxJ);
 				}	// while
 
 			// Clean up
-			_RELEASE(pIn);
 			_RELEASE(pIt);
 			}	// if
 
@@ -297,7 +294,7 @@ HRESULT SQLQuery :: receive ( IReceptor *pr, const WCHAR *pl,
 		if (hr == S_OK && szCons > 0)
 			{
 			// WHERE
-			CCLOK		( wcscat ( pwQryBfr, L" WHERE " ); )
+			CCLOK		( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L" WHERE " ); )
 
 			// Names, values
 			CCLOK		( idx = 0; )
@@ -306,39 +303,41 @@ HRESULT SQLQuery :: receive ( IReceptor *pr, const WCHAR *pl,
 			while (hr == S_OK && pConsIn->read ( unkV ) == S_OK && idx < szCons)
 				{
 				// Properties
-				CCLTRY( _QISAFE(unkV,IID_IADTDictionary,&pDict) );
+				CCLTRY( _QISAFE(unkV,IID_IDictionary,&pDict) );
 
 				// Name
 				CCLTRY( pDict->load ( strRefKey, strV ) );
-				CCLOK ( wcscat ( pwQryBfr, L"[" ); )
-				CCLOK	( wcscat ( pwQryBfr, strV ); )
-				CCLOK ( wcscat ( pwQryBfr, L"] " ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"[" ); )
+				CCLOK	( WCSCAT ( pwQryBfr, SIZE_SQLBFR, strV ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"] " ); )
 
 				// Constraint operator ( <, >, LIKE, etc. )
 				CCLTRY( pDict->load ( strRefOp, strV ) );
-				CCLOK	( wcscat ( pwQryBfr, strV ); )
+				CCLOK	( WCSCAT ( pwQryBfr, SIZE_SQLBFR, strV ); )
 				CCLOK ( bLike = (WCASECMP(strV,L"LIKE") == 0); )
 
 				// Value, bind
-				CCLOK ( wcscat ( pwQryBfr, L" ? " ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L" ? " ); )
 				CCLTRY( pDict->load ( strRefValue, pvCons[idx].sData ) );
 
 				// If the operator is 'like' and the value is a string, add the wildcards
-				if (hr == S_OK && bLike && pvCons[idx].sData.vtype == VALT_STR)
+				if (hr == S_OK && bLike && adtValue::type(pvCons[idx].sData) == VTYPE_STR)
 					{
-					CCLTRY ( strV.allocate ( adtString(pvCons[idx].sData).length() + 2 ) );
-					CCLOK  ( wcscpy ( &strV.at(), L"%" ); )
-					CCLOK  ( wcscat ( &strV.at(), adtString(pvCons[idx].sData) ); )
-					CCLOK  ( wcscat ( &strV.at(), L"%" ); )
-					CCLTRY ( adtValueImpl::copy ( pvCons[idx].sData, strV ) );
+					U32 len = adtString(pvCons[idx].sData).length() + 2;
+					CCLTRY ( strV.allocate ( len ) );
+					CCLOK  ( WCSCPY ( &strV.at(), len, L"%" ); )
+					CCLOK  ( WCSCAT ( &strV.at(), len, adtString(pvCons[idx].sData) ); )
+					CCLOK  ( WCSCAT ( &strV.at(), len, L"%" ); )
+					CCLTRY ( adtValue::copy ( strV, pvCons[idx].sData ) );
 					}	// if
+
 				CCLTRY( SQLBindVariantParam ( pStmt->Handle, idx+1,
 							&(pvCons[idx].sData), &(pvCons[idx].uSz) ) );
 				CCLOK ( ++idx; )
 
 				// Next constraint
 				if (hr == S_OK && idx < szCons)
-					wcscat ( pwQryBfr, L"AND " );
+					WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"AND " );
 				_RELEASE(pDict);
 				pConsIn->next();
 				}	// while
@@ -348,9 +347,9 @@ HRESULT SQLQuery :: receive ( IReceptor *pr, const WCHAR *pl,
 		// Sort ?  Prefix with table name in case of join
 		if (hr == S_OK && sSort.length() > 0)
 			{
-			wcscat ( pwQryBfr, L" ORDER BY \"" );
-			wcscat ( pwQryBfr, sSort );
-			wcscat ( pwQryBfr, L"\" ASC" );
+			WCSCAT ( pwQryBfr, SIZE_SQLBFR, L" ORDER BY \"" );
+			WCSCAT ( pwQryBfr, SIZE_SQLBFR, sSort );
+			WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"\" ASC" );
 			}	// if
 
 		// Execute.  We should not get SQL_NEED_DATA here because keys are not blobs
@@ -362,15 +361,15 @@ HRESULT SQLQuery :: receive ( IReceptor *pr, const WCHAR *pl,
 																		(SQLINTEGER)wcslen(pwQryBfr) ));)
 
 		// Result
-		if (hr == S_OK)	peFire->emit ( adtIUnknown((phv = pStmt)) );
-		else					peFail->emit ( adtInt(hr) );
+		if (hr == S_OK)	_EMT(Fire,adtIUnknown((phv = pStmt)) );
+		else					_EMT(Fail,adtInt(hr) );
 
 		// Clean up
 		_RELEASE(pStmt);
 		}	// if
 
 	// Connection
-	else if (prConn == pR)
+	else if (_RCP(Connection))
 		{
 		adtIUnknown unkV(v);
 		adtLong		lTmp;
@@ -386,10 +385,9 @@ HRESULT SQLQuery :: receive ( IReceptor *pr, const WCHAR *pl,
 		}	// else if
 
 	// Constraints
-	else if (prCons == pR)
+	else if (_RCP(Constraints))
 		{
-		IADTIt			*pIt		= NULL;
-		adtIUnknown		unkV(v);
+		adtIUnknown	unkV(v);
 
 		// Previous object
 		_RELEASE(pCons);
@@ -397,26 +395,23 @@ HRESULT SQLQuery :: receive ( IReceptor *pr, const WCHAR *pl,
 		szCons = 0;
 
 		// New object
-		CCLTRY(_QISAFE(unkV,IID_IADTContainer,&pCons));
-		CCLTRY(pCons->iterate ( &pIt ));
-		CCLTRY(_QI(pIt,IID_IADTInIt,&pConsIn));
-		_RELEASE(pIt);
+		CCLTRY(_QISAFE(unkV,IID_IContainer,&pCons));
+		CCLTRY(pCons->iterate ( &pConsIn ));
 		}	// else if
 
 	// Fields
-	else if (prFlds == pR)
+	else if (_RCP(Fields))
 		{
-		IADTContainer	*pCont	= NULL;
-		IADTIt			*pIt		= NULL;
+		IContainer	*pCont	= NULL;
+		IIt			*pIt		= NULL;
 		adtIUnknown		unkV(v);
 
 		// Previous object
 		_RELEASE(pFldsIn);
 
 		// New object
-		CCLTRY(_QISAFE(unkV,IID_IADTContainer,&pCont));
-		CCLTRY(pCont->iterate ( &pIt ));
-		CCLTRY(_QI(pIt,IID_IADTInIt,&pFldsIn));
+		CCLTRY(_QISAFE(unkV,IID_IContainer,&pCont));
+		CCLTRY(pCont->iterate ( &pFldsIn ));
 
 		// Clean up
 		_RELEASE(pIt);
@@ -424,11 +419,11 @@ HRESULT SQLQuery :: receive ( IReceptor *pr, const WCHAR *pl,
 		}	// else if
 
 	// State
-	else if (prCnt == pR)
+	else if (_RCP(Count))
 		iCount = adtInt(v);
-	else if (prDis == pR)
+	else if (_RCP(Distinct))
 		bDistinct = adtBool(v);
-	else if (prJoin == pR)
+	else if (_RCP(Join))
 		{
 		adtIUnknown	unkV(v);
 
@@ -436,12 +431,12 @@ HRESULT SQLQuery :: receive ( IReceptor *pr, const WCHAR *pl,
 		_RELEASE(pJoin);
 
 		// New object
-		CCLTRY(_QISAFE(unkV,IID_IADTContainer,&pJoin));
+		CCLTRY(_QISAFE(unkV,IID_IContainer,&pJoin));
 		}	// else if
-	else if (prSort == pR)
-		hr = adtValueImpl::copy ( sSort, adtString(v) );
-	else if (prTbl == pR)
-		hr = adtValueImpl::copy ( sTableName, adtString(v) );
+	else if (_RCP(Sort))
+		hr = adtValue::copy ( adtString(v), sSort );
+	else if (_RCP(Table))
+		hr = adtValue::copy ( adtString(v), sTableName );
 
 	return hr;
 	}	// receive
@@ -550,7 +545,7 @@ HRESULT SQLQuery :: receiveFire ( const adtValue &v )
 	ICommandPrepare		*pCmdPrep	= NULL;
 	ICommandProperties	*pCmdProp	= NULL;
 	IAccessor				*pAccessor	= NULL;
-	IADTDictionary			*pDict		= NULL;
+	IDictionary			*pDict		= NULL;
 	IColumnsInfo			*pColInfo	= NULL;
 	IRowset					*pRowset		= NULL;
 	U8							*pcBfr		= NULL;
@@ -566,10 +561,10 @@ HRESULT SQLQuery :: receiveFire ( const adtValue &v )
 	// State check
 	CCLTRYE	( (pConn != NULL),		ERROR_INVALID_STATE );
 	if (hr == S_OK && sTableName.length() == 0)
-		hr = pnAttr->load ( strRefTableName, sTableName );
+		hr = pnDesc->load ( strRefTableName, sTableName );
 	CCLTRYE ( (sTableName.length() > 0),	ERROR_INVALID_STATE );
 	if (hr == S_OK && sSort.length() == 0)
-		 pnAttr->load ( strRefSort, sSort );
+		 pnDesc->load ( strRefSort, sSort );
 
 	// Session object
 	CCLTRY	( _QI(pConn,IID_IDBCreateSession,&pCreate) );
@@ -605,11 +600,11 @@ HRESULT SQLQuery :: receiveFire ( const adtValue &v )
 	// Form is : SELECT (Fields) FROM (Table) WHERE (Constraints)
 
 	// SELECT
-	CCLOK		( wcscpy ( pwQryBfr, L"SELECT " ); )
+	CCLOK		( WCSCPY ( pwQryBfr, L"SELECT " ); )
 
 	// Distinct ?
 	if (hr == S_OK && bDistinct == true)
-		wcscat ( pwQryBfr, L"DISTINCT " );
+		WCSCAT ( pwQryBfr, L"DISTINCT " );
 
 	// Fields (F1,F2,...,Fn) or All (*)
 	if (hr == S_OK && pFldsIn != NULL)
@@ -618,9 +613,9 @@ HRESULT SQLQuery :: receiveFire ( const adtValue &v )
 		while (hr == S_OK && pFldsIn->read ( vVal ) == S_OK)
 			{
 			// Field name
-			CCLOK ( wcscat ( pwQryBfr, L"[" ); )
-			CCLOK ( wcscat ( pwQryBfr, adtString(vVal) ); )
-			CCLOK ( wcscat ( pwQryBfr, L"]," ); )
+			CCLOK ( WCSCAT ( pwQryBfr, L"[" ); )
+			CCLOK ( WCSCAT ( pwQryBfr, adtString(vVal) ); )
+			CCLOK ( WCSCAT ( pwQryBfr, L"]," ); )
 
 			// Next
 			pFldsIn->next();
@@ -628,13 +623,13 @@ HRESULT SQLQuery :: receiveFire ( const adtValue &v )
 		CCLOK ( pwQryBfr[adtString::length(pwQryBfr)-1] = WCHAR('\0'); )
 		}	// if
 	else if (hr == S_OK && pFldsIn == NULL)
-		CCLOK ( wcscat ( pwQryBfr, L"*" ); )
+		CCLOK ( WCSCAT ( pwQryBfr, L"*" ); )
 
 	// FROM
-	CCLOK		( wcscat ( pwQryBfr, L" FROM " ); )
+	CCLOK		( WCSCAT ( pwQryBfr, L" FROM " ); )
 
 	// Table name
-	CCLOK		( wcscat ( pwQryBfr, sTableName ); )
+	CCLOK		( WCSCAT ( pwQryBfr, sTableName ); )
 
 	// Optional join
 	if (hr == S_OK && pJoin != NULL)
@@ -650,26 +645,26 @@ HRESULT SQLQuery :: receiveFire ( const adtValue &v )
 		// Format is : JOIN <Join table> ON (<Table>.<From> = <Join table>.<To>)
 
 		// JOIN
-		CCLOK ( wcscat ( pwQryBfr, L" INNER JOIN " ); )
+		CCLOK ( WCSCAT ( pwQryBfr, L" INNER JOIN " ); )
 
 		// Join table
-		CCLOK ( wcscat ( pwQryBfr, sTableJ ); )
+		CCLOK ( WCSCAT ( pwQryBfr, sTableJ ); )
 
 		// ON
-		CCLOK ( wcscat ( pwQryBfr, L" ON " ); )
+		CCLOK ( WCSCAT ( pwQryBfr, L" ON " ); )
 
 		// <Table>.<From>
-		CCLOK ( wcscat ( pwQryBfr, L"[" ); )
-		CCLOK ( wcscat ( pwQryBfr, sTableName ); )
-		CCLOK ( wcscat ( pwQryBfr, L"].[" ); )
-		CCLOK ( wcscat ( pwQryBfr, sFrom ); )
-		CCLOK ( wcscat ( pwQryBfr, L"]=[" ); )
+		CCLOK ( WCSCAT ( pwQryBfr, L"[" ); )
+		CCLOK ( WCSCAT ( pwQryBfr, sTableName ); )
+		CCLOK ( WCSCAT ( pwQryBfr, L"].[" ); )
+		CCLOK ( WCSCAT ( pwQryBfr, sFrom ); )
+		CCLOK ( WCSCAT ( pwQryBfr, L"]=[" ); )
 
 		// <Join table>.<To>
-		CCLOK ( wcscat ( pwQryBfr, sTableJ ); )
-		CCLOK ( wcscat ( pwQryBfr, L"].[" ); )
-		CCLOK ( wcscat ( pwQryBfr, sTo ); )
-		CCLOK ( wcscat ( pwQryBfr, L"]" ); )
+		CCLOK ( WCSCAT ( pwQryBfr, sTableJ ); )
+		CCLOK ( WCSCAT ( pwQryBfr, L"].[" ); )
+		CCLOK ( WCSCAT ( pwQryBfr, sTo ); )
+		CCLOK ( WCSCAT ( pwQryBfr, L"]" ); )
 		}	// if
 
 	// Optional constraints
@@ -691,9 +686,9 @@ HRESULT SQLQuery :: receiveFire ( const adtValue &v )
 	// Sort ?  Prefix with table name in case of join
 	if (hr == S_OK && sSort.length() > 0)
 		{
-		wcscat ( pwQryBfr, L" ORDER BY [" );
-		wcscat ( pwQryBfr, sSort );
-		wcscat ( pwQryBfr, L"] ASC" );
+		WCSCAT ( pwQryBfr, L" ORDER BY [" );
+		WCSCAT ( pwQryBfr, sSort );
+		WCSCAT ( pwQryBfr, L"] ASC" );
 		}	// if
 
 	// 'Prepare' the command text.  This is required so that the 'ordinal' columns #'s
@@ -762,7 +757,7 @@ HRESULT SQLQuery :: receiveConnection ( const adtValue &v )
 HRESULT SQLQuery :: receiveConstraints ( const adtValue &v )
 	{
 	HRESULT			hr			= S_OK;
-	IADTIt			*pIt		= NULL;
+	IIt			*pIt		= NULL;
 	adtIUnknown		unkV(v);
 
 	// Previous object
@@ -771,9 +766,9 @@ HRESULT SQLQuery :: receiveConstraints ( const adtValue &v )
 	szCons = 0;
 
 	// New object
-	CCLTRY(_QISAFE(unkV,IID_IADTContainer,&pCons));
+	CCLTRY(_QISAFE(unkV,IID_IContainer,&pCons));
 	CCLTRY(pCons->iterate ( &pIt ));
-	CCLTRY(_QI(pIt,IID_IADTInIt,&pConsIn));
+	CCLTRY(_QI(pIt,IID_IInIt,&pConsIn));
 	_RELEASE(pIt);
 
 	return hr;
@@ -794,17 +789,17 @@ HRESULT SQLQuery :: receiveDistinct ( const adtValue &v )
 HRESULT SQLQuery :: receiveFields ( const adtValue &v )
 	{
 	HRESULT			hr			= S_OK;
-	IADTContainer	*pCont	= NULL;
-	IADTIt			*pIt		= NULL;
+	IContainer	*pCont	= NULL;
+	IIt			*pIt		= NULL;
 	adtIUnknown		unkV(v);
 
 	// Previous object
 	_RELEASE(pFldsIn);
 
 	// New object
-	CCLTRY(_QISAFE(unkV,IID_IADTContainer,&pCont));
+	CCLTRY(_QISAFE(unkV,IID_IContainer,&pCont));
 	CCLTRY(pCont->iterate ( &pIt ));
-	CCLTRY(_QI(pIt,IID_IADTInIt,&pFldsIn));
+	CCLTRY(_QI(pIt,IID_IInIt,&pFldsIn));
 
 	// Clean up
 	_RELEASE(pIt);
@@ -822,7 +817,7 @@ HRESULT SQLQuery :: receiveJoin ( const adtValue &v )
 	_RELEASE(pJoin);
 
 	// New object
-	CCLTRY(_QISAFE(unkV,IID_IADTDictionary,&pJoin));
+	CCLTRY(_QISAFE(unkV,IID_IDictionary,&pJoin));
 
 	return hr;
 	}	// receiveJoin

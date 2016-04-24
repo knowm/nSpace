@@ -84,7 +84,7 @@ HRESULT SQL2Table :: construct ( void )
 	HRESULT		hr			= S_OK;
 
 	// SQL query string buffer
-	CCLTRY ( COCREATEINSTANCE ( CLSID_MemoryBlock, IID_IMemoryMapped, &pQryBfr ) );
+	CCLTRY ( COCREATE ( L"Io.MemoryBlock", IID_IMemoryMapped, &pQryBfr ) );
 	CCLTRY ( pQryBfr->setSize ( SIZE_SQLBFR ) );
 	CCLTRY ( pQryBfr->lock ( 0, 0, (PVOID *) &pwQryBfr, NULL ) );
 
@@ -109,7 +109,7 @@ void SQL2Table :: destruct ( void )
 	}	// destruct
 
 HRESULT SQL2Table :: fieldsAdd ( SQLHANDLE hConn, adtString &sName,
-											IADTDictionary *pFlds )
+											IDictionary *pFlds )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -125,25 +125,27 @@ HRESULT SQL2Table :: fieldsAdd ( SQLHANDLE hConn, adtString &sName,
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	HRESULT			hr			= S_OK;
-	SQLHANDLE		hStmt		= NULL;
-	IADTInIt			*pKeys	= NULL;
-	U32				uLen		= 0;
-	adtString		sKey;
-	adtValueImpl	vValue;
-	WCHAR				wType[31];
+	HRESULT		hr			= S_OK;
+	SQLHANDLE	hStmt		= NULL;
+	IIt			*pKeys	= NULL;
+	U32			uLen		= 0;
+	adtString	sKey;
+	adtValue		vValue;
+	WCHAR			wType[31];
 
 	// Verify existence of auto-increment/default primary key
 	// Indexes are used for queries.  Good practice to not use table fields
 	// in primary key.
 	CCLTRY ( SQLSTMT(hStmt,(SQLAllocHandle ( SQL_HANDLE_STMT, hConn, &hStmt ))) );
-	CCLOK ( swprintf ( pwQryBfr, L"ALTER TABLE \"%s\" ADD \"%s\" AUTOINCREMENT",
+	CCLOK ( swprintf ( SWPF(pwQryBfr,SIZE_SQLBFR), 
+								L"ALTER TABLE \"%s\" ADD \"%s\" AUTOINCREMENT",
 								(LPCWSTR)(sName), STRING_PRIMKEY ); )
 	CCLOK  ( SQLSTMT(hStmt,(SQLExecDirect ( hStmt, pwQryBfr, (SQLINTEGER)wcslen(pwQryBfr) )));)
 	SQLFREESTMT(hStmt);
 
 	CCLTRY ( SQLSTMT(hStmt,(SQLAllocHandle ( SQL_HANDLE_STMT, hConn, &hStmt ))) );
-	CCLOK ( swprintf ( pwQryBfr, L"ALTER TABLE \"%s\" ADD PRIMARY KEY (\"%s\")",
+	CCLOK ( swprintf ( pwQryBfr, SIZE_SQLBFR,
+								L"ALTER TABLE \"%s\" ADD PRIMARY KEY (\"%s\")",
 								(LPCWSTR)(sName), STRING_PRIMKEY ); )
 	CCLOK  ( SQLSTMT(hStmt,(SQLExecDirect ( hStmt, pwQryBfr, (SQLINTEGER)wcslen(pwQryBfr) )));)
 	SQLFREESTMT(hStmt);
@@ -161,13 +163,13 @@ HRESULT SQL2Table :: fieldsAdd ( SQLHANDLE hConn, adtString &sName,
 			{
 			switch(vValue.vtype)
 				{
-				case VALT_I4		:	wcscpy ( wType, L"int" );			break;
-				case VALT_I8		:	wcscpy ( wType, L"bigint" );		break;
-				case VALT_R4		:	wcscpy ( wType, L"real" );			break;
-				case VALT_R8		:	wcscpy ( wType, L"double" );		break;
-				case VALT_STR		:	wcscpy ( wType, L"text" );			break;
-				case VALT_DATE		:	wcscpy ( wType, L"datetime" );	break;
-				case VALT_UNKNOWN	:	wcscpy ( wType, L"image" );		break;
+				case VTYPE_I4		:	WCSCPY ( wType, 20, L"int" );			break;
+				case VTYPE_I8		:	WCSCPY ( wType, 20, L"bigint" );		break;
+				case VTYPE_R4		:	WCSCPY ( wType, 20, L"real" );			break;
+				case VTYPE_R8		:	WCSCPY ( wType, 20, L"double" );		break;
+				case VTYPE_STR		:	WCSCPY ( wType, 20, L"text" );			break;
+				case VTYPE_DATE	:	WCSCPY ( wType, 20, L"datetime" );	break;
+				case VTYPE_UNK		:	WCSCPY ( wType, 20, L"image" );		break;
 
 				// Unhandled
 				default :
@@ -177,7 +179,7 @@ HRESULT SQL2Table :: fieldsAdd ( SQLHANDLE hConn, adtString &sName,
 
 		// Prepare command
 		CCLTRY ( SQLSTMT(hStmt,(SQLAllocHandle ( SQL_HANDLE_STMT, hConn, &hStmt ))) );
-		CCLOK ( swprintf ( pwQryBfr, L"ALTER TABLE \"%s\" ADD \"%s\" %s",
+		CCLOK ( swprintf ( SWPF( pwQryBfr,SIZE_SQLBFR), L"ALTER TABLE \"%s\" ADD \"%s\" %s",
 									(LPCWSTR)(sName), (LPCWSTR)(sKey), wType ); )
 
 		// Execute.
@@ -198,7 +200,7 @@ HRESULT SQL2Table :: fieldsAdd ( SQLHANDLE hConn, adtString &sName,
 	}	// fieldsAdd
 
 HRESULT SQL2Table :: fieldsRemove ( SQLHANDLE hConn, adtString &sName,
-												IADTDictionary *pFlds )
+												IDictionary *pFlds )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -214,12 +216,12 @@ HRESULT SQL2Table :: fieldsRemove ( SQLHANDLE hConn, adtString &sName,
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	HRESULT			hr				= S_OK;
-	SQLHANDLE		hStmtCols	= NULL;
-	SQLHANDLE		hStmtAlter	= NULL;
-	SQLINTEGER		sLen;
-	adtString		sFieldName;
-	adtValueImpl	vValue;
+	HRESULT		hr				= S_OK;
+	SQLHANDLE	hStmtCols	= NULL;
+	SQLHANDLE	hStmtAlter	= NULL;
+	SQLLEN		sLen;
+	adtString	sFieldName;
+	adtValue		vValue;
 
 	// We accomplish removal by describing the table and removing any fields
 	// that do not show up in the given list
@@ -233,7 +235,7 @@ HRESULT SQL2Table :: fieldsRemove ( SQLHANDLE hConn, adtString &sName,
 	CCLOK  ( sLen = 0; )
 	CCLTRY ( sFieldName.allocate ( 255 ) );
 	CCLTRY ( SQLSTMT(hStmtCols,(SQLBindCol ( hStmtCols, 4, SQL_C_WCHAR, 
-					&sFieldName.at(), 255, &sLen ))) );
+							&sFieldName.at(), 255, &sLen ))) );
 
 	// Iterate fields
 	while (hr == S_OK && SQLFetch ( hStmtCols ) == SQL_SUCCESS)
@@ -244,7 +246,8 @@ HRESULT SQL2Table :: fieldsRemove ( SQLHANDLE hConn, adtString &sName,
 			{
 			// Drop field
 			CCLTRY ( SQLSTMT(hStmtAlter,(SQLAllocHandle ( SQL_HANDLE_STMT, hConn, &hStmtAlter ))) );
-			CCLOK ( swprintf ( pwQryBfr, L"ALTER TABLE \"%s\" DROP \"%s\"",
+			CCLOK ( swprintf ( SWPF(pwQryBfr,SIZE_SQLBFR), 
+									L"ALTER TABLE \"%s\" DROP \"%s\"",
 									(LPCWSTR)(sName), (LPCWSTR)(sFieldName) ); )
 			CCLOK	 ( OutputDebugString ( pwQryBfr ); )
 			CCLOK	 ( OutputDebugString ( L"\n" ); )
@@ -281,7 +284,7 @@ HRESULT SQL2Table :: receive ( IReceptor *pr, const WCHAR *pl,
 	HRESULT	hr = S_OK;
 
 	// Fire
-	if (prFire == pR)
+	if (_RCP(Fire))
 		{
 		HRESULT			hr			= S_OK;
 		SQLHandle		*pStmt	= NULL;
@@ -289,9 +292,9 @@ HRESULT SQL2Table :: receive ( IReceptor *pr, const WCHAR *pl,
 		// State check
 		CCLTRYE ( (hConn != NULL),		ERROR_INVALID_STATE );
 		if (hr == S_OK && sTableName.length() == 0)
-			hr = pnAttr->load ( strRefTableName, sTableName );
+			hr = pnDesc->load ( strRefTableName, sTableName );
 		CCLTRYE ( (sTableName.length() > 0),	ERROR_INVALID_STATE );
-		CCLOK	  ( pnAttr->load ( strRefRemFlds, bRemove ); )
+		CCLOK	  ( pnDesc->load ( strRefRemFlds, bRemove ); )
 
 		// Our statement handle
 		CCLTRYE	( (pStmt = new SQLHandle ( SQL_HANDLE_STMT, hConn ))
@@ -301,7 +304,7 @@ HRESULT SQL2Table :: receive ( IReceptor *pr, const WCHAR *pl,
 		// Make sure table exists.  Ok if fails, might already exist
 		if (hr == S_OK)
 			{
-			swprintf ( pwQryBfr, L"CREATE TABLE \"%s\"", (LPCWSTR) sTableName );
+			swprintf ( SWPF(pwQryBfr,SIZE_SQLBFR), L"CREATE TABLE \"%s\"", (LPCWSTR) sTableName );
 			SQLExecDirect ( pStmt->Handle, pwQryBfr, (SQLINTEGER)wcslen(pwQryBfr) );
 			}	// if
 
@@ -314,14 +317,14 @@ HRESULT SQL2Table :: receive ( IReceptor *pr, const WCHAR *pl,
 			hr = fieldsRemove ( hConn, sTableName, pFlds );
 
 		// Result
-		CCLOK ( peFire->emit ( sTableName ); )
+		CCLOK ( _EMT(Fire,sTableName); )
 
 		// Clean up
 		_RELEASE(pStmt);
 		}	// if
 
 	// Columns
-	else if (prCols == pR)
+	else if (_RCP(Columns))
 		{
 		HRESULT		hr			= S_OK;
 		SQLHandle	*pStmt	= NULL;
@@ -330,7 +333,7 @@ HRESULT SQL2Table :: receive ( IReceptor *pr, const WCHAR *pl,
 		// State check
 		CCLTRYE ( (hConn != NULL),		ERROR_INVALID_STATE );
 		if (hr == S_OK && sTableName.length() == 0)
-			hr = pnAttr->load ( strRefTableName, sTableName );
+			hr = pnDesc->load ( strRefTableName, sTableName );
 		CCLTRYE ( (sTableName.length() > 0),	ERROR_INVALID_STATE );
 
 		// Our statement handle
@@ -343,14 +346,14 @@ HRESULT SQL2Table :: receive ( IReceptor *pr, const WCHAR *pl,
 													&sTableName.at(), sTableName.length(), NULL, SQL_NTS ))) );
 
 		// Result
-		CCLOK ( peCols->emit ( adtIUnknown((phv = pStmt)) ); )
+		CCLOK ( _EMT(Columns,adtIUnknown((phv = pStmt)) ); )
 
 		// Clean up
 		_RELEASE(pStmt);
 		}	// else if
 
 	// Connection
-	else if (prConn == pR)
+	else if (_RCP(Connection))
 		{
 		adtIUnknown unkV(v);
 		adtLong		lTmp;
@@ -366,7 +369,7 @@ HRESULT SQL2Table :: receive ( IReceptor *pr, const WCHAR *pl,
 		}	// else if
 
 	// Fields
-	else if (prFlds == pR)
+	else if (_RCP(Fields))
 		{
 		adtIUnknown		unkV(v);
 
@@ -374,12 +377,12 @@ HRESULT SQL2Table :: receive ( IReceptor *pr, const WCHAR *pl,
 		_RELEASE(pFlds);
 
 		// New object
-		CCLTRY(_QISAFE(unkV,IID_IADTDictionary,&pFlds));
+		CCLTRY(_QISAFE(unkV,IID_IDictionary,&pFlds));
 		}	// else if
 
 	// Table name
-	else if (prTbl == pR)
-		hr = adtValueImpl::copy ( sTableName, adtString(v) );
+	else if (_RCP(TableName))
+		hr = adtValue::copy ( adtString(v), sTableName );
 
 	return hr;
 	}	// receive
@@ -420,7 +423,7 @@ void SQL2Table :: destruct ( void )
 	}	// destruct
 
 HRESULT SQL2Table :: fieldsAdd ( IUnknown *pConn, DBID *dbid,
-											IADTDictionary *pFlds )
+											IDictionary *pFlds )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -437,7 +440,7 @@ HRESULT SQL2Table :: fieldsAdd ( IUnknown *pConn, DBID *dbid,
 	//
 	////////////////////////////////////////////////////////////////////////
 	HRESULT				hr			= S_OK;
-	IADTInIt				*pKeys	= NULL;
+	IIt				*pKeys	= NULL;
 	IDBCreateSession	*pCreate	= NULL;
 	ITableDefinition	*pDef		= NULL;
 	adtString			sKey;
@@ -560,9 +563,9 @@ HRESULT SQL2Table :: receiveColumns ( const adtValue &v )
 	HRESULT				hr				= S_OK;
 	IDBCreateSession	*pCreate		= NULL;
 	ITableCreation		*pTbl			= NULL;
-	IADTContainer		*pCont		= NULL;
-	IADTIt				*pIt			= NULL;
-	IADTOutIt			*pOut			= NULL;
+	IContainer		*pCont		= NULL;
+	IIt				*pIt			= NULL;
+	IOutIt			*pOut			= NULL;
 	WCHAR					*pwNames		= NULL;
 	DBCOLUMNDESC		*cd			= NULL;
 	DBID					dbidIn;
@@ -594,9 +597,9 @@ HRESULT SQL2Table :: receiveColumns ( const adtValue &v )
 		}	// if
 
 	// Put the column names into a container
-	CCLTRY(COCREATEINSTANCE(CLSID_ADTList,IID_IADTContainer,&pCont));
+	CCLTRY(COCREATEINSTANCE(CLSID_ADTList,IID_IContainer,&pCont));
 	CCLTRY(pCont->iterate ( &pIt ));
-	CCLTRY(_QI(pIt,IID_IADTOutIt,&pOut));
+	CCLTRY(_QI(pIt,IID_IOutIt,&pOut));
 	for (idx = 0;hr == S_OK && idx < ord;++idx)
 		{
 		// Write next column name

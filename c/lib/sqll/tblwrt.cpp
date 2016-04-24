@@ -86,12 +86,13 @@ HRESULT SQLTableWrite::bindVariant ( SQLHANDLE hStmt, U32 uNum,
 	////////////////////////////////////////////////////////////////////////
 	HRESULT			hr						= S_OK;
 	SQLUSMALLINT	ParameterNumber	= (SQLUSMALLINT) uNum;
+	SQLPOINTER		ParameterValuePtr	= NULL;
 	SQLSMALLINT		ValueType;
 	SQLSMALLINT		ParameterType;
 	SQLUINTEGER		ColumnSize;
 	SQLSMALLINT		DecimalDigits;
-	SQLPOINTER		ParameterValuePtr;
 	SQLINTEGER		BufferLength;
+	SQLLEN			Len;
 
 	// Based on the data type we have to generate :
 	// 1 - The 'C' data type
@@ -108,13 +109,13 @@ HRESULT SQLTableWrite::bindVariant ( SQLHANDLE hStmt, U32 uNum,
 		DecimalDigits	= 0;								// Default
 		switch (pValue->sData.vtype)
 			{
-			case VALT_I4 :
+			case VTYPE_I4 :
 				ValueType			= SQL_C_ULONG;
 				ParameterType		= SQL_INTEGER;
 				ParameterValuePtr	= &(pValue->sData.vint);
 				break;
 
-			case VALT_DATE :
+			case VTYPE_DATE :
 				{
 				// Since we can only STORE dates as doubles and not LOAD dates
 				// as doubles convert to the SQL structure for compatibility.  This
@@ -151,7 +152,7 @@ HRESULT SQLTableWrite::bindVariant ( SQLHANDLE hStmt, U32 uNum,
 				}	// VALT_DATE
 				break;
 
-			case VALT_STR :
+			case VTYPE_STR :
 				ValueType			= SQL_C_WCHAR;
 				ParameterType		= SQL_WCHAR;
 				ParameterValuePtr	= (SQLPOINTER)(LPCWSTR)adtString(pValue->sData);
@@ -160,13 +161,13 @@ HRESULT SQLTableWrite::bindVariant ( SQLHANDLE hStmt, U32 uNum,
 				pValue->uSz			= SQL_NTS;
 				break;
 
-			case VALT_R4 :
+			case VTYPE_R4 :
 				ValueType			= SQL_C_FLOAT;
 				ParameterType		= SQL_FLOAT;
 				ParameterValuePtr	= &(pValue->sData.vflt);
 				break;
 
-			case VALT_R8 :
+			case VTYPE_R8 :
 				ValueType			= SQL_C_DOUBLE;
 				ParameterType		= SQL_DOUBLE;
 				ParameterValuePtr	= &(pValue->sData.vdbl);
@@ -174,7 +175,7 @@ HRESULT SQLTableWrite::bindVariant ( SQLHANDLE hStmt, U32 uNum,
 
 			// Objects are 'pre-streamed'.
 			// Obtain size of region.
-			case VALT_UNKNOWN :
+			case VTYPE_UNK :
 				{
 				// Default parameters
 				ValueType			= SQL_C_BINARY;
@@ -205,14 +206,14 @@ HRESULT SQLTableWrite::bindVariant ( SQLHANDLE hStmt, U32 uNum,
 				else if (	pValue->sData.punk != NULL &&
 								_QI(pValue->sData.punk,IID_IByteStream,&pStm) == S_OK)
 					{
-					U32	then,now;
+					U64	then,now;
 
 					// Determine size by seeking to end of stream
 					// from current position
 					CCLTRY ( pStm->seek ( 0, STREAM_SEEK_CUR, &then ) );
 					CCLTRY ( pStm->seek ( 0, STREAM_SEEK_END, &now ) );
 					CCLTRY ( pStm->seek ( then, STREAM_SEEK_SET, NULL ) );
-					CCLOK	 ( ColumnSize = now; )
+					CCLOK	 ( ColumnSize = (SQLUINTEGER)now; )
 
 					// Clean up
 					_RELEASE(pStm);
@@ -242,7 +243,8 @@ HRESULT SQLTableWrite::bindVariant ( SQLHANDLE hStmt, U32 uNum,
 									DecimalDigits,
 									ParameterValuePtr,
 									BufferLength,
-									&(pValue->uSz) ) )));
+									&Len ) )));
+	pValue->uSz = (SQLINTEGER)Len;
 
 	return hr;
 	}	// bindVariant
@@ -264,11 +266,11 @@ HRESULT SQLTableWrite :: construct ( void )
 	HRESULT		hr			= S_OK;
 
 	// Create buffer
-	CCLTRY ( COCREATEINSTANCE ( CLSID_MemoryBlock, IID_IMemoryMapped, &pBfr ));
+	CCLTRY ( COCREATE ( L"Io.MemoryBlock", IID_IMemoryMapped, &pBfr ));
 	CCLTRY ( FactCache.AddRef(); );
 
 	// Stream buffer
-	CCLTRY ( COCREATEINSTANCE ( CLSID_MemoryBlock, IID_IMemoryMapped, &pStmBfr ));
+	CCLTRY ( COCREATE ( L"Io.MemoryBlock", IID_IMemoryMapped, &pStmBfr ));
 	CCLTRY ( pStmBfr->setSize ( SIZE_STM_BUFFER ) );
 	CCLTRY ( pStmBfr->lock ( 0, 0, &pvStmBfr, NULL ) );
 
@@ -337,6 +339,8 @@ HRESULT SQLTableWrite :: putData ( SQLHANDLE hStmt, IUnknown *unkP )
 		// Copy data into SQL engine
 		while (hr == S_OK)
 			{
+			U64	szBfr;
+
 			// Read from stream
 			CCLTRY ( pStm->read ( pvStmBfr, SIZE_STM_BUFFER, &szBfr ) );
 
@@ -380,9 +384,9 @@ HRESULT SQLTableWrite :: receive ( IReceptor *pr, const WCHAR *pl,
 	HRESULT	hr = S_OK;
 
 	// Fire
-	if (prFire == pR)
+	if (_RCP(Fire))
 		{
-		IADTInIt			*pKeys		= NULL;
+		IIt				*pKeys		= NULL;
 		SQLHANDLE		hStmt			= NULL;
 		WCHAR				*pwBfr		= NULL;
 		SQLCol			*pvValues	= NULL;
@@ -394,7 +398,7 @@ HRESULT SQLTableWrite :: receive ( IReceptor *pr, const WCHAR *pl,
 		// State check
 		CCLTRYE	( (hConn != SQL_NULL_HANDLE), ERROR_INVALID_STATE );
 		if (hr == S_OK && sTableName.length() == 0)
-			hr = pnAttr->load ( strRefTableName, sTableName );
+			hr = pnDesc->load ( strRefTableName, sTableName );
 		CCLTRYE ( (sTableName.length() > 0),	ERROR_INVALID_STATE );
 		CCLTRYE	( (pFlds != NULL),				ERROR_INVALID_STATE );
 
@@ -437,7 +441,7 @@ HRESULT SQLTableWrite :: receive ( IReceptor *pr, const WCHAR *pl,
 		// Allocate and initialize SQL command string
 		CCLTRY ( pBfr->setSize ( szBfr*sizeof(WCHAR) ) );
 		CCLTRY ( pBfr->lock ( 0, 0, (PVOID *) &pwBfr, NULL ) );
-		CCLOK  ( swprintf ( pwBfr, wInsertTbl, (LPCWSTR) sTableName ); )
+		CCLOK  ( swprintf ( SWPF(pwBfr,szBfr), wInsertTbl, (LPCWSTR) sTableName ); )
 		// static WCHAR	wInsertTbl[]=	L"INSERT INTO %s (";
 
 		// SECOND PASS : Bind the parameters and continue generating the
@@ -450,20 +454,20 @@ HRESULT SQLTableWrite :: receive ( IReceptor *pr, const WCHAR *pl,
 			CCLTRY ( pFlds->load ( sKey, pvValues[kidx].sData ) );
 
 			// Next key name
-			CCLOK ( wcscat ( pwBfr, L"\"" ); )
-			CCLOK ( wcscat ( pwBfr, sKey ); )
-			CCLOK ( wcscat ( pwBfr, L"\"" ); )
+			CCLOK ( WCSCAT ( pwBfr, szBfr, L"\"" ); )
+			CCLOK ( WCSCAT ( pwBfr, szBfr, sKey ); )
+			CCLOK ( WCSCAT ( pwBfr, szBfr, L"\"" ); )
 
 			// Need comma ?
 			if (hr == S_OK && kidx+1 < nkeys)
-				wcscat ( pwBfr, L"," );
+				WCSCAT ( pwBfr, szBfr, L"," );
 
 			// If data is an object and it is a 'persistable' object, stream it to a memory block
 			// and use that as the storable item.  That way we only have
 			// 'MemoryMapped' and 'ByteStream' objects to deal with.
 			// It would have been nice to stream the object directly to the database
 			// but SQL wants the size of the blob during parameter binding.
-			if ( hr == S_OK && pvValues[kidx].sData.vtype == VALT_UNKNOWN )
+			if ( hr == S_OK && pvValues[kidx].sData.vtype == VTYPE_UNK )
 				{
 				IUnknown	*pObj = pvValues[kidx].sData.punk;
 				hr = streamObj ( pObj, &(pvValues[kidx].sData.punk) );
@@ -479,18 +483,18 @@ HRESULT SQLTableWrite :: receive ( IReceptor *pr, const WCHAR *pl,
 			}	// while
 
 		// Terminate key list
-		CCLOK ( wcscat ( pwBfr, L") VALUES (" ); )
+		CCLOK ( WCSCAT ( pwBfr, szBfr, L") VALUES (" ); )
 
 		// Add '?' for all values.  They will be bound/copied at execution time.
 		for (kidx = 0;hr == S_OK && kidx < nkeys;++kidx)
 			{
-			CCLOK ( wcscat ( pwBfr, L"?" ); )
+			CCLOK ( WCSCAT ( pwBfr, szBfr, L"?" ); )
 			if (hr == S_OK && kidx+1 < nkeys)
-				wcscat ( pwBfr, L"," );
+				WCSCAT ( pwBfr, szBfr, L"," );
 			}	// for
 
 		// Terminate value list
-		CCLOK ( wcscat ( pwBfr, L")" ); )
+		CCLOK ( WCSCAT ( pwBfr, szBfr, L")" ); )
 
 		// Execute query.  If successful the query will need our bound parameters
 	//	CCLOK ( OutputDebugString ( pwBfr ); )
@@ -537,11 +541,11 @@ HRESULT SQLTableWrite :: receive ( IReceptor *pr, const WCHAR *pl,
 		_RELEASE(pKeys);
 
 		// Result
-		peFire->emit ( v );
+		_EMT(Fire,v);
 		}	// if
 
 	// Connection
-	else if (prConn == pR)
+	else if (_RCP(Connection))
 		{
 		HRESULT		hr = S_OK;
 		adtIUnknown unkV(v);
@@ -553,16 +557,16 @@ HRESULT SQLTableWrite :: receive ( IReceptor *pr, const WCHAR *pl,
 		}	// else if
 
 	// Fields
-	else if (prFlds == pR)
+	else if (_RCP(Fields))
 		{
 		adtIUnknown unkV(v);
 		_RELEASE(pFlds);
-		hr = _QISAFE(unkV,IID_IADTDictionary,&pFlds);
+		hr = _QISAFE(unkV,IID_IDictionary,&pFlds);
 		}	// else if
 
 	// State
-	else if (prTbl == pR)
-		hr = adtValueImpl::copy ( sTableName, adtString(v) );
+	else if (_RCP(TableName))
+		hr = adtValue::copy ( adtString(v), sTableName );
 
 	return hr;
 	}	// receive
@@ -583,7 +587,7 @@ HRESULT SQLTableWrite :: streamObj ( IUnknown *pObj, IUnknown **ppUnk )
 	//
 	////////////////////////////////////////////////////////////////////////
 	HRESULT				hr				= S_OK;
-	IParseStm			*pParse		= NULL;
+	IStreamPersist		*pParse		= NULL;
 	IByteStream			*pStm			= NULL;
 
 	// Setup
@@ -591,13 +595,11 @@ HRESULT SQLTableWrite :: streamObj ( IUnknown *pObj, IUnknown **ppUnk )
 	CCLTRYE	( (pObj != NULL), E_INVALIDARG );
 
 	// Create memory stream and binary parser
-	CCLTRY	( COCREATEINSTANCEC ( FactCache, CLSID_MemoryStream,
-												IID_IByteStream, &pStm ) );
-	CCLTRY	( COCREATEINSTANCEC ( FactCache, CLSID_SysParserBin,
-												IID_IParseStm, &pParse ) );
+	CCLTRY ( COCREATE ( L"Io.MemoryStream", IID_IByteStream, &pStm ) );
+	CCLTRY ( COCREATE ( L"Io.StmPrseBin", IID_IStreamPersist, &pParse ) );
 
 	// Save object
-	CCLTRY	( pParse->valueSave ( pStm, adtIUnknown(pObj) ) );
+	CCLTRY	( pParse->save ( pStm, adtIUnknown(pObj) ) );
 	CCLTRY	( pStm->seek ( 0, STREAM_SEEK_SET, NULL ) );
 
 	// Result
@@ -708,12 +710,12 @@ HRESULT SQLTableWrite :: receiveFire ( const adtValue &v )
 	ICommandPrepare		*pCmdPrep	= NULL;
 	ICommandProperties	*pCmdProp	= NULL;
 	IAccessor				*pAccessor	= NULL;
-	IADTDictionary			*pDict		= NULL;
+	IDictionary			*pDict		= NULL;
 	IColumnsInfo			*pColInfo	= NULL;
 	IRowset					*pRowset		= NULL;
 	U8							*pcBfr		= NULL;
 	HACCESSOR				hAccessor	= NULL;
-	IADTInIt					*pKeys		= NULL;
+	IInIt					*pKeys		= NULL;
 	GUID						guidDialect	= DBGUID_DEFAULT;
 	DBPROPSET				set[1];
 	DBPROP					prop[1];
@@ -896,7 +898,7 @@ HRESULT SQLTableWrite :: receiveFields ( const adtValue &v )
 	{
 	adtIUnknown unkV(v);
 	_RELEASE(pFlds);
-	_QISAFE(unkV,IID_IADTDictionary,&pFlds);
+	_QISAFE(unkV,IID_IDictionary,&pFlds);
 	return S_OK;
 	}	// receiveFields
 

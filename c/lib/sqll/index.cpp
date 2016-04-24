@@ -82,7 +82,7 @@ HRESULT SQL2Index :: construct ( void )
 	HRESULT		hr			= S_OK;
 
 	// SQL query string buffer
-	CCLTRY ( COCREATEINSTANCE ( CLSID_MemoryBlock, IID_IMemoryMapped, &pQryBfr ) );
+	CCLTRY ( COCREATE ( L"Io.MemoryBlock", IID_IMemoryMapped, &pQryBfr ) );
 	CCLTRY ( pQryBfr->setSize ( SIZE_SQLBFR ) );
 	CCLTRY ( pQryBfr->lock ( 0, 0, (PVOID *) &pwQryBfr, NULL ) );
 
@@ -125,39 +125,38 @@ HRESULT SQL2Index :: receive ( IReceptor *pr, const WCHAR *pl,
 	HRESULT	hr = S_OK;
 
 	// Create
-	if (prCr == pR)
+	if (_RCP(Create))
 		{
 		SQLHANDLE	hStmt	= NULL;
-		IADTIt		*pIt	= NULL;
-		IADTInIt		*pIn	= NULL;
+		IIt			*pIt	= NULL;
 		adtString	sStr;
 
 		// State check
 		CCLTRYE ( (hConn != NULL),		ERROR_INVALID_STATE );
 		CCLTRYE ( pFlds != NULL,		ERROR_INVALID_STATE );
 		if (hr == S_OK && sTableName.length() == 0)
-			hr = pnAttr->load ( strRefTableName, sTableName );
+			hr = pnDesc->load ( strRefTableName, sTableName );
 		CCLTRYE ( (sTableName.length() > 0),	ERROR_INVALID_STATE );
 		if (hr == S_OK && sIndexName.length() == 0)
-			hr = pnAttr->load ( strRefIndexName, sIndexName );
+			hr = pnDesc->load ( strRefIndexName, sIndexName );
 		CCLTRYE ( (sIndexName.length() > 0),	ERROR_INVALID_STATE );
 
 		// Create index
-		CCLOK ( swprintf ( pwQryBfr, L"CREATE UNIQUE INDEX \"%s\" ON %s (",
+		CCLOK ( swprintf ( SWPF(pwQryBfr,SIZE_SQLBFR), 
+									L"CREATE UNIQUE INDEX \"%s\" ON %s (",
 									(LPCWSTR)(sIndexName), (LPCWSTR)(sTableName) ); )
 
 		// Field names
 		CCLTRY(pFlds->iterate ( &pIt ));
-		CCLTRY(_QI(pIt,IID_IADTInIt,&pIn));
-		CCLTRY(pIn->begin());
-		while (hr == S_OK && pIn->read ( sStr ) == S_OK)
+		CCLTRY(pIt->begin());
+		while (hr == S_OK && pIt->read ( sStr ) == S_OK)
 			{
 			// Add
-			CCLOK ( wcscat ( pwQryBfr, sStr ); )
-			CCLOK ( wcscat ( pwQryBfr, L"," ); )
+			CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, sStr ); )
+			CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"," ); )
 
 			// Clean up
-			pIn->next();
+			pIt->next();
 			}	// while
 
 		// Terminate
@@ -171,15 +170,14 @@ HRESULT SQL2Index :: receive ( IReceptor *pr, const WCHAR *pl,
 		SQLFREESTMT(hStmt);
 
 		// Result
-		CCLOK  ( peFire->emit ( adtInt() ); )
+		CCLOK  ( _EMT(Fire,adtInt()); )
 
 		// Clean up
-		_RELEASE(pIn);
 		_RELEASE(pIt);
 		}	// if
 
 	// Connection
-	else if (prConn == pR)
+	else if (_RCP(Connection))
 		{
 		HRESULT		hr = S_OK;
 		adtIUnknown unkV(v);
@@ -196,17 +194,17 @@ HRESULT SQL2Index :: receive ( IReceptor *pr, const WCHAR *pl,
 		}	// else if
 
 	// Fields
-	else if (prFlds == pR)
+	else if (_RCP(Fields))
 		{
 		HRESULT		hr = S_OK;
 		adtIUnknown unkV(v);
 		_RELEASE(pFlds);
-		CCLTRY(_QISAFE(unkV,IID_IADTContainer,&pFlds));
+		CCLTRY(_QISAFE(unkV,IID_IContainer,&pFlds));
 		}	// else if
 
 	// State
-	else if (prTbl == pR)
-		hr = adtValueImpl::copy ( sTableName, adtString(v) );
+	else if (_RCP(TableName))
+		hr = adtValue::copy ( adtString(v), sTableName );
 
 	return hr;
 	}	// receive

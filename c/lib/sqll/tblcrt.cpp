@@ -85,7 +85,7 @@ HRESULT SQLTableCreate :: construct ( void )
 	HRESULT		hr			= S_OK;
 
 	// Create buffer
-	CCLTRY ( COCREATEINSTANCE ( CLSID_MemoryBlock, IID_IMemoryMapped, &pBfr ));
+	CCLTRY ( COCREATE ( L"Io.MemoryBlock", IID_IMemoryMapped, &pBfr ) );
 
 	return hr;
 	}	// construct
@@ -107,7 +107,7 @@ void SQLTableCreate :: destruct ( void )
 	}	// destruct
 
 HRESULT SQLTableCreate :: fieldsAdd ( SQLHANDLE hConn, adtString &sName,
-													IADTDictionary *pFlds )
+													IDictionary *pFlds )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -123,13 +123,13 @@ HRESULT SQLTableCreate :: fieldsAdd ( SQLHANDLE hConn, adtString &sName,
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	HRESULT			hr			= S_OK;
-	SQLHANDLE		hStmt		= NULL;
-	IADTInIt			*pKeys	= NULL;
-	U32				uLen		= 0;
-	adtString		sKey;
-	adtValueImpl	vValue;
-	WCHAR				wType[31];
+	HRESULT		hr			= S_OK;
+	SQLHANDLE	hStmt		= NULL;
+	IIt			*pKeys	= NULL;
+	U32			uLen		= 0;
+	adtString	sKey;
+	adtValue		vValue;
+	WCHAR			wType[31];
 	
 	// Add each field
 	CCLTRY ( pFlds->keys ( &pKeys ) );
@@ -144,13 +144,13 @@ HRESULT SQLTableCreate :: fieldsAdd ( SQLHANDLE hConn, adtString &sName,
 			{
 			switch(vValue.vtype)
 				{
-				case VALT_I4		:	wcscpy ( wType, L"int" );			break;
-				case VALT_I8		:	wcscpy ( wType, L"bigint" );		break;
-				case VALT_R4		:	wcscpy ( wType, L"real" );			break;
-				case VALT_R8		:	wcscpy ( wType, L"double" );		break;
-				case VALT_STR		:	wcscpy ( wType, L"text" );			break;
-				case VALT_DATE		:	wcscpy ( wType, L"datetime" );	break;
-				case VALT_UNKNOWN	:	wcscpy ( wType, L"image" );		break;
+				case VTYPE_I4		:	WCSCPY ( wType, 20, L"int" );			break;
+				case VTYPE_I8		:	WCSCPY ( wType, 20, L"bigint" );		break;
+				case VTYPE_R4		:	WCSCPY ( wType, 20, L"real" );		break;
+				case VTYPE_R8		:	WCSCPY ( wType, 20, L"double" );		break;
+				case VTYPE_STR		:	WCSCPY ( wType, 20, L"text" );		break;
+				case VTYPE_DATE	:	WCSCPY ( wType, 20, L"datetime" );	break;
+				case VTYPE_UNK		:	WCSCPY ( wType, 20, L"image" );		break;
 
 				// Unhandled
 				default :
@@ -164,11 +164,11 @@ HRESULT SQLTableCreate :: fieldsAdd ( SQLHANDLE hConn, adtString &sName,
 								sKey.length()+(U32)wcslen(wType)+1)*sizeof(WCHAR); )
 		CCLTRY ( pBfr->setSize ( uLen ) );
 		CCLTRY ( pBfr->lock ( 0, 0, (PVOID *) &pwBfr, NULL ) );
-		CCLOK  ( swprintf ( pwBfr, wAddField, (LPCWSTR) sName, (LPCWSTR) sKey, wType ); )
+		CCLOK  ( swprintf ( SWPF(pwBfr,uLen), wAddField, (LPCWSTR) sName, (LPCWSTR) sKey, wType ); )
 
 		// Execute.
 		WCHAR wBfr[100];
-		swprintf ( wBfr, L"(%d/%d):", (U32)wcslen(pwBfr), uLen );
+		swprintf ( SWPF(wBfr,uLen), L"(%d/%d):", (U32)wcslen(pwBfr), uLen );
 		CCLOK	 ( OutputDebugString ( wBfr ); )
 		CCLOK	 ( OutputDebugString ( pwBfr ); )
 		CCLOK	 ( OutputDebugString ( L"\n" ); )
@@ -187,7 +187,7 @@ HRESULT SQLTableCreate :: fieldsAdd ( SQLHANDLE hConn, adtString &sName,
 	}	// fieldsAdd
 
 HRESULT SQLTableCreate :: primaryKey ( SQLHANDLE hConn, adtString &sName,
-													IADTInIt *pKeys )
+													IIt *pKeys )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -207,7 +207,7 @@ HRESULT SQLTableCreate :: primaryKey ( SQLHANDLE hConn, adtString &sName,
 	SQLHANDLE		hStmt		= NULL;
 	U32				klen,nkeys,sz;
 	adtString		sKey;
-	adtValueImpl	vValue;
+	adtValue			vValue;
 
 	// Compute the full string length of all the keys
 	CCLTRY ( SQLStringItLen ( pKeys, &nkeys, &klen ) );
@@ -219,18 +219,18 @@ HRESULT SQLTableCreate :: primaryKey ( SQLHANDLE hConn, adtString &sName,
 	CCLTRY( pBfr->lock ( 0, 0, (PVOID *) &pwBfr, NULL ) );
 
 	// Generate query string
-	CCLOK ( wcscpy ( pwBfr, L"ALTER TABLE " ); )
-	CCLOK ( wcscat ( pwBfr, sName ); )
-	CCLOK ( wcscat ( pwBfr, L" ADD PRIMARY KEY (" ); )
+	CCLOK ( WCSCPY ( pwBfr, sz, L"ALTER TABLE " ); )
+	CCLOK ( WCSCAT ( pwBfr, sz, sName ); )
+	CCLOK ( WCSCAT ( pwBfr, sz, L" ADD PRIMARY KEY (" ); )
 
 	// Add key fields
 	CCLTRY(pKeys->begin());
 	while (hr == S_OK && pKeys->read ( sKey ) == S_OK)
 		{
-		CCLTRYE	( (sKey.vtype == VALT_STR), E_UNEXPECTED );
-		CCLOK		( wcscat ( pwBfr, L"\"" ); )
-		CCLOK		( wcscat ( pwBfr, sKey ); )
-		CCLOK		( wcscat ( pwBfr, L"\"," ); )
+		CCLTRYE	( (adtValue::type(sKey) == VTYPE_STR), E_UNEXPECTED );
+		CCLOK		( WCSCAT ( pwBfr, sz, L"\"" ); )
+		CCLOK		( WCSCAT ( pwBfr, sz, sKey ); )
+		CCLOK		( WCSCAT ( pwBfr, sz, L"\"," ); )
 
 		// Next key
 		pKeys->next();
@@ -242,7 +242,7 @@ HRESULT SQLTableCreate :: primaryKey ( SQLHANDLE hConn, adtString &sName,
 	// Execute
 	WCHAR wBfr[100];
 	CCLTRY(SQLSTMT(hStmt,(SQLAllocHandle ( SQL_HANDLE_STMT, hConn, &hStmt ))) );
-	CCLOK (swprintf ( wBfr, L"(%d/%d):", (U32)wcslen(pwBfr), sz*sizeof(WCHAR) ); )
+	CCLOK (swprintf ( SWPF(wBfr,100), L"(%d/%d):", (U32)wcslen(pwBfr), (U32)(sz*sizeof(WCHAR)) ); )
 	CCLOK	(OutputDebugString ( wBfr ); )
 	CCLOK (OutputDebugString ( pwBfr ); )
 	CCLOK (OutputDebugString ( L"\n" ); )
@@ -274,12 +274,12 @@ HRESULT SQLTableCreate :: receive ( IReceptor *pr, const WCHAR *pl,
 	HRESULT	hr = S_OK;
 
 	// Fire
-	if (prFire == pR)
+	if (_RCP(Fire))
 		{
-		IADTDictionary	*pFlds	= NULL;
-		IADTContainer	*pKeys	= NULL;
-		IADTIt			*pIt		= NULL;
-		IADTInIt			*pKeysIn	= NULL;
+		IDictionary	*pFlds	= NULL;
+		IContainer	*pKeys	= NULL;
+		IIt			*pIt		= NULL;
+		IIt			*pKeysIn	= NULL;
 		adtIUnknown		unkV;
 		adtString		sTable;
 
@@ -289,12 +289,12 @@ HRESULT SQLTableCreate :: receive ( IReceptor *pr, const WCHAR *pl,
 
 		// Table properties
 		CCLTRY	( pDef->load ( strRefFields,		unkV ) );
-		CCLTRY	( _QISAFE(unkV,IID_IADTDictionary,&pFlds) );
+		CCLTRY	( _QISAFE(unkV,IID_IDictionary,&pFlds) );
 		CCLTRY	( pDef->load ( strRefTableName,	sTable ); )
 		CCLTRY	( pDef->load ( strRefPrimKey,		unkV ); )
-		CCLTRY	( _QISAFE(unkV,IID_IADTContainer,&pKeys) );
+		CCLTRY	( _QISAFE(unkV,IID_IContainer,&pKeys) );
 		CCLTRY	( pKeys->iterate ( &pIt ) );
-		CCLTRY	( _QI(pIt,IID_IADTInIt,&pKeysIn) );
+		CCLTRY	( _QI(pIt,IID_IIt,&pKeysIn) );
 
 		// Verify table exists.  If not add fields.
 		if (tableCreate ( hConn, sTable ) == S_OK)
@@ -316,11 +316,11 @@ HRESULT SQLTableCreate :: receive ( IReceptor *pr, const WCHAR *pl,
 		_RELEASE(pFlds);
 
 		// Result
-		peFire->emit ( v );
+		_EMT(Fire,v);
 		}	// if
 
 	// Connection
-	else if (prConn == pR)
+	else if (_RCP(Connection))
 		{
 		HRESULT		hr = S_OK;
 		adtIUnknown unkV(v);
@@ -332,12 +332,12 @@ HRESULT SQLTableCreate :: receive ( IReceptor *pr, const WCHAR *pl,
 		}	// else if
 
 	// Definition
-	else if (prDef == pR)
+	else if (_RCP(Definition))
 		{
 		HRESULT		hr = S_OK;
 		adtIUnknown unkV(v);
 		_RELEASE(pDef);
-		CCLTRY(_QISAFE(unkV,IID_IADTDictionary,&pDef));
+		CCLTRY(_QISAFE(unkV,IID_IDictionary,&pDef));
 		}	// else if
 
 	return hr;
@@ -372,11 +372,11 @@ HRESULT SQLTableCreate :: tableCreate ( SQLHANDLE hConn, adtString &sName )
 	CCLOK	 ( sz = ((U32)wcslen(wCreateTbl)+sName.length()+1)*sizeof(WCHAR); )
 	CCLTRY ( pBfr->setSize ( sz ) );
 	CCLTRY ( pBfr->lock ( 0, 0, (PVOID *) &pwBfr, NULL ) );
-	CCLOK  ( swprintf ( pwBfr, wCreateTbl, (LPCWSTR) sName ); )
+	CCLOK  ( swprintf ( SWPF(pwBfr,sz), wCreateTbl, (LPCWSTR) sName ); )
 
 	// Execute
 	WCHAR wBfr[100];
-	CCLOK (swprintf ( wBfr, L"(%d/%d):", (U32)wcslen(pwBfr), sz ); )
+	CCLOK (swprintf ( SWPF(wBfr,100), L"(%d/%d):", (U32)wcslen(pwBfr), sz ); )
 	CCLOK	( OutputDebugString ( wBfr ); )
 	CCLOK	( OutputDebugString ( pwBfr ); )
 	CCLOK	( OutputDebugString ( L"\n" ); )

@@ -132,14 +132,14 @@ HRESULT SQLUpdate :: receive ( IReceptor *pr, const WCHAR *pl,
 	HRESULT	hr = S_OK;
 
 	// Fire
-	if (prFire == pR)
+	if (_RCP(Fire))
 		{
-		IADTDictionary	*pDict		= NULL;
-		IADTInIt			*pKeys		= NULL;
+		IDictionary		*pDict		= NULL;
+		IIt				*pKeys		= NULL;
 		SQLHandle		*pStmt		= NULL;
 		SQLCol			*pvValues	= NULL;
 		IHaveValue		*phv;
-		adtValueImpl	vVal,vKey;
+		adtValue			vVal,vKey;
 		adtIUnknown		unkV;
 		adtString		strV;
 		U32				idx,cidx,nkeys;
@@ -148,7 +148,7 @@ HRESULT SQLUpdate :: receive ( IReceptor *pr, const WCHAR *pl,
 		// State check
 		CCLTRYE ( (hConn != NULL),					ERROR_INVALID_STATE );
 		if (hr == S_OK && sTableName.length() == 0)
-			hr = pnAttr->load ( strRefTableName, sTableName );
+			hr = pnDesc->load ( strRefTableName, sTableName );
 		CCLTRYE ( (sTableName.length() > 0),	ERROR_INVALID_STATE );
 		CCLTRYE ( pFlds != NULL,					ERROR_INVALID_STATE );
 
@@ -168,13 +168,13 @@ HRESULT SQLUpdate :: receive ( IReceptor *pr, const WCHAR *pl,
 		// Form is : UPDATE (Table) SET (Fields) WHERE (Constraints)
 
 		// UPDATE
-		CCLOK		( wcscpy ( pwQryBfr, L"UPDATE " ); )
+		CCLOK		( WCSCPY ( pwQryBfr, SIZE_SQLBFR, L"UPDATE " ); )
 
 		// Table name
-		CCLOK		( wcscat ( pwQryBfr, sTableName ); )
+		CCLOK		( WCSCAT ( pwQryBfr, SIZE_SQLBFR, sTableName ); )
 
 		// SET
-		CCLOK		( wcscat ( pwQryBfr, L" SET " ); )
+		CCLOK		( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L" SET " ); )
 
 		// Fields
 		CCLOK  ( cidx = 0; )
@@ -184,12 +184,12 @@ HRESULT SQLUpdate :: receive ( IReceptor *pr, const WCHAR *pl,
 			adtString sKey(vKey);
 
 			// State check
-			CCLTRYE ( vKey.vtype == VALT_STR, E_UNEXPECTED );
+			CCLTRYE ( adtValue::type(vKey) == VTYPE_STR, E_UNEXPECTED );
 
 			// Field name
-			CCLOK ( wcscat ( pwQryBfr, L"\"" ); )
-			CCLOK ( wcscat ( pwQryBfr, sKey ); )
-			CCLOK ( wcscat ( pwQryBfr, L"\" = ?," ); )
+			CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"\"" ); )
+			CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, sKey ); )
+			CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"\" = ?," ); )
 
 			// Value for key
 			CCLTRY( pFlds->load ( sKey, pvValues[cidx].sData ) );
@@ -220,7 +220,7 @@ HRESULT SQLUpdate :: receive ( IReceptor *pr, const WCHAR *pl,
 		if (hr == S_OK && szCons > 0)
 			{
 			// WHERE
-			CCLOK		( wcscat ( pwQryBfr, L" WHERE " ); )
+			CCLOK		( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L" WHERE " ); )
 
 			// Names, values
 			CCLOK		( idx = 0; )
@@ -229,31 +229,33 @@ HRESULT SQLUpdate :: receive ( IReceptor *pr, const WCHAR *pl,
 			while (hr == S_OK && pConsIn->read ( unkV ) == S_OK)
 				{
 				// Properties
-				CCLTRY( _QISAFE(unkV,IID_IADTDictionary,&pDict) );
+				CCLTRY( _QISAFE(unkV,IID_IDictionary,&pDict) );
 
 				// Name
 				CCLTRY( pDict->load ( strRefKey, strV ) );
-				CCLOK ( wcscat ( pwQryBfr, L"\"" ); )
-				CCLOK	( wcscat ( pwQryBfr, strV ); )
-				CCLOK ( wcscat ( pwQryBfr, L"\" " ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"\"" ); )
+				CCLOK	( WCSCAT ( pwQryBfr, SIZE_SQLBFR, strV ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"\" " ); )
 
 				// Constraint operator ( <, >, LIKE, etc. )
 				CCLTRY( pDict->load ( strRefOp, strV ) );
-				CCLOK	( wcscat ( pwQryBfr, strV ); )
+				CCLOK	( WCSCAT ( pwQryBfr, SIZE_SQLBFR, strV ); )
 				CCLOK ( bLike = (WCASECMP(strV,L"LIKE") == 0); )
 
 				// Value, bind
-				CCLOK ( wcscat ( pwQryBfr, L" ? " ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L" ? " ); )
 				CCLTRY( pDict->load ( strRefValue, pvCons[idx].sData ) );
 
 				// If the operator is 'like' and the value is a string, add the wildcards
-				if (hr == S_OK && bLike && pvCons[idx].sData.vtype == VALT_STR)
+				if (	hr == S_OK && 
+						bLike && 
+						adtValue::type(pvCons[idx].sData) == VTYPE_STR)
 					{
 					CCLTRY ( strV.allocate ( (U32)wcslen(adtString(pvCons[idx].sData)) + 2 ) );
-					CCLOK  ( wcscpy ( &strV.at(), L"%" ); )
-					CCLOK  ( wcscat ( &strV.at(), adtString(pvCons[idx].sData) ); )
-					CCLOK  ( wcscat ( &strV.at(), L"%" ); )
-					CCLTRY ( adtValueImpl::copy ( pvCons[idx].sData, strV ) );
+					CCLOK  ( WCSCPY ( &strV.at(), SIZE_SQLBFR, L"%" ); )
+					CCLOK  ( WCSCAT ( &strV.at(), SIZE_SQLBFR, adtString(pvCons[idx].sData) ); )
+					CCLOK  ( WCSCAT ( &strV.at(), SIZE_SQLBFR, L"%" ); )
+					CCLTRY ( adtValue::copy ( strV, pvCons[idx].sData ) );
 					}	// if
 				CCLTRY( SQLBindVariantParam ( pStmt->Handle, cidx+1,
 							&(pvCons[idx].sData), &(pvCons[idx].uSz) ) );
@@ -262,7 +264,7 @@ HRESULT SQLUpdate :: receive ( IReceptor *pr, const WCHAR *pl,
 
 				// Next constraint
 				if (hr == S_OK && idx < szCons)
-					wcscat ( pwQryBfr, L"AND " );
+					WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"AND " );
 				_RELEASE(pDict);
 				pConsIn->next();
 				}	// while
@@ -277,8 +279,10 @@ HRESULT SQLUpdate :: receive ( IReceptor *pr, const WCHAR *pl,
 																		(SQLINTEGER)wcslen(pwQryBfr) )));
 
 		// Result
-		if (hr == S_OK)	peFire->emit ( adtIUnknown((phv = pStmt)) );
-		else					peFail->emit ( adtInt(hr) );
+		if (hr == S_OK)
+			_EMT(Fire,adtIUnknown((phv = pStmt)));
+		else					
+			_EMT(Fail,adtInt(hr));
 
 		// Clean up
 		if (pvValues != NULL) delete[] pvValues;
@@ -287,7 +291,7 @@ HRESULT SQLUpdate :: receive ( IReceptor *pr, const WCHAR *pl,
 		}	// if
 
 	// Connection
-	else if (prConn == pR)
+	else if (_RCP(Connection))
 		{
 		HRESULT		hr = S_OK;
 		adtIUnknown unkV(v);
@@ -304,9 +308,9 @@ HRESULT SQLUpdate :: receive ( IReceptor *pr, const WCHAR *pl,
 		}	// else if
 
 	// Constraints
-	else if (prCons == pR)
+	else if (_RCP(Constraints))
 		{
-		IADTIt			*pIt		= NULL;
+		IIt			*pIt		= NULL;
 		adtIUnknown		unkV(v);
 
 		// Previous object
@@ -315,14 +319,14 @@ HRESULT SQLUpdate :: receive ( IReceptor *pr, const WCHAR *pl,
 		szCons = 0;
 
 		// New object
-		CCLTRY(_QISAFE(unkV,IID_IADTContainer,&pCons));
+		CCLTRY(_QISAFE(unkV,IID_IContainer,&pCons));
 		CCLTRY(pCons->iterate ( &pIt ));
-		CCLTRY(_QI(pIt,IID_IADTInIt,&pConsIn));
+		CCLTRY(_QI(pIt,IID_IIt,&pConsIn));
 		_RELEASE(pIt);
 		}	// else if
 
 	// Fields
-	else if (prFlds == pR)
+	else if (_RCP(Fields))
 		{
 		adtIUnknown		unkV(v);
 
@@ -330,12 +334,12 @@ HRESULT SQLUpdate :: receive ( IReceptor *pr, const WCHAR *pl,
 		_RELEASE(pFlds);
 
 		// New object
-		CCLTRY(_QISAFE(unkV,IID_IADTDictionary,&pFlds));
+		CCLTRY(_QISAFE(unkV,IID_IDictionary,&pFlds));
 		}	// else if
 
 	// Table name
-	else if (prTbl == pR)
-		hr = adtValueImpl::copy ( sTableName, adtString(v) );
+	else if (_RCP(Table))
+		hr = adtValue::copy ( adtString(v), sTableName );
 
 	return hr;
 	}	// receive

@@ -136,11 +136,11 @@ HRESULT SQLQueryRange :: genQuery ( void )
 	CCLTRY ( sQuery.allocate ( qlen ) );
 
 	// SELECT
-	CCLOK	 ( wcscpy ( &sQuery.at(), wSelect ); )
+	CCLOK	 ( WCSCPY ( &sQuery.at(), qlen, wSelect ); )
 
 	// Count queyr
 	if (hr == S_OK && bCount == true)
-		wcscat ( &sQuery.at(), wCount );
+		WCSCAT ( &sQuery.at(), qlen, wCount );
 
 	else
 		{
@@ -149,9 +149,9 @@ HRESULT SQLQueryRange :: genQuery ( void )
 		while (hr == S_OK && pFlds->read ( sFld ) == S_OK)
 			{
 			// Append
-			CCLOK ( wcscat ( &sQuery.at(), L"\"" ); )
-			CCLOK ( wcscat ( &sQuery.at(), sFld ); )
-			CCLOK ( wcscat ( &sQuery.at(), L"\"," ); )
+			CCLOK ( WCSCAT ( &sQuery.at(), qlen, L"\"" ); )
+			CCLOK ( WCSCAT ( &sQuery.at(), qlen, sFld ); )
+			CCLOK ( WCSCAT ( &sQuery.at(), qlen, L"\"," ); )
 
 			// Next field
 			pFlds->next();
@@ -162,38 +162,38 @@ HRESULT SQLQueryRange :: genQuery ( void )
 		}	// else
 
 	// FROM
-	CCLOK ( wcscat ( &sQuery.at(), wFrom ); )
+	CCLOK ( WCSCAT ( &sQuery.at(), qlen, wFrom ); )
 
 	// Table name
-	CCLOK ( wcscat ( &sQuery.at(), sTableName ); )
+	CCLOK ( WCSCAT ( &sQuery.at(), qlen, sTableName ); )
 
 	// WHERE
-	CCLOK ( wcscat ( &sQuery.at(), wWhere ); )
+	CCLOK ( WCSCAT ( &sQuery.at(), qlen, wWhere ); )
 
 	// Left range
-	CCLOK ( wcscat ( &sQuery.at(), L"\"" ); )
-	CCLOK ( wcscat ( &sQuery.at(), sKey ); )
-	CCLOK ( wcscat ( &sQuery.at(), L"\" >= ? AND \"" ); )
+	CCLOK ( WCSCAT ( &sQuery.at(), qlen, L"\"" ); )
+	CCLOK ( WCSCAT ( &sQuery.at(), qlen, sKey ); )
+	CCLOK ( WCSCAT ( &sQuery.at(), qlen, L"\" >= ? AND \"" ); )
 
 	// Right range
-	CCLOK ( wcscat ( &sQuery.at(), sKey ); )
-	CCLOK ( wcscat ( &sQuery.at(), L"\" <= ?" ); )
+	CCLOK ( WCSCAT ( &sQuery.at(), qlen, sKey ); )
+	CCLOK ( WCSCAT ( &sQuery.at(), qlen, L"\" <= ?" ); )
 
 	// Order ?
 	if	(	hr == S_OK && bCount == false && bSort == true )
 		{
-		CCLOK ( wcscat ( &sQuery.at(), wOrder ); )
-		CCLOK ( wcscat ( &sQuery.at(), L"\"" ); )
-		CCLOK ( wcscat ( &sQuery.at(), sKey ); )
-		CCLOK ( wcscat ( &sQuery.at(), L"\"" ); )
-		CCLOK ( wcscat ( &sQuery.at(), L" ASC" ); )
+		CCLOK ( WCSCAT ( &sQuery.at(), qlen, wOrder ); )
+		CCLOK ( WCSCAT ( &sQuery.at(), qlen, L"\"" ); )
+		CCLOK ( WCSCAT ( &sQuery.at(), qlen, sKey ); )
+		CCLOK ( WCSCAT ( &sQuery.at(), qlen, L"\"" ); )
+		CCLOK ( WCSCAT ( &sQuery.at(), qlen, L" ASC" ); )
 		}	// if
 
 	// Debug
 	if (hr == S_OK)
 		{
 		WCHAR wBfr[100];
-		swprintf ( wBfr, L"(%d/%d):", (U32)sQuery.length(), qlen );
+		swprintf ( SWPF(wBfr,100), L"(%d/%d):", (U32)sQuery.length(), qlen );
 		CCLOK	 ( OutputDebugString ( wBfr ); )
 		CCLOK	 ( OutputDebugString ( sQuery ); )
 		CCLOK	 ( OutputDebugString ( L"\n" ); )
@@ -221,7 +221,7 @@ HRESULT SQLQueryRange :: receive ( IReceptor *pr, const WCHAR *pl,
 	HRESULT	hr = S_OK;
 
 	// Fire
-	if (prFire == pR)
+	if (_RCP(Fire))
 		{
 		SQLHandle	*pStmt	= NULL;
 		IHaveValue	*phv;
@@ -248,14 +248,14 @@ HRESULT SQLQueryRange :: receive ( IReceptor *pr, const WCHAR *pl,
 		CCLTRY ( SQLSTMT(pStmt->Handle,SQLExecDirect ( pStmt->Handle, &sQuery.at(), sQuery.length() )));
 
 		// Result
-		CCLOK ( peFire->emit ( adtIUnknown((phv = pStmt)) ); )
+		CCLOK ( _EMT(Fire,adtIUnknown((phv = pStmt)) ); )
 
 		// Clean up
 		_RELEASE(pStmt);
 		}	// if
 
 	// Connection
-	else if (prConn == pR)
+	else if (_RCP(Connection))
 		{
 		HRESULT		hr = S_OK;
 		adtIUnknown unkV(v);
@@ -270,16 +270,16 @@ HRESULT SQLQueryRange :: receive ( IReceptor *pr, const WCHAR *pl,
 		}	// else if
 
 	// State
-	else if (prL == pR)
+	else if (_RCP(Left))
 		{
-		adtValueImpl::copy ( vLeft, v );
+		adtValue::copy ( v, vLeft );
 
 		// Query will need to be regenerated
 		sQuery.at(0) = WCHAR('\0');
 		}	// else if
-	else if (prR == pR)
+	else if (_RCP(Right))
 		{
-		adtValueImpl::copy ( vRight, v );
+		adtValue::copy ( v, vRight );
 
 		// Query will need to be regenerated
 		sQuery.at(0) = WCHAR('\0');
@@ -306,32 +306,32 @@ HRESULT SQLQueryRange :: validate ( void )
 
 	// Table name
 	if (hr == S_OK && sTableName.length() == 0)
-		CCLTRY(pnAttr->load ( strRefTableName, sTableName ));
+		CCLTRY(pnDesc->load ( strRefTableName, sTableName ));
 	CCLTRYE	( (sTableName.length() > 0), ERROR_INVALID_STATE );
 
 	// Key name
 	if (hr == S_OK && sKey.length() == 0)
-		CCLTRY(pnAttr->load ( strRefKey, sKey ));
+		CCLTRY(pnDesc->load ( strRefKey, sKey ));
 	CCLTRYE	( (sKey.length() > 0), ERROR_INVALID_STATE );
 
 	// Count query ?
-	if (hr == S_OK) pnAttr->load ( strRefCount, bCount );
+	if (hr == S_OK) pnDesc->load ( strRefCount, bCount );
 
 	// Sort ?
-	CCLOK ( pnAttr->load ( strRefSort, bSort ); )
+	CCLOK ( pnDesc->load ( strRefSort, bSort ); )
 
 	// Fields specified ?
 	if (hr == S_OK && bCount == false && pFlds == NULL)
 		{
-		IADTContainer	*pCont	= NULL;
-		IADTIt			*pIt		= NULL;
+		IContainer		*pCont	= NULL;
+		IIt				*pIt		= NULL;
 		adtIUnknown		unkV;
 
 		// Obtain field list, expecting list of strings
-		CCLTRY(pnAttr->load ( strRefFields, unkV ));
-		CCLTRY(_QISAFE(unkV,IID_IADTContainer,&pCont));
+		CCLTRY(pnDesc->load ( strRefFields, unkV ));
+		CCLTRY(_QISAFE(unkV,IID_IContainer,&pCont));
 		CCLTRY(pCont->iterate ( &pIt ));
-		CCLTRY(_QI(pIt,IID_IADTInIt,&pFlds));
+		CCLTRY(_QI(pIt,IID_IIt,&pFlds));
 
 		// Clean up
 		_RELEASE(pIt);
@@ -341,18 +341,18 @@ HRESULT SQLQueryRange :: validate ( void )
 		}	// if
 
 	// Ranges specified ?
-	if (hr == S_OK && adtValueImpl::empty ( vLeft ) == true)
-		hr = pnAttr->load ( strRefLeft, vLeft );
-	CCLTRYE	( adtValueImpl::empty ( vLeft ) == false,		ERROR_INVALID_STATE );
-	if (hr == S_OK && adtValueImpl::empty ( vRight ) == true)
-		hr = pnAttr->load ( strRefRight, vRight );
-	CCLTRYE	( adtValueImpl::empty ( vRight ) == false,	ERROR_INVALID_STATE );
-	CCLTRYE	( vLeft.vtype == vRight.vtype,					E_INVALIDARG );
+	if (hr == S_OK && adtValue::empty ( vLeft ) == true)
+		hr = pnDesc->load ( strRefLeft, vLeft );
+	CCLTRYE	( adtValue::empty ( vLeft ) == false,		ERROR_INVALID_STATE );
+	if (hr == S_OK && adtValue::empty ( vRight ) == true)
+		hr = pnDesc->load ( strRefRight, vRight );
+	CCLTRYE	( adtValue::empty ( vRight ) == false,	ERROR_INVALID_STATE );
+	CCLTRYE	( vLeft.vtype == vRight.vtype,			E_INVALIDARG );
 
 	// Valid range types
-	CCLTRYE	(	vLeft.vtype == VALT_I4	||		vLeft.vtype == VALT_I8 ||
-					vLeft.vtype == VALT_R4	||		vLeft.vtype == VALT_R8 ||
-					vLeft.vtype == VALT_STR	||		vLeft.vtype == VALT_DATE,
+	CCLTRYE	(	vLeft.vtype == VTYPE_I4		||		vLeft.vtype == VTYPE_I8 ||
+					vLeft.vtype == VTYPE_R4		||		vLeft.vtype == VTYPE_R8 ||
+					vLeft.vtype == VTYPE_STR	||		vLeft.vtype == VTYPE_DATE,
 					E_INVALIDARG );
 
 	return hr;

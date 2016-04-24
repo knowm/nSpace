@@ -95,18 +95,16 @@ HRESULT SQLQueryKey :: initializeFields ( void )
 	//
 	////////////////////////////////////////////////////////////////////////
 	HRESULT			hr			= S_OK;
-	IADTContainer	*pCont	= NULL;
-	IADTInIt			*pIn		= NULL;
-	IADTIt			*pIt		= NULL;
+	IContainer		*pCont	= NULL;
+	IIt				*pIt		= NULL;
 	adtIUnknown		unkV;
 	adtString		sFld;
 	U32				idx;
 
 	// Fields
-	CCLTRY(pnAttr->load ( strRefFields, unkV ));
-	CCLTRY(_QISAFE(unkV,IID_IADTContainer,&pCont));
+	CCLTRY(pnDesc->load ( strRefFields, unkV ));
+	CCLTRY(_QISAFE(unkV,IID_IContainer,&pCont));
 	CCLTRY(pCont->iterate ( &pIt ));
-	CCLTRY(_QI(pIt,IID_IADTInIt,&pIn));
 
 	// Allocate name objects
 	CCLTRY	(pCont->size ( &uNumFlds ));
@@ -114,19 +112,18 @@ HRESULT SQLQueryKey :: initializeFields ( void )
 
 	// Copy names
 	CCLOK		(idx = 0;)
-	CCLTRY	(pIn->begin());
-	while (hr == S_OK && idx < uNumFlds && pIn->read ( sFld ) == S_OK)
+	CCLTRY	(pIt->begin());
+	while (hr == S_OK && idx < uNumFlds && pIt->read ( sFld ) == S_OK)
 		{
 		// Copy
-		CCLTRYE	( (sFld.vtype == VALT_STR), E_UNEXPECTED );
+		CCLTRYE	( (adtValue::type(sFld) == VTYPE_STR), E_UNEXPECTED );
 		CCLOK		( pFlds[idx++] = sFld; )
 
 		// Next key
-		pIn->next();
+		pIt->next();
 		}	// while
 
 	// Clean up
-	_RELEASE(pIn);
 	_RELEASE(pIt);
 	_RELEASE(pCont);
 
@@ -144,19 +141,17 @@ HRESULT SQLQueryKey :: initializeKeys ( void )
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	HRESULT			hr			= S_OK;
-	IADTContainer	*pCont	= NULL;
-	IADTInIt			*pIn		= NULL;
-	IADTIt			*pIt		= NULL;
-	adtIUnknown		unkV;
-	adtString		sKey;
-	U32				idx;
+	HRESULT		hr			= S_OK;
+	IContainer	*pCont	= NULL;
+	IIt			*pIt		= NULL;
+	adtIUnknown	unkV;
+	adtString	sKey;
+	U32			idx;
 
 	// Keys
-	CCLTRY(pnAttr->load ( strRefKey, unkV ));
-	CCLTRY(_QISAFE(unkV,IID_IADTContainer,&pCont));
+	CCLTRY(pnDesc->load ( strRefKey, unkV ));
+	CCLTRY(_QISAFE(unkV,IID_IContainer,&pCont));
 	CCLTRY(pCont->iterate ( &pIt ));
-	CCLTRY(_QI(pIt,IID_IADTInIt,&pIn));
 
 	// Allocate key name objects
 	CCLTRY	(pCont->size ( &uNumKeys ));
@@ -164,22 +159,21 @@ HRESULT SQLQueryKey :: initializeKeys ( void )
 
 	// Copy key names
 	CCLOK		(idx = 0;)
-	CCLTRY	(pIn->begin());
-	while (hr == S_OK && idx < uNumKeys && pIn->read ( sKey ) == S_OK)
+	CCLTRY	(pIt->begin());
+	while (hr == S_OK && idx < uNumKeys && pIt->read ( sKey ) == S_OK)
 		{
 		// Copy
-		CCLTRYE	( (sKey.vtype == VALT_STR), E_UNEXPECTED );
+		CCLTRYE	( (adtValue::type(sKey) == VTYPE_STR), E_UNEXPECTED );
 		CCLOK		( pKeys[idx++] = sKey; )
 
 		// Next key
-		pIn->next();
+		pIt->next();
 		}	// while
 
 	// Allocate binding array to match size of keys
 	CCLTRYE	((pKeyBinds = new SQLCol[uNumKeys]) != NULL, E_OUTOFMEMORY);
 
 	// Clean up
-	_RELEASE(pIn);
 	_RELEASE(pIt);
 	_RELEASE(pCont);
 
@@ -202,7 +196,7 @@ HRESULT SQLQueryKey :: initializeQuery ( void )
 
 	// State check
 	CCLTRYE	( (hConn != SQL_NULL_HANDLE), ERROR_INVALID_STATE );
-	CCLTRY	( pnAttr->load ( strRefTableName, sTableName ) );
+	CCLTRY	( pnDesc->load ( strRefTableName, sTableName ) );
 	CCLTRYE	( sTableName.length() > 0, ERROR_INVALID_STATE );
 
 	// Initialize keys and fields
@@ -231,28 +225,28 @@ HRESULT SQLQueryKey :: initializeQuery ( void )
 	CCLTRY( sQuery.allocate ( uQuerySz ); )
 
 	// Prepare string
-	CCLOK	( wcscpy ( &sQuery.at(), L"SELECT " ); )
+	CCLOK	( WCSCPY ( &sQuery.at(), uQuerySz, L"SELECT " ); )
 	for (idx = 0;hr == S_OK && idx < uNumFlds;++idx)
 		{
-		CCLOK ( wcscat ( &sQuery.at(), L"\"" ); )
-		CCLOK ( wcscat ( &sQuery.at(), pFlds[idx] ); )
-		CCLOK ( wcscat ( &sQuery.at(), L"\"," ); )
+		CCLOK ( WCSCAT ( &sQuery.at(), uQuerySz, L"\"" ); )
+		CCLOK ( WCSCAT ( &sQuery.at(), uQuerySz, pFlds[idx] ); )
+		CCLOK ( WCSCAT ( &sQuery.at(), uQuerySz, L"\"," ); )
 		}	// for
 	CCLOK ( sQuery.at(sQuery.length()-1) = WCHAR('\0'); )
-	CCLOK ( wcscat ( &sQuery.at(), L" FROM " ); )
-	CCLOK ( wcscat ( &sQuery.at(), sTableName ); )
-	CCLOK ( wcscat ( &sQuery.at(), L" WHERE " ); )
+	CCLOK ( WCSCAT ( &sQuery.at(), uQuerySz, L" FROM " ); )
+	CCLOK ( WCSCAT ( &sQuery.at(), uQuerySz, sTableName ); )
+	CCLOK ( WCSCAT ( &sQuery.at(), uQuerySz, L" WHERE " ); )
 	for (idx = 0;hr == S_OK && idx < uNumKeys;++idx)
 		{
-		CCLOK ( wcscat ( &sQuery.at(), L"\"" ); )
-		CCLOK ( wcscat ( &sQuery.at(), pKeys[idx] ); )
-		CCLOK ( wcscat ( &sQuery.at(), L"\" = ?" ); )
+		CCLOK ( WCSCAT ( &sQuery.at(), uQuerySz, L"\"" ); )
+		CCLOK ( WCSCAT ( &sQuery.at(), uQuerySz, pKeys[idx] ); )
+		CCLOK ( WCSCAT ( &sQuery.at(), uQuerySz, L"\" = ?" ); )
 		if (hr == S_OK && idx+1 < uNumKeys)
-			wcscat ( &sQuery.at(), L" AND " );
+			WCSCAT ( &sQuery.at(), uQuerySz, L" AND " );
 		}	// for
 	// Debug
 	WCHAR wBfr[100];
-	swprintf ( wBfr, L"(%d/%d):", (U32)sQuery.length(), uQuerySz );
+	swprintf ( SWPF(wBfr,100), L"(%d/%d):", (U32)sQuery.length(), uQuerySz );
 	CCLOK	 ( OutputDebugString ( wBfr ); )
 	CCLOK	 ( OutputDebugString ( sQuery ); )
 	CCLOK	 ( OutputDebugString ( L"\n" ); )
@@ -279,7 +273,7 @@ HRESULT SQLQueryKey :: receive ( IReceptor *pr, const WCHAR *pl,
 	HRESULT	hr = S_OK;
 
 	// Fire
-	if (prFire == pR)
+	if (_RCP(Fire))
 		{
 		SQLHandle	*pStmt	= NULL;
 		IHaveValue	*phv;
@@ -308,7 +302,7 @@ HRESULT SQLQueryKey :: receive ( IReceptor *pr, const WCHAR *pl,
 								&sQuery.at(), sQuery.length() )));
 
 		// Result
-		CCLOK  ( peFire->emit ( adtIUnknown((phv = pStmt)) ); )
+		CCLOK  ( _EMT(Fire,adtIUnknown((phv = pStmt)) ); )
 
 		// Clean up
 		_RELEASE(pStmt);
@@ -316,16 +310,16 @@ HRESULT SQLQueryKey :: receive ( IReceptor *pr, const WCHAR *pl,
 		}	// if
 
 	// Key
-	else if (prKey == pR)
+	else if (_RCP(Key))
 		{
-		IADTDictionary	*pDict	= NULL;
-		IADTInIt			*pKeysIn	= NULL;
-		IADTIt			*pIt		= NULL;
-		adtIUnknown		unkV(v);
-		U32				idx;
+		IDictionary	*pDict	= NULL;
+		IIt			*pKeysIn	= NULL;
+		IIt			*pIt		= NULL;
+		adtIUnknown	unkV(v);
+		U32			idx;
 
 		// State check
-		CCLTRY(_QISAFE(unkV,IID_IADTDictionary,&pDict));
+		CCLTRY(_QISAFE(unkV,IID_IDictionary,&pDict));
 
 		// Node properties initialized ?
 		if (hr == S_OK && pKeys == NULL)
@@ -346,7 +340,7 @@ HRESULT SQLQueryKey :: receive ( IReceptor *pr, const WCHAR *pl,
 		}	// else if
 
 	// Connection
-	else if (prConn == pR)
+	else if (_RCP(Connection))
 		{
 		HRESULT		hr = S_OK;
 		adtIUnknown unkV(v);
