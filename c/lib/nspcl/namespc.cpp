@@ -356,7 +356,6 @@ HRESULT Namespace :: get ( const WCHAR *wPath, ADTVALUE &vGet,
 		if (hr == S_OK && pDct->load ( strName, vAt ) != S_OK)
 			{
 			bool			bFolder	= false;
-			adtString	strDesc;
 
 			// Need new 'at'
 			CCLOK ( adtValue::clear ( vAt ); )
@@ -434,49 +433,10 @@ HRESULT Namespace :: get ( const WCHAR *wPath, ADTVALUE &vGet,
 				_RELEASE(pDctSub);
 				}	// if
 
-			// To support auto instancing :
-			// If no reference is specified, determine if the current path 
-			// represents a valid definition, if it does the graph
-			// will be instanced at the next name.
+			// If no reference has been encountered yet, assume valid path ?.
+			// TODO: Fix creation of invalid empty paths.
 			if (hr == S_OK && !bRef && !bRefGet)
-				{
-				// Obtain path to what would be a the reference
-				CCLTRY ( adtValue::copy ( strPath, strDesc ) );
-				CCLTRY ( strDesc.prepend ( LOC_NSPC_REF ) );
-				CCLTRY ( get ( strDesc, v, NULL ) );
-
-				// Expecting a dictionary
-				if (	hr == S_OK &&
-						(IUnknown *)(NULL) != (unkV=v) &&
-						_QI(unkV,IID_IDictionary,&pDctSub) == S_OK )
-					{
-					HRESULT		hrd	= S_OK;
-					adtString	strType;
-
-					// Does layer have a reference value ?
-					hrd = pDctSub->load ( strnRefRef, v );
-
-					// If last string in path, reference layer must exist
-					if (hrd != S_OK && (i+1) == cnt)
-						hr = ERROR_NOT_FOUND;
-
-					// Reference to use is path up to this point
-					else if (hrd == S_OK)
-						{
-						CCLTRY ( adtValue::copy ( strPath, strRef ) );
-						CCLOK  ( bRef = true; )
-						CCLOK  ( bInst = true; )
-						}	// else if
-
-					}	// if
-
-				// Reference path up to this point exists so assume current path
-				// will be valid.
-				CCLOK  ( bFolder = true; )
-
-				// Clean up
-				_RELEASE(pDctSub);
-				}	// if
+				bFolder = true;
 
 			// If a reference is specified, allow creation at arbitrary locations,
 			// so prepare path to instance by creating locations as needed.
@@ -502,35 +462,49 @@ HRESULT Namespace :: get ( const WCHAR *wPath, ADTVALUE &vGet,
 				}	// if
 
 			}	// if
-/*
-		// Auto-instancing:  Check for valid reference.
-		if (hr == S_OK && !bRef && !bRefGet)
+
+		// To support auto instancing :
+		// If no reference is specified and not at last name, 
+		// determine if the current path 
+		// represents a valid definition, if it does the graph
+		// will be instanced at the next name.
+		if (hr == S_OK && !bRef && !bRefGet && (i+1) < cnt)
 			{
-			adtString	strPathRef;
+			adtString	strDesc;
 
 			// Obtain path to what would be a the reference
-			CCLTRY ( adtValue::copy ( strPath, strPathRef ) );
-			CCLTRY ( strPathRef.prepend ( LOC_NSPC_REF ) );
+			CCLTRY ( adtValue::copy ( strPath, strDesc ) );
+			CCLTRY ( strDesc.prepend ( LOC_NSPC_REF ) );
+			CCLTRY ( get ( strDesc, v, NULL ) );
 
-			// Is current path a reference layer ?
-			if (	hr == S_OK													&&
-					get ( strPathRef, v, NULL ) == S_OK					&&
-					(IUnknown *)(NULL) != (unkV = v)						&&
-					_QI(unkV,IID_IDictionary,&pDctSub) == S_OK		&&
-					pDctSub->load ( strnRefRef, v ) == S_OK)
+			// Expecting a dictionary
+			if (	hr == S_OK &&
+					(IUnknown *)(NULL) != (unkV=v) &&
+					_QI(unkV,IID_IDictionary,&pDctSub) == S_OK )
 				{
-				// Reference found
-				CCLTRY ( adtValue::copy ( strPath, strRef ) );
-				CCLOK  ( bRef = true; )
-				CCLOK  ( bInst = true; )
+				HRESULT		hrd	= S_OK;
+				adtString	strType;
+
+				// Does layer have a reference value ?
+				hrd = pDctSub->load ( strnRefRef, v );
+
+				// If last string in path, reference layer must exist
+				if (hrd != S_OK && (i+1) == cnt)
+					hr = ERROR_NOT_FOUND;
+
+				// Reference to use is path up to this point
+				else if (hrd == S_OK)
+					{
+					CCLTRY ( adtValue::copy ( strPath, strRef ) );
+					CCLOK  ( bRef = true; )
+					CCLOK  ( bInst = true; )
+					}	// else if
+
 				}	// if
-				
+
 			// Clean up
 			_RELEASE(pDctSub);
 			}	// if
-*/
-		// Once a valid reference has been 'passed' auto-instancing is no longer valid.
-//		if (hr == S_OK && bInst && bRef)
 
 		// Clean up
 		_RELEASE(pDct);
