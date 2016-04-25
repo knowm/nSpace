@@ -372,6 +372,10 @@ HRESULT image_save ( IDictionary *pImg, const WCHAR *pwLoc )
 	// OpenCV needs ASCII
 	CCLTRY ( strLoc.toAscii ( &paLoc ) );
 
+	// DEBUG
+//	CCLOK ( invert ( *pmImg, *pmImg ); )
+//	CCLOK ( bitwise_not ( *pmImg, *pmImg ); )
+
 	// 'imwrite' does not seem to work, OpenCV is so flaky
 	//	TODO: Replace with own PNG,BMP,etc persistence
 	CCLOK ( cvSaveImage ( paLoc, &(IplImage(*pmImg)) ); )
