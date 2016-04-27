@@ -82,9 +82,6 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		{
 		IDictionary		*pDctUse = NULL;
 
-		// Debug
-		DWORD dwThen = GetTickCount();
-
 		// Was an image previously specified ?
 		CCLOK ( pDctUse = pDctImg; )
 		_ADDREF(pDctUse);
@@ -98,10 +95,6 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 
 		// Execute
 		CCLTRY ( image_fft ( pDctUse, bZeroDC ) );
-
-		// Debug
-		DWORD dwNow = GetTickCount();
-		dbgprintf ( L"FFT::Fire:%d ms\r\n", (dwNow-dwThen) );
 
 		// Result
 //		if (hr != S_OK)

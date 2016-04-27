@@ -344,7 +344,7 @@ class Debug :
 	// Run-time data
 	adtString	strMsg;									// Parameters
 	adtString	strPath;									// Namespace path to this node
-	U32			dwT0;										// Start time
+	adtLong		lRst,lFreq;								// Reset time
 	IDictionary	*pDctLog;								// Logging dictionary
 
 	// CCL

@@ -24,6 +24,13 @@ Debug :: Debug ( void )
 	//
 	////////////////////////////////////////////////////////////////////////
 	pDctLog	= NULL;
+
+	// Windows specific performance frequency
+	#ifdef	_WIN32
+	LARGE_INTEGER	li;
+	QueryPerformanceFrequency ( &li );
+	lFreq = li.QuadPart;
+	#endif
 	}	// Debug
 
 void Debug :: appendDbg ( const WCHAR *pwStr )
@@ -374,15 +381,22 @@ HRESULT Debug :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	else if (_RCP(Reset))
 		{
 		#ifdef	_WIN32
-		dwT0 = GetTickCount();
+		LARGE_INTEGER lCnt;
+		QueryPerformanceCounter ( &lCnt );
+		lRst = lCnt.QuadPart;
 		#endif
 //		dbgprintf ( L"MiscDebug::%s:%d\r\n", (LPCWSTR)strMsg, dwT0 );
 		}	// else if
 	else if (_RCP(Mark))
 		{
 		#ifdef	_WIN32
-		DWORD	dwT1 = GetTickCount();
-		dbgprintf ( L"MiscDebug::%s:%d ms\r\n", (LPCWSTR)strMsg, (dwT1-dwT0) );//, dwT1, dwT0 );
+		LARGE_INTEGER lCnt;
+		QueryPerformanceCounter ( &lCnt );
+
+		// Compute difference
+		double
+		dt = ((lCnt.QuadPart-lRst) * 1.0) / lFreq;
+		dbgprintf ( L"MiscDebug::%s:%g s\r\n", (LPCWSTR)strMsg, dt );//, dwT1, dwT0 );
 		#endif
 		}	// else if
 	else
