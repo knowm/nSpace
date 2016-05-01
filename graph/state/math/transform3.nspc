@@ -1,0 +1,33 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%							TRANSFORM3.NSPC
+%
+%			State definition for a 3D transformation
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Actions
+	$	Initialize			Misc.Dist {}		% Initialize
+
+	% Subgraph: Scale components
+	#	Scale											State/Math/Tuple3/ {}
+%	$	Scale Npsc.Value { Value { X 0.0:double Y 0.0:double Z 0.0:double } }
+
+	% Subgraph: Rotate components
+	#	Rotate										State/Math/Tuple3/ {}
+
+	% Subgraph: Translate components
+	#	Translate									State/Math/Tuple3/ {}
+
+	% MISCN: Default scale
+	$	ValueSclDef Misc.Dist { Value 1:double }
+		!	Initialize/OnFire						ValueSclDef/Fire
+		!	ValueSclDef/OnFire					Scale/A1/Fire
+		!	ValueSclDef/OnFire					Scale/A2/Fire
+		!	ValueSclDef/OnFire					Scale/A3/Fire
+
+	% NSPC: Update of components complete
+	$	Update Nspc.Value {}
+

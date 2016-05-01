@@ -1,0 +1,15 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								TUPLE3.NSPC
+%
+%								A 3-tuple.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% MISCN: Each value in tuple
+	$	A1 Nspc.Value { Value 0:double }
+	$	A2 Nspc.Value { Value 0:double }
+	$	A3 Nspc.Value { Value 0:double }
+
