@@ -1,0 +1,52 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								AUTO.NSPC
+%
+%				Auto instance based on USB devices.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+	$	Descriptor			Misc.Dist {}		% Auto instance descriptor
+
+	% Actions
+	$	Initialize			Misc.Dist {}		% Initialize
+	$	Uninitialize		Misc.Dist {}		% Uninitialize
+	$	Scan					Misc.Dist {}		% Scan for devices
+
+	% Notifications
+	$	OnInstance			Misc.Dist {}		% Graph instanced
+
+	% DEBUG
+	$	Debug Misc.Debug {}
+
+	%%%%%%%%
+	% Setup
+	%%%%%%%%
+
+	% Subgraph: Enumeration
+	#	Enum											Lib/Comm/Usb/Enum/ {}
+
+	% Enumerate devices
+	!	Scan/OnFire									Enum/First/Fire
+
+	%%%%%%%%%%%
+	% Instance
+	%%%%%%%%%%%
+
+	%% Descriptor dictionary contains vendor, product, and instance prefix.
+
+	% ADTN: Load the product and vendor Id
+	$	LoadEnumKeys Adt.Keys { Keys ( IdVendor IdProduct ) }
+		!	Enum/OnNext/OnFire					LoadEnumKeys/Dictionary
+		!	Enum/OnNext/OnFire					LoadEnumKeys/Load
+		!	LoadEnumKeys/OnIdVendor				Debug/Fire
+		!	LoadEnumKeys/OnIdProduct			Debug/Fire
+
+	%% Check for a descriptor entry
+
+	% Proceed to next device
+	!	Enum/OnNext/OnFire						Enum/Next/Fire
+

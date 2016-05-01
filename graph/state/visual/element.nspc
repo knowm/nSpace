@@ -21,7 +21,7 @@
 	$	Visible Nspc.Value { Value true:bool }
 
 	% Subgraph: Input for element
-	#	Input											State/Visual/Input/Element/ {}
+%	#	Input											State/Visual/Input/Element/ {}
 
 	% Subgraph: Drag/drop support
 	#	DragDrop										State/Visual/DragDrop/ {}

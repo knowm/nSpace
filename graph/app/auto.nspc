@@ -30,6 +30,16 @@
 		!	Initialize/OnFire						CreateFileSrc/Fire
 
 	%%%%%%%%%%%%%%
+	% Enumeration
+	%%%%%%%%%%%%%%
+
+	% Subgraph: Enumeration
+	#	Enum											Lib/Comm/Usb/Enum/ {}
+		!	Enum/OnNext/OnFire					Debug/Fire
+		!	Enum/OnNext/OnFire					Enum/Next/Fire
+		!	Enum/OnEnd/OnFire						Debug/Fire
+
+	%%%%%%%%%%%%%%
 	% USB Raw I/O
 	%%%%%%%%%%%%%%
 

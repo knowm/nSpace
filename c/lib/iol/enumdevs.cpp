@@ -181,7 +181,6 @@ HRESULT EnumDevices :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE 
 			pDetail->cbSize	= sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA);
 			memset ( &didata, 0, sizeof(didata) );
 			didata.cbSize		= sizeof(didata);
-			didata.cbSize		= sizeof(didata);
 			hr = (sdgdid ( hEnum, &ifdata, pDetail,
 								sz, NULL, &didata) == TRUE) ? S_OK : GetLastError();
 			}	// if
@@ -214,7 +213,7 @@ HRESULT EnumDevices :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE 
 
 		// Access device registry key
 		if (hr == S_OK && (hKey = sdodrk ( hEnum, &didata, DICS_FLAG_GLOBAL, 0,
-														DIREG_DEV, KEY_QUERY_VALUE )) != NULL)
+								DIREG_DEV, KEY_QUERY_VALUE )) != INVALID_HANDLE_VALUE)
 			{
 			WCHAR	wName[255];
 

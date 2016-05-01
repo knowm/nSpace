@@ -36,6 +36,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "record", "record", "{83A86A
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{8A6113B8-46B6-46BC-9F17-0EDC02FF5EA6}"
 	ProjectSection(SolutionItems) = preProject
+		..\graph\lib\ordered_list.nspc = ..\graph\lib\ordered_list.nspc
 		..\graph\lib\sync_value_q.nspc = ..\graph\lib\sync_value_q.nspc
 		..\graph\lib\sync_value_qa.nspc = ..\graph\lib\sync_value_qa.nspc
 	EndProjectSection
@@ -50,7 +51,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "comm", "comm", "{F3C3B639-4
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "usb", "usb", "{61445C3B-660C-4937-B736-3CD2B0F35A58}"
 	ProjectSection(SolutionItems) = preProject
+		..\graph\lib\comm\usb\auto.nspc = ..\graph\lib\comm\usb\auto.nspc
+		..\graph\lib\comm\usb\enum.nspc = ..\graph\lib\comm\usb\enum.nspc
 		..\graph\lib\comm\usb\open_by_id.nspc = ..\graph\lib\comm\usb\open_by_id.nspc
+		..\graph\lib\comm\usb\raw.nspc = ..\graph\lib\comm\usb\raw.nspc
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "network", "network", "{28385124-81B3-481C-A669-0B261946ACB4}"
@@ -91,8 +95,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "namespace", "namespace", "{
 		..\graph\lib\namespace\client.nspc = ..\graph\lib\namespace\client.nspc
 		..\graph\lib\namespace\service.nspc = ..\graph\lib\namespace\service.nspc
 	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "driver", "driver", "{80092055-29F3-48FF-B851-E10B9573E29C}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nsh.2015", "app\nsh\nsh.2015.vcxproj", "{14EDC47C-C44C-4821-B32D-DFC49FF00F67}"
 EndProject
@@ -168,6 +170,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "interface", "interface", "{
 		..\graph\state\interface\image.nspc = ..\graph\state\interface\image.nspc
 		..\graph\state\interface\label.nspc = ..\graph\state\interface\label.nspc
 		..\graph\state\interface\list.nspc = ..\graph\state\interface\list.nspc
+		..\graph\state\interface\value.nspc = ..\graph\state\interface\value.nspc
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "visual", "visual", "{1E75DF97-E505-48FA-B6BA-416097A4BEE2}"
@@ -504,7 +507,6 @@ Global
 		{790404EC-635B-4797-8F52-F1D45345FE5A} = {F082C111-2D5D-4BC9-B57A-17D1F3C921CC}
 		{5CFBA96B-9923-43AD-AEA6-3958D0D106BA} = {790404EC-635B-4797-8F52-F1D45345FE5A}
 		{10AC39FC-B398-48A3-9C9C-95A4E07D9A48} = {8A6113B8-46B6-46BC-9F17-0EDC02FF5EA6}
-		{80092055-29F3-48FF-B851-E10B9573E29C} = {6136E7F7-76C9-492D-A32C-36C14EF0DE79}
 		{14EDC47C-C44C-4821-B32D-DFC49FF00F67} = {EBE57489-1CFE-49BE-A830-8A8C171803DE}
 		{8D6E6DC8-BFC1-4D67-8B35-25A94C97BCEB} = {4560AF12-FA84-49FA-94E4-19CB5A898DF0}
 		{D46D1142-2F9F-4CAF-8764-F7D8BAE80FFD} = {4560AF12-FA84-49FA-94E4-19CB5A898DF0}

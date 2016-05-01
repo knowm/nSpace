@@ -1,0 +1,87 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								ENUM.NSPC
+%
+%				USB device enumeration graph.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+
+	% Actions
+	$	Initialize			Misc.Dist {}		% Initialize
+	$	Uninitialize		Misc.Dist {}		% Uninitialize
+	$	First					Misc.Dist {}		% Enumerate first device
+	$	Next					Misc.Dist {}		% Enumerate next dvice
+
+	% Notifications
+	$	OnNext				Misc.Dist {}		% Device found
+	$	OnEnd					Misc.Dist {}		% End of enumeration
+
+	% DEBUG
+	$	Debug Misc.Debug {}
+
+	%%%%%%%%
+	% Setup
+	%%%%%%%%
+
+	% MISCN: Create file stream source
+	$	CreateFileSrc Misc.Create { Id Io.StmSrcFile }
+		!	Initialize/OnFire						CreateFileSrc/Fire
+
+	%%%%%%%%%%%%
+	% Enumerate
+	%%%%%%%%%%%%
+
+	% ION: Enumerator (GUID_DEVINTERFACE_USB_DEVICE)
+	$	EnumDev Io.EnumDevices { Class "{A5DCBF10-6530-11D2-901F-00C04FB951ED}" }
+		!	Initialize/OnFire						EnumDev/First
+%		!	EnumDev/OnNext							Debug/Fire
+
+	%% Device stream
+
+	% ION: Access an asynchronous stream for the device path
+	$	DevStmSrc Io.StreamSource { Options { ReadOnly false:bool Async true:bool } }
+		!	CreateFileSrc/OnFire					DevStmSrc/Source
+		!	EnumDev/OnNext							DevStmSrc/Location
+		!	EnumDev/OnNext							DevStmSrc/Open
+
+	% ION: Close stream to device
+	$	DevStmCl Io.Resource {}
+		!	DevStmSrc/OnOpen						DevStmCl/Resource
+
+	% Cannot access stream, proceed to next device
+	!	DevStmSrc/OnError							EnumDev/Next
+
+	%% USB Device information
+
+	% USBN: Obtain the information about the device
+	$	DevUsb Usb.Device {}
+		!	DevStmSrc/OnOpen						DevUsb/Stream
+		!	DevStmSrc/OnOpen						DevUsb/Open
+
+	% Error access USB device, proceed to next device
+	!	DevUsb/OnError								EnumDev/Next
+
+	% ADTN: Store queried information with device
+	$	StoreInfo Adt.Store { Key Info }
+		!	DevUsb/OnDevice						StoreInfo/Dictionary
+		!	DevUsb/OnQuery							StoreInfo/Fire
+
+	% Query information about device
+	!	DevUsb/OnDevice							DevUsb/Query
+
+	% Notify, close device before notification so it can be used immediately
+	!	StoreInfo/OnFire							DevUsb/Close
+	!	StoreInfo/OnFire							DevStmCl/Close
+	!	StoreInfo/OnFire							OnNext/Fire
+
+	% Next device	
+	!	DevStmSrc/OnOpen							DevUsb/Close
+	!	DevStmSrc/OnOpen							DevStmCl/Close
+
+	% Next/end
+	!	Next/OnFire									EnumDev/Next
+	!	EnumDev/OnEnd								OnEnd/Fire

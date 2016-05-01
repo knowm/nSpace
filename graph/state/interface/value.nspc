@@ -1,0 +1,13 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%							VALUE.NSPC
+%
+%			State definition for a generic value element.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Subgraph: Interface element
+	#	Element										State/Interface/Element/ {}
+

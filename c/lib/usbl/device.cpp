@@ -87,12 +87,12 @@ HRESULT Device :: receive ( IReceptor *pr, const WCHAR *pl,
 	// Open device
 	if (_RCP(Open))
 		{
-		HANDLE							hDev		= INVALID_HANDLE_VALUE;
-		IDictionary						*pDev		= NULL;
-		adtIUnknown						unkV(v);
-		adtValue							vL;
-		USB_DEVICE_DESCRIPTOR		udd;
-		ULONG								nx;
+		HANDLE						hDev		= INVALID_HANDLE_VALUE;
+		IDictionary					*pDev		= NULL;
+		adtIUnknown					unkV(v);
+		adtValue						vL;
+		USB_DEVICE_DESCRIPTOR	udd;
+		ULONG							nx;
 
 		// State check
 		CCLTRYE ( hIntf == INVALID_HANDLE_VALUE, ERROR_INVALID_STATE );
