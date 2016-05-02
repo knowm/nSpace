@@ -1,18 +1,17 @@
 ////////////////////////////////////////////////////////////////////////
 //
-//									FFT.CPP
+//									THRESH.CPP
 //
-//				Implementation of the image FFT node.
+//				Implementation of the image threshold node.
 //
 ////////////////////////////////////////////////////////////////////////
 
-#define	INITGUID
 #include "imagel_.h"
 #include <stdio.h>
 
 // Globals
 
-FFT :: FFT ( void )
+Threshold :: Threshold ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -21,10 +20,11 @@ FFT :: FFT ( void )
 	//
 	////////////////////////////////////////////////////////////////////////
 	pImg	= NULL;
-	bZeroDC	= false;
-	}	// FFT
+	adtValue::clear(vMin);
+	adtValue::clear(vMax);
+	}	// Threshold
 
-HRESULT FFT :: onAttach ( bool bAttach )
+HRESULT Threshold :: onAttach ( bool bAttach )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -45,9 +45,9 @@ HRESULT FFT :: onAttach ( bool bAttach )
 		{
 		adtValue		vL;
 
-		// Defaults
-		if (pnDesc->load ( adtString(L"ZeroDC"), vL ) == S_OK)
-			bZeroDC = adtBool(vL);
+		// Defaults (optional)
+		pnDesc->load ( adtString(L"Minimum"), vMin );
+		pnDesc->load ( adtString(L"Maximum"), vMax );
 		}	// if
 
 	// Detach
@@ -60,7 +60,7 @@ HRESULT FFT :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Threshold :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -81,6 +81,7 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	if (_RCP(Fire))
 		{
 		IDictionary	*pImgUse = NULL;
+		cv::Mat		*pMat		= NULL;
 		adtValue		vL;
 
 		// Image to use
@@ -92,42 +93,16 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		else
 			pImgUse->AddRef();
 
-		//
-		// Perform calculation based on matrix type
-		//
-		/*
-		// OpenCl
-		if (hr == S_OK && pImgUse->load ( adtString(L"cv::ocl::oclMat"), vL ) == S_OK)
-			{
-			cv::ocl::oclMat	*pMat = NULL;
+		// Wrap CV matrix around image bits
+		CCLTRY ( image_to_mat ( pImgUse, &pMat ) );
 
-			// Extract matrix
-			CCLTRYE ( (pMat = (cv::ocl::oclMat *)(U64)adtLong(vL)) != NULL, E_INVALIDARG );
-
-			// Execute
-			CCLTRY ( image_fft ( pMat, true, bZeroDC ) );
-			}	// if
-
-		// CPU
-		else 
-			{
-			cv::Mat		*pMat		= NULL;
-
-			// CPU matrix required at a minimum
-			CCLTRY ( pImgUse->load ( adtString(L"cv::Mat"), vL ) );
-			CCLTRYE ( (pMat = (cv::Mat *)(U64)adtLong(vL)) != NULL, E_INVALIDARG );
-
-			// Execute
-			CCLTRY ( image_fft ( pMat, true, bZeroDC ) );
-			}	// else
-		*/
-
-		// Perform FFT
-		CCLTRY ( image_fft ( pImgUse, bZeroDC ) );
+		// Threshold in any of the specified directions
+		if (hr == S_OK && !adtValue::empty(vMin))
+			cv::threshold ( *pMat, *pMat, adtDouble(vMin), 0, cv::THRESH_TOZERO );
+		if (hr == S_OK && !adtValue::empty(vMax))
+			cv::threshold ( *pMat, *pMat, adtDouble(vMax), 0, cv::THRESH_TRUNC );
 
 		// Result
-//		if (hr != S_OK)
-//			dbgprintf ( L"FFT::Write:hr 0x%x, I/O %d/%d\r\n", hr, uLeft, (U32)iSzIo );
 		if (hr == S_OK)
 			_EMT(Fire,adtIUnknown(pImgUse));
 		else
@@ -144,6 +119,10 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		_RELEASE(pImg);
 		_QISAFE(unkV,IID_IDictionary,&pImg);
 		}	// else if
+	else if (_RCP(Minimum))
+		adtValue::copy ( v, vMin );
+	else if (_RCP(Maximum))
+		adtValue::copy ( v, vMax );
 	else
 		hr = ERROR_NO_MATCH;
 

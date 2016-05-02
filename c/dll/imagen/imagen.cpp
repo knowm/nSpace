@@ -17,8 +17,11 @@ CCL_OBJLIST_BEGIN()
 	// Objects
 
 	// Nodes
+	CCL_OBJLIST_ENTRY	(Binary)
 	CCL_OBJLIST_ENTRY	(FFT)
 	CCL_OBJLIST_ENTRY	(PersistImage)
+	CCL_OBJLIST_ENTRY	(Prepare)
+	CCL_OBJLIST_ENTRY	(Threshold)
 
 CCL_OBJLIST_END()
 

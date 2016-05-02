@@ -17,11 +17,11 @@
 2534d010-8628-11d2-868c-006008addfed				//	CLSID_GnuPlot (plotl)
 2534d011-8628-11d2-868c-006008addfed				//	CLSID_FFT (imagel)
 2534d012-8628-11d2-868c-006008addfed				// CLSID_Persist (imagel)
-2534d013-8628-11d2-868c-006008addfed				//
-2534d014-8628-11d2-868c-006008addfed				// 
+2534d013-8628-11d2-868c-006008addfed				// CLSID_Prepare (imagel)
+2534d014-8628-11d2-868c-006008addfed				// CLSID_Threshold (imagel)
 2534d015-8628-11d2-868c-006008addfed				// IID_IBehaviour (nspcl)
 2534d016-8628-11d2-868c-006008addfed				// CLSID_Queue (adtl)
-2534d017-8628-11d2-868c-006008addfed				// 
+2534d017-8628-11d2-868c-006008addfed				// CLSID_Binary (imagel)
 2534d018-8628-11d2-868c-006008addfed				// 
 2534d019-8628-11d2-868c-006008addfed				// 
 2534d01a-8628-11d2-868c-006008addfed				// IID_IObjectFactory (ccl)

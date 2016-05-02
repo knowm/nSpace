@@ -23,9 +23,12 @@
     <ClInclude Include="imagel_.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="binary.cpp" />
     <ClCompile Include="fft.cpp" />
     <ClCompile Include="opencv.cpp" />
     <ClCompile Include="persist.cpp" />
+    <ClCompile Include="prepare.cpp" />
+    <ClCompile Include="thresh.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1B31354E-F3FE-445F-9D65-BC410F50B2B0}</ProjectGuid>
@@ -79,13 +82,13 @@
     <IncludePath>$(SDK_OPENCV)\Include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SDK_OPENCV)\Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SDK_OPENCV_x64)\Include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(SDK_OPENCV)\Include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SDK_OPENCV)\Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SDK_OPENCV_x64)\Include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

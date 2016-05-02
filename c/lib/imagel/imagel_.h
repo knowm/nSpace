@@ -13,8 +13,21 @@
 #include "imagel.h"
 #include "../../lib/nspcl/nspcl.h"
 
-// External API
-//#include <winusb.h>
+// OpenCV
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/gpu/gpu.hpp>
+#include <opencv2/ocl/ocl.hpp>
+
+// Operations
+#define	MATHOP_NOP		-1
+
+// Arithmetic
+#define	MATHOP_ADD		1
+#define	MATHOP_SUB		2
+#define	MATHOP_MUL		3
+#define	MATHOP_DIV		4
 
 ///////////
 // Objects
@@ -24,6 +37,39 @@
 /////////
 // Nodes
 /////////
+
+//
+// Class - Binary.  Perform a binary operation involving images.
+//
+
+class Binary :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	Binary ( void );										// Constructor
+
+	// Run-time data
+	adtValue		vL,vR;									// Parameters
+	int			iOp;										// Math operation
+
+	// CCL
+	CCL_OBJECT_BEGIN(Binary)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Left)
+	DECLARE_RCP(Right)
+	DECLARE_EMT(Error)
+	BEGIN_BEHAVIOUR()
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Left)
+		DEFINE_RCP(Right)
+		DEFINE_EMT(Error)
+	END_BEHAVIOUR_NOTIFY()
+	};
 
 //
 // Class - FFT.  FFT processing node.
@@ -37,7 +83,7 @@ class FFT :
 	FFT ( void );											// Constructor
 
 	// Run-time data
-	IDictionary	*pDctImg;								// Image dictionary
+	IDictionary	*pImg;									// Image dictionary
 	adtBool		bZeroDC;									// Zero DC component
 
 	// CCL
@@ -91,8 +137,81 @@ class PersistImage :
 	END_BEHAVIOUR_NOTIFY()
 	};
 
+//
+// Class - Prepare.  Image preparation for processing.
+//
+
+class Prepare :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	Prepare ( void );										// Constructor
+
+	// Run-time data
+	IDictionary	*pImg;									// Image dictionary
+	bool			bCuda,bOcl;								// Cuda/OpenCl enabled
+
+	// CCL
+	CCL_OBJECT_BEGIN(Prepare)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_RCP(Image)
+	DECLARE_CON(Download)
+	DECLARE_CON(Upload)
+	DECLARE_EMT(Error)
+	BEGIN_BEHAVIOUR()
+		DEFINE_RCP(Image)
+		DEFINE_CON(Download)
+		DEFINE_CON(Upload)
+		DEFINE_EMT(Error)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
+//
+// Class - Threshold.  Thresholding node.
+//
+
+class Threshold :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	Threshold ( void );									// Constructor
+
+	// Run-time data
+	IDictionary	*pImg;									// Image dictionary
+	adtValue		vMin,vMax;								// Minimum/maximum thresholds
+
+	// CCL
+	CCL_OBJECT_BEGIN(Threshold)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Image)
+	DECLARE_EMT(Error)
+	DECLARE_RCP(Minimum)
+	DECLARE_RCP(Maximum)
+	BEGIN_BEHAVIOUR()
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Image)
+		DEFINE_EMT(Error)
+		DEFINE_RCP(Minimum)
+		DEFINE_RCP(Maximum)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
 // Prototypes
-HRESULT image_fft		( IDictionary *, bool );
-HRESULT image_save	( IDictionary *, const WCHAR * );
+HRESULT image_fft			( IDictionary *, bool );
+HRESULT image_fft			( cv::Mat *, bool = false, bool = false );
+HRESULT image_fft			( cv::ocl::oclMat *, bool = false, bool = false );
+HRESULT image_from_mat	( cv::Mat *, IDictionary * );
+HRESULT image_load		( const WCHAR *, IDictionary * );
+HRESULT image_save		( IDictionary *, const WCHAR * );
+HRESULT image_to_mat		( IDictionary *, cv::Mat ** );
 
 #endif

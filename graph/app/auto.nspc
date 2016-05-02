@@ -29,15 +29,69 @@
 	$	CreateFileSrc Misc.Create { Id Io.StmSrcFile }
 		!	Initialize/OnFire						CreateFileSrc/Fire
 
+	%%%%%%%%%%%%%%%%%%%%%%%
+	% Image processing/GPU
+	%%%%%%%%%%%%%%%%%%%%%%%
+
+	% MISCN: Create dictionary to receive information	
+	$	CreateImgDct Misc.Create { Id Adt.Dictionary }
+		!	Initialize/OnFire						CreateImgDct/Fire
+
+	% MISCN: Location of test image
+	$	ValueImgLoc Misc.Dist { Value "C:/Oct/Alazar_vs_SP/Alazar_Ethernet/Alignment/Raw/OCT_1.png" }
+		!	Initialize/OnFire						ValueImgLoc/Fire
+
+	% IMAGEN: Load test image
+	$	LoadPng Image.PersistImage {}
+		!	CreateImgDct/OnFire					LoadPng/Image
+		!	ValueImgLoc/OnFire					LoadPng/Location
+		!	ValueImgLoc/OnFire					LoadPng/Load
+		!	LoadPng/OnLoad							Debug/Fire
+
+	% IMAGEN: Upload from dictionary into image processing logic
+	$	Prepare Image.Prepare {}
+		!	LoadPng/OnLoad							Prepare/Upload
+
+	% IMAGEN: Perform FFT
+	$	FFT Image.FFT {}
+		!	Prepare/OnUpload						FFT/Fire
+		!	FFT/OnFire								Debug/Fire
+
+	% IMAGEN: Magnitude(FFT)
+%	$	Mag Image.Unary { Op Magnitude }
+
+	% IMAGEN: Magnitude(FFT)
+%	$	Mag Image.Magnitude {}
+%		!	FFT/OnFire								Mag/Fire
+
+	% IMAGEN: Log10(Magnitude(FFT))
+%	$	Log Image.Unary { Op Unary }
+
+	% IMAGEN: Log10(Magnitude(FFT))
+%	$	Log Image.Log {}
+%		!	Mag/OnFire								Log/Fire
+
+	% IMAGEN: 20*Log10(Magnitude(FFT))
+%	$	Scale Image.Binary { Left 20.0:float Op Mult }
+%		!	Log/OnFire								Scale/Right
+%		!	Log/OnFire								Scale/Fire
+
+	% IMAGEN: Active threshold (dB)
+	$	Thresh Image.Threshold { Minimum 15:float Maximum 50:float }
+		!	FFT/OnFire								Thresh/Fire
+
+	% Download from image processing logic into image
+	!	Thresh/OnFire								Prepare/Download
+
 	%%%%%%%%%%%%%%
 	% Enumeration
 	%%%%%%%%%%%%%%
 
 	% Subgraph: Enumeration
-	#	Enum											Lib/Comm/Usb/Enum/ {}
-		!	Enum/OnNext/OnFire					Debug/Fire
-		!	Enum/OnNext/OnFire					Enum/Next/Fire
-		!	Enum/OnEnd/OnFire						Debug/Fire
+%	#	Enum											Lib/Comm/Usb/Enum/ {}
+%		!	Enum/OnNext/OnFire					Debug/Fire
+%		!	Enum/OnNext/OnFire					Enum/Next/Fire
+%		!	Enum/OnEnd/OnFire						Debug/Fire
 
 	%%%%%%%%%%%%%%
 	% USB Raw I/O

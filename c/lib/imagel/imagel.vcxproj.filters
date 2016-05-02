@@ -32,5 +32,14 @@
     <ClCompile Include="persist.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="prepare.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="thresh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="binary.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

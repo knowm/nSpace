@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////
 //
-//									PersistImage.CPP
+//									BINARY.CPP
 //
-//				Implementation of the image PersistImageence node.
+//				Implementation of the binary operation image node.
 //
 ////////////////////////////////////////////////////////////////////////
 
@@ -11,7 +11,7 @@
 
 // Globals
 
-PersistImage :: PersistImage ( void )
+Binary :: Binary ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -19,11 +19,12 @@ PersistImage :: PersistImage ( void )
 	//		-	Constructor for the object
 	//
 	////////////////////////////////////////////////////////////////////////
-	pDctImg	= NULL;
-	strLoc	= L"";
-	}	// PersistImage
+	iOp = MATHOP_ADD;
+	adtValue::clear(vL);
+	adtValue::clear(vR);
+	}	// Binary
 
-HRESULT PersistImage :: onAttach ( bool bAttach )
+HRESULT Binary :: onAttach ( bool bAttach )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -44,22 +45,21 @@ HRESULT PersistImage :: onAttach ( bool bAttach )
 		{
 		adtValue		vL;
 
-		// Defaults
-		if (pnDesc->load ( adtString(L"Location"), vL ) == S_OK)
-			adtValue::toString ( vL, strLoc );
+		// Defaults (optional)
+		pnDesc->load ( adtString(L"Left"), vL );
+		pnDesc->load ( adtString(L"Rightt"), vR );
 		}	// if
 
 	// Detach
 	else
 		{
 		// Shutdown
-		_RELEASE(pDctImg);
 		}	// else
 
 	return hr;
 	}	// onAttach
 
-HRESULT PersistImage :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Binary :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -76,49 +76,16 @@ HRESULT PersistImage :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE
 	////////////////////////////////////////////////////////////////////////
 	HRESULT	hr = S_OK;
 
-	// Load
-	if (_RCP(Load))
+	// Execute
+	if (_RCP(Fire))
 		{
-		// State check
-		CCLTRYE ( (pDctImg != NULL), ERROR_INVALID_STATE );
-		CCLTRYE ( strLoc.length() > 0, ERROR_INVALID_STATE );
-
-		// Load image from source
-		CCLTRY ( image_load ( strLoc, pDctImg ) );
-
-		// Result
-		if (hr == S_OK)
-			_EMT(Load,adtIUnknown(pDctImg));
-		else
-			_EMT(Error,adtInt(hr));
-		}	// if
-
-	// Save
-	else if (_RCP(Save))
-		{
-		// State check
-		CCLTRYE ( (pDctImg != NULL), ERROR_INVALID_STATE );
-		CCLTRYE ( strLoc.length() > 0, ERROR_INVALID_STATE );
-
-		// Save image to destination
-		CCLTRY ( image_save ( pDctImg, strLoc ) );
-
-		// Result
-		if (hr == S_OK)
-			_EMT(Save,adtIUnknown(pDctImg));
-		else
-			_EMT(Error,adtInt(hr));
 		}	// else if
 
 	// State
-	else if (_RCP(Image))
-		{
-		adtIUnknown	unkV(v);
-		_RELEASE(pDctImg);
-		_QISAFE(unkV,IID_IDictionary,&pDctImg);
-		}	// else if
-	else if (_RCP(Location))
-		hr = adtValue::toString ( v, strLoc );
+	else if (_RCP(Left))
+		adtValue::copy ( v, vL );
+	else if (_RCP(Right))
+		adtValue::copy ( v, vR );
 	else
 		hr = ERROR_NO_MATCH;
 

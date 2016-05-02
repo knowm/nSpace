@@ -69,18 +69,22 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <LibraryPath>$(SDK_OPENCV)\x86\vc11\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SDK_OPENCV)\Include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <LibraryPath>$(SDK_OPENCV)\x64\vc11\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SDK_OPENCV_x64)\x64\vc11\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SDK_OPENCV_x64)\Include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <LibraryPath>$(SDK_OPENCV)\x86\vc11\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SDK_OPENCV)\Include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <LibraryPath>$(SDK_OPENCV)\x64\vc11\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SDK_OPENCV_x64)\x64\vc11\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SDK_OPENCV_x64)\Include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -115,7 +119,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <RegisterOutput>true</RegisterOutput>
       <ModuleDefinitionFile>..\dll.def</ModuleDefinitionFile>
-      <AdditionalDependencies>opencv_core2411.lib;opencv_imgproc2411.lib;opencv_gpu2411.lib;opencv_highgui2411.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_core2411.lib;opencv_imgproc2411.lib;opencv_gpu2411.lib;opencv_highgui2411.lib;opencv_ocl2411.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -159,7 +163,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <RegisterOutput>true</RegisterOutput>
       <ModuleDefinitionFile>..\dll.def</ModuleDefinitionFile>
-      <AdditionalDependencies>opencv_core2411.lib;opencv_imgproc2411.lib;opencv_gpu2411.lib;opencv_highgui2411.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_core2411.lib;opencv_imgproc2411.lib;opencv_gpu2411.lib;opencv_highgui2411.lib;opencv_ocl2411.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
