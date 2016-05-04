@@ -208,7 +208,7 @@ class Threshold :
 // Prototypes
 HRESULT image_fft			( IDictionary *, bool );
 HRESULT image_fft			( cv::Mat *, bool = false, bool = false );
-HRESULT image_fft			( cv::ocl::oclMat *, bool = false, bool = false );
+//HRESULT image_fft			( cv::ocl::oclMat *, bool = false, bool = false );
 HRESULT image_from_mat	( cv::Mat *, IDictionary * );
 HRESULT image_load		( const WCHAR *, IDictionary * );
 HRESULT image_save		( IDictionary *, const WCHAR * );

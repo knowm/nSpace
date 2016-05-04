@@ -139,7 +139,7 @@ HRESULT image_fft ( cv::Mat *pMat, bool bRows, bool bZeroDC )
 
 	return hr;
 	}	// image_fft
-
+/*
 HRESULT image_fft ( cv::ocl::oclMat *pMat, bool bRows, bool bZeroDC )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -249,7 +249,7 @@ HRESULT image_fft ( cv::ocl::oclMat *pMat, bool bRows, bool bZeroDC )
 
 	return hr;
 	}	// image_fft
-
+*/
 HRESULT image_fft ( IDictionary *pImg, bool bZeroDC )
 	{
 	////////////////////////////////////////////////////////////////////////
