@@ -84,6 +84,7 @@
 		!	AltSetting/OnFire						DevUSB/Setting
 		!	DevStmSrc/OnOpen						DevUSB/Stream
 		!	DevStmSrc/OnOpen						DevUSB/Open
+		!	Close/OnFire							DevUSB/Close
 		!	DevUSB/OnDevice						Debug/Fire
 		!	DevUSB/OnQuery							Debug/Fire
 

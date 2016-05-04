@@ -80,7 +80,7 @@ HRESULT Threshold :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v
 	// Execute
 	if (_RCP(Fire))
 		{
-		IDictionary	*pImgUse = NULL;
+		IDictionary	*pImgUse = pImg;
 		cv::Mat		*pMat		= NULL;
 		adtValue		vL;
 

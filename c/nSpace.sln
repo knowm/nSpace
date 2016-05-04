@@ -178,6 +178,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "interface", "interface", "{
 		..\graph\state\interface\image.nspc = ..\graph\state\interface\image.nspc
 		..\graph\state\interface\label.nspc = ..\graph\state\interface\label.nspc
 		..\graph\state\interface\list.nspc = ..\graph\state\interface\list.nspc
+		..\graph\state\interface\value.nspc = ..\graph\state\interface\value.nspc
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "visual", "visual", "{AB2EA968-E6B6-4C78-9489-CF3137A4C694}"

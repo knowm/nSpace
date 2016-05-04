@@ -80,7 +80,7 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	// Execute
 	if (_RCP(Fire))
 		{
-		IDictionary	*pImgUse = NULL;
+		IDictionary	*pImgUse = pImg;
 		adtValue		vL;
 
 		// Image to use
