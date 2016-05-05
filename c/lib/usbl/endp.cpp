@@ -267,7 +267,7 @@ HRESULT Endpoint :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v 
 			uXfer = (uLeft < iSzPkt) ? uLeft : iSzPkt;
 
 			// Read from endpoint.
-			CCLTRY ( pktIo ( FALSE, iSzPkt, 5000, &uXfer ) );
+			CCLTRY ( pktIo ( FALSE, uXfer, 5000, &uXfer ) );
 
 			// Write to destination stream
 			CCLTRY ( pStmIo->write ( pcBfrPkt, uXfer, NULL ) );

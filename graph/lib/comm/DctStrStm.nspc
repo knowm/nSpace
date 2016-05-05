@@ -18,10 +18,7 @@
 	$	OnStream				Misc.Dist {}		% Stream
 
 	% DEBUG
-	$	Debug Misc.Debug { Message "DCT_STR_STM" }
-%		!	Dictionary/Fire						Debug/Fire
-%		!	OnSize/Fire								Debug/Fire
-%		!	OnStream/Fire							Debug/Fire
+	$	Debug Misc.Debug {}
 
 	%%%%%%%%%
 	% String
@@ -32,13 +29,14 @@
 		!	Format/OnFire							FmtStr/Format
 		!	Dictionary/OnFire						FmtStr/Dictionary
 		!	Dictionary/OnFire						FmtStr/Fire
+		!	FmtStr/OnFire							Debug/Fire
 
 	% MATHN: Append optional terminator
-	$ AppendTerm Math.Binary { Right "" }
+	$ AppendTerm Math.Binary { Right "" Op Add }
 		!	Terminate/OnFire						AppendTerm/Right
 		!	FmtStr/OnFire							AppendTerm/Left
-		!	FmtStr/OnFire							AppendTerm/Add
-		!	AppendTerm/OnFire						Debug/Fire
+		!	FmtStr/OnFire							AppendTerm/Fire
+%		!	AppendTerm/OnFire						Debug/Fire
 
 	%%%%%%%%%	
 	% Stream

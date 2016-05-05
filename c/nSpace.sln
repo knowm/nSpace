@@ -88,6 +88,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "comm", "comm", "{F3C3B639-4
 		..\graph\lib\comm\DctStm.nspc = ..\graph\lib\comm\DctStm.nspc
 		..\graph\lib\comm\DctStrStm.nspc = ..\graph\lib\comm\DctStrStm.nspc
 		..\graph\lib\comm\StmDct.nspc = ..\graph\lib\comm\StmDct.nspc
+		..\graph\lib\comm\StmStrDct.nspc = ..\graph\lib\comm\StmStrDct.nspc
 		..\graph\lib\comm\StrMemStm.nspc = ..\graph\lib\comm\StrMemStm.nspc
 	EndProjectSection
 EndProject

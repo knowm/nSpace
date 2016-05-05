@@ -1,0 +1,50 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%									StmStrDct.nspc
+%
+%			Convert a stream into a string, then parse the string
+%			into a dictionary.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+	$	Format				Misc.Dist {}		% Format specification
+	$	Stream				Misc.Dist {}		% Stream to parse
+	$	Terminate			Misc.Dist {}		% Terminator for string
+
+	% Notifications
+	$	OnDict				Misc.Dist {}		% Parsed dictionary
+
+	% DEBUG
+%	$	Debug Misc.Debug {}
+
+	%%%%%%%%%
+	% String
+	%%%%%%%%%
+
+	% MISCN: Convert stream into string up to terminator
+	$	StmStr Misc.StringStream {}
+		!	Terminate/OnFire						StmStr/Terminate
+		!	Stream/OnFire							StmStr/Stream
+		!	Stream/OnFire							StmStr/From
+%		!	StmStr/OnFire							Debug/Fire
+
+	%%%%%%%%%%%%%
+	% Dictionary
+	%%%%%%%%%%%%%
+
+	% MISCN: Create a dictionary to receive result
+	$	CreatePrsDct Misc.Create { Id Adt.Dictionary }
+		!	StmStr/OnFire							CreatePrsDct/Fire
+
+	% MISCN: Parse string into dictionary
+	$	PrsStr Misc.StringParse {}
+		!	Format/OnFire							PrsStr/Format
+		!	CreatePrsDct/OnFire					PrsStr/Dictionary
+		!	StmStr/OnFire							PrsStr/String
+		!	StmStr/OnFire							PrsStr/Fire
+
+	% Result
+	!	PrsStr/OnFire								OnDict/Fire

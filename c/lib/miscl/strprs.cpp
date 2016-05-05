@@ -120,6 +120,7 @@ HRESULT StringParse :: parseString ( IUnknown *pSpecs,
 
 				// Store
 				CCLOK ( strRes = &(pwStr[(*stridx)]); )
+				CCLOK ( strRes.at(); )
 
 				// Restore character and move to next block
 				pwStr[(*stridx)+iSz]	= wTmp;
