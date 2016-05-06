@@ -20,8 +20,9 @@ FFT :: FFT ( void )
 	//		-	Constructor for the object
 	//
 	////////////////////////////////////////////////////////////////////////
-	pImg	= NULL;
+	pImg		= NULL;
 	bZeroDC	= false;
+	pWnd		= NULL;
 	}	// FFT
 
 HRESULT FFT :: onAttach ( bool bAttach )
@@ -48,6 +49,8 @@ HRESULT FFT :: onAttach ( bool bAttach )
 		// Defaults
 		if (pnDesc->load ( adtString(L"ZeroDC"), vL ) == S_OK)
 			bZeroDC = adtBool(vL);
+		if (pnDesc->load ( adtString(L"Window"), vL ) == S_OK)
+			adtValue::toString ( vL, strWnd );
 		}	// if
 
 	// Detach
@@ -55,6 +58,11 @@ HRESULT FFT :: onAttach ( bool bAttach )
 		{
 		// Shutdown
 		_RELEASE(pImg);
+		if (pWnd != NULL)
+			{
+			delete pWnd;
+			pWnd = NULL;
+			}	// if
 		}	// else
 
 	return hr;
@@ -81,6 +89,7 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	if (_RCP(Fire))
 		{
 		IDictionary	*pImgUse = pImg;
+		cv::Mat		*pMat		= NULL;
 		adtValue		vL;
 
 		// Image to use
@@ -91,6 +100,109 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			}	// if
 		else
 			pImgUse->AddRef();
+
+		// Image must be 'uploaded'
+		CCLTRY ( pImgUse->load (	adtString(L"cv::Mat"), vL ) );
+		CCLTRYE( (pMat = (cv::Mat *)(U64)adtLong(vL)) != NULL,
+					ERROR_INVALID_STATE );
+
+		//
+		// Windowing.  Only generate a single row window function as
+		// things change.  If the window function or number of columns
+		// change it is time to re-create the window
+		//
+
+		// Verify size
+		if (	hr == S_OK		&& 
+				(pWnd != NULL	&& pWnd->rows != pMat->cols) ||
+				(pWnd == NULL	&& strWnd.length() > 0 && WCASECMP(strWnd,L"None")) )
+			{
+			// Previous window
+			if (pWnd != NULL)
+				{
+				delete pWnd;
+				pWnd = NULL;
+				}	// if
+
+			// Create new window.  Since matrix multiplication will be used
+			// window function will be columns 'rows' by 1 columns
+			CCLTRYE ( (pWnd = new cv::Mat(pMat->cols,1,CV_32FC1)) != NULL, E_OUTOFMEMORY );
+
+			// Generate function
+			if (!WCASECMP(strWnd,L"Blackman-Nutall"))
+				{
+				// Coefficients for window
+				float a0 = 0.3635819f;
+				float a1 = 0.4891775f;
+				float a2 = 0.1365995f;
+				float a3 = 0.0106441f;
+
+				// Compute window (slow)
+				cv::Point pt (0,0);
+				for (int i = 0;i < pWnd->cols;++i)
+					{
+					// Evaulate
+					float eval =	(float) ( a0 -
+										a1 * cos ( (2*CV_PI*i)/(pWnd->cols-1) ) +
+										a2 * cos ( (4*CV_PI*i)/(pWnd->cols-1) ) -
+										a3 * cos ( (6*CV_PI*i)/(pWnd->cols-1) ) );
+
+					// Set
+					pt.x = i;
+					pWnd->at<float>(pt) = eval;
+					}	// for
+
+				}	// if
+
+			// Unknown function
+			else
+				{
+				lprintf ( LOG_ERR, L"Unimplemented window function : %s", (LPCWSTR) strWnd );
+				hr = E_NOTIMPL;
+				}	// else
+			}	// if
+
+		// Compute FFT/Magnitude
+		CCLTRY ( image_fft ( pMat, pWnd, true, bZeroDC ) );
+
+		// Result
+//		if (hr != S_OK)
+//			dbgprintf ( L"FFT::Write:hr 0x%x, I/O %d/%d\r\n", hr, uLeft, (U32)iSzIo );
+		if (hr == S_OK)
+			_EMT(Fire,adtIUnknown(pImgUse));
+		else
+			_EMT(Error,adtInt(hr));
+
+		// Clean up
+		_RELEASE(pImgUse);
+		}	// if
+
+	// State
+	else if (_RCP(Image))
+		{
+		adtIUnknown	unkV(v);
+		_RELEASE(pImg);
+		_QISAFE(unkV,IID_IDictionary,&pImg);
+		}	// else if
+	else if (_RCP(Window))
+		{
+		// New window name
+		adtValue::toString ( v, strWnd );
+
+		// Assume a new window is needed
+		if (pWnd != NULL)
+			{
+			delete pWnd;
+			pWnd = NULL;
+			}	// if
+		}	// else if
+	else
+		hr = ERROR_NO_MATCH;
+
+	return hr;
+	}	// receive
+
+
 
 		//
 		// Perform calculation based on matrix type
@@ -122,31 +234,9 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			}	// else
 		*/
 
-		// Perform FFT
-		CCLTRY ( image_fft ( pImgUse, bZeroDC ) );
-
-		// Result
-//		if (hr != S_OK)
-//			dbgprintf ( L"FFT::Write:hr 0x%x, I/O %d/%d\r\n", hr, uLeft, (U32)iSzIo );
-		if (hr == S_OK)
-			_EMT(Fire,adtIUnknown(pImgUse));
-		else
-			_EMT(Error,adtInt(hr));
-
-		// Clean up
-		_RELEASE(pImgUse);
-		}	// if
-
-	// State
-	else if (_RCP(Image))
-		{
-		adtIUnknown	unkV(v);
-		_RELEASE(pImg);
-		_QISAFE(unkV,IID_IDictionary,&pImg);
-		}	// else if
-	else
-		hr = ERROR_NO_MATCH;
-
-	return hr;
-	}	// receive
-
+/*
+		// TODO: TEMPORARY.  This thresholding will be moved into a node
+		// in dB
+		CCLOK ( threshold ( matMag, matMag, 50, 0, THRESH_TRUNC ); )
+		CCLOK ( threshold ( matMag, matMag, 15, 0, THRESH_TOZERO ); )
+*/

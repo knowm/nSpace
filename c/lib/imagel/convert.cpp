@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////
 //
-//									THRESH.CPP
+//									CONVERT.CPP
 //
-//				Implementation of the image threshold node.
+//				Implementation of the image format conversion node.
 //
 ////////////////////////////////////////////////////////////////////////
 
@@ -11,7 +11,7 @@
 
 // Globals
 
-Threshold :: Threshold ( void )
+Convert :: Convert ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -19,12 +19,10 @@ Threshold :: Threshold ( void )
 	//		-	Constructor for the object
 	//
 	////////////////////////////////////////////////////////////////////////
-	pImg	= NULL;
-	vT		= 0;
-	strOp	= L"Zero";
-	}	// Threshold
+	pImg = NULL;
+	}	// Convert
 
-HRESULT Threshold :: onAttach ( bool bAttach )
+HRESULT Convert :: onAttach ( bool bAttach )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -46,9 +44,8 @@ HRESULT Threshold :: onAttach ( bool bAttach )
 		adtValue		vL;
 
 		// Defaults (optional)
-		if (pnDesc->load ( adtString(L"Op"), vL ) == S_OK)
-			adtValue::toString ( vL, strOp );
-		pnDesc->load ( adtString(L"Value"), vT );
+		if (pnDesc->load ( adtString(L"Format"), vL ) == S_OK)
+			hr = adtValue::toString ( vL, strTo );
 		}	// if
 
 	// Detach
@@ -61,7 +58,7 @@ HRESULT Threshold :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT Threshold :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Convert :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -85,7 +82,7 @@ HRESULT Threshold :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v
 		cv::Mat		*pMat		= NULL;
 		adtValue		vL;
 
-		// Image to use
+		// Image to use.  Previously specified or passed in.
 		if (pImgUse == NULL)
 			{
 			adtIUnknown unkV(v);
@@ -94,24 +91,20 @@ HRESULT Threshold :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v
 		else
 			pImgUse->AddRef();
 
-		// DEBUG
-//		double dMin,dMax;
-//		cv::minMaxIdx ( *pMat, &dMin, &dMax );
-//		dbgprintf ( L"dMin %g dMax %g\r\n", dMin, dMax );
-
 		// Image must be 'uploaded'
 		CCLTRY ( pImgUse->load (	adtString(L"cv::Mat"), vL ) );
 		CCLTRYE( (pMat = (cv::Mat *)(U64)adtLong(vL)) != NULL,
 					ERROR_INVALID_STATE );
 
-		// Perform operation
-		if (hr == S_OK)
-			{
-			if (!WCASECMP(strOp,L"Zero"))
-				cv::threshold ( *pMat, *pMat, adtDouble(vT), 0, cv::THRESH_TOZERO );
-			else if (!WCASECMP(strOp,L"Truncate"))
-				cv::threshold ( *pMat, *pMat, adtDouble(vT), 0, cv::THRESH_TRUNC );
-			}	// if
+		// Convert 'to' specified format. Add formats as needed.
+		if (!WCASECMP(strTo,L"F32x2"))
+			pMat->convertTo ( *pMat, CV_32FC1 );
+		else if (!WCASECMP(strTo,L"U16x2"))
+			pMat->convertTo ( *pMat, CV_16UC1 );
+		else if (!WCASECMP(strTo,L"U16x2"))
+			pMat->convertTo ( *pMat, CV_16SC1 );
+		else
+			hr = E_NOTIMPL;
 
 		// Result
 		if (hr == S_OK)
@@ -121,7 +114,7 @@ HRESULT Threshold :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v
 
 		// Clean up
 		_RELEASE(pImgUse);
-		}	// if
+		}	// else if
 
 	// State
 	else if (_RCP(Image))
@@ -130,8 +123,6 @@ HRESULT Threshold :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v
 		_RELEASE(pImg);
 		_QISAFE(unkV,IID_IDictionary,&pImg);
 		}	// else if
-	else if (_RCP(Value))
-		adtValue::copy ( v, vT );
 	else
 		hr = ERROR_NO_MATCH;
 

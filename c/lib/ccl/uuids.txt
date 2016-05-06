@@ -22,8 +22,8 @@
 2534d015-8628-11d2-868c-006008addfed				// IID_IBehaviour (nspcl)
 2534d016-8628-11d2-868c-006008addfed				// CLSID_Queue (adtl)
 2534d017-8628-11d2-868c-006008addfed				// CLSID_Binary (imagel)
-2534d018-8628-11d2-868c-006008addfed				// 
-2534d019-8628-11d2-868c-006008addfed				// 
+2534d018-8628-11d2-868c-006008addfed				// CLSID_Convert (imagel)
+2534d019-8628-11d2-868c-006008addfed				// CLSID_Normalize (imagel)
 2534d01a-8628-11d2-868c-006008addfed				// IID_IObjectFactory (ccl)
 2534d01b-8628-11d2-868c-006008addfed				// IID_ICloneable (sysl)
 2534d01c-8628-11d2-868c-006008addfed				// CLSID_Factory

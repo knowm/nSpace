@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////
 //
-//									THRESH.CPP
+//									NORMAL.CPP
 //
-//				Implementation of the image threshold node.
+//				Implementation of the image normalization node.
 //
 ////////////////////////////////////////////////////////////////////////
 
@@ -11,7 +11,7 @@
 
 // Globals
 
-Threshold :: Threshold ( void )
+Normalize :: Normalize ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -20,11 +20,11 @@ Threshold :: Threshold ( void )
 	//
 	////////////////////////////////////////////////////////////////////////
 	pImg	= NULL;
-	vT		= 0;
-	strOp	= L"Zero";
-	}	// Threshold
+	adtValue::copy ( adtInt(0), vFrom );
+	adtValue::copy ( adtInt(0), vTo );
+	}	// Normalize
 
-HRESULT Threshold :: onAttach ( bool bAttach )
+HRESULT Normalize :: onAttach ( bool bAttach )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -46,9 +46,10 @@ HRESULT Threshold :: onAttach ( bool bAttach )
 		adtValue		vL;
 
 		// Defaults (optional)
-		if (pnDesc->load ( adtString(L"Op"), vL ) == S_OK)
-			adtValue::toString ( vL, strOp );
-		pnDesc->load ( adtString(L"Value"), vT );
+		if (pnDesc->load ( adtString(L"From"), vL ) == S_OK)
+			adtValue::copy ( vL, vFrom );
+		if (pnDesc->load ( adtString(L"To"), vL ) == S_OK)
+			adtValue::copy ( vL, vTo );
 		}	// if
 
 	// Detach
@@ -61,7 +62,7 @@ HRESULT Threshold :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT Threshold :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Normalize :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -94,24 +95,13 @@ HRESULT Threshold :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v
 		else
 			pImgUse->AddRef();
 
-		// DEBUG
-//		double dMin,dMax;
-//		cv::minMaxIdx ( *pMat, &dMin, &dMax );
-//		dbgprintf ( L"dMin %g dMax %g\r\n", dMin, dMax );
-
 		// Image must be 'uploaded'
 		CCLTRY ( pImgUse->load (	adtString(L"cv::Mat"), vL ) );
 		CCLTRYE( (pMat = (cv::Mat *)(U64)adtLong(vL)) != NULL,
 					ERROR_INVALID_STATE );
 
 		// Perform operation
-		if (hr == S_OK)
-			{
-			if (!WCASECMP(strOp,L"Zero"))
-				cv::threshold ( *pMat, *pMat, adtDouble(vT), 0, cv::THRESH_TOZERO );
-			else if (!WCASECMP(strOp,L"Truncate"))
-				cv::threshold ( *pMat, *pMat, adtDouble(vT), 0, cv::THRESH_TRUNC );
-			}	// if
+		CCLOK ( cv::normalize ( *pMat, *pMat, adtDouble(vFrom), adtDouble(vTo), cv::NORM_MINMAX ); )
 
 		// Result
 		if (hr == S_OK)
@@ -130,8 +120,6 @@ HRESULT Threshold :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v
 		_RELEASE(pImg);
 		_QISAFE(unkV,IID_IDictionary,&pImg);
 		}	// else if
-	else if (_RCP(Value))
-		adtValue::copy ( v, vT );
 	else
 		hr = ERROR_NO_MATCH;
 

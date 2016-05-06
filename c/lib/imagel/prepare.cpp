@@ -95,6 +95,82 @@ HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 
 		// State check
 		CCLTRYE ( pImgUse != NULL, ERROR_INVALID_STATE );
+
+		// Wrap image bits in OpenCv matrix
+		CCLTRY ( image_to_mat ( pImgUse, &pMat ) );
+
+		// Store 'uploaded' image in image dictionary
+		CCLTRY ( pImgUse->store (	adtString(L"cv::Mat"), 
+											adtLong((U64)pMat) ) );
+
+
+		// Result
+		if (hr == S_OK)
+			_EMT(Upload,adtIUnknown(pImgUse));
+		else
+			_EMT(Error,adtInt(hr));
+
+		// Clean up
+		_RELEASE(pImgUse);
+		}	// if
+
+	// Download
+	else if (_RCP(Download))
+		{
+		IDictionary	*pImgUse = pImg;
+		cv::Mat		*pMat		= NULL;
+		adtValue		vL;
+
+		// Image to use
+		if (pImgUse == NULL)
+			{
+			adtIUnknown unkV(v);
+			CCLTRY(_QISAFE(unkV,IID_IDictionary,&pImgUse));
+			}	// if
+		else
+			pImgUse->AddRef();
+
+		// State check
+		CCLTRYE ( pImgUse != NULL, ERROR_INVALID_STATE );
+
+		// Image must be 'uploaded'
+		CCLTRY ( pImgUse->load (	adtString(L"cv::Mat"), vL ) );
+		CCLTRYE( (pMat = (cv::Mat *)(U64)adtLong(vL)) != NULL,
+					ERROR_INVALID_STATE );
+
+		// Store resulting image in dictionary
+		CCLTRY ( image_from_mat ( pMat, pImgUse ) );
+
+		// Clean up
+		if (pMat != NULL)
+			delete pMat;
+		if (pImgUse != NULL)
+			pImgUse->remove ( adtString(L"cv::Mat") );
+
+		// Result
+		if (hr == S_OK)
+			_EMT(Download,adtIUnknown(pImgUse));
+		else
+			_EMT(Error,adtInt(hr));
+
+		// Clean up
+		_RELEASE(pImgUse);
+		}	// else if
+
+	// State
+	else if (_RCP(Image))
+		{
+		adtIUnknown	unkV(v);
+		_RELEASE(pImg);
+		_QISAFE(unkV,IID_IDictionary,&pImg);
+		}	// else if
+	else
+		hr = ERROR_NO_MATCH;
+
+	return hr;
+	}	// receive
+
+
 		/*
 		// GPU
 		if (!bGPUInit)
@@ -192,34 +268,7 @@ HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 				}	// else
 			}	// if
 		*/
-		// Result
-		if (hr == S_OK)
-			_EMT(Upload,adtIUnknown(pImgUse));
-		else
-			_EMT(Error,adtInt(hr));
 
-		// Clean up
-		_RELEASE(pImgUse);
-		}	// if
-
-	// Download
-	else if (_RCP(Download))
-		{
-		IDictionary	*pImgUse = pImg;
-		cv::Mat		*pMat		= NULL;
-		adtValue		vL;
-
-		// Image to use
-		if (pImgUse == NULL)
-			{
-			adtIUnknown unkV(v);
-			CCLTRY(_QISAFE(unkV,IID_IDictionary,&pImgUse));
-			}	// if
-		else
-			pImgUse->AddRef();
-
-		// State check
-		CCLTRYE ( pImgUse != NULL, ERROR_INVALID_STATE );
 		/*
 		// OpenCl
 		if (hr == S_OK && pImgUse->load ( adtString(L"cv::ocl::oclMat"), vL ) == S_OK)
@@ -258,27 +307,3 @@ HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			pImgUse->remove ( adtString(L"cv::Mat") );
 			}	// else if
 		*/
-
-		// Result
-		if (hr == S_OK)
-			_EMT(Download,adtIUnknown(pImgUse));
-		else
-			_EMT(Error,adtInt(hr));
-
-		// Clean up
-		_RELEASE(pImgUse);
-		}	// else if
-
-	// State
-	else if (_RCP(Image))
-		{
-		adtIUnknown	unkV(v);
-		_RELEASE(pImg);
-		_QISAFE(unkV,IID_IDictionary,&pImg);
-		}	// else if
-	else
-		hr = ERROR_NO_MATCH;
-
-	return hr;
-	}	// receive
-

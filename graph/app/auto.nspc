@@ -18,7 +18,7 @@
 		!	Uninitialize/OnFire					Debug/Fire
 
 	% NSPC: Local information
-	$	This Nspc.This {}
+%	$	This Nspc.This {}
 %		!	Initialize/OnFire						This/Fire
 
 	%%%%%%%%
@@ -26,8 +26,8 @@
 	%%%%%%%%
 
 	% MISCN: Create file stream source
-	$	CreateFileSrc Misc.Create { Id Io.StmSrcFile }
-		!	Initialize/OnFire						CreateFileSrc/Fire
+%	$	CreateFileSrc Misc.Create { Id Io.StmSrcFile }
+%		!	Initialize/OnFire						CreateFileSrc/Fire
 
 	%%%%%%%%%%%%%%%%%%%%%%%
 	% Image processing/GPU
@@ -52,36 +52,40 @@
 %	$	Prepare Image.Prepare {}
 %		!	LoadPng/OnLoad							Prepare/Upload
 
-	% IMAGEN: Perform FFT
-%	$	FFT Image.FFT {}
-%		!	Prepare/OnUpload						FFT/Fire
+	% Result is the downloaded version
+%	!	Prepare/OnDownload						Debug/Fire
+
+	% IMAGEN: Convert to 32-bit floating point for subsequent operations
+%	$	ToFlt Image.Convert { Format "F32x2" }
+%		!	Prepare/OnUpload						ToFlt/Fire
+
+	% IMAGEN: Perform FFT/magnitude calculation
+%	$	FFT Image.FFT { ZeroDC true:bool Window "Blackman-Nutall" }
+%		!	ToFlt/OnFire							FFT/Fire
 %		!	FFT/OnFire								Debug/Fire
 
-	% IMAGEN: Magnitude(FFT)
-%	$	Mag Image.Unary { Op Magnitude }
+	% IMAGEN: Threshold upper and lower limits of spectrum
+%	$	ThreshHigh Image.Threshold { Value 50:float Op Truncate }
+%		!	FFT/OnFire								ThreshHigh/Fire
+%	$	ThreshLow Image.Threshold { Value 15:float Op Zero }
+%		!	ThreshHigh/OnFire						ThreshLow/Fire
 
-	% IMAGEN: Magnitude(FFT)
-%	$	Mag Image.Magnitude {}
-%		!	FFT/OnFire								Mag/Fire
+	% IMAGEN: Use full scale of eventual 2 bytes per pixel
+%	$	Normalize Image.Normalize { From 0:int To 0xffff:int }
+%		!	ThreshLow/OnFire						Normalize/Fire
 
-	% IMAGEN: Log10(Magnitude(FFT))
-%	$	Log Image.Unary { Op Unary }
-
-	% IMAGEN: Log10(Magnitude(FFT))
-%	$	Log Image.Log {}
-%		!	Mag/OnFire								Log/Fire
-
-	% IMAGEN: 20*Log10(Magnitude(FFT))
-%	$	Scale Image.Binary { Left 20.0:float Op Mult }
-%		!	Log/OnFire								Scale/Right
-%		!	Log/OnFire								Scale/Fire
-
-	% IMAGEN: Active threshold (dB)
-%	$	Thresh Image.Threshold { Minimum 15:float Maximum 50:float }
-%		!	FFT/OnFire								Thresh/Fire
+	% IMAGEN: Convert to a U16x2 image
+%	$	ToInt Image.Convert { Format "U16x2" }
+%		!	Normalize/OnFire						ToInt/Fire
 
 	% Download from image processing logic into image
-%	!	Thresh/OnFire								Prepare/Download
+%	!	ToInt/OnFire								Prepare/Download
+
+	% IMAGEN: Save test image
+%	$	SavePng Image.PersistImage { Location "c:/temp/test.png" }
+%		!	Prepare/OnDownload					SavePng/Image
+%		!	Prepare/OnDownload					SavePng/Save
+%		!	SavePng/OnSave							Debug/Fire
 
 	%%%%%%%%%%%%%%
 	% Enumeration

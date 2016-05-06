@@ -72,6 +72,37 @@ class Binary :
 	};
 
 //
+// Class - Convert.  Convert between formats.
+//
+
+class Convert :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	Convert ( void );										// Constructor
+
+	// Run-time data
+	IDictionary	*pImg;									// Source image
+	adtString	strTo;									// Convert 'to' format
+
+	// CCL
+	CCL_OBJECT_BEGIN(Convert)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Image)
+	DECLARE_EMT(Error)
+	BEGIN_BEHAVIOUR()
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Image)
+		DEFINE_EMT(Error)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
+//
 // Class - FFT.  FFT processing node.
 //
 
@@ -84,7 +115,9 @@ class FFT :
 
 	// Run-time data
 	IDictionary	*pImg;									// Image dictionary
+	adtString	strWnd;									// Window function
 	adtBool		bZeroDC;									// Zero DC component
+	cv::Mat		*pWnd;									// Window function
 
 	// CCL
 	CCL_OBJECT_BEGIN(FFT)
@@ -92,13 +125,46 @@ class FFT :
 	CCL_OBJECT_END()
 
 	// Connections
+	DECLARE_EMT(Error)
 	DECLARE_CON(Fire)
 	DECLARE_RCP(Image)
-	DECLARE_EMT(Error)
+	DECLARE_RCP(Window)
 	BEGIN_BEHAVIOUR()
+		DEFINE_EMT(Error)
 		DEFINE_CON(Fire)
 		DEFINE_RCP(Image)
+		DEFINE_RCP(Window)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
+//
+// Class - Normalize.  Image normalization node.
+//
+
+class Normalize :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	Normalize ( void );									// Constructor
+
+	// Run-time data
+	IDictionary	*pImg;									// Image dictionary
+	adtValue		vFrom,vTo;								// Normalization range
+
+	// CCL
+	CCL_OBJECT_BEGIN(Normalize)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_EMT(Error)
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Image)
+	BEGIN_BEHAVIOUR()
 		DEFINE_EMT(Error)
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Image)
 	END_BEHAVIOUR_NOTIFY()
 	};
 
@@ -183,7 +249,8 @@ class Threshold :
 
 	// Run-time data
 	IDictionary	*pImg;									// Image dictionary
-	adtValue		vMin,vMax;								// Minimum/maximum thresholds
+	adtValue		vT;										// Treshold value
+	adtString	strOp;									// Operation
 
 	// CCL
 	CCL_OBJECT_BEGIN(Threshold)
@@ -191,23 +258,21 @@ class Threshold :
 	CCL_OBJECT_END()
 
 	// Connections
+	DECLARE_EMT(Error)
 	DECLARE_CON(Fire)
 	DECLARE_RCP(Image)
-	DECLARE_EMT(Error)
-	DECLARE_RCP(Minimum)
-	DECLARE_RCP(Maximum)
+	DECLARE_RCP(Value)
 	BEGIN_BEHAVIOUR()
+		DEFINE_EMT(Error)
 		DEFINE_CON(Fire)
 		DEFINE_RCP(Image)
-		DEFINE_EMT(Error)
-		DEFINE_RCP(Minimum)
-		DEFINE_RCP(Maximum)
+		DEFINE_RCP(Value)
 	END_BEHAVIOUR_NOTIFY()
 	};
 
+
 // Prototypes
-HRESULT image_fft			( IDictionary *, bool );
-HRESULT image_fft			( cv::Mat *, bool = false, bool = false );
+HRESULT image_fft			( cv::Mat *, cv::Mat *, bool = false, bool = false );
 //HRESULT image_fft			( cv::ocl::oclMat *, bool = false, bool = false );
 HRESULT image_from_mat	( cv::Mat *, IDictionary * );
 HRESULT image_load		( const WCHAR *, IDictionary * );
