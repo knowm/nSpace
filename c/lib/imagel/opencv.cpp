@@ -62,9 +62,9 @@ HRESULT image_fft ( cv::Mat *pMat, cv::Mat *pWnd, bool bRows, bool bZeroDC )
 	try
 		{
 		// Apply window function
-		if (pWnd != NULL && pWnd->rows == pMat->cols && pWnd->type() == pMat->type())
-			for (int r = 0;r < pMat->rows;++r)
-				pMat->row(r) *= (*pWnd);
+		if (	pWnd != NULL && pWnd->type() == pMat->type() &&
+				pWnd->cols == pMat->cols && pWnd->rows == pMat->rows)
+			multiply ( *pMat, *pWnd, *pMat );
 
 		// Create a windowed version of the image
 		m = getOptimalDFTSize ( pMat->rows );
@@ -454,6 +454,16 @@ HRESULT image_to_mat ( IDictionary *pImg, Mat **ppM )
 	else if (hr == S_OK && !WCASECMP(strFmt,L"S16X2"))
 		{
 		CCLTRYE ( ((*ppM) = new Mat ( h, w, CV_16SC1, pvBits )) != NULL,
+						E_OUTOFMEMORY );
+		}	// if
+	else if (hr == S_OK && !WCASECMP(strFmt,L"U8X2"))
+		{
+		CCLTRYE ( ((*ppM) = new Mat ( h, w, CV_8UC1, pvBits )) != NULL,
+						E_OUTOFMEMORY );
+		}	// if
+	else if (hr == S_OK && !WCASECMP(strFmt,L"S8X2"))
+		{
+		CCLTRYE ( ((*ppM) = new Mat ( h, w, CV_8SC1, pvBits )) != NULL,
 						E_OUTOFMEMORY );
 		}	// if
 	else 

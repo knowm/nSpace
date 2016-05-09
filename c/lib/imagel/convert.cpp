@@ -101,8 +101,12 @@ HRESULT Convert :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			pMat->convertTo ( *pMat, CV_32FC1 );
 		else if (!WCASECMP(strTo,L"U16x2"))
 			pMat->convertTo ( *pMat, CV_16UC1 );
-		else if (!WCASECMP(strTo,L"U16x2"))
+		else if (!WCASECMP(strTo,L"S16x2"))
 			pMat->convertTo ( *pMat, CV_16SC1 );
+		else if (!WCASECMP(strTo,L"U8x2"))
+			pMat->convertTo ( *pMat, CV_8UC1 );
+		else if (!WCASECMP(strTo,L"S8x2"))
+			pMat->convertTo ( *pMat, CV_8SC1 );
 		else
 			hr = E_NOTIMPL;
 

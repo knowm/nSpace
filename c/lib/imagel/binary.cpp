@@ -48,6 +48,10 @@ HRESULT Binary :: onAttach ( bool bAttach )
 		// Defaults (optional)
 		pnDesc->load ( adtString(L"Left"), vL );
 		pnDesc->load ( adtString(L"Rightt"), vR );
+		if (	pnDesc->load ( adtStringSt(L"Op"), vL ) == S_OK	&& 
+				adtValue::type(vL) == VTYPE_STR						&&
+				vL.pstr != NULL )
+			mathOp ( vL.pstr, &iOp );
 		}	// if
 
 	// Detach
@@ -79,6 +83,85 @@ HRESULT Binary :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	// Execute
 	if (_RCP(Fire))
 		{
+		// State check
+		CCLTRYE ( adtValue::empty(vL) == false, ERROR_INVALID_STATE );
+		CCLTRYE ( adtValue::empty(vR) == false, ERROR_INVALID_STATE );
+		CCLTRYE ( iOp >= MATHOP_ADD, ERROR_INVALID_STATE );
+
+		// Incoming value will receive result.
+		// TODO: Seperate receptor for this ?
+		CCLTRYE ( adtValue::type(v) == VTYPE_UNK, ERROR_INVALID_STATE );
+
+		// Images for left and right
+		if (	hr == S_OK && 
+				adtValue::type(vL) == VTYPE_UNK &&
+				adtValue::type(vR) == VTYPE_UNK )
+			{
+			IDictionary	*pImgL	= NULL;
+			IDictionary	*pImgR	= NULL;
+			IDictionary	*pImgO	= NULL;
+			cv::Mat		*pMatL	= NULL;
+			cv::Mat		*pMatR	= NULL;
+			cv::Mat		*pMatO	= NULL;
+
+			// Image dictionaries
+			CCLTRY(_QISAFE(adtIUnknown(vL),IID_IDictionary,&pImgL));
+			CCLTRY(_QISAFE(adtIUnknown(vR),IID_IDictionary,&pImgR));
+			CCLTRY(_QISAFE(adtIUnknown(v),IID_IDictionary,&pImgO));
+
+			// Images must be 'uploaded'
+			CCLTRY ( pImgL->load (	adtString(L"cv::Mat"), vL ) );
+			CCLTRYE( (pMatL = (cv::Mat *)(U64)adtLong(vL)) != NULL,
+						ERROR_INVALID_STATE );
+			CCLTRY ( pImgR->load (	adtString(L"cv::Mat"), vL ) );
+			CCLTRYE( (pMatR = (cv::Mat *)(U64)adtLong(vL)) != NULL,
+						ERROR_INVALID_STATE );
+			CCLTRY ( pImgO->load (	adtString(L"cv::Mat"), vL ) );
+			CCLTRYE( (pMatO = (cv::Mat *)(U64)adtLong(vL)) != NULL,
+						ERROR_INVALID_STATE );
+
+			// Apply operation
+			switch (iOp)
+				{
+				case MATHOP_ADD :
+					cv::add ( *pMatL, *pMatR, *pMatO );
+					break;
+				case MATHOP_SUB :
+					cv::subtract ( *pMatL, *pMatR, *pMatO );
+					break;
+				case MATHOP_MUL :
+					cv::multiply ( *pMatL, *pMatR, *pMatO );
+					break;
+				case MATHOP_DIV :
+					cv::divide ( *pMatL, *pMatR, *pMatO );
+					break;
+
+				// Not implemented
+				default :
+					hr = E_NOTIMPL;
+				}	// switch
+
+			// Result
+			CCLTRY ( adtValue::copy ( adtIUnknown(pImgO), vRes ) );
+
+			// Clean up
+			_RELEASE(pImgO);
+			_RELEASE(pImgR);
+			_RELEASE(pImgL);
+			}	// if
+
+		// Not handled/error
+		else
+			hr = E_NOTIMPL;
+
+		// Result
+		if (hr == S_OK)
+			_EMT(Fire,vRes);
+		else
+			{
+//			lprintf ( LOG_ERR, L"%s:Fire:Error:hr 0x%x:%d\r\n", (LPCWSTR)strnName, hr, iOp );
+			_EMT(Error,adtInt(hr) );
+			}	// else
 		}	// else if
 
 	// State

@@ -51,6 +51,7 @@ class Binary :
 
 	// Run-time data
 	adtValue		vL,vR;									// Parameters
+	adtValue		vRes;										// Result
 	int			iOp;										// Math operation
 
 	// CCL
@@ -118,6 +119,7 @@ class FFT :
 	adtString	strWnd;									// Window function
 	adtBool		bZeroDC;									// Zero DC component
 	cv::Mat		*pWnd;									// Window function
+	sysCS			csSync;									// Thread safety
 
 	// CCL
 	CCL_OBJECT_BEGIN(FFT)
@@ -278,5 +280,8 @@ HRESULT image_from_mat	( cv::Mat *, IDictionary * );
 HRESULT image_load		( const WCHAR *, IDictionary * );
 HRESULT image_save		( IDictionary *, const WCHAR * );
 HRESULT image_to_mat		( IDictionary *, cv::Mat ** );
+
+// From 'mathl'
+HRESULT mathOp			( const WCHAR *, int * );
 
 #endif

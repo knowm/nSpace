@@ -112,9 +112,12 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		// change it is time to re-create the window
 		//
 
+		// Thread safey
+		csSync.enter();
+
 		// Verify size
 		if (	hr == S_OK		&& 
-				(pWnd != NULL	&& pWnd->rows != pMat->cols) ||
+				(pWnd != NULL	&& (pWnd->cols != pMat->cols || pWnd->cols != pMat->cols)) ||
 				(pWnd == NULL	&& strWnd.length() > 0 && WCASECMP(strWnd,L"None")) )
 			{
 			// Previous window
@@ -124,9 +127,9 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 				pWnd = NULL;
 				}	// if
 
-			// Create new window.  Since matrix multiplication will be used
-			// window function will be columns 'rows' by 1 columns
-			CCLTRYE ( (pWnd = new cv::Mat(pMat->cols,1,CV_32FC1)) != NULL, E_OUTOFMEMORY );
+			// Create new window.  Assuming it is faster to just do per element
+			// multiplication rather than row by row.
+			CCLTRYE ( (pWnd = new cv::Mat(pMat->rows,pMat->cols,CV_32FC1)) != NULL, E_OUTOFMEMORY );
 
 			// Generate function
 			if (!WCASECMP(strWnd,L"Blackman-Nutall"))
@@ -136,21 +139,24 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 				float a1 = 0.4891775f;
 				float a2 = 0.1365995f;
 				float a3 = 0.0106441f;
+				float ev = 0.0f;
 
 				// Compute window (slow)
-				cv::Point pt (0,0);
-				for (int i = 0;i < pWnd->cols;++i)
-					{
-					// Evaulate
-					float eval =	(float) ( a0 -
-										a1 * cos ( (2*CV_PI*i)/(pWnd->cols-1) ) +
-										a2 * cos ( (4*CV_PI*i)/(pWnd->cols-1) ) -
-										a3 * cos ( (6*CV_PI*i)/(pWnd->cols-1) ) );
+				for (int r = 0;r < pMat->rows;++r)
+					for (int c = 0;c < pMat->cols;++c)
+						{
+						// Evaulate
+						ev =	(float) (a0 -
+											a1 * cos ( (2*CV_PI*c)/(pMat->cols-1) ) +
+											a2 * cos ( (4*CV_PI*c)/(pMat->cols-1) ) -
+											a3 * cos ( (6*CV_PI*c)/(pMat->cols-1) ) );
 
-					// Set
-					pt.x = i;
-					pWnd->at<float>(pt) = eval;
-					}	// for
+						// Set
+						pWnd->at<float>(cv::Point(c,r)) = ev;
+
+						// Debug
+//						pWnd->at<float>(cv::Point(c,r)) = 0;
+						}	// for
 
 				}	// if
 
@@ -160,10 +166,14 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 				lprintf ( LOG_ERR, L"Unimplemented window function : %s", (LPCWSTR) strWnd );
 				hr = E_NOTIMPL;
 				}	// else
+
 			}	// if
 
 		// Compute FFT/Magnitude
 		CCLTRY ( image_fft ( pMat, pWnd, true, bZeroDC ) );
+
+		// Thread safey
+		csSync.leave();
 
 		// Result
 //		if (hr != S_OK)
@@ -190,10 +200,18 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		adtValue::toString ( v, strWnd );
 
 		// Assume a new window is needed
+		dbgprintf ( L"New window : %s\r\n", (LPCWSTR)strWnd );
 		if (pWnd != NULL)
 			{
+			// Thread safey
+			csSync.enter();
+
+			// Clean up
 			delete pWnd;
 			pWnd = NULL;
+
+			// Thread safey
+			csSync.leave();
 			}	// if
 		}	// else if
 	else

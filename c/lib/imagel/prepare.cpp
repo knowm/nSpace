@@ -108,7 +108,10 @@ HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		if (hr == S_OK)
 			_EMT(Upload,adtIUnknown(pImgUse));
 		else
+			{
+			lprintf ( LOG_ERR, L"Unable to prepare image %d", hr );
 			_EMT(Error,adtInt(hr));
+			}	// else
 
 		// Clean up
 		_RELEASE(pImgUse);

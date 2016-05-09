@@ -48,7 +48,7 @@ HRESULT Binary :: onAttach ( bool bAttach )
 	// Default states
 	pnDesc->load ( adtStringSt(L"Left"), vL );
 	pnDesc->load ( adtStringSt(L"Right"), vR );
-	if (	pnDesc->load ( adtStringSt(L"Op"), v ) == S_OK		&& 
+	if (	pnDesc->load ( adtStringSt(L"Op"), v ) == S_OK	&& 
 			adtValue::type(v) == VTYPE_STR						&&
 			v.pstr != NULL )
 		mathOp ( v.pstr, &iOp );
