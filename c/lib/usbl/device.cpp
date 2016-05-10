@@ -119,8 +119,8 @@ HRESULT Device :: receive ( IReceptor *pr, const WCHAR *pl,
 		CCLTRY ( pDev->store ( adtString(L"Manufacturer"), adtInt(udd.iManufacturer) ) );
 													
 		// Debug
-		dbgprintf ( L"Device::receive:Stream:pRes 0x%x:hIntf 0x%x:hr 0x%x\r\n",
-							pRes, hIntf, hr );
+		lprintf ( LOG_INFO, L"Open:pRes %p:hIntf 0x%x:hr 0x%x\r\n",
+									pRes, hIntf, hr );
 
 		// Result 
 		if (hr == S_OK)
@@ -158,6 +158,7 @@ HRESULT Device :: receive ( IReceptor *pr, const WCHAR *pl,
 		IDictionary						*pEndpts	= NULL;
 		USB_INTERFACE_DESCRIPTOR	uid;
 		U32								e;
+//		U8									b;
 
 		// State check
 		CCLTRYE ( hIntf != INVALID_HANDLE_VALUE, ERROR_INVALID_STATE );
@@ -172,10 +173,17 @@ HRESULT Device :: receive ( IReceptor *pr, const WCHAR *pl,
 		CCLTRY ( pInfo->store ( adtString(L"SubClass"), adtInt(uid.bInterfaceSubClass) ) );
 		CCLTRY ( pInfo->store ( adtString(L"Protocol"), adtInt(uid.bInterfaceProtocol) ) );
 
+		// DEBUG
+//		CCLTRYE ( WinUsb_GetCurrentAlternateSetting ( hIntf, &b ) == TRUE, GetLastError() );
+//		lprintf ( LOG_INFO, L"Query:hIntf 0x%x:AltSetNow %d:hr 0x%x\r\n", hIntf, b, hr );
+
 		// Retreive the interface
 
 		// Activate specified alternative seting
 		CCLTRYE ( WinUsb_SetCurrentAlternateSetting ( hIntf, iAltSet ) == TRUE, GetLastError() );
+		if (hr != S_OK)
+			lprintf ( LOG_ERR, L"Query:SetAltSetting failed:hIntf 0x%x:hr 0x%x\r\n", hIntf, hr );
+//		CCLOK ( WinUsb_SetCurrentAlternateSetting ( hIntf, iAltSet ); )
 
 		// Process end points
 		CCLTRY ( COCREATE ( L"Adt.Dictionary", IID_IDictionary, &pEndpts ) );

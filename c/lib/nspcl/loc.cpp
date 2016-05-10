@@ -781,12 +781,13 @@ HRESULT Location :: receive ( IReceptor *prSrc, const WCHAR *pwLoc,
 			CCLTRY ( pRxQ->write ( v ) );
 
 			// Debug
-//			if (hr == S_OK)
-//				{
-//				U32	sz;
-//				pRxQ->size ( &sz );
-//				dbgprintf ( L"Location::recive:Queue:%s:%d\r\n", (LPCWSTR) this->strName, sz );
-//				}	// if
+			if (hr == S_OK)
+				{
+				U32	sz;
+				pRxQ->size ( &sz );
+				if (!(sz % 10))
+					lprintf ( LOG_WARN, L"Queue:%s:%d\r\n", (LPCWSTR) this->strName, sz );
+				}	// if
 
 			// Done
 			csInt.leave();

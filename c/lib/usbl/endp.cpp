@@ -302,6 +302,10 @@ HRESULT Endpoint :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v 
 		CCLTRY ( pDev->load ( adtString(L"Interface"), vL ) );
 		CCLOK  ( hIntf = (WINUSB_INTERFACE_HANDLE)(U64)adtLong(vL); )
 		_RELEASE(pDev);
+
+		// Debug
+//		lprintf ( LOG_INFO, L"Endpoint::receive:hIntf 0x%x:hr 0x%x\r\n",
+//									hIntf, hr );
 		}	// else if
 	else if (_RCP(Endpoint))
 		{

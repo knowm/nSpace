@@ -63,6 +63,9 @@
 	% End of enumerate, not usable device found during scan
 	!	EnumDev/OnEnd								OnNotFound/Fire
 
+	% Close on not found
+	!	OnNotFound/OnFire							Close/Fire
+
 	%%%%%%%%
 	% Match
 	%%%%%%%%
