@@ -126,7 +126,7 @@ HRESULT GnuPlotSrvr :: plot ( IDictionary *pReq )
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	HRESULT		hr		= S_OK;
+	HRESULT			hr				= S_OK;
 	IDictionary		*pVcts		= NULL;
 	U32				iRows			= 0;
 	U32				iCols			= 0;
@@ -775,7 +775,7 @@ HRESULT GnuPlotSrvr :: run ( bool bRun )
 	HRESULT		hr	= S_OK;
 
 	// Start
-	if (bRun && pThrd != NULL)
+	if (bRun && pThrd == NULL)
 		{
 		// Attempt to start link with GnuPlotSrvr
 		CCLTRY ( start() );
@@ -851,6 +851,7 @@ HRESULT GnuPlotSrvr :: start ( void )
 	HRESULT		hr	= S_OK;
 	STARTUPINFO	si;
 	WCHAR			wPipe[200];
+	adtString	strPath(PATH_GNUPLOT);
 
 	// Ensure object is ready to decode PNG images
 	CCLTRY ( png_init() );
@@ -888,6 +889,33 @@ HRESULT GnuPlotSrvr :: start ( void )
 	CCLTRYE	( (hRdOut = CreateFile ( wPipe, GENERIC_READ, 0, 0, OPEN_EXISTING,
 					FILE_FLAG_OVERLAPPED, NULL )) != INVALID_HANDLE_VALUE, GetLastError() );
 
+	// Use registry to obtain the location of the EXE.
+	if (hr == S_OK)
+		{
+		HKEY		hKey = NULL;
+		DWORD		dwSz = sizeof(wPipe);
+		LONG		lRes;
+
+		// Check App Paths for install
+		CCLTRYE ( ((lRes = RegOpenKeyEx ( HKEY_LOCAL_MACHINE, 
+						L"Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\gnuplot.exe",
+						0, KEY_READ, &hKey )) == ERROR_SUCCESS), lRes );
+
+		// Default value containst the path to the EXE.
+		CCLTRYE ( ((lRes = RegQueryValueEx ( hKey, NULL, NULL, NULL,
+						(BYTE *) wPipe, &dwSz )) == ERROR_SUCCESS), lRes );
+
+		// Use returned path
+		CCLOK ( strPath = wPipe; )
+
+		// If not successful will use default even though the program is probably
+		// not installed.
+		if (hr != S_OK)
+			hr = S_OK;
+		if (hKey != NULL)
+			RegCloseKey ( hKey );
+		}	// if
+
 	// A GNU plot process for this object can now be started using the pipes above.
 	if (hr == S_OK)
 		{
@@ -906,7 +934,7 @@ HRESULT GnuPlotSrvr :: start ( void )
 								STARTF_USESHOWWINDOW;
 
 		// Start process.  Currently using current default install directory, use in path instead ?
-		CCLTRYE ( CreateProcess ( PATH_GNUPLOT, NULL, NULL, NULL, TRUE, 
+		CCLTRYE ( CreateProcess ( strPath, NULL, NULL, NULL, TRUE, 
 						DETACHED_PROCESS, NULL, NULL,&si, &gnuInfo ) == TRUE,
 						GetLastError() );
 		}	// if

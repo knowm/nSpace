@@ -15,18 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="plotl_.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plotl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="gnuplotsrvr.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="image.cpp">
+    <ClCompile Include="plotn.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

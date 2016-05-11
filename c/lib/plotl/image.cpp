@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////
 //
-//								GNUPLOT.CPP
+//								IMAGE.CPP
 //
-//						Interface to the GnuPlot application
+//						Interface to the plot image node
 //
 ////////////////////////////////////////////////////////////////////////
 
@@ -24,8 +24,9 @@ extern adtString	strRefLeft;
 extern adtString	strRefRight;
 extern adtString	strRefTop;
 extern adtString	strRefBottom;
+extern adtString	strRefBits;
 
-GnuPlot :: GnuPlot ( void )
+Image :: Image ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -38,26 +39,29 @@ GnuPlot :: GnuPlot ( void )
 	////////////////////////////////////////////////////////////////////////
 
 	// Setup
+	pDataIn		= NULL;
+	iIdx			= -1;
+	iPlotW		= 800;
+	iPlotH		= 600;
+	
+	pData			= NULL;
+	pDataBits	= NULL;
+	iDataW		= 0;
+	iDataH		= 0;
 	pReq			= NULL;
-	pVcts			= NULL;
-//	pVct			= NULL;
-//	iCol			= 0;
-//	punkLoc		= NULL;
-//	pdctLoc		= NULL;
 	bReq			= false;
-//	iCnt			= 0;
 
-	}	// GnuPlot
-/*
-HRESULT GnuPlot :: addCol ( IDictionary *pDct, U32 col, U32 rows )
+	}	// Image
+
+HRESULT Image :: addRow ( IDictionary *pDct, U32 iRow )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
 	//	PURPOSE
-	//		-	Add a column of data to the current data block.
+	//		-	Adds a row of data to the current data block.
 	//
 	//	PARAMETERS
-	//		-	pDct is the vector
+	//		-	pDct contains the data
 	//		-	col is the column
 	//		-	rows is the number of rows in plot to count (0 = all)
 	//
@@ -65,35 +69,65 @@ HRESULT GnuPlot :: addCol ( IDictionary *pDct, U32 col, U32 rows )
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	HRESULT		hr			= S_OK;
-	IDictionary	*pDctV	= NULL;
-	U32			sz			= 0;
-	U32			nc,nr;
-	WCHAR			wName[21];
-	adtValue		vL;
+	HRESULT			hr			= S_OK;
+	IMemoryMapped	*pBits	= NULL;
+	VOID				*pvBits	= NULL;
+	VOID				*pvData	= NULL;
+	float				*pfData	= NULL;
+	adtInt			iW,iH;
+	adtString		strFmt;
+	WCHAR				wName[21];
+	adtValue			vL;
+	adtIUnknown		unkV;
 
-	// Add the current column specifications to the client plot request
-
-	// Current number of plot requests
-	CCLTRY ( pVcts->size ( &sz ) );
+	// Add the data row to the client plot request
 
 	// Next vector name
-	CCLOK ( swprintf ( SWPF(wName,21), L"V%d", sz ); )
+	CCLOK ( swprintf ( SWPF(wName,21), L"V%d", (U32)iH ); )
 
-	// Number of rows in source vector
-	CCLTRY ( mathVector ( pDct, &nc, &nr, NULL ) );
+	// Format of incoming data
+	CCLTRY ( pDct->load ( adtString(L"Format"), vL ) );
+	CCLTRYE( (strFmt = vL).length() > 0, E_INVALIDARG );
 
-	// Row count
-	if (hr == S_OK && rows != 0 && rows < nr)
-		nr = rows;
+	// Lock down incoming data
+	CCLTRY ( pDct->load ( strRefWidth, vL ) );
+	CCLOK  ( iW = vL; )
+	CCLTRY ( pDct->load ( strRefHeight, vL ) );
+	CCLOK  ( iH = vL; )
+	CCLTRY ( pDct->load ( strRefBits, vL ) );
+	CCLTRY ( _QISAFE((unkV=vL),IID_IMemoryMapped,&pBits) );
+	CCLTRY ( pBits->lock ( 0, 0, &pvBits, NULL ) );
 
-	// Create a new vector dictionary for the column
-	CCLTRY ( COCREATE ( L"Adt.Dictionary", IID_IDictionary, &pDctV ) );
-	CCLTRY ( mathVectorSize ( pDctV, 1, nr ) );
+	// Valid row specified ?
+	CCLTRYE ( iRow < iH, E_INVALIDARG );
 
-	// Extract the specified column number from the provided vector dictionary
-	CCLTRY ( mathVectorCopyCol ( pDct, col, pDctV, 0 ) );
+	// Another row
+	CCLOK ( iDataH = iDataH + 1; )
 
+	// First vector ?
+	if (hr == S_OK && iDataW == 0)
+		iDataW = iW;
+
+	// For now vectors must be same length
+	CCLTRYE ( iW == iDataW, E_INVALIDARG );
+
+	// Allocate space for another row
+	CCLTRY ( pDataBits->setSize ( iDataW*iDataH*sizeof(float) ) );
+	CCLTRY ( pDataBits->lock ( 0, 0, (void **) &pvData, NULL ) );
+	CCLOK  ( pfData = (float *)pvData; )
+	CCLOK  ( pfData += (iDataH-1)*iDataW; )
+
+	// Add more formts as necessary
+	if (!WCASECMP(strFmt,L"U16x2"))
+		{
+		// Source bits
+		U16	*piSrc = ((U16 *) pvBits) + (iRow*iW);
+
+		// Copy into new row
+		for (U32 c = 0;c < iW;++c)
+			pfData[c] = piSrc[c];
+		}	// if
+/*
 	// Generate label based on optional name and units
 	if (hr == S_OK && pDct->load ( adtString(L"Name"), vL ) == S_OK)
 		{
@@ -111,19 +145,23 @@ HRESULT GnuPlot :: addCol ( IDictionary *pDct, U32 col, U32 rows )
 			}	// if
 
 		// Store as label
-		CCLTRY ( pDctV->store ( adtString(L"Label"), strLabel ) );
+//		CCLTRY ( pDctV->store ( adtString(L"Label"), strLabel ) );
 		}	// if
+*/
 
-	// Store in request
-	CCLTRY ( pVcts->store ( adtString(wName), adtIUnknown(pDctV) ) );
+	// Update plot data information
+	CCLTRY ( pData->store ( strRefWidth, iDataW ) );
+	CCLTRY ( pData->store ( strRefHeight, iDataH ) );
 
 	// Clean up
-	_RELEASE(pDctV);
+	_UNLOCK(pDataBits,pvData);
+	_UNLOCK(pBits,pvBits);
+	_RELEASE(pBits);
 
 	return hr;
-	}	// addCol
-*/
-HRESULT GnuPlot :: construct ( void )
+	}	// addRow
+
+HRESULT Image :: construct ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -136,15 +174,20 @@ HRESULT GnuPlot :: construct ( void )
 	////////////////////////////////////////////////////////////////////////
 	HRESULT	hr	= S_OK;
 
+	// Plot data
+	CCLTRY ( COCREATE ( L"Adt.Dictionary", IID_IDictionary, &pData ) );
+	CCLTRY ( COCREATE ( L"Io.MemoryBlock", IID_IMemoryMapped, &pDataBits ) );
+	CCLTRY ( pData->store ( adtString(L"Bits"), adtIUnknown(pDataBits) ) );
+	CCLTRY ( pData->store ( adtString(L"Format"), adtString(L"F32x2") ) );
+
 	// Plot request
 	CCLTRY ( COCREATE ( L"Adt.Dictionary", IID_IDictionary, &pReq ) );
-	CCLTRY ( COCREATE ( L"Adt.Dictionary", IID_IDictionary, &pVcts ) );
-	CCLTRY ( pReq->store ( adtString(L"Vector"), adtIUnknown(pVcts) ) );
+	CCLTRY ( pReq->store ( adtString(L"Data"), adtIUnknown(pData) ) );
 
 	return hr;
 	}	// construct
 
-void GnuPlot :: destruct ( void )
+void Image :: destruct ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -157,12 +200,13 @@ void GnuPlot :: destruct ( void )
 	onAttach(false);
 
 	// Clean up
-//	_RELEASE(pVct);
-	_RELEASE(pVcts);
+	_RELEASE(pDataIn);
+	_RELEASE(pDataBits);
+	_RELEASE(pData);
 	_RELEASE(pReq);
 	}	// destruct
 
-HRESULT GnuPlot :: onAttach ( bool bAttach )
+HRESULT Image :: onAttach ( bool bAttach )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -181,6 +225,18 @@ HRESULT GnuPlot :: onAttach ( bool bAttach )
 	// Attach
 	if (bAttach)
 		{
+		adtValue vL;
+
+		// Defaults
+		if (pnDesc->load ( adtString(L"Title"), vL ) == S_OK)
+			adtValue::toString ( vL, strTitle );
+		if (pnDesc->load ( adtString(L"Index"), vL ) == S_OK)
+			iIdx = vL;
+		if (pnDesc->load ( adtString(L"Width"), vL ) == S_OK)
+			iPlotW = vL;
+		if (pnDesc->load ( adtString(L"Height"), vL ) == S_OK)
+			iPlotH = vL;
+
 		// Single GnuPlot server
 		if (hr == S_OK && uGnuCnt == 0)
 			{
@@ -191,6 +247,13 @@ HRESULT GnuPlot :: onAttach ( bool bAttach )
 
 			// Start running immediately
 			CCLTRY ( pGnuSrvr->run(true) );
+
+			// Do not fail attachment if GnuPlot is not available
+			if (hr != S_OK)
+				{
+				lprintf ( LOG_ERR, L"Unable to create GnuPlot server, installed ?" );
+				hr = S_OK;
+				}	// if
 			}	// if
 		CCLOK ( ++uGnuCnt; )
 		}	// if
@@ -213,7 +276,7 @@ HRESULT GnuPlot :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT GnuPlot :: receive ( IReceptor *pr, const WCHAR *pl, 
+HRESULT Image :: receive ( IReceptor *pr, const WCHAR *pl, 
 										const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -239,10 +302,20 @@ HRESULT GnuPlot :: receive ( IReceptor *pr, const WCHAR *pl,
 
 		// State check
 		CCLTRYE ( pGnuSrvr != NULL, ERROR_INVALID_STATE );
-		CCLTRYE ( pVcts->size ( &sz ) == S_OK && sz > 0, ERROR_INVALID_STATE );
+		CCLTRYE ( iDataW > 0 && iDataH > 0, ERROR_INVALID_STATE );
 
 		// Request validity
 		bReq = (hr == S_OK);
+
+		// Latest title
+		if (hr == S_OK && strTitle.length() > 0)
+			hr = pReq->store ( adtString(L"Title"), strTitle );
+		else if (hr == S_OK)
+			pReq->remove ( adtString(L"Title") );
+
+		// Latest size
+		CCLTRY ( pReq->store ( strRefWidth, iPlotW ) );
+		CCLTRY ( pReq->store ( strRefHeight, iPlotH ) );
 
 		// Send request to GNU server.  In order to support multiple
 		// synchronized clients, the server stores the result directly
@@ -255,6 +328,34 @@ HRESULT GnuPlot :: receive ( IReceptor *pr, const WCHAR *pl,
 		else
 			_EMT(Error,adtInt(hr));
 		}	// if
+
+	// Add to plot
+	else if (_RCP(Add))
+		{
+		// State check
+		CCLTRYE ( pDataIn != NULL && iIdx >= 0, ERROR_INVALID_STATE );
+
+		// Add column to request
+		CCLTRY ( addRow ( pDataIn, iIdx ) );
+		}	// else if
+
+	// Reset plot
+	else if (_RCP(Reset))
+		{
+		// Clear vectors of current request
+		iDataW = iDataH = 0;
+		bReq = false;
+		}	// else if
+
+	// State
+	else if (_RCP(Index))
+		iIdx = v;
+	else if (_RCP(Data))
+		{
+		adtIUnknown		unkV(v);
+		_RELEASE(pDataIn);
+		hr = _QISAFE(unkV,IID_IDictionary,&pDataIn);
+		}	// else if
 
 	return hr;
 	}	// receive
@@ -281,25 +382,6 @@ HRESULT GnuPlot :: onStore ( const ADTVALUE &vKey, const ADTVALUE &vValue )
 	////////////////////////////////////////////////////////////////////////
 	HRESULT		hr		= S_OK;
 	adtString	strKey(vKey);
-
-
-	// Add the current vector column to the plot
-	else if (!WCASECMP(L"Add",strKey))
-		{
-		// State check
-		CCLTRYE ( pVct != NULL && iCol >= 0, ERROR_INVALID_STATE );
-
-		// Add column to request
-		CCLTRY ( addCol ( pVct, iCol, iCnt ) );
-		}	// else if
-
-	// Reset the current plot state
-	else if (!WCASECMP(L"Reset",strKey))
-		{
-		// Clear vectors of current request
-		CCLTRY ( pVcts->clear() );
-		bReq = false;
-		}	// else if
 
 	// Plot size.  The plot size can change, as an example, when the hosted window changes size.
 	else if (!WCASECMP(L"Size",strKey))

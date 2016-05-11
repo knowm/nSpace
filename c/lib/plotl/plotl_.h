@@ -125,35 +125,57 @@ class GnuPlotSrvrt :
 /////////
 
 //
-// Class - GnuPlot.  Client node for generating plots via GnuPlot server.
+// Class - Image.  Client node for generating plot images.
+//								(Currently uses Image).
 //
 
-class GnuPlot :
+class Image :
 	public CCLObject,										// Base class
 	public IBehaviour										// Interface
 	{
 	public :
-	GnuPlot ( void );										// Constructor
+	Image ( void );										// Constructor
 
 	// Run-time data
-	IDictionary	*pReq;									// Active plot request
-	IDictionary	*pVcts;									// Request vectors
-	bool			bReq;										// Request is valid
+	IDictionary		*pDataIn;							// Input data dictionary
+	adtInt			iIdx;									// Active index
+	adtString		strTitle;							// Plot title
+	adtInt			iPlotW,iPlotH;						// Plot size (pixels)
+
+	// Plot data
+	IDictionary		*pData;								// Data dictionary
+	IMemoryMapped	*pDataBits;							// Data memory block
+	adtInt			iDataW,iDataH;						// Data Data with and height
+	IDictionary		*pReq;								// Plot request
+	bool				bReq;									// Request is valid
 
 	// CCL
-	CCL_OBJECT_BEGIN(GnuPlot)
+	CCL_OBJECT_BEGIN(Image)
 		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 	virtual HRESULT	construct(void);				// Construct object
 	virtual void		destruct(void);				// Destruct object
 
 	// Connections
+	DECLARE_RCP(Add)
+	DECLARE_RCP(Data)
 	DECLARE_EMT(Error)
+	DECLARE_RCP(Index)
 	DECLARE_CON(Fire)
+	DECLARE_RCP(Reset)
 	BEGIN_BEHAVIOUR()
+		DEFINE_RCP(Add)
+		DEFINE_RCP(Data)
 		DEFINE_EMT(Error)
+		DEFINE_RCP(Index)
 		DEFINE_CON(Fire)
+		DEFINE_RCP(Reset)
 	END_BEHAVIOUR_NOTIFY()
+
+	private :
+
+	// Internal utilities
+	HRESULT addRow ( IDictionary *, U32 );
 	};
 
 #endif
