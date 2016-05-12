@@ -30,30 +30,30 @@
 %		!	Initialize/OnFire						CreateFileSrc/Fire
 
 	% MISCN: Create dictionary to receive information	
-	$	CreateImgDct Misc.Create { Id Adt.Dictionary }
-		!	Initialize/OnFire						CreateImgDct/Fire
+%	$	CreateImgDct Misc.Create { Id Adt.Dictionary }
+%		!	Initialize/OnFire						CreateImgDct/Fire
 
 	% MISCN: Location of test image
-	$	ValueImgLoc Misc.Dist { Value "C:/Oct/Alazar_vs_SP/Alazar_Ethernet/Alignment/Raw/OCT_1.png" }
-		!	Initialize/OnFire						ValueImgLoc/Fire
+%	$	ValueImgLoc Misc.Dist { Value "C:/Oct/Alazar_vs_SP/Alazar_Ethernet/Alignment/Raw/OCT_1.png" }
+%		!	Initialize/OnFire						ValueImgLoc/Fire
 
 	% IMAGEN: Load test image
-	$	LoadPng Image.PersistImage {}
-		!	CreateImgDct/OnFire					LoadPng/Image
-		!	ValueImgLoc/OnFire					LoadPng/Location
-		!	ValueImgLoc/OnFire					LoadPng/Load
-%		!	LoadPng/OnLoad							Debug/Fire
+%	$	LoadPng Image.PersistImage {}
+%		!	CreateImgDct/OnFire					LoadPng/Image
+%		!	ValueImgLoc/OnFire					LoadPng/Location
+%		!	ValueImgLoc/OnFire					LoadPng/Load
+%%		!	LoadPng/OnLoad							Debug/Fire
 
 	%%%%%%%%%%%
 	% Plotting
 	%%%%%%%%%%%
 
 	% PLOTN: Image plot generation
-	$	Plot Plot.Image { Title "This is a test plot" Index 250:int }
-		!	LoadPng/OnLoad							Plot/Data
-		!	LoadPng/OnLoad							Plot/Add
-%		!	LoadPng/OnLoad							Plot/Fire
-		!	Plot/OnFire								Debug/Fire
+%	$	Plot Plot.Image { Title "This is a test plot" Index 250:int }
+%		!	LoadPng/OnLoad							Plot/Data
+%		!	LoadPng/OnLoad							Plot/Add
+%%		!	LoadPng/OnLoad							Plot/Fire
+%		!	Plot/OnFire								Debug/Fire
 
 	%%%%%%%%%%%%%%%%%%%%%%%
 	% Image processing/GPU
