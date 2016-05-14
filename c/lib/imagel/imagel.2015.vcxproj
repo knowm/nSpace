@@ -19,8 +19,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="binary.cpp" />
+    <ClCompile Include="convert.cpp" />
     <ClCompile Include="fft.cpp" />
+    <ClCompile Include="normal.cpp" />
     <ClCompile Include="opencv.cpp" />
+    <ClCompile Include="persist.cpp" />
+    <ClCompile Include="prepare.cpp" />
+    <ClCompile Include="thresh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imagel.h" />

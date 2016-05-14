@@ -74,12 +74,16 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(SDK_OPENCV_x64)\Include;$(VCInstallDir)PlatformSDK\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SDK_OPENCV_x64)\x64\vc11\lib;$(VCInstallDir)PlatformSDK\lib\amd64;$(VSInstallDir)SDK\v2.0\lib\amd64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(SDK_OPENCV_x64)\Include;$(VCInstallDir)PlatformSDK\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SDK_OPENCV_x64)\x64\vc11\lib;$(VCInstallDir)PlatformSDK\lib\amd64;$(VSInstallDir)SDK\v2.0\lib\amd64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -111,6 +115,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <RegisterOutput>true</RegisterOutput>
       <ModuleDefinitionFile>..\dll.def</ModuleDefinitionFile>
+      <AdditionalDependencies>opencv_core2411.lib;opencv_imgproc2411.lib;opencv_highgui2411.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -151,6 +156,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <RegisterOutput>true</RegisterOutput>
       <ModuleDefinitionFile>..\dll.def</ModuleDefinitionFile>
+      <AdditionalDependencies>opencv_core2411.lib;opencv_imgproc2411.lib;opencv_highgui2411.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -165,6 +171,12 @@
     </ProjectReference>
     <ProjectReference Include="..\..\lib\imagel\imagel.2015.vcxproj">
       <Project>{44d3bd75-4549-420c-8b48-d243c02f8ab8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\lib\mathl\mathl.2015.vcxproj">
+      <Project>{47939c76-2e04-4023-adaa-911e6240104b}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\lib\nspcl\nspcl.2015.vcxproj">
+      <Project>{422e909b-a304-47a3-a2e6-8959ff5bc156}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\lib\sysl\sysl.2015.vcxproj">
       <Project>{8532deaa-56d3-4ff4-8fb8-664efe6eef83}</Project>
