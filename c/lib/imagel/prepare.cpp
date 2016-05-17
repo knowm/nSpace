@@ -99,6 +99,10 @@ HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		// Wrap image bits in OpenCv matrix
 		CCLTRY ( image_to_mat ( pImgUse, &pMat ) );
 
+		// Since uploading to a GPU involves a copy, 'own' the pixel
+		// data for self in case the download goes back into the same image bits.
+		CCLOK ( *pMat = pMat->clone(); )
+
 		// Store 'uploaded' image in image dictionary
 		CCLTRY ( pImgUse->store (	adtString(L"cv::Mat"), 
 											adtLong((U64)pMat) ) );

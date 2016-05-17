@@ -117,7 +117,7 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 
 		// Verify size
 		if (	hr == S_OK		&& 
-				(pWnd != NULL	&& (pWnd->cols != pMat->cols || pWnd->cols != pMat->cols)) ||
+				(pWnd != NULL	&& (pWnd->cols != pMat->cols || pWnd->rows != pMat->rows)) ||
 				(pWnd == NULL	&& strWnd.length() > 0 && WCASECMP(strWnd,L"None")) )
 			{
 			// Previous window

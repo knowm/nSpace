@@ -44,6 +44,29 @@
 %		!	ValueImgLoc/OnFire					LoadPng/Load
 %%		!	LoadPng/OnLoad							Debug/Fire
 
+	%%%%%%%%%%%%%
+	% Queue test
+	%%%%%%%%%%%%%
+
+	% MISCN: Async queue testing
+%	$	TestQ Misc.AsyncQ { Size 1000:int Block true:bool }
+%		!	Initialize/OnFire						TestQ/Start
+%		!	Uninitialize/OnFire					TestQ/Stop
+%		!	TestQ/OnFire							Debug/Fire
+
+	% MISCN: Add numbers to queue
+%	$	CntQ Math.Counter { Reset 1:int }
+%		!	Initialize/OnFire						CntQ/Reset
+%		!	CntQ/OnFire								Debug/Fire
+
+	% Queue numbers
+%	!	CntQ/OnFire									TestQ/Fire
+
+	% MISCN: More ?
+%	$	MoreQ Misc.Compare { Left 100:int }
+%		!	CntQ/OnFire								MoreQ/Fire
+%		!	MoreQ/OnGreater						CntQ/Increment
+
 	%%%%%%%%%%%
 	% Plotting
 	%%%%%%%%%%%

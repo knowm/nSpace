@@ -140,6 +140,47 @@ class FFT :
 	};
 
 //
+// Class - Line.  Line drawing node.
+//
+
+class Line :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	Line ( void );											// Constructor
+
+	// Run-time data
+	IDictionary	*pImg;									// Image dictionary
+	adtInt		iR,iB,iG;								// Color
+	adtInt		iX0,iX1,iY0,iY1;						// Endpoints
+	adtInt		iThick;									// Thickness
+
+	// CCL
+	CCL_OBJECT_BEGIN(Line)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_EMT(Error)
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Image)
+	DECLARE_RCP(X0)
+	DECLARE_RCP(Y0)
+	DECLARE_RCP(X1)
+	DECLARE_RCP(Y1)
+	BEGIN_BEHAVIOUR()
+		DEFINE_EMT(Error)
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Image)
+		DEFINE_RCP(X0)
+		DEFINE_RCP(Y0)
+		DEFINE_RCP(X1)
+		DEFINE_RCP(Y1)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
+//
 // Class - Normalize.  Image normalization node.
 //
 

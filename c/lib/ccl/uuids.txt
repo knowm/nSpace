@@ -180,7 +180,7 @@
 2534d0b9-8628-11d2-868c-006008addfed				// CLSID_Endpoint (usbl)
 2534d0ba-8628-11d2-868c-006008addfed				// CLSID_Enum (flycapturel) 
 2534d0bb-8628-11d2-868c-006008addfed				// CLSID_Camera (flycapturel)
-2534d0bc-8628-11d2-868c-006008addfed				// 
+2534d0bc-8628-11d2-868c-006008addfed				// CLSID_Line (imagel)
 2534d0bd-8628-11d2-868c-006008addfed				// 
 2534d0be-8628-11d2-868c-006008addfed				// 
 2534d0bf-8628-11d2-868c-006008addfed				// 
