@@ -89,6 +89,7 @@ HRESULT StringParse :: parseString ( IUnknown *pSpecs,
 	adtString	strName,strRes,strDelim,strType;
 	adtInt		iSz;
 	adtBool		bNum;
+	adtValue		vL;
 
 	// Iterator
 	CCLTRY(_QISAFE(pSpecs,IID_IContainer,&pCont));
@@ -112,20 +113,40 @@ HRESULT StringParse :: parseString ( IUnknown *pSpecs,
 			// Does the format specify a size ?  If so we read exactly the number
 			// of characters specified.  If not we read until the next delimiter.
 			// Read exact # of chars.
-			if (pDict->load ( adtString(L"Size"), iSz ) == S_OK && iSz > (U32)0)
+			if (pDict->load ( adtString(L"Size"), vL ) == S_OK)
 				{
-				// Remember and NULL last character
-				wTmp	= pwStr[(*stridx)+iSz];
-				pwStr[(*stridx)+iSz]	= WCHAR('\0');
+				// Non-zero size
+				if ((iSz = vL) > 0)
+					{
+					// Remember and NULL last character
+					wTmp	= pwStr[(*stridx)+iSz];
+					pwStr[(*stridx)+iSz]	= WCHAR('\0');
 
-				// Store
-				CCLOK ( strRes = &(pwStr[(*stridx)]); )
-				CCLOK ( strRes.at(); )
+					// Store
+					CCLOK ( strRes = &(pwStr[(*stridx)]); )
+					CCLOK ( strRes.at(); )
 
-				// Restore character and move to next block
-				pwStr[(*stridx)+iSz]	= wTmp;
-				(*stridx) += iSz;
+					// Restore character and move to next block
+					pwStr[(*stridx)+iSz]	= wTmp;
+					(*stridx) += iSz;
+					}	// if
+
+				// A size of zero means no characters are used and the
+				// value for the current name is retrieved from the provided
+				// dictionary
+				else if (iSz == 0)
+					{
+					// Retrieve value from dictionary
+					CCLTRY ( pDctRs->load ( strName, Value ) );
+
+					// Debug
+					if (hr != S_OK)
+						lprintf ( LOG_WARN, L"Name '%s' not found in result dictionary",
+										(LPCWSTR) strName );
+					}	// else if
+
 				}	// if
+
 			// Read until delimiter
 			else
 				{
@@ -202,7 +223,7 @@ HRESULT StringParse :: parseString ( IUnknown *pSpecs,
 
 				// Format value from string.  Cannot use 'adtValue::fromString' because
 				// finer control over formatting is allowed..
-				if (hr == S_OK)
+				if (hr == S_OK && iSz > 0)
 					{
 					switch (Value.vtype)
 						{
@@ -291,7 +312,6 @@ HRESULT StringParse :: parseString ( IUnknown *pSpecs,
 									}	// while
 
 								}	// if
-
 							CCLOK  ( adtValue::clear ( Value ); )
 							CCLTRY ( adtValue::copy ( strRes, Value ) );
 							break;

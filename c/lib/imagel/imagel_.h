@@ -104,6 +104,44 @@ class Convert :
 	};
 
 //
+// Class - Create.  Create a new image.
+//
+
+class Create :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	Create ( void );										// Constructor
+
+	// Run-time data
+	IDictionary	*pImg;									// Image dictionary
+	adtString	strFmt;									// Format
+	adtInt		iW,iH;									// Size
+
+	// CCL
+	CCL_OBJECT_BEGIN(Create)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Format)
+	DECLARE_RCP(Height)
+	DECLARE_RCP(Image)
+	DECLARE_EMT(Error)
+	DECLARE_RCP(Width)
+	BEGIN_BEHAVIOUR()
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Format)
+		DEFINE_RCP(Height)
+		DEFINE_RCP(Image)
+		DEFINE_EMT(Error)
+		DEFINE_RCP(Width)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
+//
 // Class - FFT.  FFT processing node.
 //
 

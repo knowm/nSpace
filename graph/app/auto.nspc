@@ -44,6 +44,60 @@
 %		!	ValueImgLoc/OnFire					LoadPng/Load
 %%		!	LoadPng/OnLoad							Debug/Fire
 
+	%%%%%%%%%%%
+	% Plotting
+	%%%%%%%%%%%
+
+	%% Plot
+
+	% PLOTN: Image plot generation
+%	$	Plot Plot.Image { Title "This is a test plot" LabelX0 "A-Scan" LabelY0 "Intensity" }
+
+	%% X-axis
+
+	% ADTN: Load width of incoming image
+%	$	LoadImgW Adt.Load { Key Width }
+%		!	LoadPng/OnLoad							LoadImgW/Dictionary
+%		!	LoadPng/OnLoad							LoadImgW/Fire
+
+	% MISCN: Create dictionary for X-axis
+%	$	CreateXDct Misc.Create { Id Adt.Dictionary }
+%		!	LoadImgW/OnFire						CreateXDct/Fire
+
+	% IMAGEN: Create a one row "image" for the X-axis
+%	$	CreateImg Image.Create { Height 1:int Format "F32x2" }
+%		!	CreateXDct/OnFire						CreateImg/Image
+%		!	LoadImgW/OnFire						CreateImg/Width
+%		!	LoadImgW/OnFire						CreateImg/Fire
+
+	% IMAGEN: Download for local use
+%	$	DownloadX Image.Prepare {}
+%		!	CreateImg/OnFire						DownloadX/Download
+
+	% MISCN: First row
+%	$	ValueIdxZero Misc.Dist { Value 0:int }
+%		!	DownloadX/OnDownload					ValueIdxZero/Fire
+%		!	ValueIdxZero/OnFire					Plot/Index
+
+	% Add row
+%	!	DownloadX/OnDownload						Plot/Data
+%	!	DownloadX/OnDownload						Plot/Add
+
+	%% Y-axis
+
+	% MISCN: Selected row
+%	$	ValueIdxRow Misc.Dist { Value 250:int }
+%		!	LoadPng/OnLoad							ValueIdxRow/Fire
+%		!	ValueIdxRow/OnFire					Plot/Index
+
+	% Add row
+%	!	LoadPng/OnLoad								Plot/Data
+%	!	LoadPng/OnLoad								Plot/Add
+
+	% Generate plot
+%	!	LoadPng/OnLoad								Plot/Fire
+%	!	Plot/OnFire									Debug/Fire
+
 	%%%%%%%%%%%%%
 	% Queue test
 	%%%%%%%%%%%%%
@@ -66,17 +120,6 @@
 %	$	MoreQ Misc.Compare { Left 100:int }
 %		!	CntQ/OnFire								MoreQ/Fire
 %		!	MoreQ/OnGreater						CntQ/Increment
-
-	%%%%%%%%%%%
-	% Plotting
-	%%%%%%%%%%%
-
-	% PLOTN: Image plot generation
-%	$	Plot Plot.Image { Title "This is a test plot" Index 250:int }
-%		!	LoadPng/OnLoad							Plot/Data
-%		!	LoadPng/OnLoad							Plot/Add
-%%		!	LoadPng/OnLoad							Plot/Fire
-%		!	Plot/OnFire								Debug/Fire
 
 	%%%%%%%%%%%%%%%%%%%%%%%
 	% Image processing/GPU

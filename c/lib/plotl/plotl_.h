@@ -148,6 +148,8 @@ class Image :
 	adtInt			iDataW,iDataH;						// Data Data with and height
 	IDictionary		*pReq;								// Plot request
 	bool				bReq;									// Request is valid
+	adtString		strLblX0,strLblX1;				// X-axis labels
+	adtString		strLblY0,strLblY1;				// Y-axis labels
 
 	// CCL
 	CCL_OBJECT_BEGIN(Image)

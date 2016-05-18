@@ -388,6 +388,9 @@ HRESULT image_from_mat ( Mat *pM, IDictionary *pImg )
 					case CV_16U:
 						CCLTRY ( pImg->store ( strRefFormat, adtString(L"U16x2") ) );
 						break;
+					case CV_32F:
+						CCLTRY ( pImg->store ( strRefFormat, adtString(L"F32x2") ) );
+						break;
 					default :
 						hr = E_NOTIMPL;
 					}	// switch

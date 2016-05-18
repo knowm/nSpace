@@ -76,18 +76,16 @@ HRESULT Image :: addRow ( IDictionary *pDct, U32 iRow )
 	float				*pfData	= NULL;
 	adtInt			iW,iH;
 	adtString		strFmt;
-	WCHAR				wName[21];
 	adtValue			vL;
 	adtIUnknown		unkV;
 
 	// Add the data row to the client plot request
 
-	// Next vector name
-	CCLOK ( swprintf ( SWPF(wName,21), L"V%d", (U32)iH ); )
-
 	// Format of incoming data
 	CCLTRY ( pDct->load ( adtString(L"Format"), vL ) );
 	CCLTRYE( (strFmt = vL).length() > 0, E_INVALIDARG );
+
+	// Add incoming data formats as necessary.
 
 	// Lock down incoming data
 	CCLTRY ( pDct->load ( strRefWidth, vL ) );
@@ -102,11 +100,18 @@ HRESULT Image :: addRow ( IDictionary *pDct, U32 iRow )
 	CCLTRYE ( iRow < iH, E_INVALIDARG );
 
 	// Another row
-	CCLOK ( iDataH = iDataH + 1; )
+	CCLOK	( iDataH = iDataH + 1; )
+	CCLTRY( pData->store ( strRefHeight, iDataH ) );
 
 	// First vector ?
 	if (hr == S_OK && iDataW == 0)
+		{
+		// First vector determines width
 		iDataW = iW;
+
+		// Update data information
+		CCLTRY ( pData->store ( strRefWidth, iDataW ) );
+		}	// if
 
 	// For now vectors must be same length
 	CCLTRYE ( iW == iDataW, E_INVALIDARG );
@@ -117,7 +122,7 @@ HRESULT Image :: addRow ( IDictionary *pDct, U32 iRow )
 	CCLOK  ( pfData = (float *)pvData; )
 	CCLOK  ( pfData += (iDataH-1)*iDataW; )
 
-	// Add more formts as necessary
+	// Add more formats as necessary
 	if (!WCASECMP(strFmt,L"U16x2"))
 		{
 		// Source bits
@@ -127,31 +132,14 @@ HRESULT Image :: addRow ( IDictionary *pDct, U32 iRow )
 		for (U32 c = 0;c < iW;++c)
 			pfData[c] = piSrc[c];
 		}	// if
-/*
-	// Generate label based on optional name and units
-	if (hr == S_OK && pDct->load ( adtString(L"Name"), vL ) == S_OK)
+	else if (!WCASECMP(strFmt,L"F32x2"))
 		{
-		adtString	strLabel(vL);
+		// Source bits
+		float *pfBits = (float *)pvBits + (iRow*iW);
 
-		// Units ?
-		if (pDct->load ( adtString(L"Units"), vL ) == S_OK)
-			{
-			adtString strUnit(vL);
-
-			// Append to label
-			CCLTRY ( strLabel.append ( L" (" ) );
-			CCLTRY ( strLabel.append ( strUnit ) );
-			CCLTRY ( strLabel.append ( L")" ) );
-			}	// if
-
-		// Store as label
-//		CCLTRY ( pDctV->store ( adtString(L"Label"), strLabel ) );
-		}	// if
-*/
-
-	// Update plot data information
-	CCLTRY ( pData->store ( strRefWidth, iDataW ) );
-	CCLTRY ( pData->store ( strRefHeight, iDataH ) );
+		// Copy row
+		memcpy ( pfData, pfBits, iW*sizeof(float) );
+		}	// else if
 
 	// Clean up
 	_UNLOCK(pDataBits,pvData);
@@ -236,6 +224,14 @@ HRESULT Image :: onAttach ( bool bAttach )
 			iPlotW = vL;
 		if (pnDesc->load ( adtString(L"Height"), vL ) == S_OK)
 			iPlotH = vL;
+		if (pnDesc->load ( adtString(L"LabelX0"), vL ) == S_OK)
+			adtValue::toString ( vL, strLblX0 );
+		if (pnDesc->load ( adtString(L"LabelX1"), vL ) == S_OK)
+			adtValue::toString ( vL, strLblX1 );
+		if (pnDesc->load ( adtString(L"LabelY0"), vL ) == S_OK)
+			adtValue::toString ( vL, strLblY0 );
+		if (pnDesc->load ( adtString(L"LabelY1"), vL ) == S_OK)
+			adtValue::toString ( vL, strLblY1 );
 
 		// Single GnuPlot server
 		if (hr == S_OK && uGnuCnt == 0)
@@ -312,6 +308,24 @@ HRESULT Image :: receive ( IReceptor *pr, const WCHAR *pl,
 			hr = pReq->store ( adtString(L"Title"), strTitle );
 		else if (hr == S_OK)
 			pReq->remove ( adtString(L"Title") );
+
+		// Latest labels
+		if (hr == S_OK && strLblX0.length() > 0)
+			hr = pReq->store ( adtString ( L"LabelX0" ), strLblX0 );
+		else
+			pReq->remove ( adtString(L"LabelX0") );
+		if (hr == S_OK && strLblX1.length() > 0)
+			hr = pReq->store ( adtString ( L"LabelX1" ), strLblX1 );
+		else
+			pReq->remove ( adtString(L"LabelX1") );
+		if (hr == S_OK && strLblY0.length() > 0)
+			hr = pReq->store ( adtString ( L"LabelY0" ), strLblY0 );
+		else
+			pReq->remove ( adtString(L"LabelY0") );
+		if (hr == S_OK && strLblY1.length() > 0)
+			hr = pReq->store ( adtString ( L"LabelY1" ), strLblY1 );
+		else
+			pReq->remove ( adtString(L"LabelY1") );
 
 		// Latest size
 		CCLTRY ( pReq->store ( strRefWidth, iPlotW ) );
