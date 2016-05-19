@@ -497,6 +497,38 @@ class Resource :
 	};
 
 //
+// Class - Serial.  Node to setup a serial port stream.
+//
+
+class Serial :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	Serial ( void );										// Constructor
+
+	// Run-time data
+	adtInt		iBaud;									// Baud rate
+	adtInt		iBits;									// Data bits
+	adtString	strParity;								// Parity
+	adtFloat		fStop;									// Stop bits
+
+	// CCL
+	CCL_OBJECT_BEGIN(Serial)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+	virtual void		destruct	( void );			// Destruct object
+
+	// Connections
+	DECLARE_CON(Fire)
+	DECLARE_EMT(Error)
+	BEGIN_BEHAVIOUR()
+		DEFINE_CON(Fire)
+		DEFINE_EMT(Error)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
+//
 // Class - StreamOp.  Node to perform operations on a stream.
 //
 

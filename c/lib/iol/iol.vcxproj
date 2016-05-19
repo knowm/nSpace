@@ -25,6 +25,7 @@
     <ClCompile Include="memblck.cpp" />
     <ClCompile Include="persist.cpp" />
     <ClCompile Include="resource.cpp" />
+    <ClCompile Include="serial.cpp" />
     <ClCompile Include="stmcopy.cpp" />
     <ClCompile Include="stmfs.cpp" />
     <ClCompile Include="stmmem.cpp" />
