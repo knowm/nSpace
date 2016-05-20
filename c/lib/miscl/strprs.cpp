@@ -84,6 +84,7 @@ HRESULT StringParse :: parseString ( IUnknown *pSpecs,
 	IIt			*pIt			= NULL;
 	WCHAR			wTmp			= 0;
 	U32			dpos			= 0;
+	bool			bSzZ			= false;
 	U32			dlen,idx;
 	adtIUnknown	unkV;
 	adtString	strName,strRes,strDelim,strType;
@@ -138,6 +139,9 @@ HRESULT StringParse :: parseString ( IUnknown *pSpecs,
 					{
 					// Retrieve value from dictionary
 					CCLTRY ( pDctRs->load ( strName, Value ) );
+
+					// Size was explicity specified as zero
+					CCLOK ( bSzZ = true; )
 
 					// Debug
 					if (hr != S_OK)
@@ -223,7 +227,7 @@ HRESULT StringParse :: parseString ( IUnknown *pSpecs,
 
 				// Format value from string.  Cannot use 'adtValue::fromString' because
 				// finer control over formatting is allowed..
-				if (hr == S_OK && iSz > 0)
+				if (hr == S_OK && !bSzZ)
 					{
 					switch (Value.vtype)
 						{

@@ -144,6 +144,19 @@ HRESULT Serial :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 
 				// New settings
 				CCLTRYE ( SetCommState ( hPort, &dcb ) == TRUE, GetLastError() );
+
+				// Timeouts
+				if (hr == S_OK)
+					{
+					COMMTIMEOUTS	cto;
+
+					// Set communication timeouts TODO: Node properties
+					memset ( &cto, 0, sizeof(cto) );
+					cto.ReadIntervalTimeout			= 20;
+					cto.ReadTotalTimeoutConstant	= 1000;
+					cto.WriteTotalTimeoutConstant	= 1000;
+					CCLTRYE ( SetCommTimeouts ( hPort, &cto ) == TRUE, GetLastError() );
+					}	// if
 				}	// if
 
 			}	// if
@@ -154,6 +167,9 @@ HRESULT Serial :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			_EMT(Fire,v);
 		else
 			_EMT(Error,adtInt(hr) );
+
+		// Clean up
+		_RELEASE(pRes);
 		}	// if
 
 	// State

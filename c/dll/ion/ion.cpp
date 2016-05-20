@@ -28,6 +28,7 @@ CCL_OBJLIST_BEGIN()
 	#ifdef	_WIN32
 	CCL_OBJLIST_ENTRY	(EnumDevices)
 	#endif
+	CCL_OBJLIST_ENTRY	(File)
 	CCL_OBJLIST_ENTRY	(Resource)
 	CCL_OBJLIST_ENTRY	(Persist)
 	CCL_OBJLIST_ENTRY	(Serial)

@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="bytecach.cpp" />
     <ClCompile Include="enumdevs.cpp" />
+    <ClCompile Include="file.cpp" />
     <ClCompile Include="lock.cpp" />
     <ClCompile Include="memblck.cpp" />
     <ClCompile Include="persist.cpp" />

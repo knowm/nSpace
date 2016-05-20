@@ -421,6 +421,64 @@ class EnumDevices :
 #endif
 
 //
+// Class - File.  General file I/O node.
+//
+
+class File :
+	public CCLObject,										// Base class
+	public IBehaviour,									// Interface
+	public ITickable										// Interface
+	{
+	public :
+	File ( void );											// Constructor
+
+	// Run-time data
+	#ifdef		_WIN32
+	HANDLE		hFile;									// File handle
+	#endif
+	IByteStream	*pStmIo;									// I/O stream
+	adtInt		iSzIo;									// I/O size
+	HANDLE		hevWr,hevRd;							// I/O events
+	adtBool		bAsync;									// Asynchronous reads ?
+	IThread		*pThrd;									// Asynchronous read thread
+	HANDLE		hevStop;									// Stop event for read thread
+	U8				*pcBfr;									// I/O buffer
+	adtInt		iSzBfr;									// Buffer size
+
+	// 'ITickable' members
+	STDMETHOD(tick)		( void );
+	STDMETHOD(tickAbort)	( void );
+	STDMETHOD(tickBegin)	( void );
+	STDMETHOD(tickEnd)	( void );
+
+	// CCL
+	CCL_OBJECT_BEGIN(File)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+	virtual HRESULT	construct	( void );		// Construct object
+	virtual void		destruct		( void );		// Destruct object
+
+	// Connections
+	DECLARE_EMT(Error)
+	DECLARE_RCP(File)
+	DECLARE_CON(Read)
+	DECLARE_RCP(Stream)
+	DECLARE_CON(Write)
+	BEGIN_BEHAVIOUR()
+		DEFINE_EMT(Error)
+		DEFINE_RCP(File)
+		DEFINE_CON(Read)
+		DEFINE_RCP(Stream)
+		DEFINE_CON(Write)
+	END_BEHAVIOUR_NOTIFY()
+
+	private :
+
+	// Internal utilities
+	HRESULT	fileIo	( BOOL, DWORD, DWORD, DWORD * );
+	};
+
+//
 // Class - Persist.  Node to save/load values to/from streams.
 //
 

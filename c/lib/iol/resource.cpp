@@ -110,7 +110,7 @@ HRESULT Resource :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v 
 		CCLTRYE ( pRes != NULL, ERROR_INVALID_STATE );
 
 		// Access
-		lprintf ( LOG_INFO, L"Close:pRes %p\r\n", pRes );
+//		lprintf ( LOG_INFO, L"Close:pRes %p\r\n", pRes );
 		CCLTRY ( pRes->close() );
 		}	// else if
 
