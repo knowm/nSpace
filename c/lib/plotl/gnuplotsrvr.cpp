@@ -15,6 +15,7 @@
 static U32	gnuPipeCnt	= 1;
 
 // String references
+adtString strRefData		( L"Data" );
 adtString strRefWidth	( L"Width" );
 adtString strRefHeight	( L"Height" );
 adtString strRefFormat	( L"Format" );
@@ -62,8 +63,6 @@ GnuPlotSrvr :: GnuPlotSrvr ( void )
 	pDctImg		= NULL;
 	pBits			= NULL;
 	pvBits		= NULL;
-	memset ( pDctV, 0, sizeof(pDctV) );
-	memset ( pValV, 0, sizeof(pValV) );
 	}	// GnuPlotSrvr
 
 HRESULT GnuPlotSrvr :: construct ( void )
@@ -126,19 +125,16 @@ HRESULT GnuPlotSrvr :: plot ( IDictionary *pReq )
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	HRESULT			hr				= S_OK;
-	IDictionary		*pVcts		= NULL;
-	U32				iRows			= 0;
-	U32				iCols			= 0;
-	IMemoryMapped	*pBlk			= NULL;
-	float				*pfBlk		= NULL;
-	U32				cnt			= 0;
-	bool				b3D			= false;
+	HRESULT			hr			= S_OK;
+	IDictionary		*pData	= NULL;
+	IMemoryMapped	*pBlk		= NULL;
+	float				*pfBlk	= NULL;
+	bool				b3D		= false;
 	adtIUnknown		unkV;
 	adtValue			vL;
-	adtFloat			vF;
 	adtString		strV;
-	float				fVal;
+	float				fV;
+	adtInt			iRows,iCols;
 
 	// Thread safety in case of multiple plot clients
 	csPlot.enter();
@@ -147,77 +143,57 @@ HRESULT GnuPlotSrvr :: plot ( IDictionary *pReq )
 	// for each column of data.  Each vector dictionary also contains
 	// options like labels.
 
-	// Access vectors 
-	CCLTRY ( pReq->load ( adtString(L"Vector"), vL ) );
-	CCLTRY ( _QISAFE((unkV=vL),IID_IDictionary,&pVcts) );
+	// Access data block information
+	CCLTRY ( pReq->load ( strRefData, vL ) );
+	CCLTRY ( _QISAFE((unkV=vL),IID_IDictionary,&pData) );
+	CCLTRY ( pData->load ( adtString(L"Bits"), vL ) );
+	CCLTRY ( _QISAFE((unkV=vL),IID_IMemoryMapped,&pBlk) );
+	CCLTRY ( pBlk->lock ( 0, 0, (void **) &pfBlk, NULL ) );
+	CCLTRY ( pData->load ( strRefWidth, vL ) );
+	CCLOK  ( iCols = vL; )
+	CCLTRY ( pData->load ( strRefHeight, vL ) );
+	CCLOK  ( iRows = vL; )
 
 	// 3D plot ?
 	if (hr == S_OK && pReq->load ( adtString(L"3D"), vL ) == S_OK &&
 			adtBool(vL) == true )
 		b3D = true;
 
-	// Reset labels from last time in case they are not specified
-	CCLTRY ( pTick->writeStr ( L"set xlabel" ) );
-	CCLTRY ( pTick->writeStr ( L"set ylabel" ) );
-	if (hr == S_OK && b3D)
-		hr = pTick->writeStr ( L"set zlabel" );
-
-	// Search for ordered vector names until they run out
-	for (cnt = 0;hr == S_OK && cnt < MAX_VECTS;++cnt)
+	// Optional labels
+	for (U32 i = 0;hr == S_OK && i < 4;++i)
 		{
-		WCHAR	wName[21];
-		U32	nc,nr;
+		// Label command
+		adtString	strCmd = (i == 0) ?	L"set xlabel"	: 
+									(i == 1) ?	L"set x2label" :
+									(i == 2) ?	L"set ylabel"	: 
+													L"set y2label";
+//													L"set zlabel";
 
-		// Does next vector key exist ?
-		CCLOK ( swprintf ( SWPF(wName,21), L"V%d", cnt ); )
-		if (hr == S_OK && pVcts->load ( adtString(wName), vL ) != S_OK)
-			break;
-		CCLTRY( _QISAFE((unkV=vL),IID_IDictionary,&(pDctV[cnt])) );
+		// Label key
+		WCHAR	*pwKey =	(i == 0) ? L"LabelX0" :
+							(i == 1) ? L"LabelX1" :
+							(i == 2) ? L"LabelY0" : L"LabelY1";
 
-		// Access vector information
-//		CCLTRY( mathVector ( pDctV[cnt], &nc, &nr, &(pValV[cnt]) ) );
-		nc = nr = 0;
-hr = S_FALSE;
-
-		// A specific column can be specified for plotting
-		CCLOK ( iColV[cnt] = 0; )
-		if (hr == S_OK && pDctV[cnt]->load ( adtString(L"PlotColumn"), vL ) == S_OK)
-			iColV[cnt] = adtInt(vL);
-
-		// Rows must match for all vectors
-		if (cnt == 0)
+		// Label specified ?
+		if (hr == S_OK && pReq->load ( adtString(pwKey), vL ) == S_OK)
 			{
-			iRows = nr;
-			iCols = nc;
-			}	// if
-		else
-			{
-			CCLTRYE ( iRows == nr && iCols == nc, E_INVALIDARG );
-			if (hr != S_OK)
-				dbgprintf ( L"GnuPlotSrvr::onStore:Fire:Vector %d does not match size\r\n", cnt );
-			}	// else
+			adtString strLbl(vL);
 
-		// Optional axis labelling (0 = X, 1 = Y, 2 = Z)
-		if (hr == S_OK && cnt < 3 && pDctV[cnt]->load ( adtString(L"Label"), vL ) == S_OK)
-			{
-			adtString	strLbl(vL);
-			adtString	strCmd = (cnt == 0) ? L"set xlabel '" : 
-										(cnt == 1) ? L"set ylabel '" : L"set zlabel '";
-
-			// Generate and send command
-			CCLTRY ( strCmd.append ( strLbl ) );
-			CCLTRY ( strCmd.append ( L"'" ) );
-			if (hr == S_OK && (cnt < 2 || b3D))
-				hr = pTick->writeStr ( strCmd );
+			// Append to command
+			CCLTRY( strCmd.append ( L" '" ) );
+			CCLTRY( strCmd.append ( strLbl ) );
+			CCLTRY( strCmd.append ( L"'" ) );
 			}	// if
 
+		// Send command
+		CCLTRY ( pTick->writeStr ( strCmd ) );
 		}	// for
 
 	// Need at least one X and one Y
-	CCLTRYE ( cnt > 1, E_INVALIDARG );
+	CCLTRYE ( iRows > 1, E_INVALIDARG );
 
 	// For 3D exactly 3D vectors are required
-	CCLTRYE ( !b3D || cnt == 3, E_INVALIDARG );
+	CCLTRYE ( !b3D || iRows == 3, E_INVALIDARG );
 
 	//
 	// Range
@@ -247,30 +223,30 @@ hr = S_FALSE;
 		fMinp[2] = adtFloat(vL);
 	
 	// Initialize limits
-	for (U32 v = 0;hr == S_OK && v < cnt && v < 3;++v)
+	for (U32 v = 0;hr == S_OK && v < iRows && v < 3;++v)
 		{
 		fMaxv[v] = -1.e28f;
 		fMinv[v] = +1.e28f;
 		}	// for
 
 	// Get limits on all of the specified vector information
-	for (U32 v = 0;hr == S_OK && v < cnt && v < 3;++v)
+	for (U32 v = 0;hr == S_OK && v < iRows && v < 3;++v)
 		{
 		// TODO: Current using Y0 as the 'scaling vector'.  Possibly
 		// scan all provided Y-columns for limits for 2D multi-Y plots
 
 		// Limits of column
-		for (U32 r = 0;hr == S_OK && r < iRows;++r)
+		for (U32 c = 0;hr == S_OK && c < iCols;++c)
 			{
 			// Limits.  For Y axis only include values that are within
 			// the specified X-range.
 			if (	v == 0 || 
-					(vF = pValV[0][r]) >= fMinr[0] && vF <= fMaxr[0] )
+					(pfBlk[c] >= fMinr[0] && pfBlk[c] <= fMaxr[0]) )
 				{
-				if ((vF = pValV[v][r]) < fMinv[v])
-					fMinv[v] = (vF = pValV[v][r]);
-				if ((vF = pValV[v][r]) > fMaxv[v])
-					fMaxv[v] = (vF = pValV[v][r]);
+				if (pfBlk[v*iCols+c] < fMinv[v])
+					fMinv[v] = pfBlk[v*iCols+c];
+				if (pfBlk[v*iCols+c] > fMaxv[v])
+					fMaxv[v] = pfBlk[v*iCols+c];
 				}	// if
 			}	// for
 
@@ -280,21 +256,21 @@ hr = S_FALSE;
 		}	// for
 
 	// Gnuplot cannot handle min and max the same
-	for (U32 v = 0;hr == S_OK && v < cnt && v < 3;++v)
+	for (U32 v = 0;hr == S_OK && v < iRows && v < 3;++v)
 		{
 		// Matching limits ?
 		if (fMinr[v] == fMaxr[v])
 			{
 			// First value
-			vF = pValV[v][0];
+			fV = pfBlk[v*iCols];
 
 			// Span of zero ?
-			if (vF == 0)
-				vF = 1.0f;
+			if (fV == 0)
+				fV = 1.0f;
 
 			// Center the range around value
-			fMinr[v] = vF - .05f*vF;
-			fMaxr[v] = vF + .05f*vF;
+			fMinr[v] = fV - .05f*fV;
+			fMaxr[v] = fV + .05f*fV;
 			}	// if
 
 		}	// for
@@ -349,14 +325,14 @@ hr = S_FALSE;
 			fZlbl = adtFloat(vL);
 
 		// Search pts. for the closest match.  
-		for (U32 v = 1;hr == S_OK && v < cnt && v < MAX_VECTS;++v)
-			for (U32 r = 0;hr == S_OK && r < iRows;++r)
+		for (U32 v = 1;hr == S_OK && v < iRows && v < MAX_VECTS;++v)
+			for (U32 c = 0;hr == S_OK && c < iCols;++c)
 				{
 				// Search using percentages to avoid magnitude differences between 
 				// the axis throwing off the distance calculation.
-				float fValX = ((vF = pValV[0][r])-fMinv[0])/(fMaxv[0]-fMinv[0]);
-				float fValY = ((vF = pValV[v][r])-fMinv[1])/(fMaxv[1]-fMinv[1]);
-				float fValZ = (b3D) ? (((vF = pValV[v][r])-fMinv[2])/(fMaxv[2]-fMinv[2])) : 0;
+				float fValX = (pfBlk[c]-fMinv[0])/(fMaxv[0]-fMinv[0]);
+				float fValY = (pfBlk[v*iCols+c]-fMinv[1])/(fMaxv[1]-fMinv[1]);
+				float fValZ = (b3D) ? ((pfBlk[v*iCols+c]-fMinv[2])/(fMaxv[2]-fMinv[2])) : 0;
 
 				// Distance between this point and target point
 				float fDis =	(fXlbl-fValX)*(fXlbl-fValX) + 
@@ -364,7 +340,7 @@ hr = S_FALSE;
 									(fZlbl-fValZ)*(fZlbl-fValZ) ;
 
 				// First point is always the closest or check for even closer ptr.
-				if ( (v == 1 && r == 0) || fDis < fDisMin )
+				if ( (v == 1 && c == 0) || fDis < fDisMin )
 					{
 					// Assign pt.
 					fXAt = fValX;
@@ -491,26 +467,26 @@ hr = S_FALSE;
 		if (hr == S_OK && !b3D)
 			{
 			// Record command, each column
-			for (U32 i = 1;hr == S_OK && i < cnt;++i)
+			for (U32 i = 1;hr == S_OK && i < iRows;++i)
 				{
 				// Next line
 				CCLOK ( swprintf ( SWPF(wBfrLn,101), 
-							L"'-' binary record=%d with lines ls %d title \"", (U32)adtInt(iRows), i ); )
+							L"'-' binary record=%d with lines ls %d title \"", (U32)adtInt(iCols), i ); )
 				CCLTRY( strCmdBfr.append ( wBfrLn ) );
 
 				// Label for plot, default or specified
-				if (hr == S_OK && pDctV[i]->load ( adtString(L"Label"), vL ) == S_OK)
-					hr = strCmdBfr.append ( adtString(vL) );
-				else if (hr == S_OK)
-					{
+//				if (hr == S_OK && pDctV[i]->load ( adtString(L"Label"), vL ) == S_OK)
+//					hr = strCmdBfr.append ( adtString(vL) );
+//				else if (hr == S_OK)
+//					{
 					// Default
 					CCLOK ( swprintf ( SWPF(wBfrLn,101), L"Series %d", i ); )
 					CCLOK ( strCmdBfr.append ( wBfrLn ); )
-					}	// else
+//					}	// else
 				CCLTRY ( strCmdBfr.append ( L"\"" ) );
 
 				// Separator
-				if (hr == S_OK && i+1 < cnt)
+				if (hr == S_OK && i+1 < iRows)
 					hr = strCmdBfr.append ( L", " );
 				}	// for
 			}	// if
@@ -548,18 +524,18 @@ hr = S_FALSE;
 		// be sent for every plot/Y vector.
 		if (!b3D)
 			{
-			for (U32 v = 1;hr == S_OK && v < cnt && v < MAX_VECTS;++v)
+			for (U32 v = 1;hr == S_OK && v < iRows && v < MAX_VECTS;++v)
 				{
 				// Send vector X (Y)
-				for (U32 r = 0;hr == S_OK && r < iRows;++r)
+				for (U32 c = 0;hr == S_OK && c < iCols;++c)
 					{
 					// X value
-					fVal = (vF = pValV[0][r]);
-					hr = pTick->write ( &fVal, sizeof(float) );
+					fV = pfBlk[c];
+					hr = pTick->write ( &fV, sizeof(float) );
 
 					// Y value
-					fVal = (vF = pValV[v][r]);
-					hr = pTick->write ( &fVal, sizeof(float) );
+					fV = pfBlk[v*iCols+c];
+					hr = pTick->write ( &fV, sizeof(float) );
 					}	// for
 				}	// for
 			}	// if
@@ -568,19 +544,19 @@ hr = S_FALSE;
 		else
 			{
 			// Send vector X,Y,Z
-			for (U32 r = 0;hr == S_OK && r < iRows;++r)
+			for (U32 c = 0;hr == S_OK && c < iCols;++c)
 				{
 				// X value
-				fVal = (vF = pValV[0][r]);
-				hr = pTick->write ( &fVal, sizeof(float) );
+				fV = pfBlk[c];
+				hr = pTick->write ( &fV, sizeof(float) );
 
 				// Y value
-				fVal = (vF = pValV[1][r]);
-				hr = pTick->write ( &fVal, sizeof(float) );
+				fV = pfBlk[1*iCols+c];
+				hr = pTick->write ( &fV, sizeof(float) );
 
 				// Z value
-				fVal = (vF = pValV[2][r]);
-				hr = pTick->write ( &fVal, sizeof(float) );
+				fV = pfBlk[2*iCols+c];
+				hr = pTick->write ( &fV, sizeof(float) );
 				}	// for
 			}	// else
 
@@ -618,13 +594,9 @@ hr = S_FALSE;
 		pReq->store ( adtString(L"OnError"), adtInt(hr) );
 
 	// Clean up
-	_RELEASE(pVcts);
-	_RELEASE(pReq);
-	for (U32 v = 0;v < cnt && v < MAX_VECTS;++v)
-		{
-		_RELEASE(pDctV[v]);
-		pValV[v] = NULL;
-		}	// for
+	_UNLOCK(pBlk,pfBlk);
+	_RELEASE(pBlk);
+	_RELEASE(pData);
 
 	// Thread safety
 	csPlot.leave();

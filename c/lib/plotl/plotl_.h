@@ -50,9 +50,6 @@ class GnuPlotSrvr :
 	U16						uStride;						// Image stride
 	sysCS						csPlot;						// Thread safety
 	sysEvent					evPlot;						// Plot complete
-	IDictionary				*pDctV[MAX_VECTS];		// Vector values
-	ADTVALUE					*pValV[MAX_VECTS];		// Vector values
-	U32						iColV[MAX_VECTS];			// Vector column
 
 	// Utilities
 	STDMETHOD(run)		( bool );						// Run/stop server
@@ -137,7 +134,7 @@ class Image :
 	Image ( void );										// Constructor
 
 	// Run-time data
-	IDictionary		*pDataIn;							// Input data dictionary
+	IUnknown			*pDataIn;							// Input data object
 	adtInt			iIdx;									// Active index
 	adtString		strTitle;							// Plot title
 	adtInt			iPlotW,iPlotH;						// Plot size (pixels)
@@ -177,7 +174,7 @@ class Image :
 	private :
 
 	// Internal utilities
-	HRESULT addRow ( IDictionary *, U32 );
+	HRESULT addRow ( IUnknown *, U32 );
 	};
 
 #endif

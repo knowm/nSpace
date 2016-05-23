@@ -469,6 +469,13 @@ HRESULT image_to_mat ( IDictionary *pImg, Mat **ppM )
 		CCLTRYE ( ((*ppM) = new Mat ( h, w, CV_8SC1, pvBits )) != NULL,
 						E_OUTOFMEMORY );
 		}	// if
+
+	// Image formats
+	else if (hr == S_OK && !WCASECMP(strFmt,L"B8G8R8"))
+		{
+		CCLTRYE ( ((*ppM) = new Mat ( h, w, CV_8UC3, pvBits )) != NULL,
+						E_OUTOFMEMORY );
+		}	// if
 	else 
 		hr = ERROR_NOT_SUPPORTED;
 

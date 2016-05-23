@@ -53,7 +53,7 @@ Image :: Image ( void )
 
 	}	// Image
 
-HRESULT Image :: addRow ( IDictionary *pDct, U32 iRow )
+HRESULT Image :: addRow ( IUnknown *pUnk, U32 iRow )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -61,40 +61,60 @@ HRESULT Image :: addRow ( IDictionary *pDct, U32 iRow )
 	//		-	Adds a row of data to the current data block.
 	//
 	//	PARAMETERS
-	//		-	pDct contains the data
-	//		-	col is the column
-	//		-	rows is the number of rows in plot to count (0 = all)
+	//		-	pUnk contains the data
+	//		-	iRow is the row number to add
 	//
 	//	RETURN VALUE
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	HRESULT			hr			= S_OK;
-	IMemoryMapped	*pBits	= NULL;
-	VOID				*pvBits	= NULL;
-	VOID				*pvData	= NULL;
-	float				*pfData	= NULL;
+	HRESULT			hr				= S_OK;
+	IDictionary		*pDctData	= NULL;
+	IMemoryMapped	*pBits		= NULL;
+	VOID				*pvBits		= NULL;
+	VOID				*pvData		= NULL;
+	float				*pfData		= NULL;
 	adtInt			iW,iH;
 	adtString		strFmt;
 	adtValue			vL;
 	adtIUnknown		unkV;
 
-	// Add the data row to the client plot request
+	//
+	// Add row from active data object.
+	// Add as many different formats as necessary over time.
+	//
 
-	// Format of incoming data
-	CCLTRY ( pDct->load ( adtString(L"Format"), vL ) );
-	CCLTRYE( (strFmt = vL).length() > 0, E_INVALIDARG );
+	// Dictionary ?
+	if (hr == S_OK && _QI(pUnk,IID_IDictionary,&pDctData) == S_OK)
+		{
+		// Format specified for incoming data ?
+		if (hr == S_OK && pDctData->load ( adtString(L"Format"), vL ) == S_OK)
+			{
+			// Format of incoming data
+			CCLTRYE( (strFmt = vL).length() > 0, E_INVALIDARG );
 
-	// Add incoming data formats as necessary.
+			// Lock down incoming data
+			CCLTRY ( pDctData->load ( strRefWidth, vL ) );
+			CCLOK  ( iW = vL; )
+			CCLTRY ( pDctData->load ( strRefHeight, vL ) );
+			CCLOK  ( iH = vL; )
+			CCLTRY ( pDctData->load ( strRefBits, vL ) );
+			CCLTRY ( _QISAFE((unkV=vL),IID_IMemoryMapped,&pBits) );
+			CCLTRY ( pBits->lock ( 0, 0, &pvBits, NULL ) );
+			}	// if
 
-	// Lock down incoming data
-	CCLTRY ( pDct->load ( strRefWidth, vL ) );
-	CCLOK  ( iW = vL; )
-	CCLTRY ( pDct->load ( strRefHeight, vL ) );
-	CCLOK  ( iH = vL; )
-	CCLTRY ( pDct->load ( strRefBits, vL ) );
-	CCLTRY ( _QISAFE((unkV=vL),IID_IMemoryMapped,&pBits) );
-	CCLTRY ( pBits->lock ( 0, 0, &pvBits, NULL ) );
+		// No format, for now assume add list of values
+		else if (hr == S_OK)
+			{
+			U32	sz;
+
+			// Count is 'width'
+			CCLTRY ( pDctData->size ( &sz ) );
+			CCLOK  ( iW = sz; )
+			CCLOK  ( iH = 1; )
+			}	// else if
+
+		}	// if
 
 	// Valid row specified ?
 	CCLTRYE ( iRow < iH, E_INVALIDARG );
@@ -123,28 +143,57 @@ HRESULT Image :: addRow ( IDictionary *pDct, U32 iRow )
 	CCLOK  ( pfData += (iDataH-1)*iDataW; )
 
 	// Add more formats as necessary
-	if (!WCASECMP(strFmt,L"U16x2"))
+	if (hr == S_OK && pDctData != NULL)
 		{
-		// Source bits
-		U16	*piSrc = ((U16 *) pvBits) + (iRow*iW);
+		if (!WCASECMP(strFmt,L"U16x2"))
+			{
+			// Source bits
+			U16	*piSrc = ((U16 *) pvBits) + (iRow*iW);
 
-		// Copy into new row
-		for (U32 c = 0;c < iW;++c)
-			pfData[c] = piSrc[c];
+			// Copy into new row
+			for (U32 c = 0;c < iW;++c)
+				pfData[c] = piSrc[c];
+			}	// if
+		else if (!WCASECMP(strFmt,L"F32x2"))
+			{
+			// Source bits
+			float *pfBits = (float *)pvBits + (iRow*iW);
+
+			// Copy row
+			memcpy ( pfData, pfBits, iW*sizeof(float) );
+			}	// else if
+		
+		// No format specified
+		else if (strFmt.length() == 0)
+			{
+			IIt	*pIt	= NULL;
+			U32	c		= 0;
+
+			// Iterate and add values from list into vector
+			CCLTRY ( pDctData->iterate ( &pIt ) );
+			while (hr == S_OK && pIt->read ( vL ) == S_OK)
+				{
+				// Add to array
+				pfData[c++] = adtFloat(vL);
+
+				// Clean up
+				pIt->next();
+				}	// while
+
+			// Clean up
+			_RELEASE(pIt);
+			}	// else if
+
+		// Unknown
+		else
+			hr = E_INVALIDARG;
 		}	// if
-	else if (!WCASECMP(strFmt,L"F32x2"))
-		{
-		// Source bits
-		float *pfBits = (float *)pvBits + (iRow*iW);
-
-		// Copy row
-		memcpy ( pfData, pfBits, iW*sizeof(float) );
-		}	// else if
 
 	// Clean up
 	_UNLOCK(pDataBits,pvData);
 	_UNLOCK(pBits,pvBits);
 	_RELEASE(pBits);
+	_RELEASE(pDctData);
 
 	return hr;
 	}	// addRow
@@ -366,9 +415,9 @@ HRESULT Image :: receive ( IReceptor *pr, const WCHAR *pl,
 		iIdx = v;
 	else if (_RCP(Data))
 		{
-		adtIUnknown		unkV(v);
 		_RELEASE(pDataIn);
-		hr = _QISAFE(unkV,IID_IDictionary,&pDataIn);
+		pDataIn = adtIUnknown(v);
+		_ADDREF(pDataIn);
 		}	// else if
 
 	return hr;

@@ -34,7 +34,8 @@
 %		!	Initialize/OnFire						CreateImgDct/Fire
 
 	% MISCN: Location of test image
-%	$	ValueImgLoc Misc.Dist { Value "C:/Oct/Alazar_vs_SP/Alazar_Ethernet/Alignment/Raw/OCT_1.png" }
+%	$	ValueImgLoc Misc.Dist { Value "/Oct/Alazar_vs_SP/Alazar_Ethernet/Alignment/Raw/OCT_1.png" }
+%	$	ValueImgLoc Misc.Dist { Value "/Oct/Alazar_vs_SP/Alazar_Ethernet/Alignment/FFT/OCT_1.png" }
 %		!	Initialize/OnFire						ValueImgLoc/Fire
 
 	% IMAGEN: Load test image
@@ -42,7 +43,7 @@
 %		!	CreateImgDct/OnFire					LoadPng/Image
 %		!	ValueImgLoc/OnFire					LoadPng/Location
 %		!	ValueImgLoc/OnFire					LoadPng/Load
-%%		!	LoadPng/OnLoad							Debug/Fire
+%		!	LoadPng/OnLoad							Debug/Fire
 
 	%%%%%%%%%%%
 	% Plotting
@@ -59,29 +60,40 @@
 %	$	LoadImgW Adt.Load { Key Width }
 %		!	LoadPng/OnLoad							LoadImgW/Dictionary
 %		!	LoadPng/OnLoad							LoadImgW/Fire
+%		!	LoadImgW/OnFire						Debug/Fire
 
-	% MISCN: Create dictionary for X-axis
-%	$	CreateXDct Misc.Create { Id Adt.Dictionary }
-%		!	LoadImgW/OnFire						CreateXDct/Fire
+	%% X-axis values will just be the column number
 
-	% IMAGEN: Create a one row "image" for the X-axis
-%	$	CreateImg Image.Create { Height 1:int Format "F32x2" }
-%		!	CreateXDct/OnFire						CreateImg/Image
-%		!	LoadImgW/OnFire						CreateImg/Width
-%		!	LoadImgW/OnFire						CreateImg/Fire
+	% MISCN: Create list
+%	$	CreateListX Misc.Create { Id Adt.List }
+%		!	LoadImgW/OnFire						CreateListX/Fire
+%		!	CreateListX/OnFire					Plot/Data
 
-	% IMAGEN: Download for local use
-%	$	DownloadX Image.Prepare {}
-%		!	CreateImg/OnFire						DownloadX/Download
+	% MATHN: X-counter
+%	$	CntX Math.Counter { Reset 1:int }
+%		!	CntX/OnFire								Debug/Fire
+
+	% ADTN: Write counter value to list
+%	$	WriteListX Adt.Write {}
+%		!	CreateListX/OnFire					WriteListX/List
+%		!	CntX/OnFire								WriteListX/Fire
+
+	% MISCN: More ?
+%	$	MoreX Misc.Compare { Left 0:int }
+%		!	LoadImgW/OnFire						MoreX/Left
+%		!	CntX/OnFire								MoreX/Fire
+
+	% X counter
+%	!	LoadImgW/OnFire							CntX/Reset
+%	!	MoreX/OnGreater							CntX/Increment
 
 	% MISCN: First row
 %	$	ValueIdxZero Misc.Dist { Value 0:int }
-%		!	DownloadX/OnDownload					ValueIdxZero/Fire
+%		!	MoreX/OnEqual							ValueIdxZero/Fire
 %		!	ValueIdxZero/OnFire					Plot/Index
 
 	% Add row
-%	!	DownloadX/OnDownload						Plot/Data
-%	!	DownloadX/OnDownload						Plot/Add
+%	!	MoreX/OnEqual								Plot/Add
 
 	%% Y-axis
 
@@ -97,6 +109,11 @@
 	% Generate plot
 %	!	LoadPng/OnLoad								Plot/Fire
 %	!	Plot/OnFire									Debug/Fire
+
+	% IMAGEN: Write to debug file
+%	$	SavePlot Image.PersistImage { Location "c:\\temp\\plot.png" }
+%		!	Plot/OnFire								SavePlot/Image
+%		!	Plot/OnFire								SavePlot/Save
 
 	%%%%%%%%%%%%%
 	% Queue test
