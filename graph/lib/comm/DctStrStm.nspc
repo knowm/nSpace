@@ -29,7 +29,7 @@
 		!	Format/OnFire							FmtStr/Format
 		!	Dictionary/OnFire						FmtStr/Dictionary
 		!	Dictionary/OnFire						FmtStr/Fire
-		!	FmtStr/OnFire							Debug/Fire
+%		!	FmtStr/OnFire							Debug/Fire
 
 	% MATHN: Append optional terminator
 	$ AppendTerm Math.Binary { Right "" Op Add }
