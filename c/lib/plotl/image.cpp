@@ -103,7 +103,7 @@ HRESULT Image :: addRow ( IUnknown *pUnk, U32 iRow )
 			CCLTRY ( pBits->lock ( 0, 0, &pvBits, NULL ) );
 			}	// if
 
-		// No format, for now assume add list of values
+		// No format, for now assume list of values
 		else if (hr == S_OK)
 			{
 			U32	sz;
@@ -154,10 +154,19 @@ HRESULT Image :: addRow ( IUnknown *pUnk, U32 iRow )
 			for (U32 c = 0;c < iW;++c)
 				pfData[c] = piSrc[c];
 			}	// if
+		else if (!WCASECMP(strFmt,L"U8x2"))
+			{
+			// Source bits
+			U8	*pcSrc = ((U8 *) pvBits) + (iRow*iW);
+
+			// Copy into new row
+			for (U32 c = 0;c < iW;++c)
+				pfData[c] = pcSrc[c];
+			}	// if
 		else if (!WCASECMP(strFmt,L"F32x2"))
 			{
 			// Source bits
-			float *pfBits = (float *)pvBits + (iRow*iW);
+			float *pfBits = ((float *)pvBits) + (iRow*iW);
 
 			// Copy row
 			memcpy ( pfData, pfBits, iW*sizeof(float) );
@@ -171,7 +180,7 @@ HRESULT Image :: addRow ( IUnknown *pUnk, U32 iRow )
 
 			// Iterate and add values from list into vector
 			CCLTRY ( pDctData->iterate ( &pIt ) );
-			while (hr == S_OK && pIt->read ( vL ) == S_OK)
+			while (hr == S_OK && pIt->read ( vL ) == S_OK && c < iW)
 				{
 				// Add to array
 				pfData[c++] = adtFloat(vL);
@@ -348,9 +357,7 @@ HRESULT Image :: receive ( IReceptor *pr, const WCHAR *pl,
 		// State check
 		CCLTRYE ( pGnuSrvr != NULL, ERROR_INVALID_STATE );
 		CCLTRYE ( iDataW > 0 && iDataH > 0, ERROR_INVALID_STATE );
-
-		// Request validity
-		bReq = (hr == S_OK);
+		CCLTRYE ( bReq == true, ERROR_INVALID_STATE );
 
 		// Latest title
 		if (hr == S_OK && strTitle.length() > 0)
@@ -376,10 +383,6 @@ HRESULT Image :: receive ( IReceptor *pr, const WCHAR *pl,
 		else
 			pReq->remove ( adtString(L"LabelY1") );
 
-		// Latest size
-		CCLTRY ( pReq->store ( strRefWidth, iPlotW ) );
-		CCLTRY ( pReq->store ( strRefHeight, iPlotH ) );
-
 		// Send request to GNU server.  In order to support multiple
 		// synchronized clients, the server stores the result directly
 		// in the request
@@ -387,8 +390,25 @@ HRESULT Image :: receive ( IReceptor *pr, const WCHAR *pl,
 
 		// Was a plot generated ?
 		if (hr == S_OK && pReq->load ( strRefOnImg, vL ) == S_OK)
-			_EMT(Fire,vL);
-		else
+			{
+			ICloneable	*pClone	= NULL;
+			IUnknown		*pUnk		= NULL;
+			adtIUnknown	unkV(vL);
+
+			// Make a copy of the server bits for local use
+			CCLTRY ( _QISAFE(unkV,IID_ICloneable,&pClone) );
+			CCLTRY ( pClone->clone ( &pUnk ) );
+			_RELEASE(pClone);
+
+			// Result
+			CCLOK  ( _EMT(Fire,adtIUnknown(pUnk)); )
+
+			// Clean up
+			_RELEASE(pUnk);
+			}	// if
+
+		// Was a plot generated ?
+		if (hr != S_OK)
 			_EMT(Error,adtInt(hr));
 		}	// if
 
@@ -400,6 +420,9 @@ HRESULT Image :: receive ( IReceptor *pr, const WCHAR *pl,
 
 		// Add column to request
 		CCLTRY ( addRow ( pDataIn, iIdx ) );
+
+		// Request is valid with at least 2 rows
+		CCLOK ( bReq = (iDataH > 1); )
 		}	// else if
 
 	// Reset plot
@@ -408,6 +431,23 @@ HRESULT Image :: receive ( IReceptor *pr, const WCHAR *pl,
 		// Clear vectors of current request
 		iDataW = iDataH = 0;
 		bReq = false;
+		}	// else if
+
+	// Size
+	else if (_RCP(Width) || _RCP(Height))
+		{
+		adtInt	iSz(v);
+
+		// Double word aligned
+		if (_RCP(Width))
+			iSz = ((iSz % 4) == 0) ? iSz : ((iSz/4)*4 + 4);
+
+		// Store size in request
+		CCLTRY ( pReq->store ( _RCP(Width) ? strRefWidth : strRefHeight, iSz ) );
+
+		// If current request is valid, update plot
+//		if (hr == S_OK && bReq)
+//			receive ( prFire, L"", v );
 		}	// else if
 
 	// State

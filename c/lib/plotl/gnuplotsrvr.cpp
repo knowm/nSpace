@@ -146,13 +146,13 @@ HRESULT GnuPlotSrvr :: plot ( IDictionary *pReq )
 	// Access data block information
 	CCLTRY ( pReq->load ( strRefData, vL ) );
 	CCLTRY ( _QISAFE((unkV=vL),IID_IDictionary,&pData) );
-	CCLTRY ( pData->load ( adtString(L"Bits"), vL ) );
-	CCLTRY ( _QISAFE((unkV=vL),IID_IMemoryMapped,&pBlk) );
-	CCLTRY ( pBlk->lock ( 0, 0, (void **) &pfBlk, NULL ) );
 	CCLTRY ( pData->load ( strRefWidth, vL ) );
 	CCLOK  ( iCols = vL; )
 	CCLTRY ( pData->load ( strRefHeight, vL ) );
 	CCLOK  ( iRows = vL; )
+	CCLTRY ( pData->load ( adtString(L"Bits"), vL ) );
+	CCLTRY ( _QISAFE((unkV=vL),IID_IMemoryMapped,&pBlk) );
+	CCLTRY ( pBlk->lock ( 0, 0, (void **) &pfBlk, NULL ) );
 
 	// 3D plot ?
 	if (hr == S_OK && pReq->load ( adtString(L"3D"), vL ) == S_OK &&
@@ -282,19 +282,19 @@ HRESULT GnuPlotSrvr :: plot ( IDictionary *pReq )
 
 		// X limits
 		swprintf ( SWPF(wBfrRng,101), L"set xrange [%g:%g]", fMinr[0], fMaxr[0] );
-		dbgprintf ( L"%s\r\n", wBfrRng );
+//		dbgprintf ( L"%s\r\n", wBfrRng );
 		CCLTRY ( pTick->writeStr ( wBfrRng ) );
 
 		// Y limits
 		swprintf ( SWPF(wBfrRng,101), L"set yrange [%g:%g]", fMinr[1], fMaxr[1] );
-		dbgprintf  ( L"%s\r\n", wBfrRng );
+//		dbgprintf  ( L"%s\r\n", wBfrRng );
 		CCLTRY ( pTick->writeStr ( wBfrRng ) );
 
 		// Z limits
 		if (b3D)
 			{
 			swprintf ( SWPF(wBfrRng,101), L"set zrange [%g:%g]", fMinr[2], fMaxr[2] );
-			dbgprintf  ( L"%s\r\n", wBfrRng );
+//			dbgprintf  ( L"%s\r\n", wBfrRng );
 			CCLTRY ( pTick->writeStr ( wBfrRng ) );
 			}	// if
 
@@ -390,28 +390,28 @@ HRESULT GnuPlotSrvr :: plot ( IDictionary *pReq )
 	//
 	if (hr == S_OK && pReq->load ( strRefWidth, vL ) == S_OK)
 		{
-		adtInt		iW(vL),iH(600);
+		adtInt		iWp(vL),iHp(600);
 		WCHAR			wBfrSz[41];
 		adtString	strSz ( L"set terminal pngcairo truecolor size " );
 
 		// Height
 		if (pReq->load ( strRefHeight, vL ) == S_OK)
-			iH = vL;
-
+			iHp = vL;
+/*
 		// Plots do not look good below a certain size so set a minimum
-		if (hr == S_OK && iW < 800)
+		if (hr == S_OK && iWp < 800)
 			{
-			iH = (U32)((iH/((float)(iW)))*800);
-			iW = 800;
+			iHp = (U32)((iHp/((float)(iWp)))*800);
+			iWp = 800;
 			}	// if
-		if (hr == S_OK && iH < 600)
+		if (hr == S_OK && iHp < 600)
 			{
-			iW = (U32)((iW/((float)(iH)))*600);
-			iH = 600;
+			iWp = (U32)((iWp/((float)(iHp)))*600);
+			iHp = 600;
 			}	// if
-
+*/
 		// Set PNG image size
-		CCLOK ( swprintf ( SWPF(wBfrSz,41), L"%d,%d", (U32)iW, (U32)iH );)
+		CCLOK ( swprintf ( SWPF(wBfrSz,41), L"%d,%d", (U32)iWp, (U32)iHp );)
 		CCLTRY( strSz.append ( wBfrSz ) );
 		CCLTRY ( pTick->writeStr ( strSz ) );
 		} // if
@@ -466,7 +466,7 @@ HRESULT GnuPlotSrvr :: plot ( IDictionary *pReq )
 		// XY Plot
 		if (hr == S_OK && !b3D)
 			{
-			// Record command, each column
+			// Record command, each vector
 			for (U32 i = 1;hr == S_OK && i < iRows;++i)
 				{
 				// Next line
@@ -496,7 +496,7 @@ HRESULT GnuPlotSrvr :: plot ( IDictionary *pReq )
 			{
 			// XYZ data
 			CCLOK ( swprintf ( SWPF(wBfrLn,101), 
-						L"'-' binary record=%d", (U32)adtInt(iRows) ); )
+						L"'-' binary record=%d", (U32)adtInt(iCols) ); )
 			CCLTRY( strCmdBfr.append ( wBfrLn ) );
 			}	// else if
 
@@ -513,7 +513,7 @@ HRESULT GnuPlotSrvr :: plot ( IDictionary *pReq )
 
 		// Send the command and the data
 		CCLOK  ( evPlot.reset(); )
-		CCLOK  ( dbgprintf ( L"GnuPlotSrvr::Command:%s\r\n", (LPCWSTR)strCmdBfr ); )
+//		CCLOK  ( dbgprintf ( L"GnuPlotSrvr::Command:%s\r\n", (LPCWSTR)strCmdBfr ); )
 		CCLTRY ( pTick->writeStr ( strCmdBfr ) );
 		CCLTRY ( pTick->flush() );
 
@@ -652,7 +652,7 @@ HRESULT GnuPlotSrvr :: png_end ( void )
 	HRESULT	hr	= S_OK;
 
 	// Debug
-	dbgprintf ( L"GnuPlotSrvr::png_end:0x%x\r\n", hr_img );
+//	dbgprintf ( L"GnuPlotSrvr::png_end:0x%x\r\n", hr_img );
 
 	// Error ?
 	CCLTRYE ( hr_img == S_OK, hr_img );
@@ -1075,7 +1075,7 @@ HRESULT GnuPlotSrvrt :: flush ( void )
 	BOOL			bRet;
 
 	// Write data until all bytes are written or until error
-	dbgprintf ( L"GnuPlotSrvrt::flush:%d bytes {\r\n", dwLeft );
+//	dbgprintf ( L"GnuPlotSrvrt::flush:%d bytes {\r\n", dwLeft );
 	while (hr == S_OK && dwLeft > 0)
 		{
 		// Peform write
@@ -1113,7 +1113,7 @@ HRESULT GnuPlotSrvrt :: flush ( void )
 		}	// while
 
 	// Debug
-	dbgprintf ( L"} GnuPlotSrvrt::flush:hr 0x%x:%d remaining of %d\r\n", hr, dwLeft, uBfrWr );
+//	dbgprintf ( L"} GnuPlotSrvrt::flush:hr 0x%x:%d remaining of %d\r\n", hr, dwLeft, uBfrWr );
 	if (hr != S_OK)
 		dbgprintf ( L"GnuPlotSrvrt::flush:Failed 0x%x\r\n", hr );
 
@@ -1407,7 +1407,7 @@ static void PNGAPI png_progressive_end ( png_structp png_ptr, png_infop info_ptr
 	{
 	// Supplied ptr. is to owner object
 	GnuPlotSrvr *pThis = (GnuPlotSrvr *) png_get_io_ptr ( png_ptr );
-	dbgprintf ( L"png_progressive_end:pThis %p\r\n", pThis );
+	dbgprintf ( L"png_progressive_end:pThis %p:pvBits %p\r\n", pThis, pThis->pvBits );
 
 	// Clean up bits
 	if (pThis->pvBits != NULL)
