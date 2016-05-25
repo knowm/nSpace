@@ -63,6 +63,7 @@ GnuPlotSrvr :: GnuPlotSrvr ( void )
 	pDctImg		= NULL;
 	pBits			= NULL;
 	pvBits		= NULL;
+	bPngEnd		= false;
 	}	// GnuPlotSrvr
 
 HRESULT GnuPlotSrvr :: construct ( void )
@@ -137,7 +138,7 @@ HRESULT GnuPlotSrvr :: plot ( IDictionary *pReq )
 	adtInt			iRows,iCols;
 
 	// Thread safety in case of multiple plot clients
-	dbgprintf ( L"GnuPlotSrvr::plot {\r\n" );
+	dbgprintf ( L"GnuPlotSrvr::plot { %p\r\n", this );
 	csPlot.enter();
 
 	// Value is expected to be a dictionary of vectors label V1, V2, etc...
@@ -455,7 +456,6 @@ HRESULT GnuPlotSrvr :: plot ( IDictionary *pReq )
 	//
 	// Plot
 	//
-
 	if (hr == S_OK)
 		{
 		adtString	strCmdBfr;
@@ -637,6 +637,20 @@ HRESULT GnuPlotSrvr :: png_data ( BYTE *pbBfr, U32 len )
 	// Feed data to PNG library
 	png_process_data ( png_ptr, info_ptr, pbBfr, len );
 
+	// Re-initialize PNG for next image after image is complete
+	if (bPngEnd)
+		{
+		// Prepare for the next image
+		CCLTRY ( png_uninit() );
+		CCLTRY ( png_init() );
+
+		// New image
+		bPngEnd = false;
+
+		// Signal plot image complete
+		evPlot.signal();
+		}	// if
+
 	return hr;
 	}	// png_data
 
@@ -659,12 +673,8 @@ HRESULT GnuPlotSrvr :: png_end ( void )
 	// Error ?
 	CCLTRYE ( hr_img == S_OK, hr_img );
 
-	// Turn around and prepare for the next image
-	CCLTRY ( png_uninit() );
-	CCLTRY ( png_init() );
-
-	// In case object is waiting for completion of plot
-	evPlot.signal();
+	// End of PNG
+	bPngEnd = true;
 
 	return hr;
 	}	// png_end
@@ -692,6 +702,7 @@ HRESULT GnuPlotSrvr :: png_init ( void )
 					!= NULL, E_OUTOFMEMORY );
 	CCLTRYE ( (info_ptr = png_create_info_struct ( png_ptr )) != NULL,
 					E_OUTOFMEMORY );
+//	dbgprintf ( L"png_init:%p:%p\r\n", png_ptr, info_ptr );
 
 	// Error handling
 	if (hr == S_OK && setjmp(png_jmpbuf(png_ptr)))
@@ -700,6 +711,7 @@ HRESULT GnuPlotSrvr :: png_init ( void )
 	// Set up the callbacks for progressive reading
 	CCLOK ( png_set_progressive_read_fn ( png_ptr, this, png_progressive_info,
 				png_progressive_row, png_progressive_end ); )
+
 		
 	return hr;
 	}	// png_init
@@ -726,7 +738,8 @@ HRESULT GnuPlotSrvr :: png_uninit ( void )
 	if (png_ptr != NULL)
 		{
 		png_destroy_read_struct ( &png_ptr, &info_ptr, NULL );
-		png_ptr = NULL;
+		png_ptr	= NULL;
+		info_ptr = NULL;
 		}	// if
 
 	return hr;
@@ -826,9 +839,6 @@ HRESULT GnuPlotSrvr :: start ( void )
 	STARTUPINFO	si;
 	WCHAR			wPipe[200];
 	adtString	strPath(PATH_GNUPLOT);
-
-	// Ensure object is ready to decode PNG images
-	CCLTRY ( png_init() );
 
 	// GnuPlotSrvr uses stdin and stdout for I/O so create 
 	// the input and output pipes that the process will use
@@ -1183,16 +1193,16 @@ HRESULT GnuPlotSrvrt :: tick ( void )
 				// If there is a syntax error the first couple of bytes 
 				// will be '\r\n', detect this (GnuPlotSrvr responding with ASCII).
 				// TODO: How to handle this 'cleanly' and still recover for the next command 
-				if (bStr || (bBfrRd[0] == '\r' && bBfrRd[1] == '\n') || (dwRet == 1 && bBfrRd[0] == ' '))
-					{
-					// TODO: Read response
-					bBfrRd[dwRet] = '\0';
-					dbgprintf ( L"GnuPlotSrvrt::%S\r\n", bBfrRd );
-					bStr = true;
-					}	// if
+//				if (bStr || (bBfrRd[0] == '\r' && bBfrRd[1] == '\n') || (dwRet == 1 && bBfrRd[0] == ' '))
+//					{
+//					// TODO: Read response
+//					bBfrRd[dwRet] = '\0';
+//					dbgprintf ( L"GnuPlotSrvrt::%S\r\n", bBfrRd );
+//					bStr = true;
+//					}	// if
 
 				// PNG processing
-				else
+//				else
 					pParent->png_data ( bBfrRd, dwRet );
 
 				// Issue read for next block
@@ -1228,6 +1238,9 @@ HRESULT GnuPlotSrvrt :: tickBegin ( void )
 	HRESULT	hr				= S_OK;
 	BOOL		bRet;
 
+	// Ensure object is ready to decode PNG images
+	CCLTRY ( pParent->png_init() );
+
 	// Begin by hanging read off of STDOUT
 	if (hr == S_OK)
 		{
@@ -1259,6 +1272,9 @@ HRESULT GnuPlotSrvrt :: tickEnd ( void )
 
 	// Cancel pending I/O
 	CancelIo ( pParent->hRdOut );
+
+	// Clean up
+	pParent->png_uninit();
 
 	return hr;
 	}	// tickEnd
@@ -1351,7 +1367,7 @@ static void PNGAPI png_progressive_info ( png_structp png_ptr, png_infop info_pt
 	h		= png_get_image_height(png_ptr,info_ptr);
 	bpp	= png_get_channels(png_ptr,info_ptr)*png_get_bit_depth(png_ptr,info_ptr);
 	type	= png_get_color_type(png_ptr,info_ptr);
-	dbgprintf ( L"png_progressive_info:pThis %p:%d X %d X %d (0x%x)\r\n", pThis, w, h, bpp, type );
+//	dbgprintf ( L"png_progressive_info:pThis %p:%d X %d X %d (0x%x)\r\n", pThis, w, h, bpp, type );
 
 	// Compute stride and format based on header info
 	switch (type)
@@ -1409,7 +1425,7 @@ static void PNGAPI png_progressive_end ( png_structp png_ptr, png_infop info_ptr
 	{
 	// Supplied ptr. is to owner object
 	GnuPlotSrvr *pThis = (GnuPlotSrvr *) png_get_io_ptr ( png_ptr );
-	dbgprintf ( L"png_progressive_end:pThis %p:pvBits %p\r\n", pThis, pThis->pvBits );
+//	dbgprintf ( L"png_progressive_end:pThis %p:pvBits %p\r\n", pThis, pThis->pvBits );
 
 	// Clean up bits
 	if (pThis->pvBits != NULL)

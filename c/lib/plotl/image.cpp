@@ -145,6 +145,10 @@ HRESULT Image :: addRow ( IUnknown *pUnk, U32 iRow )
 	// Add more formats as necessary
 	if (hr == S_OK && pDctData != NULL)
 		{
+		// Debug
+//		for (U32 c = 0;c < iW;++c)
+//			pfData[c] = 0;
+
 		if (!WCASECMP(strFmt,L"U16x2"))
 			{
 			// Source bits
@@ -196,6 +200,7 @@ HRESULT Image :: addRow ( IUnknown *pUnk, U32 iRow )
 		// Unknown
 		else
 			hr = E_INVALIDARG;
+
 		}	// if
 
 	// Clean up
@@ -354,8 +359,6 @@ HRESULT Image :: receive ( IReceptor *pr, const WCHAR *pl,
 		U32			sz	= 0;
 		adtValue		vL;
 
-		dbgprintf ( L"Image::receive {\r\n" );
-
 		// State check
 		CCLTRYE ( pGnuSrvr != NULL, ERROR_INVALID_STATE );
 		CCLTRYE ( iDataW > 0 && iDataH > 0, ERROR_INVALID_STATE );
@@ -389,39 +392,12 @@ HRESULT Image :: receive ( IReceptor *pr, const WCHAR *pl,
 		// synchronized clients, the server stores the result directly
 		// in the request
 		CCLTRY ( pGnuSrvr->plot ( pReq ) );
-/*
+
 		// Was a plot generated ?
 		if (hr == S_OK && pReq->load ( strRefOnImg, vL ) == S_OK)
-			{
-			ICloneable	*pClone	= NULL;
-			IUnknown		*pUnk		= NULL;
-			adtIUnknown	unkV(vL);
-
-			// Make a copy of the server bits for local use
-			CCLTRY ( _QISAFE(unkV,IID_ICloneable,&pClone) );
-			CCLTRY ( pClone->clone ( &pUnk ) );
-			_RELEASE(pClone);
-
-			// Result
-			CCLOK  ( _EMT(Fire,adtIUnknown(pUnk)); )
-
-			// Clean up
-			_RELEASE(pUnk);
-			}	// if
-*/
-		// Was a plot generated ?
-		if (hr == S_OK && pReq->load ( strRefOnImg, vL ) == S_OK)
-			{
-			// Clear for next time
-			pReq->remove ( strRefOnImg );
-
-			// Result
 			_EMT(Fire,vL);
-			}	// if
 		else
 			_EMT(Error,adtInt(hr));
-
-		dbgprintf ( L"} Image::receive hr 0x%x\r\n", hr );
 		}	// if
 
 	// Add to plot
@@ -443,6 +419,7 @@ HRESULT Image :: receive ( IReceptor *pr, const WCHAR *pl,
 		// Clear vectors of current request
 		iDataW = iDataH = 0;
 		bReq = false;
+//		pReq->remove ( strRefOnImg );
 		}	// else if
 
 	// Size

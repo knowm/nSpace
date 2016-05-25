@@ -11,6 +11,7 @@
 
 // Includes
 #include "plotl.h"
+#include <crtdbg.h>
 
 // GnuPlot usage outputs PNG images
 #include "../../lib/ext/libpng-1.2.7/png.h"
@@ -50,6 +51,7 @@ class GnuPlotSrvr :
 	U16						uStride;						// Image stride
 	sysCS						csPlot;						// Thread safety
 	sysEvent					evPlot;						// Plot complete
+	bool						bPngEnd;						// End of PNG detected
 
 	// Utilities
 	STDMETHOD(run)		( bool );						// Run/stop server

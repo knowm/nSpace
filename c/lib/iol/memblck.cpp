@@ -274,6 +274,8 @@ HRESULT MemoryBlock :: setSize ( U32 sz )
 			}	// else
 			#endif
 
+		// Debug
+//		dbgprintf ( L"MemoryBlock::setSize:%d:%p\r\n", sz, pcBlk );
 		}	// if
 
 	// New information
