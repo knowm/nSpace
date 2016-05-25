@@ -86,7 +86,7 @@ HRESULT GnuPlotSrvr :: construct ( void )
 	CCLTRY ( pDctImg->store ( strRefBits, adtIUnknown(pBits) ) );
 
 	// Events
-	evPlot.init();
+	evPlot.init(true);
 
 	return hr;
 	}	// construct
@@ -137,6 +137,7 @@ HRESULT GnuPlotSrvr :: plot ( IDictionary *pReq )
 	adtInt			iRows,iCols;
 
 	// Thread safety in case of multiple plot clients
+	dbgprintf ( L"GnuPlotSrvr::plot {\r\n" );
 	csPlot.enter();
 
 	// Value is expected to be a dictionary of vectors label V1, V2, etc...
@@ -600,6 +601,7 @@ HRESULT GnuPlotSrvr :: plot ( IDictionary *pReq )
 
 	// Thread safety
 	csPlot.leave();
+	dbgprintf ( L"} GnuPlotSrvr::plot 0x%x\r\n", hr );
 
 	return hr;
 	}	// plot
@@ -652,17 +654,17 @@ HRESULT GnuPlotSrvr :: png_end ( void )
 	HRESULT	hr	= S_OK;
 
 	// Debug
-//	dbgprintf ( L"GnuPlotSrvr::png_end:0x%x\r\n", hr_img );
+	dbgprintf ( L"GnuPlotSrvr::png_end:0x%x\r\n", hr_img );
 
 	// Error ?
 	CCLTRYE ( hr_img == S_OK, hr_img );
 
-	// In case object is waiting for completion of plot
-	evPlot.signal();
-
 	// Turn around and prepare for the next image
 	CCLTRY ( png_uninit() );
 	CCLTRY ( png_init() );
+
+	// In case object is waiting for completion of plot
+	evPlot.signal();
 
 	return hr;
 	}	// png_end

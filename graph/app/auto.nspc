@@ -29,14 +29,17 @@
 %	$	CreateFileSrc Misc.Create { Id Io.StmSrcFile }
 %		!	Initialize/OnFire						CreateFileSrc/Fire
 
+	% MATHN: Test counter
+%	$	TestCnt Math.Counter { Reset 1:int }
+
 	% MISCN: Create dictionary to receive information	
 %	$	CreateImgDct Misc.Create { Id Adt.Dictionary }
-%		!	Initialize/OnFire						CreateImgDct/Fire
+%		!	TestCnt/OnFire							CreateImgDct/Fire
 
 	% MISCN: Location of test image
 %	$	ValueImgLoc Misc.Dist { Value "/Oct/Alazar_vs_SP/Alazar_Ethernet/Alignment/Raw/OCT_1.png" }
 %	$	ValueImgLoc Misc.Dist { Value "/Oct/Alazar_vs_SP/Alazar_Ethernet/Alignment/FFT/OCT_1.png" }
-%		!	Initialize/OnFire						ValueImgLoc/Fire
+%		!	TestCnt/OnFire							ValueImgLoc/Fire
 
 	% IMAGEN: Load test image
 %	$	LoadPng Image.PersistImage {}
@@ -53,6 +56,7 @@
 
 	% PLOTN: Image plot generation
 %	$	Plot Plot.Image { Title "This is a test plot" LabelX0 "A-Scan" LabelY0 "Intensity" }
+%		!	LoadPng/OnLoad							Plot/Reset
 
 	%% X-axis
 
@@ -114,6 +118,14 @@
 %	$	SavePlot Image.PersistImage { Location "c:\\temp\\plot.png" }
 %		!	Plot/OnFire								SavePlot/Image
 %		!	Plot/OnFire								SavePlot/Save
+
+	% MISCN: More testing ?
+%	$	TestMode Misc.Compare { Left 1000:int }
+%		!	TestCnt/OnFire							TestMode/Fire
+
+	% Testing
+%	!	Initialize/OnFire							TestCnt/Reset
+%	!	TestMode/OnGreater						TestCnt/Increment
 
 	%%%%%%%%%%%%%
 	% Queue test

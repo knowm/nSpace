@@ -354,6 +354,8 @@ HRESULT Image :: receive ( IReceptor *pr, const WCHAR *pl,
 		U32			sz	= 0;
 		adtValue		vL;
 
+		dbgprintf ( L"Image::receive {\r\n" );
+
 		// State check
 		CCLTRYE ( pGnuSrvr != NULL, ERROR_INVALID_STATE );
 		CCLTRYE ( iDataW > 0 && iDataH > 0, ERROR_INVALID_STATE );
@@ -387,7 +389,7 @@ HRESULT Image :: receive ( IReceptor *pr, const WCHAR *pl,
 		// synchronized clients, the server stores the result directly
 		// in the request
 		CCLTRY ( pGnuSrvr->plot ( pReq ) );
-
+/*
 		// Was a plot generated ?
 		if (hr == S_OK && pReq->load ( strRefOnImg, vL ) == S_OK)
 			{
@@ -406,10 +408,20 @@ HRESULT Image :: receive ( IReceptor *pr, const WCHAR *pl,
 			// Clean up
 			_RELEASE(pUnk);
 			}	// if
-
+*/
 		// Was a plot generated ?
-		if (hr != S_OK)
+		if (hr == S_OK && pReq->load ( strRefOnImg, vL ) == S_OK)
+			{
+			// Clear for next time
+			pReq->remove ( strRefOnImg );
+
+			// Result
+			_EMT(Fire,vL);
+			}	// if
+		else
 			_EMT(Error,adtInt(hr));
+
+		dbgprintf ( L"} Image::receive hr 0x%x\r\n", hr );
 		}	// if
 
 	// Add to plot
