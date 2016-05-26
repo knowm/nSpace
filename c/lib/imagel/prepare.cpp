@@ -148,6 +148,40 @@ HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		// Store resulting image in dictionary
 		CCLTRY ( image_from_mat ( pMat, pImgUse ) );
 
+		// Result
+		if (hr == S_OK)
+			_EMT(Download,adtIUnknown(pImgUse));
+		else
+			_EMT(Error,adtInt(hr));
+
+		// Clean up
+		_RELEASE(pImgUse);
+		}	// else if
+
+	// Release
+	else if (_RCP(Release))
+		{
+		IDictionary	*pImgUse = pImg;
+		cv::Mat		*pMat		= NULL;
+		adtValue		vL;
+
+		// Image to use
+		if (pImgUse == NULL)
+			{
+			adtIUnknown unkV(v);
+			CCLTRY(_QISAFE(unkV,IID_IDictionary,&pImgUse));
+			}	// if
+		else
+			pImgUse->AddRef();
+
+		// State check
+		CCLTRYE ( pImgUse != NULL, ERROR_INVALID_STATE );
+
+		// Image must be 'uploaded'
+		CCLTRY ( pImgUse->load (	adtString(L"cv::Mat"), vL ) );
+		CCLTRYE( (pMat = (cv::Mat *)(U64)adtLong(vL)) != NULL,
+					ERROR_INVALID_STATE );
+
 		// Clean up
 		if (pMat != NULL)
 			delete pMat;
@@ -156,7 +190,7 @@ HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 
 		// Result
 		if (hr == S_OK)
-			_EMT(Download,adtIUnknown(pImgUse));
+			_EMT(Release,adtIUnknown(pImgUse));
 		else
 			_EMT(Error,adtInt(hr));
 

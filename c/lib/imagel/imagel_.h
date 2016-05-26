@@ -39,6 +39,46 @@
 /////////
 
 //
+// Class - At.  Node to address individual pixels.
+//
+
+class At :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	At ( void );											// Constructor
+
+	// Run-time data
+	IDictionary	*pImg;									// Image dictionary
+	adtInt		iX,iY;									// Positions
+	adtValue		vAt;										// Value
+
+	// CCL
+	CCL_OBJECT_BEGIN(At)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_EMT(Error)
+	DECLARE_RCP(Image)
+	DECLARE_CON(Load)
+	DECLARE_RCP(X)
+	DECLARE_CON(Store)
+	DECLARE_RCP(Y)
+	DECLARE_RCP(Value)
+	BEGIN_BEHAVIOUR()
+		DEFINE_EMT(Error)
+		DEFINE_RCP(Image)
+		DEFINE_CON(Load)
+		DEFINE_RCP(X)
+		DEFINE_CON(Store)
+		DEFINE_RCP(Y)
+		DEFINE_RCP(Value)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
+//
 // Class - Binary.  Perform a binary operation involving images.
 //
 
@@ -138,6 +178,37 @@ class Create :
 		DEFINE_RCP(Image)
 		DEFINE_EMT(Error)
 		DEFINE_RCP(Width)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
+//
+// Class - Flip.  Image flip node.
+//
+
+class Flip :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	Flip ( void );											// Constructor
+
+	// Run-time data
+	IDictionary	*pImg;									// Image dictionary
+	adtBool		bHorz,bVert;							// Flip options
+
+	// CCL
+	CCL_OBJECT_BEGIN(Flip)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_EMT(Error)
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Image)
+	BEGIN_BEHAVIOUR()
+		DEFINE_EMT(Error)
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Image)
 	END_BEHAVIOUR_NOTIFY()
 	};
 
@@ -309,11 +380,84 @@ class Prepare :
 	DECLARE_CON(Download)
 	DECLARE_CON(Upload)
 	DECLARE_EMT(Error)
+	DECLARE_CON(Release)
 	BEGIN_BEHAVIOUR()
 		DEFINE_RCP(Image)
 		DEFINE_CON(Download)
 		DEFINE_CON(Upload)
 		DEFINE_EMT(Error)
+		DEFINE_CON(Release)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
+//
+// Class - Roi.  Region of interest node.
+//
+
+class Roi :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	Roi ( void );											// Constructor
+
+	// Run-time data
+	IDictionary	*pSrc,*pDst;							// Image dictionaries
+	adtInt		iL,iT,iR,iB;							// ROI
+
+	// CCL
+	CCL_OBJECT_BEGIN(Roi)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_RCP(Bottom)
+	DECLARE_RCP(Destination)
+	DECLARE_EMT(Error)
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Left)
+	DECLARE_RCP(Right)
+	DECLARE_RCP(Source)
+	DECLARE_RCP(Top)
+	BEGIN_BEHAVIOUR()
+		DEFINE_RCP(Bottom)
+		DEFINE_RCP(Destination)
+		DEFINE_EMT(Error)
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Left)
+		DEFINE_RCP(Right)
+		DEFINE_RCP(Source)
+		DEFINE_RCP(Top)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
+//
+// Class - Stats.  Compute statistics about an image.
+//
+
+class Stats :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	Stats ( void );										// Constructor
+
+	// Run-time data
+	IDictionary	*pImg;									// Image dictionary
+
+	// CCL
+	CCL_OBJECT_BEGIN(Stats)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_EMT(Error)
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Image)
+	BEGIN_BEHAVIOUR()
+		DEFINE_EMT(Error)
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Image)
 	END_BEHAVIOUR_NOTIFY()
 	};
 

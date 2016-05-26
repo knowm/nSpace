@@ -196,10 +196,10 @@
 2534d0c9-8628-11d2-868c-006008addfed				// CLSID_SQLUpdate
 2534d0ca-8628-11d2-868c-006008addfed				//	CLSID_SQL2Table
 2534d0cb-8628-11d2-868c-006008addfed				// CLSID_SQL2Index
-2534d0cc-8628-11d2-868c-006008addfed				// 
-2534d0cd-8628-11d2-868c-006008addfed				// 
-2534d0ce-8628-11d2-868c-006008addfed				// 
-2534d0cf-8628-11d2-868c-006008addfed				// 
+2534d0cc-8628-11d2-868c-006008addfed				// CLSID_Roi (imagel)
+2534d0cd-8628-11d2-868c-006008addfed				// CLSID_Stats (imagel)
+2534d0ce-8628-11d2-868c-006008addfed				// CLSID_At (imagel)
+2534d0cf-8628-11d2-868c-006008addfed				// CLSID_Flip (imagel)
 2534d0d0-8628-11d2-868c-006008addfed				//	
 2534d0d1-8628-11d2-868c-006008addfed				//	
 2534d0d2-8628-11d2-868c-006008addfed				//	
