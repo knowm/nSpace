@@ -86,7 +86,7 @@ HRESULT Create :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	if (_RCP(Fire))
 		{
 		IDictionary	*pImgUse = pImg;
-		cv::Mat		*pMat		= NULL;
+		cvMatRef		*pMat		= NULL;
 		adtValue		vL;
 		U32			cvFmt;
 
@@ -114,12 +114,18 @@ HRESULT Create :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			hr = E_NOTIMPL;
 
 		// Create a matrix based on the GPU mode
-		CCLTRYE ( (pMat = new cv::Mat ( iH, iW, cvFmt )) != NULL,
+		CCLTRYE( (pMat = new cvMatRef()) != NULL, E_OUTOFMEMORY );
+		#if	CV_MAJOR_VERSION == 3
+		CCLTRYE ( (pMat->mat = new cv::UMat ( iH, iW, cvFmt )) != NULL,
 						E_OUTOFMEMORY );
-		CCLOK   ( *pMat = cv::Scalar(0); )
+		#else
+		CCLTRYE ( (pMat->mat = new cv::Mat ( iH, iW, cvFmt )) != NULL,
+						E_OUTOFMEMORY );
+		#endif
+		CCLOK   ( *(pMat->mat) = cv::Scalar(0); )
 
 		// Store image in image dictionary
-		CCLTRY ( pImgUse->store (	adtString(L"cv::Mat"), 
+		CCLTRY ( pImgUse->store (	adtString(L"cvMatRef"), 
 											adtLong((U64)pMat) ) );
 
 		// Result

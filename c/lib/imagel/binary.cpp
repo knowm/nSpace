@@ -100,9 +100,9 @@ HRESULT Binary :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			IDictionary	*pImgL	= NULL;
 			IDictionary	*pImgR	= NULL;
 			IDictionary	*pImgO	= NULL;
-			cv::Mat		*pMatL	= NULL;
-			cv::Mat		*pMatR	= NULL;
-			cv::Mat		*pMatO	= NULL;
+			cvMatRef		*pMatL	= NULL;
+			cvMatRef		*pMatR	= NULL;
+			cvMatRef		*pMatO	= NULL;
 
 			// Image dictionaries
 			CCLTRY(_QISAFE(adtIUnknown(vL),IID_IDictionary,&pImgL));
@@ -110,30 +110,30 @@ HRESULT Binary :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			CCLTRY(_QISAFE(adtIUnknown(v),IID_IDictionary,&pImgO));
 
 			// Images must be 'uploaded'
-			CCLTRY ( pImgL->load (	adtString(L"cv::Mat"), vL ) );
-			CCLTRYE( (pMatL = (cv::Mat *)(U64)adtLong(vL)) != NULL,
+			CCLTRY ( pImgL->load (	adtString(L"cvMatRef"), vL ) );
+			CCLTRYE( (pMatL = (cvMatRef *)(U64)adtLong(vL)) != NULL,
 						ERROR_INVALID_STATE );
-			CCLTRY ( pImgR->load (	adtString(L"cv::Mat"), vL ) );
-			CCLTRYE( (pMatR = (cv::Mat *)(U64)adtLong(vL)) != NULL,
+			CCLTRY ( pImgR->load (	adtString(L"cvMatRef"), vL ) );
+			CCLTRYE( (pMatR = (cvMatRef *)(U64)adtLong(vL)) != NULL,
 						ERROR_INVALID_STATE );
-			CCLTRY ( pImgO->load (	adtString(L"cv::Mat"), vL ) );
-			CCLTRYE( (pMatO = (cv::Mat *)(U64)adtLong(vL)) != NULL,
+			CCLTRY ( pImgO->load (	adtString(L"cvMatRef"), vL ) );
+			CCLTRYE( (pMatO = (cvMatRef *)(U64)adtLong(vL)) != NULL,
 						ERROR_INVALID_STATE );
 
 			// Apply operation
 			switch (iOp)
 				{
 				case MATHOP_ADD :
-					cv::add ( *pMatL, *pMatR, *pMatO );
+					cv::add ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
 					break;
 				case MATHOP_SUB :
-					cv::subtract ( *pMatL, *pMatR, *pMatO );
+					cv::subtract ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
 					break;
 				case MATHOP_MUL :
-					cv::multiply ( *pMatL, *pMatR, *pMatO );
+					cv::multiply ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
 					break;
 				case MATHOP_DIV :
-					cv::divide ( *pMatL, *pMatR, *pMatO );
+					cv::divide ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
 					break;
 
 				// Not implemented

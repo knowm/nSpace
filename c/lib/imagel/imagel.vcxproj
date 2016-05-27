@@ -27,6 +27,7 @@
     <ClCompile Include="binary.cpp" />
     <ClCompile Include="convert.cpp" />
     <ClCompile Include="create.cpp" />
+    <ClCompile Include="cvmatref.cpp" />
     <ClCompile Include="fft.cpp" />
     <ClCompile Include="flip.cpp" />
     <ClCompile Include="stats.cpp" />

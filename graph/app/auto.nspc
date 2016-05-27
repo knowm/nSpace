@@ -33,13 +33,15 @@
 %	$	TestCnt Math.Counter { Reset 1:int }
 
 	% MISCN: Create dictionary to receive information	
-%	$	CreateImgDct Misc.Create { Id Adt.Dictionary }
+	$	CreateImgDct Misc.Create { Id Adt.Dictionary }
 %		!	TestCnt/OnFire							CreateImgDct/Fire
+		!	Initialize/OnFire						CreateImgDct/Fire
 
 	% MISCN: Location of test image
 %	$	ValueImgLoc Misc.Dist { Value "/Oct/Alazar_vs_SP/Alazar_Ethernet/Alignment/Raw/OCT_1.png" }
 %	$	ValueImgLoc Misc.Dist { Value "/Oct/Alazar_vs_SP/Alazar_Ethernet/Alignment/FFT/OCT_1.png" }
 %		!	TestCnt/OnFire							ValueImgLoc/Fire
+%		!	Initialize/OnFire						ValueImgLoc/Fire
 
 	% IMAGEN: Load test image
 %	$	LoadPng Image.PersistImage {}
@@ -47,6 +49,54 @@
 %		!	ValueImgLoc/OnFire					LoadPng/Location
 %		!	ValueImgLoc/OnFire					LoadPng/Load
 %		!	LoadPng/OnLoad							Debug/Fire
+
+	%%%%%%%%%%%%%%%%%%%%%%%
+	% Image processing/GPU
+	%%%%%%%%%%%%%%%%%%%%%%%
+
+	% IMAGEN: Upload from dictionary into image processing logic
+%	$	Prepare Image.Prepare {}
+%		!	LoadPng/OnLoad							Prepare/Upload
+
+	% Result is the downloaded version
+%	!	Prepare/OnDownload						Debug/Reset
+%	!	Prepare/OnDownload						Debug/Fire
+
+	% IMAGEN: Convert to 32-bit floating point for subsequent operations
+%	$	ToFlt Image.Convert { Format "F32x2" }
+%		!	Prepare/OnUpload						ToFlt/Fire
+
+	% IMAGEN: Perform FFT/magnitude calculation
+%	$	FFT Image.FFT { ZeroDC true:bool Window "Blackman-Nutall" }
+%		!	ToFlt/OnFire							FFT/Fire
+%		!	FFT/OnFire								Debug/Fire
+
+	% IMAGEN: Threshold upper and lower limits of spectrum
+%	$	ThreshHigh Image.Threshold { Value 50:float Op Truncate }
+%		!	FFT/OnFire								ThreshHigh/Fire
+%	$	ThreshLow Image.Threshold { Value 15:float Op Zero }
+%		!	ThreshHigh/OnFire						ThreshLow/Fire
+
+	% IMAGEN: Use full scale of eventual 2 bytes per pixel
+%	$	Normalize Image.Normalize { From 0:int To 0xffff:int }
+%		!	ThreshLow/OnFire						Normalize/Fire
+
+	% IMAGEN: Convert to a U16x2 image
+%	$	ToInt Image.Convert { Format "U16x2" }
+%		!	Normalize/OnFire						ToInt/Fire
+
+	% Download from image processing logic into image
+%	!	ToInt/OnFire								Prepare/Download
+
+	% IMAGEN: Save test image
+%	$	SavePng Image.PersistImage { Location "c:/temp/test.png" }
+%		!	Prepare/OnDownload					SavePng/Image
+%		!	Prepare/OnDownload					SavePng/Save
+%		!	SavePng/OnSave							Debug/Fire
+
+	% Clean up
+%	!	Prepare/OnDownload						Debug/Mark
+%	!	Prepare/OnDownload						Prepare/Release
 
 	%%%%%%%%%%%
 	% Plotting
@@ -150,48 +200,6 @@
 %		!	CntQ/OnFire								MoreQ/Fire
 %		!	MoreQ/OnGreater						CntQ/Increment
 
-	%%%%%%%%%%%%%%%%%%%%%%%
-	% Image processing/GPU
-	%%%%%%%%%%%%%%%%%%%%%%%
-
-	% IMAGEN: Upload from dictionary into image processing logic
-%	$	Prepare Image.Prepare {}
-%		!	LoadPng/OnLoad							Prepare/Upload
-
-	% Result is the downloaded version
-%	!	Prepare/OnDownload						Debug/Fire
-
-	% IMAGEN: Convert to 32-bit floating point for subsequent operations
-%	$	ToFlt Image.Convert { Format "F32x2" }
-%		!	Prepare/OnUpload						ToFlt/Fire
-
-	% IMAGEN: Perform FFT/magnitude calculation
-%	$	FFT Image.FFT { ZeroDC true:bool Window "Blackman-Nutall" }
-%		!	ToFlt/OnFire							FFT/Fire
-%		!	FFT/OnFire								Debug/Fire
-
-	% IMAGEN: Threshold upper and lower limits of spectrum
-%	$	ThreshHigh Image.Threshold { Value 50:float Op Truncate }
-%		!	FFT/OnFire								ThreshHigh/Fire
-%	$	ThreshLow Image.Threshold { Value 15:float Op Zero }
-%		!	ThreshHigh/OnFire						ThreshLow/Fire
-
-	% IMAGEN: Use full scale of eventual 2 bytes per pixel
-%	$	Normalize Image.Normalize { From 0:int To 0xffff:int }
-%		!	ThreshLow/OnFire						Normalize/Fire
-
-	% IMAGEN: Convert to a U16x2 image
-%	$	ToInt Image.Convert { Format "U16x2" }
-%		!	Normalize/OnFire						ToInt/Fire
-
-	% Download from image processing logic into image
-%	!	ToInt/OnFire								Prepare/Download
-
-	% IMAGEN: Save test image
-%	$	SavePng Image.PersistImage { Location "c:/temp/test.png" }
-%		!	Prepare/OnDownload					SavePng/Image
-%		!	Prepare/OnDownload					SavePng/Save
-%		!	SavePng/OnSave							Debug/Fire
 
 	%%%%%%%%%%%%%%
 	% Enumeration

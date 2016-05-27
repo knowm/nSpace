@@ -17,8 +17,10 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <opencv2/gpu/gpu.hpp>
-#include <opencv2/ocl/ocl.hpp>
+//#include <opencv2/gpu/gpu.hpp>
+#if		CV_MAJOR_VERSION == 3
+#include <opencv2/core/ocl.hpp>
+#endif
 
 // Operations
 #define	MATHOP_NOP		-1
@@ -33,6 +35,29 @@
 // Objects
 ///////////
 
+//
+// Class - cvMatRef.  Object to cache reference counted OpenCV matrices.
+//
+
+class cvMatRef :
+	public CCLObject										// Base class
+	{
+	public :
+	cvMatRef ( void );									// Constructor
+
+	// Run-time data
+	#if	CV_MAJOR_VERSION == 3
+	cv::UMat		*mat;
+	#else
+	cv::Mat		*mat;										// Matrix - CPU
+	#endif
+
+	// CCL
+	CCL_OBJECT_BEGIN_INT(cvMatRef)
+	CCL_OBJECT_END()
+	virtual void		destruct	( void );			// Destruct object
+
+	};
 
 /////////
 // Nodes
@@ -227,7 +252,7 @@ class FFT :
 	IDictionary	*pImg;									// Image dictionary
 	adtString	strWnd;									// Window function
 	adtBool		bZeroDC;									// Zero DC component
-	cv::Mat		*pWnd;									// Window function
+	cvMatRef		*pWnd;									// Window function
 	sysCS			csSync;									// Thread safety
 
 	// CCL
@@ -388,6 +413,11 @@ class Prepare :
 		DEFINE_EMT(Error)
 		DEFINE_CON(Release)
 	END_BEHAVIOUR_NOTIFY()
+
+	private :
+
+	// Internal utilities
+	HRESULT gpuInit ( void );
 	};
 
 //
@@ -497,12 +527,18 @@ class Threshold :
 
 
 // Prototypes
-HRESULT image_fft			( cv::Mat *, cv::Mat *, bool = false, bool = false );
 //HRESULT image_fft			( cv::ocl::oclMat *, bool = false, bool = false );
-HRESULT image_from_mat	( cv::Mat *, IDictionary * );
 HRESULT image_load		( const WCHAR *, IDictionary * );
 HRESULT image_save		( IDictionary *, const WCHAR * );
+#if		CV_MAJOR_VERSION == 3
+HRESULT image_fft			( cv::UMat *, cv::UMat *, bool = false, bool = false );
+HRESULT image_from_mat	( cv::UMat *, IDictionary * );
+HRESULT image_to_mat		( IDictionary *, cv::UMat ** );
+#else
+HRESULT image_fft			( cv::Mat *, cv::Mat *, bool = false, bool = false );
+HRESULT image_from_mat	( cv::Mat *, IDictionary * );
 HRESULT image_to_mat		( IDictionary *, cv::Mat ** );
+#endif
 
 // From 'mathl'
 HRESULT mathOp			( const WCHAR *, int * );

@@ -25,6 +25,33 @@ Prepare :: Prepare ( void )
 	bOcl		= false;
 	}	// Prepare
 
+HRESULT Prepare :: gpuInit ( void )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Initialize any GPU support on the local machine.
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+
+	// Already initialized ?
+	if (bGPUInit)
+		return S_OK;
+
+	#if	CV_MAJOR_VERSION == 3
+	// Open CV 3.X has automatic OpenCL support via the new "UMat" object
+	if (cv::ocl::haveOpenCL())
+		cv::ocl::setUseOpenCL(false);
+	#endif
+
+	bGPUInit = true;
+
+	return S_OK;
+	}	// gpuInit
+
 HRESULT Prepare :: onAttach ( bool bAttach )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -82,7 +109,7 @@ HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	if (_RCP(Upload))
 		{
 		IDictionary	*pImgUse = pImg;
-		cv::Mat		*pMat		= NULL;
+		cvMatRef		*pMat		= NULL;
 
 		// Image to use
 		if (pImgUse == NULL)
@@ -96,17 +123,21 @@ HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		// State check
 		CCLTRYE ( pImgUse != NULL, ERROR_INVALID_STATE );
 
+		// Since nothing in the image library can be done without 'uploading' an
+		// image first, initialize GPU support here
+		if (hr == S_OK && !bGPUInit)
+			gpuInit();
+
 		// Wrap image bits in OpenCv matrix
-		CCLTRY ( image_to_mat ( pImgUse, &pMat ) );
+		CCLTRYE( (pMat = new cvMatRef()) != NULL, E_OUTOFMEMORY );
+		CCLTRY ( image_to_mat ( pImgUse, &(pMat->mat) ) );
 
 		// Since uploading to a GPU involves a copy, 'own' the pixel
 		// data for self in case the download goes back into the same image bits.
-		CCLOK ( *pMat = pMat->clone(); )
+		CCLOK ( *(pMat->mat) = pMat->mat->clone(); )
 
 		// Store 'uploaded' image in image dictionary
-		CCLTRY ( pImgUse->store (	adtString(L"cv::Mat"), 
-											adtLong((U64)pMat) ) );
-
+		CCLTRY ( pImgUse->store (	adtString(L"cvMatRef"), adtLong((U64)pMat) ) );
 
 		// Result
 		if (hr == S_OK)
@@ -125,7 +156,7 @@ HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	else if (_RCP(Download))
 		{
 		IDictionary	*pImgUse = pImg;
-		cv::Mat		*pMat		= NULL;
+		cvMatRef		*pMat		= NULL;
 		adtValue		vL;
 
 		// Image to use
@@ -141,12 +172,12 @@ HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		CCLTRYE ( pImgUse != NULL, ERROR_INVALID_STATE );
 
 		// Image must be 'uploaded'
-		CCLTRY ( pImgUse->load (	adtString(L"cv::Mat"), vL ) );
-		CCLTRYE( (pMat = (cv::Mat *)(U64)adtLong(vL)) != NULL,
+		CCLTRY ( pImgUse->load (	adtString(L"cvMatRef"), vL ) );
+		CCLTRYE( (pMat = (cvMatRef *)(U64)adtLong(vL)) != NULL,
 					ERROR_INVALID_STATE );
 
 		// Store resulting image in dictionary
-		CCLTRY ( image_from_mat ( pMat, pImgUse ) );
+		CCLTRY ( image_from_mat ( pMat->mat, pImgUse ) );
 
 		// Result
 		if (hr == S_OK)
@@ -162,7 +193,6 @@ HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	else if (_RCP(Release))
 		{
 		IDictionary	*pImgUse = pImg;
-		cv::Mat		*pMat		= NULL;
 		adtValue		vL;
 
 		// Image to use
@@ -174,19 +204,9 @@ HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		else
 			pImgUse->AddRef();
 
-		// State check
-		CCLTRYE ( pImgUse != NULL, ERROR_INVALID_STATE );
-
-		// Image must be 'uploaded'
-		CCLTRY ( pImgUse->load (	adtString(L"cv::Mat"), vL ) );
-		CCLTRYE( (pMat = (cv::Mat *)(U64)adtLong(vL)) != NULL,
-					ERROR_INVALID_STATE );
-
 		// Clean up
-		if (pMat != NULL)
-			delete pMat;
 		if (pImgUse != NULL)
-			pImgUse->remove ( adtString(L"cv::Mat") );
+			pImgUse->remove ( adtString(L"cvMatRef") );
 
 		// Result
 		if (hr == S_OK)
@@ -216,7 +236,7 @@ HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		// GPU
 		if (!bGPUInit)
 			{
-			cv::Mat matTst ( 1, 1, CV_8UC1 );
+			cvMatRef matTst ( 1, 1, CV_8UC1 );
 
 			// One time only
 			bGPUInit = true;
@@ -304,7 +324,7 @@ HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			else
 				{
 				// Will stay in CPU mode
-				CCLTRY ( pImgUse->store (	adtString(L"cv::Mat"), 
+				CCLTRY ( pImgUse->store (	adtString(L"cvMatRef"), 
 													adtLong((U64)pMat) ) );
 				}	// else
 			}	// if
@@ -315,7 +335,7 @@ HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		if (hr == S_OK && pImgUse->load ( adtString(L"cv::ocl::oclMat"), vL ) == S_OK)
 			{
 			cv::ocl::oclMat	*pMat = NULL;
-			cv::Mat				mat;
+			cvMatRef				mat;
 
 			// Extract matrix
 			CCLTRYE ( (pMat = (cv::ocl::oclMat *)(U64)adtLong(vL)) != NULL, E_INVALIDARG );
@@ -336,8 +356,8 @@ HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		else if (hr == S_OK)
 			{
 			// Valid OpenCv matrix ?
-			CCLTRY ( pImgUse->load ( adtString(L"cv::Mat"), vL ) );
-			CCLTRYE( (pMat = (cv::Mat *)(U64)adtLong(vL)) != NULL, E_UNEXPECTED );
+			CCLTRY ( pImgUse->load ( adtString(L"cvMatRef"), vL ) );
+			CCLTRYE( (pMat = (cvMatRef *)(U64)adtLong(vL)) != NULL, E_UNEXPECTED );
 
 			// Store resulting image in dictionary
 			CCLTRY ( image_from_mat ( pMat, pImgUse ) );
@@ -345,6 +365,6 @@ HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			// Clean up
 			if (pMat != NULL)
 				delete pMat;
-			pImgUse->remove ( adtString(L"cv::Mat") );
+			pImgUse->remove ( adtString(L"cvMatRef") );
 			}	// else if
 		*/

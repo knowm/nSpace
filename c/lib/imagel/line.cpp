@@ -88,7 +88,7 @@ HRESULT Line :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	if (_RCP(Fire))
 		{
 		IDictionary	*pImgUse = pImg;
-		cv::Mat		*pMat		= NULL;
+		cvMatRef		*pMat		= NULL;
 		adtValue		vL;
 
 		// Image to use
@@ -101,12 +101,12 @@ HRESULT Line :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			pImgUse->AddRef();
 
 		// Image must have been 'uploaded'
-		CCLTRY ( pImgUse->load (	adtString(L"cv::Mat"), vL ) );
-		CCLTRYE( (pMat = (cv::Mat *)(U64)adtLong(vL)) != NULL,
+		CCLTRY ( pImgUse->load (	adtString(L"cvMatRef"), vL ) );
+		CCLTRYE( (pMat = (cvMatRef *)(U64)adtLong(vL)) != NULL,
 					ERROR_INVALID_STATE );
 
 		// Perform operation
-		CCLOK ( cv::line ( *pMat, cv::Point(iX0,iY0), cv::Point(iX1,iY1), CV_RGB(iR,iG,iB), iThick ); )
+		CCLOK ( cv::line ( *(pMat->mat), cv::Point(iX0,iY0), cv::Point(iX1,iY1), CV_RGB(iR,iG,iB), iThick ); )
 
 		// Result
 		if (hr == S_OK)

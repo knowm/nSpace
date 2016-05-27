@@ -82,7 +82,7 @@ HRESULT At :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	if (_RCP(Load) || _RCP(Store))
 		{
 		IDictionary	*pImgUse = pImg;
-		cv::Mat		*pMat	= NULL;
+		cvMatRef		*pMat	= NULL;
 		adtValue		vL;
 
 		// State check
@@ -98,8 +98,8 @@ HRESULT At :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			pImgUse->AddRef();
 
 		// Image must be 'uploaded'
-		CCLTRY ( pImgUse->load (	adtString(L"cv::Mat"), vL ) );
-		CCLTRYE( (pMat = (cv::Mat *)(U64)adtLong(vL)) != NULL,
+		CCLTRY ( pImgUse->load (	adtString(L"cvMatRef"), vL ) );
+		CCLTRYE( (pMat = (cvMatRef *)(U64)adtLong(vL)) != NULL,
 					ERROR_INVALID_STATE );
 
 		// Open CV uses exceptions
@@ -108,51 +108,97 @@ HRESULT At :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			// Unfortunately the type has to be checked to ensure the correct
 			// template is used.
 //			dbgprintf ( L"%d , %d\r\n", (S32)iX, (S32) iY );
-			switch (CV_MAT_DEPTH(pMat->type()))
+			#if	CV_MAJOR_VERSION == 3
+			switch (CV_MAT_DEPTH(pMat->mat->type()))
 				{
 				// 8-bit
 				case CV_8U :
 					if (_RCP(Load))
-						hr = adtValue::copy ( adtInt(pMat->at<U8>(iY,iX)), vL );
+						hr = adtValue::copy ( adtInt(pMat->mat->getMat(cv::ACCESS_READ).at<U8>(iY,iX)), vL );
 					else
-						pMat->at<U8>(iY,iX) = adtInt(vAt);
+						pMat->mat->getMat(cv::ACCESS_WRITE).at<U8>(iY,iX) = adtInt(vAt);
 					break;
 				case CV_8S :
 					if (_RCP(Load))
-						hr = adtValue::copy ( adtInt(pMat->at<S8>(iY,iX)), vL );
+						hr = adtValue::copy ( adtInt(pMat->mat->getMat(cv::ACCESS_READ).at<S8>(iY,iX)), vL );
 					else
-						pMat->at<S8>(iY,iX) = adtInt(vAt);
+						pMat->mat->getMat(cv::ACCESS_WRITE).at<S8>(iY,iX) = adtInt(vAt);
 					break;
 
 				// 16-bit
 				case CV_16U :
 					if (_RCP(Load))
-						hr = adtValue::copy ( adtInt(pMat->at<U16>(iY,iX)), vL );
+						hr = adtValue::copy ( adtInt(pMat->mat->getMat(cv::ACCESS_READ).at<U16>(iY,iX)), vL );
 					else
-						pMat->at<U16>(iY,iX) = adtInt(vAt);
+						pMat->mat->getMat(cv::ACCESS_WRITE).at<U16>(iY,iX) = adtInt(vAt);
 					break;
 				case CV_16S :
 					if (_RCP(Load))
-						hr = adtValue::copy ( adtInt(pMat->at<S16>(iY,iX)), vL );
+						hr = adtValue::copy ( adtInt(pMat->mat->getMat(cv::ACCESS_READ).at<S16>(iY,iX)), vL );
 					else
-						pMat->at<S16>(iY,iX) = adtInt(vAt);
+						pMat->mat->getMat(cv::ACCESS_WRITE).at<S16>(iY,iX) = adtInt(vAt);
 					break;
 
 				// 32-bit
 				case CV_32S :
 					if (_RCP(Load))
-						hr = adtValue::copy ( adtInt(pMat->at<S32>(iY,iX)), vL );
+						hr = adtValue::copy ( adtInt(pMat->mat->getMat(cv::ACCESS_READ).at<S32>(iY,iX)), vL );
 					else
-						pMat->at<S32>(iY,iX) = adtInt(vAt);
+						pMat->mat->getMat(cv::ACCESS_WRITE).at<S32>(iY,iX) = adtInt(vAt);
 					break;
 				case CV_32F :
 					if (_RCP(Load))
-						hr = adtValue::copy ( adtFloat(pMat->at<float>(iY,iX)), vL );
+						hr = adtValue::copy ( adtFloat(pMat->mat->getMat(cv::ACCESS_READ).at<float>(iY,iX)), vL );
 					else
-						pMat->at<float>(iY,iX) = adtFloat(vAt);
+						pMat->mat->getMat(cv::ACCESS_WRITE).at<float>(iY,iX) = adtFloat(vAt);
 					break;
 				}	// switch
+			#else		
+			switch (CV_MAT_DEPTH(pMat->mat->type()))
+				{
+				// 8-bit
+				case CV_8U :
+					if (_RCP(Load))
+						hr = adtValue::copy ( adtInt(pMat->mat->at<U8>(iY,iX)), vL );
+					else
+						pMat->mat->at<U8>(iY,iX) = adtInt(vAt);
+					break;
+				case CV_8S :
+					if (_RCP(Load))
+						hr = adtValue::copy ( adtInt(pMat->mat->at<S8>(iY,iX)), vL );
+					else
+						pMat->mat->at<S8>(iY,iX) = adtInt(vAt);
+					break;
 
+				// 16-bit
+				case CV_16U :
+					if (_RCP(Load))
+						hr = adtValue::copy ( adtInt(pMat->mat->at<U16>(iY,iX)), vL );
+					else
+						pMat->mat->at<U16>(iY,iX) = adtInt(vAt);
+					break;
+				case CV_16S :
+					if (_RCP(Load))
+						hr = adtValue::copy ( adtInt(pMat->mat->at<S16>(iY,iX)), vL );
+					else
+						pMat->mat->at<S16>(iY,iX) = adtInt(vAt);
+					break;
+
+				// 32-bit
+				case CV_32S :
+					if (_RCP(Load))
+						hr = adtValue::copy ( adtInt(pMat->mat->at<S32>(iY,iX)), vL );
+					else
+						pMat->mat->at<S32>(iY,iX) = adtInt(vAt);
+					break;
+				case CV_32F :
+					if (_RCP(Load))
+						hr = adtValue::copy ( adtFloat(pMat->mat->at<float>(iY,iX)), vL );
+					else
+						pMat->mat->at<float>(iY,iX) = adtFloat(vAt);
+					break;
+				}	// switch
+			#endif
 			}	// try
 		catch ( cv::Exception ex )
 			{

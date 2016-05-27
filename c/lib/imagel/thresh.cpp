@@ -82,7 +82,7 @@ HRESULT Threshold :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v
 	if (_RCP(Fire))
 		{
 		IDictionary	*pImgUse = pImg;
-		cv::Mat		*pMat		= NULL;
+		cvMatRef		*pMat		= NULL;
 		adtValue		vL;
 
 		// Image to use
@@ -100,17 +100,17 @@ HRESULT Threshold :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v
 //		dbgprintf ( L"dMin %g dMax %g\r\n", dMin, dMax );
 
 		// Image must be 'uploaded'
-		CCLTRY ( pImgUse->load (	adtString(L"cv::Mat"), vL ) );
-		CCLTRYE( (pMat = (cv::Mat *)(U64)adtLong(vL)) != NULL,
+		CCLTRY ( pImgUse->load (	adtString(L"cvMatRef"), vL ) );
+		CCLTRYE( (pMat = (cvMatRef *)(U64)adtLong(vL)) != NULL,
 					ERROR_INVALID_STATE );
 
 		// Perform operation
 		if (hr == S_OK)
 			{
 			if (!WCASECMP(strOp,L"Zero"))
-				cv::threshold ( *pMat, *pMat, adtDouble(vT), 0, cv::THRESH_TOZERO );
+				cv::threshold ( *(pMat->mat), *(pMat->mat), adtDouble(vT), 0, cv::THRESH_TOZERO );
 			else if (!WCASECMP(strOp,L"Truncate"))
-				cv::threshold ( *pMat, *pMat, adtDouble(vT), 0, cv::THRESH_TRUNC );
+				cv::threshold ( *(pMat->mat), *(pMat->mat), adtDouble(vT), 0, cv::THRESH_TRUNC );
 			}	// if
 
 		// Result

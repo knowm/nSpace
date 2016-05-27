@@ -87,8 +87,8 @@ HRESULT Roi :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	if (_RCP(Fire))
 		{
 		IDictionary	*pSrcUse = pSrc;
-		cv::Mat		*pMatSrc	= NULL;
-		cv::Mat		*pMatDst	= NULL;
+		cvMatRef		*pMatSrc	= NULL;
+		cvMatRef		*pMatDst	= NULL;
 		adtValue		vL;
 
 		// State check
@@ -103,25 +103,9 @@ HRESULT Roi :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		else
 			pSrcUse->AddRef();
 
-		// Ensure destination is clear
-		if (hr == S_OK && pDst->load ( adtString(L"cv::Mat"), vL ) == S_OK)
-			{
-			// Specified matrix
-			CCLTRYE( (pMatDst = (cv::Mat *)(U64)adtLong(vL)) != NULL,
-						ERROR_INVALID_STATE );
-
-			// Clean up
-			if (pMatDst != NULL)
-				{
-				delete pMatDst;
-				pMatDst = NULL;
-				}	// if
-			pDst->remove ( adtString(L"cv::Mat") );
-			}	// if
-
 		// Image must be 'uploaded'
-		CCLTRY ( pSrcUse->load (	adtString(L"cv::Mat"), vL ) );
-		CCLTRYE( (pMatSrc = (cv::Mat *)(U64)adtLong(vL)) != NULL,
+		CCLTRY ( pSrcUse->load ( adtString(L"cvMatRef"), vL ) );
+		CCLTRYE( (pMatSrc = (cvMatRef *)(U64)adtLong(vL)) != NULL,
 					ERROR_INVALID_STATE );
 
 		// Adjust Roi.  Could error out but be flexible.
@@ -129,24 +113,30 @@ HRESULT Roi :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		if (hr == S_OK)
 			{
 			// Width
-			if			(iL < 0)							iL = 0;
-			else if	((int)iL >= pMatSrc->cols)	iL = pMatSrc->cols-1;
-			if			(iR <= 0)						iR = 1;
-			else if	((int)iR >= pMatSrc->cols)	iR = pMatSrc->cols;
+			if			(iL < 0)									iL = 0;
+			else if	((int)iL >= pMatSrc->mat->cols)	iL = pMatSrc->mat->cols-1;
+			if			(iR <= 0)								iR = 1;
+			else if	((int)iR >= pMatSrc->mat->cols)	iR = pMatSrc->mat->cols;
 			// Height
-			if			(iT < 0)							iT = 0;
-			else if	((int)iT >= pMatSrc->rows)	iT = pMatSrc->rows-1;
-			if			(iB <= 0)						iB = 1;
-			else if	((int)iB >= pMatSrc->rows)	iB = pMatSrc->rows;
+			if			(iT < 0)									iT = 0;
+			else if	((int)iT >= pMatSrc->mat->rows)	iT = pMatSrc->mat->rows-1;
+			if			(iB <= 0)								iB = 1;
+			else if	((int)iB >= pMatSrc->mat->rows)	iB = pMatSrc->mat->rows;
 			}	// if
 
 		// Open CV uses exceptions
 		try
 			{
 			// Create a new region of interest
-			CCLTRYE((pMatDst = new cv::Mat ( *pMatSrc, cv::Rect(iL,iT,(iR-iL),(iB-iT)) ))
+			CCLTRYE( (pMatDst = new cvMatRef()) != NULL, E_OUTOFMEMORY );
+			#if	CV_MAJOR_VERSION == 3
+			CCLTRYE((pMatDst->mat = new cv::UMat ( *(pMatSrc->mat), cv::Rect(iL,iT,(iR-iL),(iB-iT)) ))
 							!= NULL, E_OUTOFMEMORY);
-			CCLTRY ( pDst->store (	adtString(L"cv::Mat"), adtLong((U64)pMatDst) ) );
+			#else
+			CCLTRYE((pMatDst->mat = new cv::Mat ( *(pMatSrc->mat), cv::Rect(iL,iT,(iR-iL),(iB-iT)) ))
+							!= NULL, E_OUTOFMEMORY);
+			#endif
+			CCLTRY ( pDst->store (	adtString(L"cvMatRef"), adtLong((U64)pMatDst) ) );
 			}	// try
 		catch ( cv::Exception ex )
 			{

@@ -65,5 +65,8 @@
     <ClCompile Include="flip.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="cvmatref.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

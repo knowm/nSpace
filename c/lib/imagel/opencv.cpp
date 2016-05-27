@@ -15,7 +15,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #if		_MSC_VER >= 1900
 #else
-#include <opencv2/gpu/gpu.hpp>
+//#include <opencv2/gpu/gpu.hpp>
 #endif
 //#include <opencv2/highgui/highgui.hpp>
 //#include <opencv2/features2d/features2d.hpp>
@@ -31,11 +31,11 @@ static adtString	strRefHeight(L"Height");
 static adtString	strRefBits(L"Bits");
 static adtString	strRefFormat(L"Format");
 
-// Prototypes
-HRESULT image_to_mat	( IDictionary *, Mat ** );
-HRESULT image_from_mat ( Mat *, IDictionary * );
-
+#if	CV_MAJOR_VERSION == 3
+HRESULT image_fft ( cv::UMat *pMat, cv::UMat *pWnd, bool bRows, bool bZeroDC )
+#else
 HRESULT image_fft ( cv::Mat *pMat, cv::Mat *pWnd, bool bRows, bool bZeroDC )
+#endif
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -54,8 +54,14 @@ HRESULT image_fft ( cv::Mat *pMat, cv::Mat *pWnd, bool bRows, bool bZeroDC )
 	//
 	////////////////////////////////////////////////////////////////////////
 	HRESULT	hr	= S_OK;
+//	Mat		matPad;
+	#if	CV_MAJOR_VERSION == 3
+	UMat		matPad,matDft,matPlanes[2],matCmplx,matQ[4];
+	UMat		matTmp,matMag,matReal;
+	#else
 	Mat		matPad,matDft,matPlanes[2],matCmplx,matQ[4];
 	Mat		matTmp,matMag,matReal;
+	#endif
 	int		m,n,cx,cy;
 
 	// Open CV uses exceptions
@@ -73,16 +79,24 @@ HRESULT image_fft ( cv::Mat *pMat, cv::Mat *pWnd, bool bRows, bool bZeroDC )
 								BORDER_CONSTANT, Scalar::all(0) );
 
 		// Produce a real and (zeroed) imaginary pair
+		#if	CV_MAJOR_VERSION == 3
+		matPlanes[0].setTo(matPad);
+		matPlanes[1].setTo(Mat::zeros ( matPad.size(), CV_32F ));
+		#error	Not yet implemented
+		#else
 		matPlanes[0] = Mat_<float>(matPad);
-		matPlanes[1] = Mat::zeros ( matPad.size(), CV_32F );
+		matPlanes[1] = Mat::zeros ( matPad.size(), CV_32F );		
 		merge ( matPlanes, 2, matCmplx );
-
+		#endif
+	
 		// Compute DFT
 		// TODO: Option for scaling/inverse/magnitude
 		dft ( matCmplx, matCmplx, (bRows) ? DFT_ROWS|DFT_SCALE : DFT_SCALE );
 
 		// Separate real/imaginary results
+		#if	CV_MAJOR_VERSION == 2
 		split ( matCmplx, matPlanes );
+		#endif
 
 		// Compute the magnitude of DFT
 		magnitude ( matPlanes[0], matPlanes[1], matPlanes[0] );
@@ -91,14 +105,14 @@ HRESULT image_fft ( cv::Mat *pMat, cv::Mat *pWnd, bool bRows, bool bZeroDC )
 		// TODO: Log, base, etc. will be moved into own nodes.
 
 		// Ensure no log of zeroes
-		matMag += Scalar::all(1e-20);
+		add ( matMag, Scalar::all(1e-20), matMag );
 
 		// Log scale
 		log ( matMag, matMag );
 
 		// Need to take 20*log10(x)
 		// Open CV log is natural log so scale for log10 (2.303)
-		matMag = (20.0/2.303) * matMag;
+		multiply ( matMag, Scalar::all(20.0/2.303), matMag );
 
 		// Crop the spectrum if it has an odd number of rows or columns
 		matMag = matMag ( Rect ( 0, 0, matMag.cols & -2, matMag.rows & -2 ) );
@@ -128,7 +142,11 @@ HRESULT image_fft ( cv::Mat *pMat, cv::Mat *pWnd, bool bRows, bool bZeroDC )
 		// Zero the DC component on request
 		if (bZeroDC)
 			for (int r = 0;r < matMag.rows;++r)
+				#if	CV_MAJOR_VERSION == 3
+				matMag.getMat(cv::ACCESS_WRITE).at<float>(Point(0,r)) = 0.0f;
+				#else
 				matMag.at<float>(Point(0,r)) = 0.0f;
+				#endif
 
 		// Result is new matrix
 		CCLOK ( matMag.copyTo ( *pMat ); )
@@ -270,31 +288,50 @@ HRESULT image_load ( const WCHAR *pwLoc, IDictionary *pImg )
 	//
 	////////////////////////////////////////////////////////////////////////
 	HRESULT		hr			= S_OK;
-	IplImage		*plImg	= NULL;
 //	Mat			*pmImg	= NULL;
 	char			*paLoc	= NULL;
 	adtString	strLoc(pwLoc);
-	Mat			mat;
 
 	// OpenCV needs ASCII
 	CCLTRY ( strLoc.toAscii ( &paLoc ) );
 
 	// 'imread' does not seem to work, OpenCV is so flaky
 	//	TODO: Replace with own PNG,BMP,etc persistence
-	CCLTRYE ( (plImg = cvLoadImage ( paLoc, CV_LOAD_IMAGE_UNCHANGED )) != NULL, 
-					E_UNEXPECTED );
+//	cv::Mat
+//	cv::imre
+//	CCLTRYE ( (plImg = cvLoadImage ( paLoc, CV_LOAD_IMAGE_UNCHANGED )) != NULL, 
+//					E_UNEXPECTED );
 
 	// Convert image into dictionary
 	if (hr == S_OK)
 		{
-		Mat mat(plImg,false);
+		#if	CV_MAJOR_VERSION == 3
+		cv::UMat mat = cv::imread ( paLoc, CV_LOAD_IMAGE_UNCHANGED ).getUMat(cv::ACCESS_READ);
+//		cv::imread ( paLoc, CV_LOAD_IMAGE_UNCHANGED ).copyTo ( 
 		hr = image_from_mat ( &mat, pImg );
+
+//		cv::Mat mat = cv::imread ( paLoc, CV_LOAD_IMAGE_UNCHANGED );
+		#elif	CV_MAJOR_VERSION == 2
+		IplImage		*plImg = NULL;
+
+		// Attempt load
+		CCLTRYE ( (plImg	= cvLoadImage ( paLoc, CV_LOAD_IMAGE_UNCHANGED )) != NULL,
+						E_UNEXPECTED );
+
+		// Wrap into matrix
+		if (hr == S_OK)
+			{
+			cv::Mat mat ( plImg, false );
+			hr = image_from_mat ( &mat, pImg );
+			}	// if
+		#endif
+
 		}	// if
 
 	// Clean up
 	_FREEMEM(paLoc);
-	if (plImg != NULL)
-		cvReleaseImage(&plImg);
+//	if (plImg != NULL)
+//		cvReleaseImage(&plImg);
 
 	return hr;
 	}	// image_load
@@ -315,7 +352,11 @@ HRESULT image_save ( IDictionary *pImg, const WCHAR *pwLoc )
 	//
 	////////////////////////////////////////////////////////////////////////
 	HRESULT		hr			= S_OK;
+	#if	CV_MAJOR_VERSION == 3
+	UMat			*pmImg	= NULL;
+	#else
 	Mat			*pmImg	= NULL;
+	#endif
 	char			*paLoc	= NULL;
 	adtString	strLoc(pwLoc);
 
@@ -329,9 +370,13 @@ HRESULT image_save ( IDictionary *pImg, const WCHAR *pwLoc )
 //	CCLOK ( invert ( *pmImg, *pmImg ); )
 //	CCLOK ( bitwise_not ( *pmImg, *pmImg ); )
 
+	#if	CV_MAJOR_VERSION == 3
+	CCLOK ( cvSaveImage ( paLoc, &(IplImage(pmImg->getMat(cv::ACCESS_READ))) ); )
+	#else
 	// 'imwrite' does not seem to work, OpenCV is so flaky
 	//	TODO: Replace with own PNG,BMP,etc persistence
 	CCLOK ( cvSaveImage ( paLoc, &(IplImage(*pmImg)) ); )
+	#endif
 
 	// Clean up
 	_FREEMEM(paLoc);
@@ -341,7 +386,11 @@ HRESULT image_save ( IDictionary *pImg, const WCHAR *pwLoc )
 	return hr;
 	}	// image_save
 
+#if	CV_MAJOR_VERSION == 3
+HRESULT image_from_mat ( UMat *pM, IDictionary *pImg )
+#else
 HRESULT image_from_mat ( Mat *pM, IDictionary *pImg )
+#endif
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -371,7 +420,12 @@ HRESULT image_from_mat ( Mat *pM, IDictionary *pImg )
 	CCLTRY ( pBits->lock ( 0, 0, &pvBits, NULL ) );
 
 	// Copy bits
+	#if	CV_MAJOR_VERSION == 3
+	CCLOK  ( memcpy ( pvBits, pM->getMat(cv::ACCESS_READ).data, 
+							pM->total()*pM->elemSize() ); )
+	#else
 	CCLOK  ( memcpy ( pvBits, pM->data, pM->total()*pM->elemSize() ); )
+	#endif
 
 	// Assign format, add new formats as needed.
 	if (hr == S_OK)
@@ -411,7 +465,11 @@ HRESULT image_from_mat ( Mat *pM, IDictionary *pImg )
 	return hr;
 	}	// image_from_mat
 
+#if	CV_MAJOR_VERSION == 3
+HRESULT image_to_mat ( IDictionary *pImg, UMat **ppM )
+#else
 HRESULT image_to_mat ( IDictionary *pImg, Mat **ppM )
+#endif
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -432,7 +490,7 @@ HRESULT image_to_mat ( IDictionary *pImg, Mat **ppM )
 	adtValue			vL;
 	adtString		strFmt;
 	adtIUnknown		unkV;
-	U32				w,h;
+	U32				w,h,cvFmt;
 
 	// Setup
 	(*ppM) = NULL;
@@ -450,34 +508,32 @@ HRESULT image_to_mat ( IDictionary *pImg, Mat **ppM )
 
 	// NOTE: Add needed formats over time
 	if (hr == S_OK && !WCASECMP(strFmt,L"U16X2"))
-		{
-		CCLTRYE ( ((*ppM) = new Mat ( h, w, CV_16UC1, pvBits )) != NULL,
-						E_OUTOFMEMORY );
-		}	// if
+		cvFmt = CV_16UC1;
 	else if (hr == S_OK && !WCASECMP(strFmt,L"S16X2"))
-		{
-		CCLTRYE ( ((*ppM) = new Mat ( h, w, CV_16SC1, pvBits )) != NULL,
-						E_OUTOFMEMORY );
-		}	// if
+		cvFmt = CV_16SC1;
 	else if (hr == S_OK && !WCASECMP(strFmt,L"U8X2"))
-		{
-		CCLTRYE ( ((*ppM) = new Mat ( h, w, CV_8UC1, pvBits )) != NULL,
-						E_OUTOFMEMORY );
-		}	// if
+		cvFmt = CV_8UC1;
 	else if (hr == S_OK && !WCASECMP(strFmt,L"S8X2"))
-		{
-		CCLTRYE ( ((*ppM) = new Mat ( h, w, CV_8SC1, pvBits )) != NULL,
-						E_OUTOFMEMORY );
-		}	// if
+		cvFmt = CV_8SC1;
 
 	// Image formats
 	else if (hr == S_OK && !WCASECMP(strFmt,L"B8G8R8"))
-		{
-		CCLTRYE ( ((*ppM) = new Mat ( h, w, CV_8UC3, pvBits )) != NULL,
-						E_OUTOFMEMORY );
-		}	// if
+		cvFmt = CV_8UC3;
 	else 
 		hr = ERROR_NOT_SUPPORTED;
+
+	#if	CV_MAJOR_VERSION == 3
+	CCLTRYE ( ((*ppM) = new UMat ( h, w, cvFmt )) != NULL, E_OUTOFMEMORY );
+	CCLOK ( cv::Mat ( h, w, cvFmt, pvBits ).copyTo ( *(*ppM) ); )
+//	if (hr == S_OK)
+//		{
+//		cv::Mat mat ( h, w, cvFmt, pvBits );
+//		(*ppM)->setTo ( mat );
+//		}	// if
+	#else
+	CCLTRYE ( ((*ppM) = new Mat ( h, w, cvFmt, pvBits )) != NULL,
+												E_OUTOFMEMORY );
+	#endif
 
 	// Clean up
 	_UNLOCK(pBits,pvBits);

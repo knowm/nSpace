@@ -89,7 +89,7 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	if (_RCP(Fire))
 		{
 		IDictionary	*pImgUse = pImg;
-		cv::Mat		*pMat		= NULL;
+		cvMatRef		*pMat		= NULL;
 		adtValue		vL;
 
 		// Image to use
@@ -102,8 +102,8 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			pImgUse->AddRef();
 
 		// Image must be 'uploaded'
-		CCLTRY ( pImgUse->load (	adtString(L"cv::Mat"), vL ) );
-		CCLTRYE( (pMat = (cv::Mat *)(U64)adtLong(vL)) != NULL,
+		CCLTRY ( pImgUse->load (	adtString(L"cvMatRef"), vL ) );
+		CCLTRYE( (pMat = (cvMatRef *)(U64)adtLong(vL)) != NULL,
 					ERROR_INVALID_STATE );
 
 		//
@@ -117,19 +117,14 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 
 		// Verify size
 		if (	hr == S_OK		&& 
-				(pWnd != NULL	&& (pWnd->cols != pMat->cols || pWnd->rows != pMat->rows)) ||
+				(pWnd != NULL	&& (pWnd->mat->cols != pMat->mat->cols || pWnd->mat->rows != pMat->mat->rows)) ||
 				(pWnd == NULL	&& strWnd.length() > 0 && WCASECMP(strWnd,L"None")) )
 			{
-			// Previous window
-			if (pWnd != NULL)
-				{
-				delete pWnd;
-				pWnd = NULL;
-				}	// if
+			// Will write to a local array first
+			cv::Mat matWnd (pMat->mat->rows,pMat->mat->cols,CV_32FC1);
 
-			// Create new window.  Assuming it is faster to just do per element
-			// multiplication rather than row by row.
-			CCLTRYE ( (pWnd = new cv::Mat(pMat->rows,pMat->cols,CV_32FC1)) != NULL, E_OUTOFMEMORY );
+			// Previous window
+			_RELEASE(pWnd);
 
 			// Generate function
 			if (!WCASECMP(strWnd,L"Blackman-Nutall"))
@@ -142,20 +137,20 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 				float ev = 0.0f;
 
 				// Compute window (slow)
-				for (int r = 0;r < pMat->rows;++r)
-					for (int c = 0;c < pMat->cols;++c)
+				for (int r = 0;r < pMat->mat->rows;++r)
+					for (int c = 0;c < pMat->mat->cols;++c)
 						{
 						// Evaulate
 						ev =	(float) (a0 -
-											a1 * cos ( (2*CV_PI*c)/(pMat->cols-1) ) +
-											a2 * cos ( (4*CV_PI*c)/(pMat->cols-1) ) -
-											a3 * cos ( (6*CV_PI*c)/(pMat->cols-1) ) );
+											a1 * cos ( (2*CV_PI*c)/(pMat->mat->cols-1) ) +
+											a2 * cos ( (4*CV_PI*c)/(pMat->mat->cols-1) ) -
+											a3 * cos ( (6*CV_PI*c)/(pMat->mat->cols-1) ) );
 
 						// Set
-						pWnd->at<float>(cv::Point(c,r)) = ev;
+						matWnd.at<float>(cv::Point(c,r)) = ev;
 
 						// Debug
-//						pWnd->at<float>(cv::Point(c,r)) = 0;
+//						matWnd.at<float>(cv::Point(c,r)) = 0;
 						}	// for
 
 				}	// if
@@ -167,10 +162,27 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 				hr = E_NOTIMPL;
 				}	// else
 
+			// Create new window.  Assuming it is faster to just do per element
+			// multiplication rather than row by row.
+			CCLTRYE( (pWnd = new cvMatRef()) != NULL, E_OUTOFMEMORY );
+			#if	CV_MAJOR_VERSION == 3
+			CCLTRYE ( (pWnd->mat = new cv::UMat(pMat->mat->rows,pMat->mat->cols,CV_32FC1)) != NULL, E_OUTOFMEMORY );
+			CCLOK   ( matWnd.copyTo ( *(pWnd->mat) ); )
+			#else
+			CCLTRYE ( (pWnd->mat = new cv::Mat(matWnd)) != NULL, E_OUTOFMEMORY );
+			#endif
+
+//						#if	CV_MAJOR_VERSION == 3
+//						pWnd->mat->getMat(cv::ACCESS_WRITE).at<float>(cv::Point(c,r)) = ev;
+//						#else
+//						pWnd->mat->at<float>(cv::Point(c,r)) = ev;
+//						#endif
+
+
 			}	// if
 
 		// Compute FFT/Magnitude
-		CCLTRY ( image_fft ( pMat, pWnd, true, bZeroDC ) );
+		CCLTRY ( image_fft ( pMat->mat, pWnd->mat, true, bZeroDC ) );
 
 		// Thread safey
 		csSync.leave();
@@ -201,18 +213,9 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 
 		// Assume a new window is needed
 		dbgprintf ( L"New window : %s\r\n", (LPCWSTR)strWnd );
-		if (pWnd != NULL)
-			{
-			// Thread safey
-			csSync.enter();
-
-			// Clean up
-			delete pWnd;
-			pWnd = NULL;
-
-			// Thread safey
-			csSync.leave();
-			}	// if
+		csSync.enter();
+		_RELEASE(pWnd);
+		csSync.leave();
 		}	// else if
 	else
 		hr = ERROR_NO_MATCH;
@@ -241,11 +244,11 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		// CPU
 		else 
 			{
-			cv::Mat		*pMat		= NULL;
+			cvMatRef		*pMat		= NULL;
 
 			// CPU matrix required at a minimum
-			CCLTRY ( pImgUse->load ( adtString(L"cv::Mat"), vL ) );
-			CCLTRYE ( (pMat = (cv::Mat *)(U64)adtLong(vL)) != NULL, E_INVALIDARG );
+			CCLTRY ( pImgUse->load ( adtString(L"cvMatRef"), vL ) );
+			CCLTRYE ( (pMat = (cvMatRef *)(U64)adtLong(vL)) != NULL, E_INVALIDARG );
 
 			// Execute
 			CCLTRY ( image_fft ( pMat, true, bZeroDC ) );

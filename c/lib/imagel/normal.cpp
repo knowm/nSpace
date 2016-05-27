@@ -83,7 +83,7 @@ HRESULT Normalize :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v
 	if (_RCP(Fire))
 		{
 		IDictionary	*pImgUse = pImg;
-		cv::Mat		*pMat		= NULL;
+		cvMatRef		*pMat		= NULL;
 		adtValue		vL;
 
 		// Image to use
@@ -96,12 +96,12 @@ HRESULT Normalize :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v
 			pImgUse->AddRef();
 
 		// Image must be 'uploaded'
-		CCLTRY ( pImgUse->load (	adtString(L"cv::Mat"), vL ) );
-		CCLTRYE( (pMat = (cv::Mat *)(U64)adtLong(vL)) != NULL,
+		CCLTRY ( pImgUse->load (	adtString(L"cvMatRef"), vL ) );
+		CCLTRYE( (pMat = (cvMatRef *)(U64)adtLong(vL)) != NULL,
 					ERROR_INVALID_STATE );
 
 		// Perform operation
-		CCLOK ( cv::normalize ( *pMat, *pMat, adtDouble(vFrom), adtDouble(vTo), cv::NORM_MINMAX ); )
+		CCLOK ( cv::normalize ( *(pMat->mat), *(pMat->mat), adtDouble(vFrom), adtDouble(vTo), cv::NORM_MINMAX ); )
 
 		// Result
 		if (hr == S_OK)

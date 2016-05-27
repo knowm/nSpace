@@ -79,7 +79,7 @@ HRESULT Convert :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	if (_RCP(Fire))
 		{
 		IDictionary	*pImgUse = pImg;
-		cv::Mat		*pMat		= NULL;
+		cvMatRef		*pMat		= NULL;
 		adtValue		vL;
 
 		// Image to use.  Previously specified or passed in.
@@ -92,21 +92,21 @@ HRESULT Convert :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			pImgUse->AddRef();
 
 		// Image must be 'uploaded'
-		CCLTRY ( pImgUse->load (	adtString(L"cv::Mat"), vL ) );
-		CCLTRYE( (pMat = (cv::Mat *)(U64)adtLong(vL)) != NULL,
+		CCLTRY ( pImgUse->load (	adtString(L"cvMatRef"), vL ) );
+		CCLTRYE( (pMat = (cvMatRef *)(U64)adtLong(vL)) != NULL,
 					ERROR_INVALID_STATE );
 
 		// Convert 'to' specified format. Add formats as needed.
 		if (!WCASECMP(strTo,L"F32x2"))
-			pMat->convertTo ( *pMat, CV_32FC1 );
+			pMat->mat->convertTo ( *(pMat->mat), CV_32FC1 );
 		else if (!WCASECMP(strTo,L"U16x2"))
-			pMat->convertTo ( *pMat, CV_16UC1 );
+			pMat->mat->convertTo ( *(pMat->mat), CV_16UC1 );
 		else if (!WCASECMP(strTo,L"S16x2"))
-			pMat->convertTo ( *pMat, CV_16SC1 );
+			pMat->mat->convertTo ( *(pMat->mat), CV_16SC1 );
 		else if (!WCASECMP(strTo,L"U8x2"))
-			pMat->convertTo ( *pMat, CV_8UC1 );
+			pMat->mat->convertTo ( *(pMat->mat), CV_8UC1 );
 		else if (!WCASECMP(strTo,L"S8x2"))
-			pMat->convertTo ( *pMat, CV_8SC1 );
+			pMat->mat->convertTo ( *(pMat->mat), CV_8SC1 );
 		else
 			hr = E_NOTIMPL;
 
