@@ -19,29 +19,17 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="at.cpp" />
-    <ClCompile Include="binary.cpp" />
-    <ClCompile Include="convert.cpp" />
-    <ClCompile Include="create.cpp" />
-    <ClCompile Include="fft.cpp" />
-    <ClCompile Include="flip.cpp" />
-    <ClCompile Include="line.cpp" />
-    <ClCompile Include="normal.cpp" />
-    <ClCompile Include="opencv.cpp" />
-    <ClCompile Include="persist.cpp" />
-    <ClCompile Include="prepare.cpp" />
-    <ClCompile Include="roi.cpp" />
-    <ClCompile Include="stats.cpp" />
-    <ClCompile Include="thresh.cpp" />
+    <ClCompile Include="gnuplotsrvr.cpp" />
+    <ClCompile Include="image.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="imagel.h" />
-    <ClInclude Include="imagel_.h" />
+    <ClInclude Include="plotl.h" />
+    <ClInclude Include="plotl_.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{44D3BD75-4549-420C-8B48-D243C02F8AB8}</ProjectGuid>
+    <ProjectGuid>{98FC8B7C-4110-495A-BF80-F3502D670F90}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>imagel2015</RootNamespace>
+    <RootNamespace>plotl2015</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -89,18 +77,7 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(SDK_OPENCV)\Include;$(IncludePath)</IncludePath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(SDK_OPENCV)\Include;$(IncludePath)</IncludePath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SDK_OPENCV)\Include;$(IncludePath)</IncludePath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SDK_OPENCV)\Include;$(IncludePath)</IncludePath>
-  </PropertyGroup>
+  <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>
