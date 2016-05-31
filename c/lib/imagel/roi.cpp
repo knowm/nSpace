@@ -21,6 +21,7 @@ Roi :: Roi ( void )
 	////////////////////////////////////////////////////////////////////////
 	pSrc	= NULL;
 	pDst	= NULL;
+	bCopy	= false;
 	}	// Roi
 
 HRESULT Roi :: onAttach ( bool bAttach )
@@ -53,6 +54,8 @@ HRESULT Roi :: onAttach ( bool bAttach )
 			iR = vL;
 		if (pnDesc->load ( adtString(L"Bottom"), vL ) == S_OK)
 			iB = vL;
+		if (pnDesc->load ( adtString(L"Copy"), vL ) == S_OK)
+			bCopy = vL;
 		}	// if
 
 	// Detach
@@ -137,6 +140,10 @@ HRESULT Roi :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 							!= NULL, E_OUTOFMEMORY);
 			#endif
 			CCLTRY ( pDst->store (	adtString(L"cvMatRef"), adtLong((U64)pMatDst) ) );
+
+			// Requesting own copy of Roi ?
+			if (hr == S_OK && bCopy == true)
+				*(pMatDst->mat) = pMatDst->mat->clone();
 			}	// try
 		catch ( cv::Exception ex )
 			{

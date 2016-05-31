@@ -218,6 +218,8 @@ HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		_RELEASE(pImgUse);
 		}	// else if
 
+	// Clone a prepared image
+
 	// State
 	else if (_RCP(Image))
 		{

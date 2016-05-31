@@ -434,6 +434,7 @@ class Roi :
 	// Run-time data
 	IDictionary	*pSrc,*pDst;							// Image dictionaries
 	adtInt		iL,iT,iR,iB;							// ROI
+	adtBool		bCopy;									// Copy ROI into own image
 
 	// CCL
 	CCL_OBJECT_BEGIN(Roi)
