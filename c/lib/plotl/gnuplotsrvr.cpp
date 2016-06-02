@@ -203,6 +203,45 @@ HRESULT GnuPlotSrvr :: plot ( IDictionary *pReq )
 	// set the range of the axis to be the same as the limits of the data.  By
 	// default GnuPlot pads the extremes
 	//
+
+	// Optional range percentages 
+	if (hr == S_OK)
+		{
+		adtValue	vMin,vMax;
+		WCHAR		wBfrRng[101];
+
+		// X-axis
+		if (	pReq->load ( strRefLeft, vMin ) == S_OK &&
+				pReq->load ( strRefRight, vMax ) == S_OK)
+			{
+			float	fMin = adtFloat(vMin);
+			float fMax = adtFloat(vMax);
+
+			// X limits
+			swprintf ( SWPF(wBfrRng,101), L"set xrange [%g:%g]", fMin, fMax );
+//			dbgprintf ( L"%s\r\n", wBfrRng );
+			CCLTRY ( pTick->writeStr ( wBfrRng ) );
+			}	// if
+
+		// Y-axis
+		if (	pReq->load ( strRefBottom, vMin ) == S_OK &&
+				pReq->load ( strRefTop, vMax ) == S_OK)
+			{
+			float	fMin = adtFloat(vMin);
+			float fMax = adtFloat(vMax);
+
+			// Y limits
+			swprintf ( SWPF(wBfrRng,101), L"set yrange [%g:%g]", fMin, fMax );
+//			dbgprintf ( L"%s\r\n", wBfrRng );
+			CCLTRY ( pTick->writeStr ( wBfrRng ) );
+			}	// if
+
+		}	// if
+
+	/*
+
+	// Range in percent
+
 	float	fMinv[3]	= { 0, 0, 0 };
 	float	fMaxv[3]	= { 0, 0, 0 };
 	float	fMinr[3]	= { 0, 0, 0 };
@@ -355,7 +394,7 @@ HRESULT GnuPlotSrvr :: plot ( IDictionary *pReq )
 
 				}	// for
 
-		// Calculate actual plot point corodinates
+		// Calculate actual plot point coordinates
 		CCLOK ( fXAt = fXAt*(fMaxv[0]-fMinv[0]) + fMinv[0]; )
 		CCLOK ( fYAt = fYAt*(fMaxv[1]-fMinv[1]) + fMinv[1]; )
 		CCLOK ( fZAt = fZAt*(fMaxv[2]-fMinv[2]) + fMinv[2]; )
@@ -386,7 +425,7 @@ HRESULT GnuPlotSrvr :: plot ( IDictionary *pReq )
 		CCLTRY ( pTick->writeStr ( L"unset label 100" ) );
 		CCLTRY ( pTick->writeStr ( L"unset object 100" ) );
 		}	// else if
-
+*/
 	//
 	// Canvas size
 	//

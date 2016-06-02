@@ -356,48 +356,8 @@ HRESULT Image :: receive ( IReceptor *pr, const WCHAR *pl,
 	// Generate plot
 	if (_RCP(Fire))
 		{
-		U32			sz	= 0;
-		adtValue		vL;
-
-		// State check
-		CCLTRYE ( pGnuSrvr != NULL, ERROR_INVALID_STATE );
-		CCLTRYE ( iDataW > 0 && iDataH > 0, ERROR_INVALID_STATE );
-		CCLTRYE ( bReq == true, ERROR_INVALID_STATE );
-
-		// Latest title
-		if (hr == S_OK && strTitle.length() > 0)
-			hr = pReq->store ( adtString(L"Title"), strTitle );
-		else if (hr == S_OK)
-			pReq->remove ( adtString(L"Title") );
-
-		// Latest labels
-		if (hr == S_OK && strLblX0.length() > 0)
-			hr = pReq->store ( adtString ( L"LabelX0" ), strLblX0 );
-		else
-			pReq->remove ( adtString(L"LabelX0") );
-		if (hr == S_OK && strLblX1.length() > 0)
-			hr = pReq->store ( adtString ( L"LabelX1" ), strLblX1 );
-		else
-			pReq->remove ( adtString(L"LabelX1") );
-		if (hr == S_OK && strLblY0.length() > 0)
-			hr = pReq->store ( adtString ( L"LabelY0" ), strLblY0 );
-		else
-			pReq->remove ( adtString(L"LabelY0") );
-		if (hr == S_OK && strLblY1.length() > 0)
-			hr = pReq->store ( adtString ( L"LabelY1" ), strLblY1 );
-		else
-			pReq->remove ( adtString(L"LabelY1") );
-
-		// Send request to GNU server.  In order to support multiple
-		// synchronized clients, the server stores the result directly
-		// in the request
-		CCLTRY ( pGnuSrvr->plot ( pReq ) );
-
-		// Was a plot generated ?
-		if (hr == S_OK && pReq->load ( strRefOnImg, vL ) == S_OK)
-			_EMT(Fire,vL);
-		else
-			_EMT(Error,adtInt(hr));
+		// Update plot
+		update();
 		}	// if
 
 	// Add to plot
@@ -413,12 +373,43 @@ HRESULT Image :: receive ( IReceptor *pr, const WCHAR *pl,
 		CCLOK ( bReq = (iDataH > 1); )
 		}	// else if
 
+	// Plot range.  Ranges are specified in percent of each axis
+	else if (_RCP(Range))
+		{
+		IDictionary	*pDct	= NULL;
+		adtIUnknown	unkV(v);
+		adtValue		vL;
+
+		// State check
+		CCLTRY ( _QISAFE(unkV,IID_IDictionary,&pDct) );
+
+		// Transfer into request
+		if (hr == S_OK && pDct->load ( strRefLeft, vL ) == S_OK)
+			hr = pReq->store ( strRefLeft, adtFloat(vL) );
+		if (hr == S_OK && pDct->load ( strRefBottom, vL ) == S_OK)
+			hr = pReq->store ( strRefBottom, adtFloat(vL) );
+		if (hr == S_OK && pDct->load ( strRefRight, vL ) == S_OK)
+			hr = pReq->store ( strRefRight, adtFloat(vL) );
+		if (hr == S_OK && pDct->load ( strRefTop, vL ) == S_OK)
+			hr = pReq->store ( strRefTop, adtFloat(vL) );
+
+		// If a valid state is currently valid, refresh the plot with the new size automatically
+		CCLOK ( update(); )
+
+		// Clean up
+		_RELEASE(pDct);
+		}	// else if
+
 	// Reset plot
 	else if (_RCP(Reset))
 		{
 		// Clear vectors of current request
 		iDataW = iDataH = 0;
 		bReq = false;
+//		pReq->remove ( strRefLeft );
+//		pReq->remove ( strRefBottom );
+//		pReq->remove ( strRefRight );
+//		pReq->remove ( strRefTop );
 //		pReq->remove ( strRefOnImg );
 		}	// else if
 
@@ -434,9 +425,8 @@ HRESULT Image :: receive ( IReceptor *pr, const WCHAR *pl,
 		// Store size in request
 		CCLTRY ( pReq->store ( _RCP(Width) ? strRefWidth : strRefHeight, iSz ) );
 
-		// If current request is valid, update plot
-//		if (hr == S_OK && bReq)
-//			receive ( prFire, L"", v );
+		// Update state
+		CCLOK ( update(); )
 		}	// else if
 
 	// State
@@ -451,6 +441,63 @@ HRESULT Image :: receive ( IReceptor *pr, const WCHAR *pl,
 
 	return hr;
 	}	// receive
+
+HRESULT Image :: update ( void )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Update the plot if request is currently valid.
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT	hr = S_OK;
+	adtValue vL;
+
+	// State check
+	CCLTRYE ( pGnuSrvr != NULL, ERROR_INVALID_STATE );
+	CCLTRYE ( iDataW > 0 && iDataH > 0, ERROR_INVALID_STATE );
+	CCLTRYE ( bReq == true, ERROR_INVALID_STATE );
+
+	// Latest title
+	if (hr == S_OK && strTitle.length() > 0)
+		hr = pReq->store ( adtString(L"Title"), strTitle );
+	else if (hr == S_OK)
+		pReq->remove ( adtString(L"Title") );
+
+	// Latest labels
+	if (hr == S_OK && strLblX0.length() > 0)
+		hr = pReq->store ( adtString ( L"LabelX0" ), strLblX0 );
+	else
+		pReq->remove ( adtString(L"LabelX0") );
+	if (hr == S_OK && strLblX1.length() > 0)
+		hr = pReq->store ( adtString ( L"LabelX1" ), strLblX1 );
+	else
+		pReq->remove ( adtString(L"LabelX1") );
+	if (hr == S_OK && strLblY0.length() > 0)
+		hr = pReq->store ( adtString ( L"LabelY0" ), strLblY0 );
+	else
+		pReq->remove ( adtString(L"LabelY0") );
+	if (hr == S_OK && strLblY1.length() > 0)
+		hr = pReq->store ( adtString ( L"LabelY1" ), strLblY1 );
+	else
+		pReq->remove ( adtString(L"LabelY1") );
+
+	// Send request to GNU server.  In order to support multiple
+	// synchronized clients, the server stores the result directly
+	// in the request
+	CCLTRY ( pGnuSrvr->plot ( pReq ) );
+
+	// Was a plot generated ?
+	if (hr == S_OK && pReq->load ( strRefOnImg, vL ) == S_OK)
+		_EMT(Fire,vL);
+	else
+		_EMT(Error,adtInt(hr));
+
+	return hr;
+	}	// update
 
 /*
 HRESULT GnuPlot :: onStore ( const ADTVALUE &vKey, const ADTVALUE &vValue )
@@ -490,34 +537,6 @@ HRESULT GnuPlot :: onStore ( const ADTVALUE &vKey, const ADTVALUE &vValue )
 		CCLTRY ( pReq->store ( strRefWidth, vL ) );
 		CCLTRY ( pDct->load ( strRefHeight, vL ) );
 		CCLTRY ( pReq->store ( strRefHeight, vL ) );
-
-		// If a valid state is currently valid, refresh the plot with the new size automatically
-		if (hr == S_OK && bReq)
-			onStore ( adtString(L"Fire"), adtInt(0) );
-
-		// Clean up
-		_RELEASE(pDct);
-		}	// else if
-
-	// Plot range.  Ranges are specified in percent of each axis
-	else if (!WCASECMP(L"Range",strKey))
-		{
-		IDictionary	*pDct	= NULL;
-		adtIUnknown	unkV(vValue);
-		adtValue		vL;
-
-		// State check
-		CCLTRY ( _QISAFE(unkV,IID_IDictionary,&pDct) );
-
-		// Transfer into request
-		if (hr == S_OK && pDct->load ( strRefLeft, vL ) == S_OK)
-			hr = pReq->store ( strRefLeft, vL );
-		if (hr == S_OK && pDct->load ( strRefBottom, vL ) == S_OK)
-			hr = pReq->store ( strRefBottom, vL );
-		if (hr == S_OK && pDct->load ( strRefRight, vL ) == S_OK)
-			hr = pReq->store ( strRefRight, vL );
-		if (hr == S_OK && pDct->load ( strRefTop, vL ) == S_OK)
-			hr = pReq->store ( strRefTop, vL );
 
 		// If a valid state is currently valid, refresh the plot with the new size automatically
 		if (hr == S_OK && bReq)

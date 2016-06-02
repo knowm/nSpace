@@ -164,6 +164,7 @@ class Image :
 	DECLARE_RCP(Height)
 	DECLARE_RCP(Index)
 	DECLARE_CON(Fire)
+	DECLARE_RCP(Range)
 	DECLARE_RCP(Reset)
 	DECLARE_RCP(Width)
 	BEGIN_BEHAVIOUR()
@@ -173,6 +174,7 @@ class Image :
 		DEFINE_RCP(Height)
 		DEFINE_RCP(Index)
 		DEFINE_CON(Fire)
+		DEFINE_RCP(Range)
 		DEFINE_RCP(Reset)
 		DEFINE_RCP(Width)
 	END_BEHAVIOUR_NOTIFY()
@@ -181,6 +183,7 @@ class Image :
 
 	// Internal utilities
 	HRESULT addRow ( IUnknown *, U32 );
+	HRESULT update	( void );
 	};
 
 #endif

@@ -92,10 +92,10 @@ HRESULT Binary :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		// TODO: Seperate receptor for this ?
 		CCLTRYE ( adtValue::type(v) == VTYPE_UNK, ERROR_INVALID_STATE );
 
-		// Images for left and right
+		// Images for left and right or images for left and scalar for right
 		if (	hr == S_OK && 
 				adtValue::type(vL) == VTYPE_UNK &&
-				adtValue::type(vR) == VTYPE_UNK )
+				!adtValue::empty(vR) )
 			{
 			IDictionary	*pImgL	= NULL;
 			IDictionary	*pImgR	= NULL;
@@ -103,43 +103,66 @@ HRESULT Binary :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			cvMatRef		*pMatL	= NULL;
 			cvMatRef		*pMatR	= NULL;
 			cvMatRef		*pMatO	= NULL;
+			bool			bImgR		= false;
 
 			// Image dictionaries
 			CCLTRY(_QISAFE(adtIUnknown(vL),IID_IDictionary,&pImgL));
-			CCLTRY(_QISAFE(adtIUnknown(vR),IID_IDictionary,&pImgR));
+			if (hr == S_OK && adtValue::type(vR) == VTYPE_UNK)
+				{
+				CCLTRY(_QISAFE(adtIUnknown(vR),IID_IDictionary,&pImgR));
+				CCLOK ( bImgR = true; )
+				}	// if
 			CCLTRY(_QISAFE(adtIUnknown(v),IID_IDictionary,&pImgO));
 
 			// Images must be 'uploaded'
 			CCLTRY ( pImgL->load (	adtString(L"cvMatRef"), vL ) );
 			CCLTRYE( (pMatL = (cvMatRef *)(U64)adtLong(vL)) != NULL,
 						ERROR_INVALID_STATE );
-			CCLTRY ( pImgR->load (	adtString(L"cvMatRef"), vL ) );
-			CCLTRYE( (pMatR = (cvMatRef *)(U64)adtLong(vL)) != NULL,
-						ERROR_INVALID_STATE );
+			if (hr == S_OK && bImgR)
+				{
+				CCLTRY ( pImgR->load (	adtString(L"cvMatRef"), vL ) );
+				CCLTRYE( (pMatR = (cvMatRef *)(U64)adtLong(vL)) != NULL,
+							ERROR_INVALID_STATE );
+				}	// if
 			CCLTRY ( pImgO->load (	adtString(L"cvMatRef"), vL ) );
 			CCLTRYE( (pMatO = (cvMatRef *)(U64)adtLong(vL)) != NULL,
 						ERROR_INVALID_STATE );
 
 			// Apply operation
-			switch (iOp)
+			if (hr == S_OK)
 				{
-				case MATHOP_ADD :
-					cv::add ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
-					break;
-				case MATHOP_SUB :
-					cv::subtract ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
-					break;
-				case MATHOP_MUL :
-					cv::multiply ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
-					break;
-				case MATHOP_DIV :
-					cv::divide ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
-					break;
+				switch (iOp)
+					{
+					case MATHOP_ADD :
+						if (bImgR)
+							cv::add ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
+						else
+							cv::add ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
+						break;
+					case MATHOP_SUB :
+						if (bImgR)
+							cv::subtract ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
+						else
+							cv::subtract ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
+						break;
+					case MATHOP_MUL :
+						if (bImgR)
+							cv::multiply ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
+						else
+							cv::multiply ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
+						break;
+					case MATHOP_DIV :
+						if (bImgR)
+							cv::divide ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
+						else
+							cv::divide ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
+						break;
 
-				// Not implemented
-				default :
-					hr = E_NOTIMPL;
-				}	// switch
+					// Not implemented
+					default :
+						hr = E_NOTIMPL;
+					}	// switch
+				}	// if
 
 			// Result
 			CCLTRY ( adtValue::copy ( adtIUnknown(pImgO), vRes ) );
