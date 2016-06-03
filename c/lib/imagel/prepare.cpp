@@ -25,6 +25,52 @@ Prepare :: Prepare ( void )
 	bOcl		= false;
 	}	// Prepare
 
+HRESULT Prepare :: extract (	IDictionary *pDct, const ADTVALUE &vAlt,
+										IDictionary **ppDct, cvMatRef **ppMat )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Prepare image dictionary ptr and optionally the embedded
+	//			cvMatRef object.
+	//
+	//	PARAMETERS
+	//		-	pDct is the default image dictionary to use
+	//		-	vAlt is checked for a dictionary if 'pDct' is NULL.
+	//		-	ppDct will receive the image dictionary
+	//		-	ppMat (if non-NULL) will receive the embedded cvMatRef object
+	//			inside the dictionary
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT hr = S_OK;
+
+	// Image dictionary to use
+	if ( (*ppDct = pDct) == NULL )
+		{
+		adtIUnknown unkV(vAlt);
+		CCLTRY(_QISAFE(unkV,IID_IDictionary,ppDct));
+		}	// if
+	else
+		(*ppDct)->AddRef();
+
+	// Caller want matrix object ?
+	if (hr == S_OK && ppMat != NULL)
+		{
+		adtValue vL;
+
+		// Reference counted object
+		CCLTRY ( (*ppDct)->load (	adtString(L"cvMatRef"), vL ) );
+		CCLTRYE( (*ppMat = (cvMatRef *)(IUnknown *)adtIUnknown(vL)) != NULL,
+					ERROR_INVALID_STATE );
+		CCLOK  ( (*ppMat)->AddRef(); )
+		}	// if
+
+	return hr;
+	}	// extract
+
 HRESULT Prepare :: gpuInit ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -108,20 +154,11 @@ HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	// Upload
 	if (_RCP(Upload))
 		{
-		IDictionary	*pImgUse = pImg;
+		IDictionary	*pImgUse = NULL;
 		cvMatRef		*pMat		= NULL;
 
-		// Image to use
-		if (pImgUse == NULL)
-			{
-			adtIUnknown unkV(v);
-			CCLTRY(_QISAFE(unkV,IID_IDictionary,&pImgUse));
-			}	// if
-		else
-			pImgUse->AddRef();
-
-		// State check
-		CCLTRYE ( pImgUse != NULL, ERROR_INVALID_STATE );
+		// Obtain image refence
+		CCLTRY ( extract ( pImg, v, &pImgUse, NULL ) );
 
 		// Since nothing in the image library can be done without 'uploading' an
 		// image first, initialize GPU support here
@@ -137,7 +174,7 @@ HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		CCLOK ( *(pMat->mat) = pMat->mat->clone(); )
 
 		// Store 'uploaded' image in image dictionary
-		CCLTRY ( pImgUse->store (	adtString(L"cvMatRef"), adtLong((U64)pMat) ) );
+		CCLTRY ( pImgUse->store (	adtString(L"cvMatRef"), adtIUnknown(pMat) ) );
 
 		// Result
 		if (hr == S_OK)
@@ -149,32 +186,18 @@ HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			}	// else
 
 		// Clean up
+		_RELEASE(pMat);
 		_RELEASE(pImgUse);
 		}	// if
 
 	// Download
 	else if (_RCP(Download))
 		{
-		IDictionary	*pImgUse = pImg;
+		IDictionary	*pImgUse = NULL;
 		cvMatRef		*pMat		= NULL;
-		adtValue		vL;
 
-		// Image to use
-		if (pImgUse == NULL)
-			{
-			adtIUnknown unkV(v);
-			CCLTRY(_QISAFE(unkV,IID_IDictionary,&pImgUse));
-			}	// if
-		else
-			pImgUse->AddRef();
-
-		// State check
-		CCLTRYE ( pImgUse != NULL, ERROR_INVALID_STATE );
-
-		// Image must be 'uploaded'
-		CCLTRY ( pImgUse->load (	adtString(L"cvMatRef"), vL ) );
-		CCLTRYE( (pMat = (cvMatRef *)(U64)adtLong(vL)) != NULL,
-					ERROR_INVALID_STATE );
+		// Obtain image refence
+		CCLTRY ( extract ( pImg, v, &pImgUse, &pMat ) );
 
 		// Store resulting image in dictionary
 		CCLTRY ( image_from_mat ( pMat->mat, pImgUse ) );
@@ -186,25 +209,19 @@ HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			_EMT(Error,adtInt(hr));
 
 		// Clean up
+		_RELEASE(pMat);
 		_RELEASE(pImgUse);
 		}	// else if
 
 	// Release
 	else if (_RCP(Release))
 		{
-		IDictionary	*pImgUse = pImg;
-		adtValue		vL;
+		IDictionary	*pImgUse = NULL;
 
-		// Image to use
-		if (pImgUse == NULL)
-			{
-			adtIUnknown unkV(v);
-			CCLTRY(_QISAFE(unkV,IID_IDictionary,&pImgUse));
-			}	// if
-		else
-			pImgUse->AddRef();
+		// Obtain image refence
+		CCLTRY ( extract ( pImg, v, &pImgUse, NULL ) );
 
-		// Clean up
+		// Ensure any matrix object is removed
 		if (pImgUse != NULL)
 			pImgUse->remove ( adtString(L"cvMatRef") );
 

@@ -395,6 +395,11 @@ class Prepare :
 	IDictionary	*pImg;									// Image dictionary
 	bool			bCuda,bOcl;								// Cuda/OpenCl enabled
 
+	// Utilities
+	static
+	HRESULT extract ( IDictionary *, const ADTVALUE &,
+							IDictionary **, cvMatRef ** = NULL );
+
 	// CCL
 	CCL_OBJECT_BEGIN(Prepare)
 		CCL_INTF(IBehaviour)

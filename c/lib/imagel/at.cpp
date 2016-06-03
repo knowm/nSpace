@@ -81,26 +81,14 @@ HRESULT At :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	// Load or store
 	if (_RCP(Load) || _RCP(Store))
 		{
-		IDictionary	*pImgUse = pImg;
-		cvMatRef		*pMat	= NULL;
+		IDictionary	*pImgUse = NULL;
+		cvMatRef		*pMat		= NULL;
 		adtValue		vL;
 
-		// State check
-		CCLTRYE ( (_RCP(Load)) || (!adtValue::empty(vAt)), ERROR_INVALID_STATE );
+		// Obtain image refence
+		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
 
-		// Image to use
-		if (pImgUse == NULL)
-			{
-			adtIUnknown unkV(v);
-			CCLTRY(_QISAFE(unkV,IID_IDictionary,&pImgUse));
-			}	// if
-		else
-			pImgUse->AddRef();
-
-		// Image must be 'uploaded'
-		CCLTRY ( pImgUse->load (	adtString(L"cvMatRef"), vL ) );
-		CCLTRYE( (pMat = (cvMatRef *)(U64)adtLong(vL)) != NULL,
-					ERROR_INVALID_STATE );
+		// Process
 		if (hr == S_OK)
 			{
 			// Open CV uses exceptions
@@ -221,6 +209,7 @@ HRESULT At :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			_EMT(Error,adtInt(hr));
 
 		// Clean up
+		_RELEASE(pMat);
 		_RELEASE(pImgUse);
 		}	// if
 

@@ -810,8 +810,17 @@ HRESULT GnuPlotSrvr :: run ( bool bRun )
 		CCLTRY ( pTick->writeStr ( L"set terminal pngcairo truecolor size 800,600 enhanced font 'Verdana,9'" ) );
 //		CCLTRY ( pTick->writeStr ( L"set terminal png truecolor size 800,600 enhanced font 'Verdana,9'" ) );
 		CCLTRY ( pTick->writeStr ( L"set key top right" ) );
-		CCLTRY ( pTick->writeStr ( L"set grid xtics" ) );
-		CCLTRY ( pTick->writeStr ( L"set grid ytics" ) );
+		CCLTRY ( pTick->writeStr ( L"set grid xtics ytics mxtics mytics" ) );
+//		CCLTRY ( pTick->writeStr ( L"set grid ytics" ) );
+//		CCLTRY ( pTick->writeStr ( L"set grid mxtics" ) );
+//		CCLTRY ( pTick->writeStr ( L"set grid mytics" ) );
+		CCLTRY ( pTick->writeStr ( L"set style line 1 linetype -1 linewidth 3" ) );
+		CCLTRY ( pTick->writeStr ( L"set grid ls 1 lt 1" ) );
+//		CCLTRY ( pTick->writeStr ( L"set xtics autofreq" ) );
+//		CCLTRY ( pTick->writeStr ( L"set ytics autofreq" ) );
+		CCLTRY ( pTick->writeStr ( L"set mxtics 5" ) );
+		CCLTRY ( pTick->writeStr ( L"set mytics 5" ) );
+//		CCLTRY ( pTick->writeStr ( L"set grid mxtics mytics xtics ytics -1 0" ) );
 
 		// Formatting
 //		CCLTRY ( pTick->writeStr ( L"set format x '%.1s%c'" ) );

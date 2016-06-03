@@ -105,28 +105,14 @@ HRESULT Binary :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			cvMatRef		*pMatO	= NULL;
 			bool			bImgR		= false;
 
-			// Image dictionaries
-			CCLTRY(_QISAFE(adtIUnknown(vL),IID_IDictionary,&pImgL));
+			// Image information
+			CCLTRY(Prepare::extract ( NULL, vL, &pImgL, &pMatL ));
 			if (hr == S_OK && adtValue::type(vR) == VTYPE_UNK)
 				{
-				CCLTRY(_QISAFE(adtIUnknown(vR),IID_IDictionary,&pImgR));
+				CCLTRY(Prepare::extract ( NULL, vR, &pImgR, &pMatR ));
 				CCLOK ( bImgR = true; )
 				}	// if
-			CCLTRY(_QISAFE(adtIUnknown(v),IID_IDictionary,&pImgO));
-
-			// Images must be 'uploaded'
-			CCLTRY ( pImgL->load (	adtString(L"cvMatRef"), vL ) );
-			CCLTRYE( (pMatL = (cvMatRef *)(U64)adtLong(vL)) != NULL,
-						ERROR_INVALID_STATE );
-			if (hr == S_OK && bImgR)
-				{
-				CCLTRY ( pImgR->load (	adtString(L"cvMatRef"), vL ) );
-				CCLTRYE( (pMatR = (cvMatRef *)(U64)adtLong(vL)) != NULL,
-							ERROR_INVALID_STATE );
-				}	// if
-			CCLTRY ( pImgO->load (	adtString(L"cvMatRef"), vL ) );
-			CCLTRYE( (pMatO = (cvMatRef *)(U64)adtLong(vL)) != NULL,
-						ERROR_INVALID_STATE );
+			CCLTRY(Prepare::extract ( NULL, vL, &pImgO, &pMatO ));
 
 			// Apply operation
 			if (hr == S_OK)
@@ -168,8 +154,11 @@ HRESULT Binary :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			CCLTRY ( adtValue::copy ( adtIUnknown(pImgO), vRes ) );
 
 			// Clean up
+			_RELEASE(pMatO);
 			_RELEASE(pImgO);
+			_RELEASE(pMatR);
 			_RELEASE(pImgR);
+			_RELEASE(pMatL);
 			_RELEASE(pImgL);
 			}	// if
 

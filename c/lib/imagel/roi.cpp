@@ -89,27 +89,15 @@ HRESULT Roi :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	// Execute
 	if (_RCP(Fire))
 		{
-		IDictionary	*pSrcUse = pSrc;
+		IDictionary	*pSrcUse = NULL;
 		cvMatRef		*pMatSrc	= NULL;
 		cvMatRef		*pMatDst	= NULL;
-		adtValue		vL;
 
 		// State check
 		CCLTRYE ( pDst != NULL, ERROR_INVALID_STATE );
 
-		// Image to use
-		if (pSrcUse == NULL)
-			{
-			adtIUnknown unkV(v);
-			CCLTRY(_QISAFE(unkV,IID_IDictionary,&pSrcUse));
-			}	// if
-		else
-			pSrcUse->AddRef();
-
-		// Image must be 'uploaded'
-		CCLTRY ( pSrcUse->load ( adtString(L"cvMatRef"), vL ) );
-		CCLTRYE( (pMatSrc = (cvMatRef *)(U64)adtLong(vL)) != NULL,
-					ERROR_INVALID_STATE );
+		// Obtain image refence
+		CCLTRY ( Prepare::extract ( pSrc, v, &pSrcUse, &pMatSrc ) );
 
 		// Adjust Roi.  Could error out but be flexible.
 		// Set limits so there is at least one pixel in each direction.
@@ -139,7 +127,7 @@ HRESULT Roi :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			CCLTRYE((pMatDst->mat = new cv::Mat ( *(pMatSrc->mat), cv::Rect(iL,iT,(iR-iL),(iB-iT)) ))
 							!= NULL, E_OUTOFMEMORY);
 			#endif
-			CCLTRY ( pDst->store (	adtString(L"cvMatRef"), adtLong((U64)pMatDst) ) );
+			CCLTRY ( pDst->store (	adtString(L"cvMatRef"), adtIUnknown(pMatDst) ) );
 
 			// Requesting own copy of Roi ?
 			if (hr == S_OK && bCopy == true)
@@ -158,6 +146,8 @@ HRESULT Roi :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			_EMT(Error,adtInt(hr));
 
 		// Clean up
+		_RELEASE(pMatDst);
+		_RELEASE(pMatSrc);
 		_RELEASE(pSrcUse);
 		}	// if
 

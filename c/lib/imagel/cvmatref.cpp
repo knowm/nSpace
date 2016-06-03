@@ -17,6 +17,9 @@ cvMatRef :: cvMatRef ( void )
 	//
 	////////////////////////////////////////////////////////////////////////
 	mat = NULL;
+
+	// So creators do not have to do the initial AddRef
+	AddRef();
 	}	// cvMatRef
 
 void cvMatRef :: destruct ( void )

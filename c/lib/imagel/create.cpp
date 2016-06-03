@@ -85,48 +85,45 @@ HRESULT Create :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	// Execute
 	if (_RCP(Fire))
 		{
-		IDictionary	*pImgUse = pImg;
+		IDictionary	*pImgUse = NULL;
 		cvMatRef		*pMat		= NULL;
-		adtValue		vL;
 		U32			cvFmt;
 
-		// Image to use.  Previously specified or passed in.
-		if (pImgUse == NULL)
+		// Obtain image refence
+		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, NULL ) );
+
+		// Process
+		if (hr == S_OK)
 			{
-			adtIUnknown unkV(v);
-			CCLTRY(_QISAFE(unkV,IID_IDictionary,&pImgUse));
+			// Map requested format into OpenCV format
+			if (!WCASECMP(strFmt,L"F32x2"))
+				cvFmt = CV_32FC1;
+			else if (!WCASECMP(strFmt,L"U16x2"))
+				cvFmt = CV_16UC1;
+			else if (!WCASECMP(strFmt,L"S16x2"))
+				cvFmt = CV_16SC1;
+			else if (!WCASECMP(strFmt,L"U8x2"))
+				cvFmt = CV_8UC1;
+			else if (!WCASECMP(strFmt,L"S8x2"))
+				cvFmt = CV_8SC1;
+			else
+				hr = E_NOTIMPL;
+
+			// Create a matrix based on the GPU mode
+			CCLTRYE( (pMat = new cvMatRef()) != NULL, E_OUTOFMEMORY );
+			#if	CV_MAJOR_VERSION == 3
+			CCLTRYE ( (pMat->mat = new cv::UMat ( iH, iW, cvFmt )) != NULL,
+							E_OUTOFMEMORY );
+			#else
+			CCLTRYE ( (pMat->mat = new cv::Mat ( iH, iW, cvFmt )) != NULL,
+							E_OUTOFMEMORY );
+			#endif
+			CCLOK   ( *(pMat->mat) = cv::Scalar(0); )
+
+			// Store image in image dictionary
+			CCLTRY ( pImgUse->store (	adtString(L"cvMatRef"), 
+												adtIUnknown(pMat) ) );
 			}	// if
-		else
-			pImgUse->AddRef();
-
-		// Map requested format into OpenCV format
-		if (!WCASECMP(strFmt,L"F32x2"))
-			cvFmt = CV_32FC1;
-		else if (!WCASECMP(strFmt,L"U16x2"))
-			cvFmt = CV_16UC1;
-		else if (!WCASECMP(strFmt,L"S16x2"))
-			cvFmt = CV_16SC1;
-		else if (!WCASECMP(strFmt,L"U8x2"))
-			cvFmt = CV_8UC1;
-		else if (!WCASECMP(strFmt,L"S8x2"))
-			cvFmt = CV_8SC1;
-		else
-			hr = E_NOTIMPL;
-
-		// Create a matrix based on the GPU mode
-		CCLTRYE( (pMat = new cvMatRef()) != NULL, E_OUTOFMEMORY );
-		#if	CV_MAJOR_VERSION == 3
-		CCLTRYE ( (pMat->mat = new cv::UMat ( iH, iW, cvFmt )) != NULL,
-						E_OUTOFMEMORY );
-		#else
-		CCLTRYE ( (pMat->mat = new cv::Mat ( iH, iW, cvFmt )) != NULL,
-						E_OUTOFMEMORY );
-		#endif
-		CCLOK   ( *(pMat->mat) = cv::Scalar(0); )
-
-		// Store image in image dictionary
-		CCLTRY ( pImgUse->store (	adtString(L"cvMatRef"), 
-											adtLong((U64)pMat) ) );
 
 		// Result
 		if (hr == S_OK)
@@ -135,6 +132,7 @@ HRESULT Create :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			_EMT(Error,adtInt(hr));
 
 		// Clean up
+		_RELEASE(pMat);
 		_RELEASE(pImgUse);
 		}	// else if
 

@@ -78,23 +78,11 @@ HRESULT Stats :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	// Execute
 	if (_RCP(Fire))
 		{
-		IDictionary	*pImgUse = pImg;
+		IDictionary	*pImgUse = NULL;
 		cvMatRef		*pMat		= NULL;
-		adtValue		vL;
 
-		// Image to use
-		if (pImgUse == NULL)
-			{
-			adtIUnknown unkV(v);
-			CCLTRY(_QISAFE(unkV,IID_IDictionary,&pImgUse));
-			}	// if
-		else
-			pImgUse->AddRef();
-
-		// Image must be 'uploaded'
-		CCLTRY ( pImgUse->load (	adtString(L"cvMatRef"), vL ) );
-		CCLTRYE( (pMat = (cvMatRef *)(U64)adtLong(vL)) != NULL,
-					ERROR_INVALID_STATE );
+		// Obtain image refence
+		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
 
 		// Limits
 		if (hr == S_OK)
@@ -114,6 +102,16 @@ HRESULT Stats :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			CCLTRY ( pImgUse->store ( adtString(L"MaxY"), adtInt(ptMax.y) ) );
 			}	// if
 
+		// Mean, standard deviation
+		if (hr == S_OK)
+			{
+			cv::Scalar 
+			mean = cv::mean ( (*pMat->mat) );
+
+			// Result
+			CCLTRY ( pImgUse->store ( adtString(L"Mean"), adtDouble(mean[0]) ) );
+			}	// if
+
 		// Result
 		if (hr == S_OK)
 			_EMT(Fire,adtIUnknown(pImgUse));
@@ -121,6 +119,7 @@ HRESULT Stats :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			_EMT(Error,adtInt(hr));
 
 		// Clean up
+		_RELEASE(pMat);
 		_RELEASE(pImgUse);
 		}	// if
 

@@ -51,7 +51,7 @@ HRESULT Value :: onAttach ( bool bAttach )
 		if (	pnDesc->load ( strRefValue, vL )	== S_OK )
 			receive ( prFire, L"Value", vL );
 		if (	pnDesc->load ( strRefType, vL )	== S_OK )
-			strType = vL;
+			adtValue::toString ( vL, strType );
 
 		// The descriptor is emitted for this value so the outside world
 		// can monitor value attributes (minimum,maximum,type,etc).
@@ -103,12 +103,21 @@ HRESULT Value :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	// Descriptor
 	else if (_RCP(Descriptor))
 		{
+		adtValue		vL;
 		adtIUnknown unkV(v);
+
+		// Previous descriptor
 		_RELEASE(pDsc);
 		_QISAFE(unkV,IID_IDictionary,&pDsc);
 
+		// For a new descriptor, update type
+		if (pDsc->load ( strRefType, vL ) == S_OK )
+			adtValue::toString ( vL, strType );
+		else
+			strType = L"";
+
 		// Forward through emitter
-		_EMT(Descriptor,v);
+		_EMT(Descriptor,adtIUnknown(pDsc));
 		}	// else if
 	else
 		hr = ERROR_NO_MATCH;

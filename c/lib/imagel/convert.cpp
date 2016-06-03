@@ -78,37 +78,28 @@ HRESULT Convert :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	// Execute
 	if (_RCP(Fire))
 		{
-		IDictionary	*pImgUse = pImg;
+		IDictionary	*pImgUse = NULL;
 		cvMatRef		*pMat		= NULL;
-		adtValue		vL;
 
-		// Image to use.  Previously specified or passed in.
-		if (pImgUse == NULL)
-			{
-			adtIUnknown unkV(v);
-			CCLTRY(_QISAFE(unkV,IID_IDictionary,&pImgUse));
-			}	// if
-		else
-			pImgUse->AddRef();
-
-		// Image must be 'uploaded'
-		CCLTRY ( pImgUse->load (	adtString(L"cvMatRef"), vL ) );
-		CCLTRYE( (pMat = (cvMatRef *)(U64)adtLong(vL)) != NULL,
-					ERROR_INVALID_STATE );
+		// Obtain image refence
+		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
 
 		// Convert 'to' specified format. Add formats as needed.
-		if (!WCASECMP(strTo,L"F32x2"))
-			pMat->mat->convertTo ( *(pMat->mat), CV_32FC1 );
-		else if (!WCASECMP(strTo,L"U16x2"))
-			pMat->mat->convertTo ( *(pMat->mat), CV_16UC1 );
-		else if (!WCASECMP(strTo,L"S16x2"))
-			pMat->mat->convertTo ( *(pMat->mat), CV_16SC1 );
-		else if (!WCASECMP(strTo,L"U8x2"))
-			pMat->mat->convertTo ( *(pMat->mat), CV_8UC1 );
-		else if (!WCASECMP(strTo,L"S8x2"))
-			pMat->mat->convertTo ( *(pMat->mat), CV_8SC1 );
-		else
-			hr = E_NOTIMPL;
+		if (hr == S_OK)
+			{
+			if (!WCASECMP(strTo,L"F32x2"))
+				pMat->mat->convertTo ( *(pMat->mat), CV_32FC1 );
+			else if (!WCASECMP(strTo,L"U16x2"))
+				pMat->mat->convertTo ( *(pMat->mat), CV_16UC1 );
+			else if (!WCASECMP(strTo,L"S16x2"))
+				pMat->mat->convertTo ( *(pMat->mat), CV_16SC1 );
+			else if (!WCASECMP(strTo,L"U8x2"))
+				pMat->mat->convertTo ( *(pMat->mat), CV_8UC1 );
+			else if (!WCASECMP(strTo,L"S8x2"))
+				pMat->mat->convertTo ( *(pMat->mat), CV_8SC1 );
+			else
+				hr = E_NOTIMPL;
+			}	// if
 
 		// Result
 		if (hr == S_OK)
@@ -117,6 +108,7 @@ HRESULT Convert :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			_EMT(Error,adtInt(hr));
 
 		// Clean up
+		_RELEASE(pMat);
 		_RELEASE(pImgUse);
 		}	// else if
 

@@ -82,23 +82,11 @@ HRESULT Normalize :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v
 	// Execute
 	if (_RCP(Fire))
 		{
-		IDictionary	*pImgUse = pImg;
+		IDictionary	*pImgUse = NULL;
 		cvMatRef		*pMat		= NULL;
-		adtValue		vL;
 
-		// Image to use
-		if (pImgUse == NULL)
-			{
-			adtIUnknown unkV(v);
-			CCLTRY(_QISAFE(unkV,IID_IDictionary,&pImgUse));
-			}	// if
-		else
-			pImgUse->AddRef();
-
-		// Image must be 'uploaded'
-		CCLTRY ( pImgUse->load (	adtString(L"cvMatRef"), vL ) );
-		CCLTRYE( (pMat = (cvMatRef *)(U64)adtLong(vL)) != NULL,
-					ERROR_INVALID_STATE );
+		// Obtain image refence
+		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
 
 		// Perform operation
 		CCLOK ( cv::normalize ( *(pMat->mat), *(pMat->mat), adtDouble(vFrom), adtDouble(vTo), cv::NORM_MINMAX ); )
@@ -110,6 +98,7 @@ HRESULT Normalize :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v
 			_EMT(Error,adtInt(hr));
 
 		// Clean up
+		_RELEASE(pMat);
 		_RELEASE(pImgUse);
 		}	// if
 
