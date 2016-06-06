@@ -1,0 +1,103 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%							DataBlkToCSV.NSPC
+%
+%			Save a data block to a stream in CSV format.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+	$	Stream				Misc.Dist {}		% Outgoing stream
+	$	Data					Misc.Dist {}		% Data block to save
+
+	% Actions
+	$	Initialize			Misc.Dist {}		% Initalize graph
+	$	Save					Misc.Dist {}		% Perform save
+
+	% Notifications
+		
+	% DEBUG
+	$	Debug Misc.Debug {}
+
+	%%%%%%%%%%%%%
+	% Data block
+	%%%%%%%%%%%%%
+
+	% ADTN: Load the data block information
+	$	LoadDataKeys Adt.Keys { Keys ( Width Height ) }
+		!	Data/OnFire								LoadDataKeys/Dictionary
+		!	Save/OnFire								LoadDataKeys/Load
+
+	%%%%%%%
+	% Save
+	%%%%%%%
+
+	% CSV format is first entry from each row in first line, etc
+
+	% MATHN: Column (row in CSV) counter
+	$	ColCnt Math.Counter { Reset 0:int }
+		!	ColCnt/OnFire							Debug/Fire
+
+	% MISCN: More columns ?
+	$	ColMore Misc.Compare { Left 0:int }
+		!	LoadDataKeys/OnWidth					ColMore/Left
+
+	% MATHN: Row (column in CSV) counter
+	$	RowCnt Math.Counter { Reset 0:int }
+		!	ColMore/OnGreater						RowCnt/Reset
+		!	RowCnt/OnFire							Debug/Fire
+
+	% MISCN: More rows ?
+	$	RowMore Misc.Compare { Left 0:int }
+		!	LoadDataKeys/OnHeight				RowMore/Left
+
+	% MATHN: Data block access
+	$	LoadValue Math.DataBlock {}
+		!	Data/OnFire								LoadValue/Block
+		!	ColCnt/OnFire							LoadValue/X
+		!	RowCnt/OnFire							LoadValue/Y
+		!	RowMore/OnGreater						LoadValue/Load
+
+	% MISCN: Append to stream
+	$	StrToStm Misc.StringStream {}
+		!	Stream/OnFire							StrToStm/Stream
+
+	% MISCN: Convert to string representation
+	$	ValToStr Misc.Type { Type String }
+		!	LoadValue/OnLoad						ValToStr/Convert
+		!	ValToStr/OnFire						Debug/Fire
+		!	ValToStr/OnFire						StrToStm/String
+		!	ValToStr/OnFire						StrToStm/To
+
+	% MISCN: Comma after values
+	$	ValueComma Misc.Dist { Value " , " }
+		!	ValToStr/OnFire						ValueComma/Fire
+		!	ValueComma/OnFire						Debug/Fire
+		!	ValueComma/OnFire						StrToStm/String
+		!	ValueComma/OnFire						StrToStm/To
+
+	% Next row
+	!	RowMore/OnGreater							RowCnt/Increment
+
+	% MISCN: Carriage return after row
+	$	ValueCRLF Misc.Dist { Value "\r\n" }
+		!	RowMore/OnEqual						ValueCRLF/Fire
+		!	ValueCRLF/OnFire						Debug/Fire
+		!	ValueCRLF/OnFire						Debug/Fire
+		!	ValueCRLF/OnFire						StrToStm/String
+		!	ValueCRLF/OnFire						StrToStm/To
+
+	% First/next column
+	!	Save/OnFire									ColCnt/Reset
+	!	RowMore/OnEqual							ColCnt/Increment
+
+	% Latent connections
+	!	ColCnt/OnFire								ColMore/Fire
+	!	RowCnt/OnFire								RowMore/Fire
+
+
+
+
+

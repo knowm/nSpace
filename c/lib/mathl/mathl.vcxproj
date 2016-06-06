@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="binary.cpp" />
     <ClCompile Include="counter.cpp" />
+    <ClCompile Include="datablk.cpp" />
     <ClCompile Include="formula.cpp" />
     <ClCompile Include="function.cpp" />
     <ClCompile Include="mat3d.cpp" />

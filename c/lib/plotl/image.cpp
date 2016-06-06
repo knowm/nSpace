@@ -39,178 +39,12 @@ Image :: Image ( void )
 	////////////////////////////////////////////////////////////////////////
 
 	// Setup
-	pDataIn		= NULL;
 	iIdx			= -1;
 	iPlotW		= 800;
 	iPlotH		= 600;
-	
 	pData			= NULL;
-	pDataBits	= NULL;
-	iDataW		= 0;
-	iDataH		= 0;
 	pReq			= NULL;
-	bReq			= false;
-
 	}	// Image
-
-HRESULT Image :: addRow ( IUnknown *pUnk, U32 iRow )
-	{
-	////////////////////////////////////////////////////////////////////////
-	//
-	//	PURPOSE
-	//		-	Adds a row of data to the current data block.
-	//
-	//	PARAMETERS
-	//		-	pUnk contains the data
-	//		-	iRow is the row number to add
-	//
-	//	RETURN VALUE
-	//		S_OK if successful
-	//
-	////////////////////////////////////////////////////////////////////////
-	HRESULT			hr				= S_OK;
-	IDictionary		*pDctData	= NULL;
-	IMemoryMapped	*pBits		= NULL;
-	VOID				*pvBits		= NULL;
-	VOID				*pvData		= NULL;
-	float				*pfData		= NULL;
-	adtInt			iW,iH;
-	adtString		strFmt;
-	adtValue			vL;
-	adtIUnknown		unkV;
-
-	//
-	// Add row from active data object.
-	// Add as many different formats as necessary over time.
-	//
-
-	// Dictionary ?
-	if (hr == S_OK && _QI(pUnk,IID_IDictionary,&pDctData) == S_OK)
-		{
-		// Format specified for incoming data ?
-		if (hr == S_OK && pDctData->load ( adtString(L"Format"), vL ) == S_OK)
-			{
-			// Format of incoming data
-			CCLTRYE( (strFmt = vL).length() > 0, E_INVALIDARG );
-
-			// Lock down incoming data
-			CCLTRY ( pDctData->load ( strRefWidth, vL ) );
-			CCLOK  ( iW = vL; )
-			CCLTRY ( pDctData->load ( strRefHeight, vL ) );
-			CCLOK  ( iH = vL; )
-			CCLTRY ( pDctData->load ( strRefBits, vL ) );
-			CCLTRY ( _QISAFE((unkV=vL),IID_IMemoryMapped,&pBits) );
-			CCLTRY ( pBits->lock ( 0, 0, &pvBits, NULL ) );
-			}	// if
-
-		// No format, for now assume list of values
-		else if (hr == S_OK)
-			{
-			U32	sz;
-
-			// Count is 'width'
-			CCLTRY ( pDctData->size ( &sz ) );
-			CCLOK  ( iW = sz; )
-			CCLOK  ( iH = 1; )
-			}	// else if
-
-		}	// if
-
-	// Valid row specified ?
-	CCLTRYE ( iRow < iH, E_INVALIDARG );
-
-	// Another row
-	CCLOK	( iDataH = iDataH + 1; )
-	CCLTRY( pData->store ( strRefHeight, iDataH ) );
-
-	// First vector ?
-	if (hr == S_OK && iDataW == 0)
-		{
-		// First vector determines width
-		iDataW = iW;
-
-		// Update data information
-		CCLTRY ( pData->store ( strRefWidth, iDataW ) );
-		}	// if
-
-	// For now vectors must be same length
-	CCLTRYE ( iW == iDataW, E_INVALIDARG );
-
-	// Allocate space for another row
-	CCLTRY ( pDataBits->setSize ( iDataW*iDataH*sizeof(float) ) );
-	CCLTRY ( pDataBits->lock ( 0, 0, (void **) &pvData, NULL ) );
-	CCLOK  ( pfData = (float *)pvData; )
-	CCLOK  ( pfData += (iDataH-1)*iDataW; )
-
-	// Add more formats as necessary
-	if (hr == S_OK && pDctData != NULL)
-		{
-		// Debug
-//		for (U32 c = 0;c < iW;++c)
-//			pfData[c] = 0;
-
-		if (!WCASECMP(strFmt,L"U16x2"))
-			{
-			// Source bits
-			U16	*piSrc = ((U16 *) pvBits) + (iRow*iW);
-
-			// Copy into new row
-			for (U32 c = 0;c < iW;++c)
-				pfData[c] = piSrc[c];
-			}	// if
-		else if (!WCASECMP(strFmt,L"U8x2"))
-			{
-			// Source bits
-			U8	*pcSrc = ((U8 *) pvBits) + (iRow*iW);
-
-			// Copy into new row
-			for (U32 c = 0;c < iW;++c)
-				pfData[c] = pcSrc[c];
-			}	// if
-		else if (!WCASECMP(strFmt,L"F32x2"))
-			{
-			// Source bits
-			float *pfBits = ((float *)pvBits) + (iRow*iW);
-
-			// Copy row
-			memcpy ( pfData, pfBits, iW*sizeof(float) );
-			}	// else if
-		
-		// No format specified
-		else if (strFmt.length() == 0)
-			{
-			IIt	*pIt	= NULL;
-			U32	c		= 0;
-
-			// Iterate and add values from list into vector
-			CCLTRY ( pDctData->iterate ( &pIt ) );
-			while (hr == S_OK && pIt->read ( vL ) == S_OK && c < iW)
-				{
-				// Add to array
-				pfData[c++] = adtFloat(vL);
-
-				// Clean up
-				pIt->next();
-				}	// while
-
-			// Clean up
-			_RELEASE(pIt);
-			}	// else if
-
-		// Unknown
-		else
-			hr = E_INVALIDARG;
-
-		}	// if
-
-	// Clean up
-	_UNLOCK(pDataBits,pvData);
-	_UNLOCK(pBits,pvBits);
-	_RELEASE(pBits);
-	_RELEASE(pDctData);
-
-	return hr;
-	}	// addRow
 
 HRESULT Image :: construct ( void )
 	{
@@ -225,15 +59,8 @@ HRESULT Image :: construct ( void )
 	////////////////////////////////////////////////////////////////////////
 	HRESULT	hr	= S_OK;
 
-	// Plot data
-	CCLTRY ( COCREATE ( L"Adt.Dictionary", IID_IDictionary, &pData ) );
-	CCLTRY ( COCREATE ( L"Io.MemoryBlock", IID_IMemoryMapped, &pDataBits ) );
-	CCLTRY ( pData->store ( adtString(L"Bits"), adtIUnknown(pDataBits) ) );
-	CCLTRY ( pData->store ( adtString(L"Format"), adtString(L"F32x2") ) );
-
 	// Plot request
 	CCLTRY ( COCREATE ( L"Adt.Dictionary", IID_IDictionary, &pReq ) );
-	CCLTRY ( pReq->store ( adtString(L"Data"), adtIUnknown(pData) ) );
 
 	return hr;
 	}	// construct
@@ -251,8 +78,6 @@ void Image :: destruct ( void )
 	onAttach(false);
 
 	// Clean up
-	_RELEASE(pDataIn);
-	_RELEASE(pDataBits);
 	_RELEASE(pData);
 	_RELEASE(pReq);
 	}	// destruct
@@ -360,19 +185,6 @@ HRESULT Image :: receive ( IReceptor *pr, const WCHAR *pl,
 		update();
 		}	// if
 
-	// Add to plot
-	else if (_RCP(Add))
-		{
-		// State check
-		CCLTRYE ( pDataIn != NULL && iIdx >= 0, ERROR_INVALID_STATE );
-
-		// Add column to request
-		CCLTRY ( addRow ( pDataIn, iIdx ) );
-
-		// Request is valid with at least 2 rows
-		CCLOK ( bReq = (iDataH > 1); )
-		}	// else if
-
 	// Plot range.  Ranges are specified in percent of each axis
 	else if (_RCP(Range))
 		{
@@ -400,19 +212,6 @@ HRESULT Image :: receive ( IReceptor *pr, const WCHAR *pl,
 		_RELEASE(pDct);
 		}	// else if
 
-	// Reset plot
-	else if (_RCP(Reset))
-		{
-		// Clear vectors of current request
-		iDataW = iDataH = 0;
-		bReq = false;
-//		pReq->remove ( strRefLeft );
-//		pReq->remove ( strRefBottom );
-//		pReq->remove ( strRefRight );
-//		pReq->remove ( strRefTop );
-//		pReq->remove ( strRefOnImg );
-		}	// else if
-
 	// Size
 	else if (_RCP(Width) || _RCP(Height))
 		{
@@ -430,13 +229,11 @@ HRESULT Image :: receive ( IReceptor *pr, const WCHAR *pl,
 		}	// else if
 
 	// State
-	else if (_RCP(Index))
-		iIdx = v;
 	else if (_RCP(Data))
 		{
-		_RELEASE(pDataIn);
-		pDataIn = adtIUnknown(v);
-		_ADDREF(pDataIn);
+		adtIUnknown unkV(v);
+		_RELEASE(pData);
+		_QISAFE(unkV,IID_IDictionary,&pData);
 		}	// else if
 
 	return hr;
@@ -458,8 +255,10 @@ HRESULT Image :: update ( void )
 
 	// State check
 	CCLTRYE ( pGnuSrvr != NULL, ERROR_INVALID_STATE );
-	CCLTRYE ( iDataW > 0 && iDataH > 0, ERROR_INVALID_STATE );
-	CCLTRYE ( bReq == true, ERROR_INVALID_STATE );
+	CCLTRYE ( pData != NULL, ERROR_INVALID_STATE );
+
+	// Data block		
+	CCLTRY ( pReq->store ( adtString(L"Data"), adtIUnknown(pData) ) );
 
 	// Latest title
 	if (hr == S_OK && strTitle.length() > 0)

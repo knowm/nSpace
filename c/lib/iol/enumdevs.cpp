@@ -306,7 +306,14 @@ HRESULT EnumDevices :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE 
 		#endif
 		}	// else if
 
-	// Class
+	// State
+	else if (_RCP(Class))
+		{
+		adtString	strId(v);
+
+		// Convert to class Id for enumeration
+		CCLTRY ( CLSIDFromString ( strId, &guidClass ) );
+		}	// else if
 	else
 		hr = ERROR_NO_MATCH;
 

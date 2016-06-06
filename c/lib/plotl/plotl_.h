@@ -136,17 +136,13 @@ class Image :
 	Image ( void );										// Constructor
 
 	// Run-time data
-	IUnknown			*pDataIn;							// Input data object
 	adtInt			iIdx;									// Active index
 	adtString		strTitle;							// Plot title
 	adtInt			iPlotW,iPlotH;						// Plot size (pixels)
+	IUnknown			*pData;								// Data block
 
 	// Plot data
-	IDictionary		*pData;								// Data dictionary
-	IMemoryMapped	*pDataBits;							// Data memory block
-	adtInt			iDataW,iDataH;						// Data Data with and height
 	IDictionary		*pReq;								// Plot request
-	bool				bReq;									// Request is valid
 	adtString		strLblX0,strLblX1;				// X-axis labels
 	adtString		strLblY0,strLblY1;				// Y-axis labels
 
@@ -158,31 +154,24 @@ class Image :
 	virtual void		destruct(void);				// Destruct object
 
 	// Connections
-	DECLARE_RCP(Add)
 	DECLARE_RCP(Data)
 	DECLARE_EMT(Error)
 	DECLARE_RCP(Height)
-	DECLARE_RCP(Index)
 	DECLARE_CON(Fire)
 	DECLARE_RCP(Range)
-	DECLARE_RCP(Reset)
 	DECLARE_RCP(Width)
 	BEGIN_BEHAVIOUR()
-		DEFINE_RCP(Add)
 		DEFINE_RCP(Data)
 		DEFINE_EMT(Error)
 		DEFINE_RCP(Height)
-		DEFINE_RCP(Index)
 		DEFINE_CON(Fire)
 		DEFINE_RCP(Range)
-		DEFINE_RCP(Reset)
 		DEFINE_RCP(Width)
 	END_BEHAVIOUR_NOTIFY()
 
 	private :
 
 	// Internal utilities
-	HRESULT addRow ( IUnknown *, U32 );
 	HRESULT update	( void );
 	};
 

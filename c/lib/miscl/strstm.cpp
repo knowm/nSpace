@@ -279,7 +279,10 @@ HRESULT StringStream :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE
 		CCLOK    ( j = (bTerm == false)	? 0 :
 							(!tlen)				? 1 : tlen; )
 		if (hr == S_OK && bHex == true) len >>= 1;
-		CCLTRY	( pStm->setSize ( opos + len + j ) );
+
+		// Invalid ?  This sets the ptr at the end and then additional
+		// writes below insert unnecessary bytes, let stream length grow by iself.
+//		CCLTRY	( pStm->setSize ( opos + len + j ) );
 
 		// Write string.
 		for (i = 0,j = 0;i < len && hr == S_OK;++i)

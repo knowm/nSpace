@@ -129,6 +129,64 @@ class Counter :
 	};
 
 //
+// Class - DataBlock.  Node to manipulate a block of data.
+//
+
+class DataBlock :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	DataBlock ( void );									// Constructor
+
+	// Run-time data
+	IDictionary		*pBlk;								// Current data block
+	IDictionary		*pSrc;								// Incoming data source
+	adtInt			iX,iY;								// X,Y coordinates
+	adtValue			vValue;								// Value
+
+	// Utilities
+	static 
+	HRESULT lock ( IUnknown *, adtInt &, adtInt &, adtString &, IMemoryMapped **, void ** );
+
+	// CCL
+	CCL_OBJECT_BEGIN(DataBlock)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+	virtual HRESULT	construct(void);				// Construct object
+	virtual void		destruct(void);				// Destruct object
+
+	// Connections
+	DECLARE_CON(Add)
+	DECLARE_RCP(Block)
+	DECLARE_EMT(Error)
+	DECLARE_CON(Load)
+	DECLARE_RCP(Reset)
+	DECLARE_CON(Store)
+	DECLARE_RCP(Source)
+	DECLARE_RCP(X)
+	DECLARE_RCP(Y)
+	DECLARE_RCP(Value)
+	BEGIN_BEHAVIOUR()
+		DEFINE_CON(Add)
+		DEFINE_RCP(Block)
+		DEFINE_EMT(Error)
+		DEFINE_CON(Load)
+		DEFINE_RCP(Reset)
+		DEFINE_RCP(Source)
+		DEFINE_CON(Store)
+		DEFINE_RCP(X)
+		DEFINE_RCP(Y)
+		DEFINE_RCP(Value)
+	END_BEHAVIOUR_NOTIFY()
+
+	private :
+
+	// Internal utilities
+	HRESULT addRow ( IDictionary *, IDictionary *, U32 );
+	};
+
+//
 // Class - Formula.  Node for a forumla.
 //
 

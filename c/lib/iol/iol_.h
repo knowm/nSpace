@@ -392,11 +392,13 @@ class EnumDevices :
 	CCL_OBJECT_END()
 
 	// Connections
-	DECLARE_RCP(First)
-	DECLARE_CON(Next)
+	DECLARE_RCP(Class)
 	DECLARE_EMT(End)
+	DECLARE_RCP(First)
 	DECLARE_EMT(Name)
+	DECLARE_CON(Next)
 	BEGIN_BEHAVIOUR()
+		DEFINE_RCP(Class)
 		DEFINE_EMT(End)
 		DEFINE_RCP(First)
 		DEFINE_EMT(Name)
