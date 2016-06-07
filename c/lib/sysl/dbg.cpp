@@ -41,7 +41,9 @@ int dbgprintf ( const WCHAR *format, ... )
 	// Format string
 	va_start ( args, format );
 	#ifdef	_WIN32
-	len = _vsnwprintf_s ( wDbgBfr, sizeof(wDbgBfr)/sizeof(WCHAR), _TRUNCATE, format, args );
+	len = vswprintf ( wDbgBfr, sizeof(wDbgBfr)/sizeof(WCHAR), format, args );
+//	len = _vsnwprintf_s ( wDbgBfr, sizeof(wDbgBfr)/sizeof(WCHAR), _TRUNCATE, format, args );
+//	len = _vsnwprintf_s ( wDbgBfr, sizeof(wDbgBfr)/sizeof(WCHAR), _TRUNCATE, format, args );
 	#elif		__unix__ || __APPLE__
 	// Under WIN32 the '%s' modifier defaults to wide string for wide functions.
 	// Under GNUC the '%s' modifier remains as ASCII.  The equivalent modifier
