@@ -170,7 +170,7 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			}	// if
 
 		// Compute FFT/Magnitude
-		CCLTRY ( image_fft ( pMat->mat, pWnd->mat, true, bZeroDC ) );
+		CCLTRY ( image_fft ( pMat->mat, (pWnd != NULL) ? pWnd->mat : NULL, true, bZeroDC ) );
 
 		// Thread safey
 		csSync.leave();
