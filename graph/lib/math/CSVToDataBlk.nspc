@@ -20,7 +20,7 @@
 
 	% DEBUG
 	$	Debug Misc.Debug {}
-		!	OnData/OnFire							Debug/Fire
+%		!	OnData/OnFire							Debug/Fire
 
 	%%%%%%%%
 	% Setup
@@ -43,14 +43,14 @@
 
 	% ADTN: Write values to the list
 	$	WriteLst Adt.Write {}
-		!	CreateLst/OnFire						WriteLst/Container
+		!	CreateLst/OnFire						WriteLst/List
 
 	%%%%%%%
 	% Load
 	%%%%%%%
 
 	% MATHN: Data block access
-	$	Block Math.DataBlock {}
+	$	Block Math.DataBlock { Y 1:int }
 		!	CreateDataDct/OnFire					Block/Block
 		!	CreateLst/OnFire						Block/Source
 
@@ -58,7 +58,7 @@
 	$	StmToStr Misc.StringStream { Terminator "\n" }
 		!	Stream/OnFire							StmToStr/Stream
 		!	Load/OnFire								StmToStr/From
-		!	StmToStr/OnFire						Debug/Fire
+%		!	StmToStr/OnFire						Debug/Fire
 
 	% New line of values
 	!	StmToStr/OnFire							ClearLst/Clear
@@ -67,7 +67,7 @@
 	$	TokenIt Misc.TokenIt { Delimiter "," }
 		!	StmToStr/OnFire						TokenIt/String
 		!	StmToStr/OnFire						TokenIt/Next
-		!	TokenIt/OnNext							Debug/Fire
+%		!	TokenIt/OnNext							Debug/Fire
 
 	% MISCN: Convert to floating point
 	$	ToFlt Misc.Type { Type Float }
