@@ -225,6 +225,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plotn", "dll\plotn\plotn.vc
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "math", "math", "{090F15CC-3374-4408-9E54-B343AA3565CE}"
 	ProjectSection(SolutionItems) = preProject
+		..\graph\lib\math\CSVToDataBlk.nspc = ..\graph\lib\math\CSVToDataBlk.nspc
 		..\graph\lib\math\DataBlkToCSV.nspc = ..\graph\lib\math\DataBlkToCSV.nspc
 	EndProjectSection
 EndProject

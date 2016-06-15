@@ -1,0 +1,90 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%							CSVToDataBlk.NSPC
+%
+%			Load a data block from a stream in CSV format.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+	$	Stream				Misc.Dist {}		% Incoming stream
+
+	% Actions
+	$	Initialize			Misc.Dist {}		% Initalize graph
+	$	Load					Misc.Dist {}		% Perform load
+
+	% Notifications
+	$	OnData				Misc.Dist {}		% Resulting data block
+
+	% DEBUG
+	$	Debug Misc.Debug {}
+		!	OnData/OnFire							Debug/Fire
+
+	%%%%%%%%
+	% Setup
+	%%%%%%%%
+
+	% MISCN: Create a dictionary to receive the datablock information
+	$	CreateDataDct Misc.Create { Id Adt.Dictionary }
+		!	Load/OnFire								CreateDataDct/Fire
+
+	% Will be fired when complete
+	!	CreateDataDct/OnFire						OnData/Value
+
+	% MISCN: Create a list that will receive the values from a line
+	$	CreateLst Misc.Create { Id Adt.List }
+		!	Load/OnFire								CreateLst/Fire
+
+	% ADTN: Clear line list
+	$	ClearLst Adt.Remove {}
+		!	CreateLst/OnFire						ClearLst/Container
+
+	% ADTN: Write values to the list
+	$	WriteLst Adt.Write {}
+		!	CreateLst/OnFire						WriteLst/Container
+
+	%%%%%%%
+	% Load
+	%%%%%%%
+
+	% MATHN: Data block access
+	$	Block Math.DataBlock {}
+		!	CreateDataDct/OnFire					Block/Block
+		!	CreateLst/OnFire						Block/Source
+
+	% MISCN: Extract next line up to linefeed
+	$	StmToStr Misc.StringStream { Terminator "\n" }
+		!	Stream/OnFire							StmToStr/Stream
+		!	Load/OnFire								StmToStr/From
+		!	StmToStr/OnFire						Debug/Fire
+
+	% New line of values
+	!	StmToStr/OnFire							ClearLst/Clear
+
+	% MISCN: Extract values around comma
+	$	TokenIt Misc.TokenIt { Delimiter "," }
+		!	StmToStr/OnFire						TokenIt/String
+		!	StmToStr/OnFire						TokenIt/Next
+		!	TokenIt/OnNext							Debug/Fire
+
+	% MISCN: Convert to floating point
+	$	ToFlt Misc.Type { Type Float }
+		!	TokenIt/OnNext							ToFlt/Convert
+
+	% Write to list
+	!	ToFlt/OnFire								WriteLst/Fire
+
+	% Next value
+	!	TokenIt/OnNext								TokenIt/Next
+
+	% End of string, add row to data block
+	!	TokenIt/OnEnd								Block/Add
+
+	% Next row
+	!	StmToStr/OnFire							StmToStr/From
+
+	% End
+	!	Load/OnFire									OnData/Fire
+
