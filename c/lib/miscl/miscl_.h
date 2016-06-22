@@ -363,6 +363,8 @@ class Debug :
 	DECLARE_RCP(Mark)
 	//!	\brief Reset the initial time used when marking time.
 	DECLARE_RCP(Reset)
+	//!	\brief Sleep specified number of milliseconds
+	DECLARE_RCP(Sleep)
 	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_RCP(Break)
@@ -370,6 +372,7 @@ class Debug :
 //		DEFINE_CON(Log)
 		DEFINE_RCP(Mark)
 		DEFINE_RCP(Reset)
+		DEFINE_RCP(Sleep)
 	END_BEHAVIOUR_NOTIFY()
 
 	private :

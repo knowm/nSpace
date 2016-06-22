@@ -399,6 +399,11 @@ HRESULT Debug :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		dbgprintf ( L"MiscDebug::%s:%g s\r\n", (LPCWSTR)strMsg, dt );//, dwT1, dwT0 );
 		#endif
 		}	// else if
+	else if (_RCP(Sleep))
+		{
+		adtInt	iMs(v);
+		Sleep(iMs);
+		}	// else if
 	else
 		hr = ERROR_NO_MATCH;
 

@@ -759,6 +759,10 @@ HRESULT Location :: receive ( IReceptor *prSrc, const WCHAR *pwLoc,
 	if ((bRcp || bEmt) && WCASECMP(pwLoc,L"Value"))
 		return S_OK;
 
+	// A location will only receive values from a single thread
+	// at a time.
+	csRx.enter();
+
 	// Receiving a value
 	if (csInt.enter())
 		{
@@ -843,6 +847,9 @@ HRESULT Location :: receive ( IReceptor *prSrc, const WCHAR *pwLoc,
 			}	// else
 
 		}	// if
+
+	// Thread safety
+	csRx.leave();
 
 	return hr;
 	}	// receive
