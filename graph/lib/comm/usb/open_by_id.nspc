@@ -75,6 +75,7 @@
 		!	CreateFileSrc/OnFire					DevStmSrc/Source
 		!	EnumDev/OnNext							DevStmSrc/Location
 		!	EnumDev/OnNext							DevStmSrc/Open
+		!	DevStmSrc/OnOpen						Debug/Fire
 
 	% Not accesisble, proceed to next device
 	!	DevStmSrc/OnError							OnNext/Fire
