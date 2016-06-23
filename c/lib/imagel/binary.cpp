@@ -144,6 +144,26 @@ HRESULT Binary :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 							cv::divide ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
 						break;
 
+					// Bitwise
+					case MATHOP_AND :
+						if (bImgR)
+							cv::bitwise_and ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
+						else
+							cv::bitwise_and ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
+						break;
+					case MATHOP_XOR :
+						if (bImgR)
+							cv::bitwise_xor ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
+						else
+							cv::bitwise_xor ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
+						break;
+					case MATHOP_OR :
+						if (bImgR)
+							cv::bitwise_or ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
+						else
+							cv::bitwise_or ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
+						break;
+
 					// Not implemented
 					default :
 						hr = E_NOTIMPL;

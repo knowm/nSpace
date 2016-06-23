@@ -33,9 +33,9 @@
 %	$	TestCnt Math.Counter { Reset 1:int }
 
 	% MISCN: Create dictionary to receive information	
-	$	CreateImgDct Misc.Create { Id Adt.Dictionary }
+%	$	CreateImgDct Misc.Create { Id Adt.Dictionary }
 %		!	TestCnt/OnFire							CreateImgDct/Fire
-		!	Initialize/OnFire						CreateImgDct/Fire
+%		!	Initialize/OnFire						CreateImgDct/Fire
 
 	% MISCN: Location of test image
 %	$	ValueImgLoc Misc.Dist { Value "/Oct/Alazar_vs_SP/Alazar_Ethernet/Alignment/Raw/OCT_1.png" }
@@ -53,6 +53,79 @@
 	%%%%%%%%%%%%%%%%%%%%%%%
 	% Image processing/GPU
 	%%%%%%%%%%%%%%%%%%%%%%%
+
+	%% Merge
+
+	% MISCN: Save location
+%	$	ValueImgSv Misc.Dist { Value "c:/temp/composite.png" }
+%		!	Initialize/OnFire						ValueImgSv/Fire
+
+	% MISCN: Location with images
+%	$	ValueImgLoc Misc.Dist { Value "/oct/Calibration/06-Jun-2016-Spot/0mm_merge/" }
+%		!	Initialize/OnFire						ValueImgLoc/Fire
+
+	% ION: Iterate contents of location
+%	$	LocsIt Io.StreamSource {}
+%		!	CreateFileSrc/OnFire					LocsIt/Source
+%		!	ValueImgLoc/OnFire					LocsIt/Location
+%		!	LocsIt/OnNext							Debug/Fire
+
+	% MATHN: Generate full path to image
+%	$	AppendLoc Math.Binary { Left "" }
+%		!	ValueImgLoc/OnFire					AppendLoc/Left
+%		!	LocsIt/OnNext							AppendLoc/Right
+%		!	LocsIt/OnNext							AppendLoc/Fire
+
+	% MISCN: Create a dictionary for the image
+%	$	CreateImgDct Misc.Create { Id Adt.Dictionary }
+%		!	AppendLoc/OnFire						CreateImgDct/Fire
+
+	% IMAGEN: Load image
+%	$	LoadImage Image.PersistImage {}
+%		!	CreateImgDct/OnFire					LoadImage/Image
+%		!	AppendLoc/OnFire						LoadImage/Location
+%		!	AppendLoc/OnFire						LoadImage/Load
+%		!	LoadImage/OnLoad						Debug/Fire
+
+	% IMAGEN: Prepare image for use
+%	$	Prepare Image.Prepare {}
+%		!	LoadImage/OnLoad						Prepare/Upload
+
+	% MISCN: First image
+%	$	FirstBool Misc.Toggle {}
+%		!	ValueImgLoc/OnFire					FirstBool/True
+%		!	FirstBool/OnTrue						FirstBool/False
+%		!	Prepare/OnUpload						FirstBool/Fire
+
+	% MISCN: Result image
+%	$	ValueResult Misc.Dist {}
+%		!	FirstBool/OnTrue						ValueResult/Value
+
+	% MATHN: Combine images
+%	$	ImageOr Image.Binary { Op Or }
+%		!	ValueResult/OnFire					ImageOr/Left
+%		!	ValueResult/OnFire					ImageOr/Fire
+
+	% Or in next image
+%	!	FirstBool/OnFalse							ImageOr/Right
+%	!	FirstBool/OnFalse							ValueResult/Fire
+
+	% First/next location
+%	!	ValueImgLoc/OnFire						LocsIt/First
+%	!	LocsIt/OnNext								LocsIt/Next
+
+	% IMAGEN: Download result
+%	$	Download Image.Prepare {}
+%		!	FirstBool/OnTrue						Download/Image
+%		!	LocsIt/OnEnd							Download/Download
+
+	% IMAGEN: Save result
+%	$	SaveImage Image.PersistImage {}
+%		!	ValueImgSv/OnFire						SaveImage/Location
+%		!	Download/OnDownload					SaveImage/Image
+%		!	Download/OnDownload					SaveImage/Save
+
+	%%
 
 	% IMAGEN: Upload from dictionary into image processing logic
 %	$	Prepare Image.Prepare {}

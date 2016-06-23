@@ -31,6 +31,11 @@
 #define	MATHOP_MUL		3
 #define	MATHOP_DIV		4
 
+// Bitwise
+#define	MATHOP_AND		10
+#define	MATHOP_OR		11
+#define	MATHOP_XOR		12
+
 ///////////
 // Objects
 ///////////

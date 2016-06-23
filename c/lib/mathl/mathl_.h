@@ -24,6 +24,8 @@
 
 // Bitwise
 #define	MATHOP_AND		10
+#define	MATHOP_OR		11
+#define	MATHOP_XOR		12
 
 // Vector
 #define	MATHOP_DOT		20

@@ -915,6 +915,8 @@ HRESULT mathOp ( const WCHAR *wOp, int *piOp )
 	// Bitwise
 	else if (!WCASENCMP(wOp,L"And",3))
 		(*piOp) = MATHOP_AND;
+	else if (!WCASENCMP(wOp,L"Or",2))
+		(*piOp) = MATHOP_OR;
 
 	// Vector
 	else if (!WCASENCMP(wOp,L"Dot",3))
