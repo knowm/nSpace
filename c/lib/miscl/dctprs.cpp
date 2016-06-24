@@ -84,7 +84,7 @@ HRESULT DictParse :: parse ( IContainer *pFmt )
 	adtIUnknown	unkV;
 	adtValue		vSz;
 	adtString	sName,sType;
-	adtValue		vVal,vValUn,vValChk;
+	adtValue		vVal,vValUn,vValChk,vL;
 	adtInt		uSz;
 
 	// Iterator
@@ -114,23 +114,49 @@ HRESULT DictParse :: parse ( IContainer *pFmt )
 		if (hr == S_OK && !WCASENCMP ( L"Int", sType, 3 ))
 			{
 			adtInt	uInt;
+			adtBool	bSigned(false);
+
+			// State check
 			CCLTRYE(uSz <= 4,E_INVALIDARG);
+
+			// Signed option
+			if (hr == S_OK && pDictSpec->load ( adtString(L"Signed"), vL ) == S_OK)
+				bSigned = vL;
 
 			// Read value
 			switch ((U32)uSz)
 				{
 				// Byte
 				case 1 :
-					CCLTRY ( pStm->read ( &(uInt.vint), uSz, NULL ) );
+					{
+					if (bSigned)
+						{
+						S8		b;
+						CCLTRY ( pStm->read ( &b, 1, NULL ) );
+						CCLOK  ( uInt.vint = (S32)b; )
+						}	// if
+					else
+						{
+						CCLTRY ( pStm->read ( &(uInt.vint), uSz, NULL ) );
+						}	// else
+					}	// case 1
 					break;
 
 				// Short
 				case 2 :
-					if (hr == S_OK)
+					{
+					if (bSigned)
 						{
-						CCLTRY ( pStm->read ( &(uInt.vint), uSz, NULL ) );
-//						if (bLittleE == false)	uInt.vint = (U16) SWAPS(uInt.vint);
+						S16	i;
+						CCLTRY ( pStm->read ( &i, 2, NULL ) );
+						CCLOK  ( uInt.vint = (S32)i; )
 						}	// if
+					else
+						{
+						CCLTRY ( pStm->read ( &(uInt.vint), 2, NULL ) );
+						}	// else
+//					if (bLittleE == false)	uInt.vint = (U16) SWAPS(uInt.vint);
+					}	// case 1
 					break;
 
 				// Long
