@@ -173,6 +173,55 @@ HRESULT DictParse :: parse ( IContainer *pFmt )
 					hr = E_UNEXPECTED;
 				}	// switch
 
+			// Optional bit masking available
+			if (pDictSpec->load ( adtString(L"Bits"), vL ) == S_OK)
+				{
+				IDictionary	*pBits	= NULL;
+				IIt			*pItK		= NULL;
+
+				// Iterate the specified key names
+				CCLTRY(_QISAFE((unkV=vL),IID_IDictionary,&pBits));
+				CCLTRY(pBits->keys ( &pItK ) );
+				while (hr == S_OK && pItK->read ( vL ) == S_OK)
+					{
+					IDictionary		*pBit		= NULL;
+					IDictionary		*pBitMap = NULL;
+					adtString		strKey(vL);
+					adtValue			vRes;
+					U32				iMask;
+
+					// Bit mask descriptor
+					CCLTRY(pBits->load ( vL, vL ));
+					CCLTRY(_QISAFE((unkV=vL),IID_IDictionary,&pBit));
+					
+					// Bit mask
+					CCLTRY(pBit->load ( adtString(L"Mask"), vL ));
+
+					// Apply mask
+					CCLTRY ( adtValue::copy ( adtInt ( ((iMask = adtInt(vL)) & uInt) ), vRes ) );
+
+					// Map result if available
+					if (	hr == S_OK													&& 
+							pBit->load ( adtString(L"Map"), vL ) == S_OK		&&
+							(IUnknown *)(NULL) != (unkV=vL)						&&
+							_QI((unkV=vL),IID_IDictionary,&pBitMap) == S_OK &&
+							pBitMap->load ( vRes, vL ) == S_OK )
+						hr = adtValue::copy ( vL, vRes );
+
+					// Store result under key
+					CCLTRY ( pDict->store ( strKey, vRes ) );
+
+					// Clean up
+					_RELEASE(pBitMap);
+					_RELEASE(pBit);
+					pItK->next();
+					}	// while
+
+				// Clean up
+				_RELEASE(pItK);
+				_RELEASE(pBits);
+				}	// if
+
 			// Store
 			CCLOK  ( adtValue::copy ( uInt, vVal ); )
 			}	// if
