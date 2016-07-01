@@ -235,10 +235,12 @@ class Flip :
 	DECLARE_EMT(Error)
 	DECLARE_CON(Fire)
 	DECLARE_RCP(Image)
+	DECLARE_RCP(Transpose)
 	BEGIN_BEHAVIOUR()
 		DEFINE_EMT(Error)
 		DEFINE_CON(Fire)
 		DEFINE_RCP(Image)
+		DEFINE_RCP(Transpose)
 	END_BEHAVIOUR_NOTIFY()
 	};
 
@@ -415,13 +417,11 @@ class Prepare :
 	DECLARE_CON(Download)
 	DECLARE_CON(Upload)
 	DECLARE_EMT(Error)
-	DECLARE_CON(Release)
 	BEGIN_BEHAVIOUR()
 		DEFINE_RCP(Image)
 		DEFINE_CON(Download)
 		DEFINE_CON(Upload)
 		DEFINE_EMT(Error)
-		DEFINE_CON(Release)
 	END_BEHAVIOUR_NOTIFY()
 
 	private :

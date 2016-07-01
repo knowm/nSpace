@@ -202,6 +202,10 @@ HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		// Store resulting image in dictionary
 		CCLTRY ( image_from_mat ( pMat->mat, pImgUse ) );
 
+		// Ensure any matrix object is removed
+		if (pImgUse != NULL)
+			pImgUse->remove ( adtString(L"cvMatRef") );
+
 		// Result
 		if (hr == S_OK)
 			_EMT(Download,adtIUnknown(pImgUse));
@@ -212,30 +216,6 @@ HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		_RELEASE(pMat);
 		_RELEASE(pImgUse);
 		}	// else if
-
-	// Release
-	else if (_RCP(Release))
-		{
-		IDictionary	*pImgUse = NULL;
-
-		// Obtain image refence
-		CCLTRY ( extract ( pImg, v, &pImgUse, NULL ) );
-
-		// Ensure any matrix object is removed
-		if (pImgUse != NULL)
-			pImgUse->remove ( adtString(L"cvMatRef") );
-
-		// Result
-		if (hr == S_OK)
-			_EMT(Release,adtIUnknown(pImgUse));
-		else
-			_EMT(Error,adtInt(hr));
-
-		// Clean up
-		_RELEASE(pImgUse);
-		}	// else if
-
-	// Clone a prepared image
 
 	// State
 	else if (_RCP(Image))

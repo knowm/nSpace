@@ -104,6 +104,29 @@ HRESULT Flip :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		_RELEASE(pImgUse);
 		}	// if
 
+	// Transpose (another node ?)
+	else if (_RCP(Transpose))
+		{
+		IDictionary	*pImgUse = NULL;
+		cvMatRef		*pMat		= NULL;
+
+		// Obtain image refence
+		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
+
+		// Perform operation
+		CCLOK ( cv::transpose ( *(pMat->mat), *(pMat->mat) ); )
+
+		// Result
+		if (hr == S_OK)
+			_EMT(Fire,adtIUnknown(pImgUse));
+		else
+			_EMT(Error,adtInt(hr));
+
+		// Clean up
+		_RELEASE(pMat);
+		_RELEASE(pImgUse);
+		}	// else if
+
 	// State
 	else if (_RCP(Image))
 		{
