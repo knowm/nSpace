@@ -431,6 +431,41 @@ class Prepare :
 	};
 
 //
+// Class - Resize.  Resize an image.
+//
+
+class Resize :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	Resize ( void );										// Constructor
+
+	// Run-time data
+	IDictionary	*pImg;									// Image dictionary
+	adtInt		iW,iH;									// Size
+
+	// CCL
+	CCL_OBJECT_BEGIN(Resize)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Height)
+	DECLARE_RCP(Image)
+	DECLARE_EMT(Error)
+	DECLARE_RCP(Width)
+	BEGIN_BEHAVIOUR()
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Height)
+		DEFINE_RCP(Image)
+		DEFINE_EMT(Error)
+		DEFINE_RCP(Width)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
+//
 // Class - Roi.  Region of interest node.
 //
 

@@ -189,7 +189,13 @@ HRESULT EnumDevices :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE 
 		if (hr == S_OK)
 			{
 			++idx;												// Device enumerated
-			_EMT(Next,adtString(pDetail->DevicePath) );
+
+			// "Own" the string from structure since structure will be freed
+			adtString strPath(pDetail->DevicePath);
+			strPath.at();
+
+			// Result
+			_EMT(Next,strPath);
 			}	// if
 		else
 			{

@@ -61,6 +61,9 @@ HRESULT nSpaceClient :: close ( void )
 	IIt			*pKeys	= NULL;
 	adtValue		v;
 
+	// Thread safety
+	csMtx.enter();
+
 	// Access service interface
 	CCLTRY ( getSvc ( &pSpc ) );
 
@@ -91,6 +94,9 @@ HRESULT nSpaceClient :: close ( void )
 		dwSvc = 0;
 		_RELEASE(pGIT);
 		}	// if
+
+	// Thread safety
+	csMtx.leave();
 
 	return hr;
 	}	// close
@@ -144,6 +150,9 @@ HRESULT nSpaceClient :: listen ( const WCHAR *szPath, BOOL bL,
 	INamespaceX		*pSpc		= NULL;
 	IListenX			*pLstn	= NULL;
 	adtValue			vL;
+
+	// Thread safety
+	csMtx.enter();
 
 	// Service ptr.
 	CCLTRY ( getSvc ( &pSpc ) );
@@ -199,6 +208,9 @@ HRESULT nSpaceClient :: listen ( const WCHAR *szPath, BOOL bL,
 	_RELEASE(pLstn);
 	_RELEASE(pSpc);
 
+	// Thread safety
+	csMtx.leave();
+
 	return hr;
 	}	// listen
 
@@ -220,6 +232,9 @@ HRESULT nSpaceClient :: load ( const WCHAR *szPath, ADTVALUE &v )
 	HRESULT		hr			= S_OK;
 	INamespaceX	*pSpc		= NULL;
 	BSTR			bstrPath	= NULL;
+
+	// Thread safety
+	csMtx.enter();
 
 	// Timing
 	DWORD	dwThen = GetTickCount();
@@ -244,6 +259,9 @@ HRESULT nSpaceClient :: load ( const WCHAR *szPath, ADTVALUE &v )
 	// Clean up
 	if (hr != S_OK)
 		dbgprintf ( L"nSpaceClient::load:%s:%d ms\r\n", szPath, (GetTickCount()-dwThen) );
+
+	// Thread safety
+	csMtx.leave();
 
 	return hr;
 	}	// load
@@ -273,6 +291,9 @@ HRESULT nSpaceClient :: open ( const WCHAR *pwCmdLine, BOOL bShare,
 	BSTR				bstr	= NULL;
 	CLSID				clsid;
 	int				dbg	= 0;
+
+	// Thread safety
+	csMtx.enter();
 
 	// Setup
 	pCB = _pCB;
@@ -315,6 +336,9 @@ HRESULT nSpaceClient :: open ( const WCHAR *pwCmdLine, BOOL bShare,
 
 	// Debug
 	dbgprintf ( L"nSpaceClient::open:0x%x:%s\r\n", hr, pwCmdLine );
+
+	// Thread safety
+	csMtx.leave();
 
 	return hr;
 	}	// open
@@ -388,6 +412,9 @@ HRESULT nSpaceClient :: store ( const WCHAR *szPath, const ADTVALUE &v )
 	INamespaceX		*pSpc		= NULL;
 	BSTR				bstrPath	= NULL;
 
+	// Thread safety
+	csMtx.enter();
+
 	// Timing
 	DWORD	dwThen = GetTickCount();
 
@@ -411,6 +438,9 @@ HRESULT nSpaceClient :: store ( const WCHAR *szPath, const ADTVALUE &v )
 	// Clean up
 	_FREEBSTR(bstrPath);
 	_RELEASE(pSpc);
+
+	// Thread safety
+	csMtx.leave();
 
 	return hr;
 	}	// store
@@ -452,11 +482,12 @@ HRESULT nSpaceClientL :: receive ( BSTR bstrRoot, BSTR bstrLoc, VARIANT *var )
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	HRESULT		hr = S_OK;
-	adtValue		vRx;
+	HRESULT			hr			= S_OK;
+	nSpaceClientCB	*pCBNow	= pCB;
+	adtValue			vRx;
 
 	// Callback still valid ?
-	if (pCB != NULL)
+	if (pCBNow != NULL)
 		{
 		// Thread protection
 		csRx.enter();
@@ -467,7 +498,7 @@ HRESULT nSpaceClientL :: receive ( BSTR bstrRoot, BSTR bstrLoc, VARIANT *var )
 
 		// Notify callback object
 //		dbgprintf ( L"nSpaceClientL::receive:pCB %p\r\n", pCB );
-		pCB->onReceive ( bstrRoot, bstrLoc, vRx );
+		pCBNow->onReceive ( bstrRoot, bstrLoc, vRx );
 
 		// Clean up
 		adtValue::clear(vRx);

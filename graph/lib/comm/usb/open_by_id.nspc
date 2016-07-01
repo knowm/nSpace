@@ -41,12 +41,15 @@
 	% Enumerate
 	%%%%%%%%%%%%
 
-	% MISCN: Proceed to next device
-	$	OnNext Misc.Dist {}
-		!	Next/OnFire								OnNext/Fire
+	% MISCN: Proceed to first/next device
+	$	NextBool Misc.Toggle {}
+		!	Find/OnFire								NextBool/True
+		!	Find/OnFire								NextBool/Fire
+		!	Next/OnFire								NextBool/Fire
+		!	NextBool/OnTrue						NextBool/False
 
 	% Close current device
-	!	OnNext/OnFire								Close/Fire
+	!	NextBool/OnFalse							Close/Fire
 
 	% MISCN: Ensure previous device is closed
 	$	ResClose Io.Resource {}
@@ -55,12 +58,12 @@
 	% MISCN: Enumerate USB devices.  (default = GUID_DEVINTERFACE_USB_DEVICE)
 	$	EnumDev Io.EnumDevices { Class "{A5DCBF10-6530-11D2-901F-00C04FB951ED}" }
 		!	ClassId/OnFire							EnumDev/Class
-		!	Find/OnFire								EnumDev/First
-		!	OnNext/OnFire							EnumDev/Next
+		!	NextBool/OnTrue						EnumDev/First
+		!	NextBool/OnFalse						EnumDev/Next
 		!	EnumDev/OnNext							Debug/Fire
 %		!	EnumDev/OnName							Debug/Fire
 
-	% End of enumerate, not usable device found during scan
+	% End of enumerate, no usable device found during scan
 	!	EnumDev/OnEnd								OnNotFound/Fire
 
 	% Close on not found
@@ -75,10 +78,10 @@
 		!	CreateFileSrc/OnFire					DevStmSrc/Source
 		!	EnumDev/OnNext							DevStmSrc/Location
 		!	EnumDev/OnNext							DevStmSrc/Open
-		!	DevStmSrc/OnOpen						Debug/Fire
+%		!	DevStmSrc/OnOpen						Debug/Fire
 
 	% Not accesisble, proceed to next device
-	!	DevStmSrc/OnError							OnNext/Fire
+	!	DevStmSrc/OnError							Next/Fire
 
 	% Active stream
 	!	DevStmSrc/OnOpen							ResClose/Resource
@@ -93,7 +96,7 @@
 		!	DevUSB/OnQuery							Debug/Fire
 
 	% Not accessible, proceed to next device
-	!	DevUSB/OnError								OnNext/Fire
+	!	DevUSB/OnError								Next/Fire
 
 	%% Matching vendor/product Ids
 
@@ -121,10 +124,10 @@
 	!	ProductEq/OnEqual							DevMatch/Fire
 
 	% No match, proceed to next device
-	!	LoadVendorId/OnNotFound					OnNext/Fire
-	!	LoadProductId/OnNotFound				OnNext/Fire
-	!	VendorEq/OnNotEqual						OnNext/Fire
-	!	ProductEq/OnNotEqual						OnNext/Fire
+	!	LoadVendorId/OnNotFound					Next/Fire
+	!	LoadProductId/OnNotFound				Next/Fire
+	!	VendorEq/OnNotEqual						Next/Fire
+	!	ProductEq/OnNotEqual						Next/Fire
 
 	% Latent connections
 	!	DevUSB/OnDevice							LoadVendorId/Fire

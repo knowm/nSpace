@@ -201,7 +201,7 @@
 2534d0ce-8628-11d2-868c-006008addfed				// CLSID_At (imagel)
 2534d0cf-8628-11d2-868c-006008addfed				// CLSID_Flip (imagel)
 2534d0d0-8628-11d2-868c-006008addfed				//	CLSID_DataBlock (mathl)
-2534d0d1-8628-11d2-868c-006008addfed				//	
+2534d0d1-8628-11d2-868c-006008addfed				//	CLSID_Resize (imagel)
 2534d0d2-8628-11d2-868c-006008addfed				//	
 2534d0d3-8628-11d2-868c-006008addfed				//	
 2534d0d4-8628-11d2-868c-006008addfed				//	

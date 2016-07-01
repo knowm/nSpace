@@ -142,7 +142,7 @@ HRESULT Device :: receive ( IReceptor *pr, const WCHAR *pl,
 		if (hIntf != INVALID_HANDLE_VALUE)
 			{
 			// Shutting down
-			_EMT(Device,adtIUnknown(NULL));
+//			_EMT(Device,adtIUnknown(NULL));
 
 			// Clean up
 			WinUsb_Free ( hIntf );

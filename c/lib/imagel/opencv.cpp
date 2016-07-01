@@ -138,6 +138,18 @@ HRESULT image_fft ( cv::Mat *pMat, cv::Mat *pWnd, bool bRows, bool bZeroDC )
 
 		// Just keep the positive frequencies (option ?)
 		matMag	= matMag ( Rect ( cx, 0, cx, matMag.rows ) );
+		/*
+		// DEBUG
+		FILE *f = NULL;
+		fopen_s ( &f, "c:/temp/data.txt", "w" );
+		if (f != NULL)
+			{
+			for (int r = 0;r < matMag.rows;++r)
+				for (int c = 0;c < matMag.cols;++c)
+					fprintf ( f, "%d, %g\r\n", r*matMag.cols+c, matMag.at<float>(Point(c,r)) );
+			fclose(f);
+			}	// if
+		*/
 
 		// Zero the DC component on request
 		if (bZeroDC)
@@ -441,6 +453,9 @@ HRESULT image_from_mat ( Mat *pM, IDictionary *pImg )
 						break;
 					case CV_16U:
 						CCLTRY ( pImg->store ( strRefFormat, adtString(L"U16x2") ) );
+						break;
+					case CV_16S:
+						CCLTRY ( pImg->store ( strRefFormat, adtString(L"S16x2") ) );
 						break;
 					case CV_32F:
 						CCLTRY ( pImg->store ( strRefFormat, adtString(L"F32x2") ) );

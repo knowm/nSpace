@@ -84,6 +84,7 @@ class nSpaceClient
 	nSpaceClientCB				*pCB;						// Default callback
 	const WCHAR					*pwRoot;					// Default root
 	adtVariant					varS,varL;				// Variant helper
+	sysCS							csMtx;					// Thread mutex
 
 	// Utilities
 	STDMETHOD(close)	( void );						// Close connection
@@ -123,7 +124,7 @@ class nSpaceClientL :
 	nSpaceClient	*pThis;								// Parent object
 	nSpaceClientCB	*pCB;									// Callback object
 	adtVariant		varL;									// Variant helper
-	sysCS				csRx;									// Thread protection
+	sysCS				csRx;									// Thread mutex
 
 	// 'IListenX' members
 	STDMETHOD(receive)			( BSTR, BSTR, VARIANT * );

@@ -145,6 +145,15 @@ HRESULT DataBlock :: addRow ( IDictionary *pDctDst,
 		for (U32 c = 0;c < iSrcW;++c)
 			pfDst[c] = piSrc[c];
 		}	// if
+	else if (!WCASECMP(strFmt,L"S16x2"))
+		{
+		// Source bits
+		S16	*piSrc = ((S16 *) pvBitsSrc) + (iRow*iSrcW);
+
+		// Copy into new row
+		for (U32 c = 0;c < iSrcW;++c)
+			pfDst[c] = piSrc[c];
+		}	// if
 	else if (!WCASECMP(strFmt,L"U8x2"))
 		{
 		// Source bits
