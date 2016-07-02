@@ -31,6 +31,7 @@
     <ClCompile Include="opencv.cpp" />
     <ClCompile Include="persist.cpp" />
     <ClCompile Include="prepare.cpp" />
+    <ClCompile Include="resize.cpp" />
     <ClCompile Include="roi.cpp" />
     <ClCompile Include="stats.cpp" />
     <ClCompile Include="thresh.cpp" />
