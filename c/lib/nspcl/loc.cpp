@@ -743,7 +743,8 @@ HRESULT Location :: receive ( IReceptor *prSrc, const WCHAR *pwLoc,
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	HRESULT		hr		= S_OK;
+	HRESULT		hr			= S_OK;
+	bool			bBehave	= (pBehave != NULL);
 	U32			sz;
 
 	// Sanity check for double referenced values.  This was a bug
@@ -761,7 +762,8 @@ HRESULT Location :: receive ( IReceptor *prSrc, const WCHAR *pwLoc,
 
 	// A location will only receive values from a single thread
 	// at a time.
-	csRx.enter();
+	if (bBehave)
+		csRx.enter();
 
 	// Receiving a value
 	if (csInt.enter())
@@ -770,6 +772,7 @@ HRESULT Location :: receive ( IReceptor *prSrc, const WCHAR *pwLoc,
 		// The queue is not created until now because only a small number
 		// of locations will end up having to deal with this.
 		if (bRx)
+//		if (bRx && pBehave != NULL)
 			{
 			// Need a queue ?
 			if (pRxQ == NULL)
@@ -849,7 +852,8 @@ HRESULT Location :: receive ( IReceptor *prSrc, const WCHAR *pwLoc,
 		}	// if
 
 	// Thread safety
-	csRx.leave();
+	if (bBehave)
+		csRx.leave();
 
 	return hr;
 	}	// receive

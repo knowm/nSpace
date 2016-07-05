@@ -201,7 +201,6 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		adtValue::toString ( v, strWnd );
 
 		// Assume a new window is needed
-		dbgprintf ( L"New window : %s\r\n", (LPCWSTR)strWnd );
 		csSync.enter();
 		_RELEASE(pWnd);
 		csSync.leave();

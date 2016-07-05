@@ -95,6 +95,9 @@
 		!	DevUSB/OnDevice						Debug/Fire
 		!	DevUSB/OnQuery							Debug/Fire
 
+	% If opened
+	!	DevUSB/OnDevice							OnOpen/Value
+
 	% Not accessible, proceed to next device
 	!	DevUSB/OnError								Next/Fire
 

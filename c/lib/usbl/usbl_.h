@@ -64,6 +64,11 @@ class Device :
 		DEFINE_RCP(Setting)
 		DEFINE_RCP(Stream)
 	END_BEHAVIOUR_NOTIFY()
+
+	private :
+
+	// Internal utilities
+	HRESULT getString ( WINUSB_INTERFACE_HANDLE, S32, adtString & );
 	};
 
 //

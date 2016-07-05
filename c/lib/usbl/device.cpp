@@ -25,6 +25,54 @@ Device :: Device ( void )
 	iAltSet	= 0;
 	}	// Device
 
+HRESULT Device :: getString ( WINUSB_INTERFACE_HANDLE hIntf, S32 iIdx, 
+										adtString &strV )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Retrieve a string descriptor
+	//
+	//	PARAMETERS
+	//		-	hIntf is the interface handle
+	//		-	iIdx is the string index
+	//		-	strV will receive the string
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT	hr = S_OK;
+	ULONG		nx;
+	WCHAR		wStr[200];
+
+	// Setup
+	strV = L"";
+
+	// State check
+	CCLTRYE ( iIdx > 0, E_UNEXPECTED );
+
+	// Retrieve descriptor
+	CCLTRYE ( WinUsb_GetDescriptor ( hIntf, USB_STRING_DESCRIPTOR_TYPE, iIdx,
+					0, (PUCHAR) wStr, sizeof(wStr), &nx ) == TRUE, GetLastError() );
+
+	// Terminate string using descriptor length in first byte
+	CCLTRYE	( (nx = ((U8 *)wStr)[0]) > 2, E_UNEXPECTED );
+	CCLOK		( wStr[nx/2] = '\0'; )
+
+	// Result
+	CCLOK		( strV = &wStr[1]; )
+	CCLOK		( strV.at(); )
+
+	// First 2 bytes are langage Id, terminate string
+	CCLOK ( lprintf ( LOG_INFO, L"String index %d : (%d,%d) %s\r\n", iIdx, 
+							((char *)(wStr))[0],
+							((char *)(wStr))[1],
+							&(wStr[1]) ); )
+
+	return hr;
+	}	// getString
+
 HRESULT Device :: onAttach ( bool bAttach )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -91,6 +139,7 @@ HRESULT Device :: receive ( IReceptor *pr, const WCHAR *pl,
 		IDictionary					*pDev		= NULL;
 		adtIUnknown					unkV(v);
 		adtValue						vL;
+		adtString					strV;
 		USB_DEVICE_DESCRIPTOR	udd;
 		ULONG							nx;
 
@@ -115,9 +164,19 @@ HRESULT Device :: receive ( IReceptor *pr, const WCHAR *pl,
 		CCLTRY ( pDev->store ( adtString(L"Interface"), adtLong((U64)hIntf) ) );
 		CCLTRY ( pDev->store ( adtString(L"IdVendor"), adtInt(udd.idVendor) ) );
 		CCLTRY ( pDev->store ( adtString(L"IdProduct"), adtInt(udd.idProduct) ) );
-		CCLTRY ( pDev->store ( adtString(L"SerialNumber"), adtInt(udd.iSerialNumber) ) );
-		CCLTRY ( pDev->store ( adtString(L"Manufacturer"), adtInt(udd.iManufacturer) ) );
-													
+
+		CCLTRY ( pDev->store ( adtString(L"iSerialNumber"), adtInt(udd.iSerialNumber) ) );
+		CCLTRY ( pDev->store ( adtString(L"iManufacturer"), adtInt(udd.iManufacturer) ) );
+		CCLTRY ( pDev->store ( adtString(L"iProduct"), adtInt(udd.iProduct) ) );
+									
+		// Attempt to resolve specified string descriptors
+		if (hr == S_OK && getString ( hIntf, udd.iManufacturer, strV ) == S_OK)
+			hr = pDev->store ( adtString(L"Manufacturer"), strV );
+		if (hr == S_OK && getString ( hIntf, udd.iSerialNumber, strV ) == S_OK)
+			hr = pDev->store ( adtString(L"SerialNumber"), strV );
+		if (hr == S_OK && getString ( hIntf, udd.iProduct, strV ) == S_OK)
+			hr = pDev->store ( adtString(L"Product"), strV );
+
 		// Debug
 		lprintf ( LOG_INFO, L"Open:pRes %p:hIntf 0x%x:hr 0x%x\r\n",
 									pRes, hIntf, hr );
