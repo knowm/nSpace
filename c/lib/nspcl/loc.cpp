@@ -467,6 +467,8 @@ HRESULT Location :: desc ( void )
 		// Attach
 		if (bActive)
 			{
+			IBehaviour	*pBehaveInt = NULL;
+
 			// Obtain the behaviour
 			CCLTRY ( pDsc->load ( strnRefBehave, v ) );
 			CCLTRYE( (strB = v).length() > 0, E_UNEXPECTED );
@@ -476,7 +478,10 @@ HRESULT Location :: desc ( void )
 			if (hr == S_OK)
 				{
 				// Object class Id
-				CCLTRY ( cclCreateObject ( strB, NULL, IID_IBehaviour, (void **) &pBehave ) );
+				CCLTRY ( cclCreateObject ( strB, NULL, IID_IBehaviour, (void **) &pBehaveInt ) );
+
+				// Contain object
+				CCLTRYE ( (pBehave = new Behaviour(pBehaveInt)) != NULL, E_OUTOFMEMORY );
 				}	// if
 
 			// Attach
@@ -492,6 +497,7 @@ HRESULT Location :: desc ( void )
 				strB = L"";
 				_RELEASE(pBehave);
 				}	// if
+			_RELEASE(pBehaveInt);
 			}	// if
 
 		// Detach
@@ -760,11 +766,6 @@ HRESULT Location :: receive ( IReceptor *prSrc, const WCHAR *pwLoc,
 	if ((bRcp || bEmt) && WCASECMP(pwLoc,L"Value"))
 		return S_OK;
 
-	// A location will only receive values from a single thread
-	// at a time.
-	if (bBehave)
-		csRx.enter();
-
 	// Receiving a value
 	if (csInt.enter())
 		{
@@ -850,10 +851,6 @@ HRESULT Location :: receive ( IReceptor *prSrc, const WCHAR *pwLoc,
 			}	// else
 
 		}	// if
-
-	// Thread safety
-	if (bBehave)
-		csRx.leave();
 
 	return hr;
 	}	// receive

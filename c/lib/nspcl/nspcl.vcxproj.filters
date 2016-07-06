@@ -71,5 +71,8 @@
     <ClCompile Include="connlst.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="behave.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
