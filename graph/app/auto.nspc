@@ -26,8 +26,8 @@
 	%%%%%%%%
 
 	% MISCN: Create file stream source
-%	$	CreateFileSrc Misc.Create { Id Io.StmSrcFile }
-%		!	Initialize/OnFire						CreateFileSrc/Fire
+	$	CreateFileSrc Misc.Create { Id Io.StmSrcFile }
+		!	Initialize/OnFire						CreateFileSrc/Fire
 
 	% MATHN: Test counter
 %	$	TestCnt Math.Counter { Reset 1:int }
@@ -61,7 +61,7 @@
 %		!	Initialize/OnFire						ValueImgSv/Fire
 
 	% MISCN: Location with images
-%	$	ValueImgLoc Misc.Dist { Value "/oct/Calibration/06-Jun-2016-Spot/0mm_merge/" }
+%	$	ValueImgLoc Misc.Dist { Value "c:/temp/images/" }
 %		!	Initialize/OnFire						ValueImgLoc/Fire
 
 	% ION: Iterate contents of location

@@ -396,7 +396,7 @@ HRESULT Debug :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		// Compute difference
 		double
 		dt = ((lCnt.QuadPart-lRst) * 1.0) / lFreq;
-		dbgprintf ( L"MiscDebug::%s:%g s\r\n", (LPCWSTR)strMsg, dt );//, dwT1, dwT0 );
+		dbgprintf ( L"MiscDebug:%s:%s:%g s\r\n", (LPCWSTR)strMsg, (LPCWSTR) strnName, dt );//, dwT1, dwT0 );
 		#endif
 		}	// else if
 	else if (_RCP(Sleep))

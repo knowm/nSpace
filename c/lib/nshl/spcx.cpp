@@ -23,6 +23,8 @@ NamespaceX :: NamespaceX ( ShellX *_pShellX, IDictionary *_pDctCmd )
 	pShellX		= _pShellX;
 	pThrd			= NULL;
 	pDctCmd		= _pDctCmd;
+	pListens		= NULL;
+	pAutoUn		= NULL;
 	_ADDREF(pDctCmd);
 	}	// NamespaceX
 
@@ -42,6 +44,9 @@ HRESULT NamespaceX :: construct ( void )
 
 	// Create dictionary to keep track of listened paths
 	CCLTRY(COCREATE(L"Adt.Dictionary",IID_IDictionary,&pListens));
+
+	// Auto un-listen list during errors on delivery
+	CCLTRY(COCREATE(L"Adt.Queue",IID_IList,&pAutoUn));
 
 	// Create thread object
 	CCLTRYE ( (pSpct = new NamespaceX_t (this)) != NULL, E_OUTOFMEMORY );
@@ -126,6 +131,7 @@ void NamespaceX :: destruct ( void )
 		_RELEASE(pIt);
 		}	// if
 	_RELEASE(pListens);
+	_RELEASE(pAutoUn);
 
 	// Thread protection
 	csListen.leave();
@@ -345,6 +351,7 @@ HRESULT NamespaceX :: received ( const WCHAR *pwRoot, const WCHAR *pwLoc,
 	IListenX			*pL		= NULL;
 	BSTR				bstrRoot	= NULL;
 	BSTR				bstrLoc	= NULL;
+	U32				iUn		= 0;
 	adtValue			vL;
 	adtIUnknown		unkV;
 
@@ -378,7 +385,30 @@ HRESULT NamespaceX :: received ( const WCHAR *pwRoot, const WCHAR *pwLoc,
 		csListen.leave();
 
 		// Notify
-		CCLTRY ( pL->receive ( bstrRoot, bstrLoc, pv ) );
+		if (hr == S_OK && (hr = pL->receive ( bstrRoot, bstrLoc, pv )) != S_OK)
+			{
+			// Most common error is "RPC server is unavailable".  That means the target 
+			//	interface/process  is gone (due to crash, etc.)
+			// Auto-unlisten to this path on behalf of that now gone client to avoid sending
+			// updates in the future.
+			if (	hr == 0x800706BA ||					// RPC server unavailble
+					hr == 0x800706BE ||					// The remote procedure call failed
+					true )									// Other types of errors ? (for now any error means unlisten)
+				{
+				// Debug
+				lprintf ( LOG_DBG, L"Error delivering value, unlistening to : 0x%x : %s\r\n",
+												hr, pwRoot );
+
+				// Store for auto unlisten later.  Cannot unlisten here since it would
+				// alter the state of the container that is currently being iterated.
+				pAutoUn->write ( adtString(bstrRoot) );
+				pAutoUn->write ( adtIUnknown(pL) );
+				++iUn;
+				}	// if
+
+			// Do not error out delivery to other listeners
+			hr = S_OK;
+			}	// if
 
 		// Thread protection
 		csListen.enter();
@@ -391,6 +421,29 @@ HRESULT NamespaceX :: received ( const WCHAR *pwRoot, const WCHAR *pwLoc,
 	// Thread protection
 	csListen.leave();
 
+	// Any auto-unlistens ?
+	if (hr == S_OK && iUn > 0)
+		{
+		IIt		*pIt = NULL;
+		adtValue	vP,vUn;
+
+		// Auto-unlisten listeners
+		CCLTRY ( pAutoUn->iterate ( &pIt ) );
+		while (hr == S_OK && pIt->read ( vP ) == S_OK)
+			{
+			// Listener
+			CCLOK ( pIt->next(); )
+			CCLTRY( pIt->read ( vUn ));
+			CCLOK ( pIt->next(); )
+
+			// Unlisten
+			unlisten ( (BSTR) (LPCWSTR) adtString(vP), (IListenX *)vUn.punk );
+			}	// while
+
+		// Clean up
+		_RELEASE(pIt);
+		}	// if
+
 	// Clean up
 	if (bstrLoc != NULL)
 		SysFreeString( bstrLoc );
@@ -399,6 +452,10 @@ HRESULT NamespaceX :: received ( const WCHAR *pwRoot, const WCHAR *pwLoc,
 	_RELEASE(pKeys);
 	_RELEASE(pPath);
 
+	// Debug
+	if (hr != S_OK)
+		lprintf ( LOG_DBG, L"Error sending out received value : 0x%x : %s : %s\r\n",
+									hr, pwRoot, pwLoc );
 
 	return hr;
 	}	// received

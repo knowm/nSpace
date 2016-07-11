@@ -49,6 +49,7 @@ class NamespaceX :
 	IThread			*pThrd;								// Shell thread
 	IDictionary		*pDctCmd;							// Command line dictionary
 	IDictionary		*pListens;							// Listens
+	IList				*pAutoUn;							// Auto unlisten list
 	adtVariant		varL,varS;//,varX;				// Variant helpers
 	sysCS				csListen;							// Listen mutex
 
