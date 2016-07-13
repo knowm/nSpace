@@ -23,6 +23,7 @@
 												CCL_DLLMAIN()
 #define	CCL_OBJLIST_END_EX(a)		{ NULL, NULL } };															\
 												CCL_DLLMAIN_EX(a)
+#define	CCL_OBJLIST_END_NOTDLL()	{ NULL, NULL } };
 #define	CCL_OBJECT_BEGIN_INT(a)		public :																		\
 												STDMETHOD_(ULONG,AddRef)	( void )									\
 													{ return CCLObject::AddRef(); }									\
