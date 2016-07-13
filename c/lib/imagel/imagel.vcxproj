@@ -28,11 +28,11 @@
     <ClCompile Include="convert.cpp" />
     <ClCompile Include="create.cpp" />
     <ClCompile Include="cvmatref.cpp" />
+    <ClCompile Include="draw.cpp" />
     <ClCompile Include="fft.cpp" />
     <ClCompile Include="flip.cpp" />
     <ClCompile Include="resize.cpp" />
     <ClCompile Include="stats.cpp" />
-    <ClCompile Include="line.cpp" />
     <ClCompile Include="normal.cpp" />
     <ClCompile Include="opencv.cpp" />
     <ClCompile Include="persist.cpp" />

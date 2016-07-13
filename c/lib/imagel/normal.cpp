@@ -20,8 +20,10 @@ Normalize :: Normalize ( void )
 	//
 	////////////////////////////////////////////////////////////////////////
 	pImg	= NULL;
+
+	// Defaults
 	adtValue::copy ( adtInt(0), vFrom );
-	adtValue::copy ( adtInt(0), vTo );
+	adtValue::copy ( adtInt(255), vTo );
 	}	// Normalize
 
 HRESULT Normalize :: onAttach ( bool bAttach )

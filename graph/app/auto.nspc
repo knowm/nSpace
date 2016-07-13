@@ -54,6 +54,30 @@
 	% Image processing/GPU
 	%%%%%%%%%%%%%%%%%%%%%%%
 
+	%% Pupil
+
+	% Subgraph: Pupil find
+	#	Pupil											Abbott/Lib/Image/PupilFindWithLEDs/ {}
+
+	% MISCN: Create a dictionary for the image
+	$	CreateImgDct Misc.Create { Id Adt.Dictionary }
+		!	Initialize/OnFire						CreateImgDct/Fire
+
+	% MISCN: Image location
+	$	ValueImgLoc Misc.Dist { Value "c:/temp/Catseye_Study_1029_151002090209_OD_VISX_SI.bmp" }
+		!	Initialize/OnFire						ValueImgLoc/Fire
+
+	% IMAGEN: Load image
+	$	LoadImage Image.PersistImage {}
+		!	CreateImgDct/OnFire					LoadImage/Image
+		!	ValueImgLoc/OnFire					LoadImage/Location
+		!	ValueImgLoc/OnFire					LoadImage/Load
+
+	% Execute
+	!	LoadImage/OnLoad							Debug/Fire
+	!	LoadImage/OnLoad							Pupil/Image/Fire
+	!	LoadImage/OnLoad							Pupil/Find/Fire
+
 	%% Merge
 
 	% MISCN: Save location

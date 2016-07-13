@@ -47,9 +47,6 @@
     <ClCompile Include="normal.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="line.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="create.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -69,6 +66,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="resize.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="draw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
