@@ -23,6 +23,7 @@
     <ClInclude Include="nspcl_.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="behave.cpp" />
     <ClCompile Include="connect.cpp" />
     <ClCompile Include="connlst.cpp" />
     <ClCompile Include="conns.cpp" />
