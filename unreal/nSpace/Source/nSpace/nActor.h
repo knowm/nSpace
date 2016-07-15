@@ -12,6 +12,9 @@
 #include "GameFramework/Actor.h"
 #include "nActor.generated.h"
 
+// Forward decs.
+class AnActort;
+
 //
 // Class - AnActor.  Primary nSpace actor for game engine.  
 //		Handles link to nSpace ActiveX client.
@@ -23,8 +26,20 @@ class NSPACE_API AnActor : public AActor
 	GENERATED_BODY()
 	
 	public:	
+
 	// Sets default values for this actor's properties
 	AnActor();
+
+	// Run-time data
+	nSpaceClient		*pCli;							// nSpace client
+
+	// Worker thread
+	AnActort				*pTick;							// Worker thread
+	IThread				*pThrd;							// Worker thread
+	IList					*pWrkQ;							// Worker queue
+	IIt					*pWrkIt;							// Worker queue iterator
+	sysEvent				evWork;							// Worker thread event
+	bool					bWork;							// True to keep working
 
 	// 'AActor' memebers
 	virtual void BeginPlay	( ) override;
@@ -48,7 +63,6 @@ class NSPACE_API AnActort :
 
 	// Run-time datas
 	AnActor			*pR;									// Parent object
-	nSpaceClient	*pnCli;								// nSpace client
 
 	// 'nSpaceClientCB' members
 	STDMETHOD(onReceive)	( const WCHAR *, const WCHAR *, const ADTVALUE & );

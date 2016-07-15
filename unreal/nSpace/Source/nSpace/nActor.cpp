@@ -18,6 +18,10 @@ AnActor::AnActor()
 	//
 	////////////////////////////////////////////////////////////////////////
 
+	// Worker thread
+	pThrd			= NULL;
+	pTick			= NULL;
+
 	// Set this actor to call Tick() every frame.  
 	// You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -32,12 +36,23 @@ void AnActor::BeginPlay()
 	//		-	Called when the game starts or when spawned.
 	//
 	////////////////////////////////////////////////////////////////////////
+	HRESULT hr = S_OK;
 
 	// Debug
 	UE_LOG(LogTemp, Warning, TEXT("AnActor::BeginPlay"));
 
 	// Default behaviour
 	Super::BeginPlay();
+
+	// Create worker object
+	CCLTRYE ( (pTick = new AnActort(this)) != NULL, E_OUTOFMEMORY );
+	CCLOK   ( pTick->AddRef(); )
+	CCLTRY  ( pTick->construct() );
+
+	// Create worker thread, no need to wait for startup
+	CCLOK (bWork = true;)
+	CCLTRY(COCREATE(L"Sys.Thread", IID_IThread, &pThrd ));
+	CCLTRY(pThrd->threadStart ( pTick, 0 ));
 
 	}	// BeginPlay
 
@@ -54,11 +69,11 @@ void AnActor::EndPlay(const EEndPlayReason::Type rsn )
 	UE_LOG(LogTemp, Warning, TEXT("AnActor::EndPlay"));
 
 	// Shutdown worker thread
-//	if (pThrd != NULL)
-//		{
-//		pThrd->threadStop(30000);
-//		_RELEASE(pThrd);
-//		}	// if
+	if (pThrd != NULL)
+		{
+		pThrd->threadStop(30000);
+		_RELEASE(pThrd);
+		}	// if
 
 	// Base behaviour
 	Super::EndPlay(rsn);
@@ -231,7 +246,7 @@ HRESULT AnActort :: tickBegin ( void )
 	// Create queue for scheduling stores from worker thread
 	CCLTRY ( COCREATE ( L"Adt.Queue", IID_IList, &pR->pStQ ) );
 	CCLTRY ( pR->pStQ->iterate ( &pR->pStIt ) );
-
+*/
 	//
 	// Client
 	//
@@ -240,21 +255,15 @@ HRESULT AnActort :: tickBegin ( void )
 	CCLTRYE((pR->pCli = new nSpaceClient()) != NULL, E_OUTOFMEMORY);
 
 	// Open private namespace with own command line
-	CCLTRY(pR->pCli->open(
-				L"{ Execute Batch Location C:/dev/nspace/resource/record/install.nspc }", false, NULL));
-
-	// Construct a shared image cache object
-	CCLTRYE ( (pR->pImgC = new nSpcImgCache ( pR )) != NULL, E_OUTOFMEMORY );
-	_ADDREF(pR->pImgC);
-	CCLTRY ( pR->pImgC->construct() );
+	CCLTRY(pR->pCli->open(L"{ Namespace Unreal }", false, NULL));
 
 	// Listen to the default render locations which contains desired visuals to be rendered
-	CCLTRY ( pR->pCli->listen ( pR->strRenLoc, true, this ) );
+//	CCLTRY ( pR->pCli->listen ( pR->strRenLoc, true, this ) );
 
 	// Debug
 //	if (hr != S_OK)
 //		MessageBox ( NULL, L"AnActorLoc::tickBegin", L"Error!", MB_OK );
-*/
+
 	return hr;
 	}	// tickBegin
 
@@ -327,7 +336,7 @@ HRESULT AnActort :: tickEnd ( void )
 	// Clean up
 	_RELEASE(pR->pDctRen);
 	_RELEASE(pR->pImgC);
-	if (pR->pCli != NULL)
+*/	if (pR->pCli != NULL)
 		{
 		// Close link
 		pR->pCli->close();
@@ -336,7 +345,7 @@ HRESULT AnActort :: tickEnd ( void )
 		delete pR->pCli;
 		pR->pCli	= NULL;
 		}	// if
-*/
+
 	// Clean up
 	CoUninitialize();
 

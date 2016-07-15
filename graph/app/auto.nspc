@@ -50,6 +50,15 @@
 %		!	ValueImgLoc/OnFire					LoadPng/Load
 %		!	LoadPng/OnLoad							Debug/Fire
 
+	%%%%%%
+	% SQL
+	%%%%%%
+
+	% SQLN: Open connection
+%	$	Conn Sql.Connection { Location "file:///d:/dev/catseyegui/trunk/catseyeDb.db3" }
+	$	Conn Sql.Connection { Location "/dev/catseyegui/trunk/catseyeDb.db3" }
+		!	Initialize/OnFire						Conn/Fire
+
 	%%%%%%%%%%%%%%%%%%%%%%%
 	% Image processing/GPU
 	%%%%%%%%%%%%%%%%%%%%%%%
@@ -57,26 +66,30 @@
 	%% Pupil
 
 	% Subgraph: Pupil find
-	#	Pupil											Abbott/Lib/Image/PupilFindWithLEDs/ {}
+%	#	Pupil											Abbott/Lib/Image/PupilFindWithLEDs/ {}
+%	#	Pupil											Abbott/Lib/Image/PupilLEDs/ {}
+%		!	Pupil/OnLights/OnFire				Debug/Fire
 
 	% MISCN: Create a dictionary for the image
-	$	CreateImgDct Misc.Create { Id Adt.Dictionary }
-		!	Initialize/OnFire						CreateImgDct/Fire
+%	$	CreateImgDct Misc.Create { Id Adt.Dictionary }
+%		!	Initialize/OnFire						CreateImgDct/Fire
 
 	% MISCN: Image location
-	$	ValueImgLoc Misc.Dist { Value "c:/temp/Catseye_Study_1029_151002090209_OD_VISX_SI.bmp" }
-		!	Initialize/OnFire						ValueImgLoc/Fire
+%	$	ValueImgLoc Misc.Dist { Value "c:/temp/Catseye_Study_1029_151002090209_OD_VISX_SI.bmp" }
+%	$	ValueImgLoc Misc.Dist { Value "c:/temp/blank.png" }
+%	$	ValueImgLoc Misc.Dist { Value "c:/temp/pupil_nir_half.png" }
+%		!	Initialize/OnFire						ValueImgLoc/Fire
 
 	% IMAGEN: Load image
-	$	LoadImage Image.PersistImage {}
-		!	CreateImgDct/OnFire					LoadImage/Image
-		!	ValueImgLoc/OnFire					LoadImage/Location
-		!	ValueImgLoc/OnFire					LoadImage/Load
+%	$	LoadImage Image.PersistImage {}
+%		!	CreateImgDct/OnFire					LoadImage/Image
+%		!	ValueImgLoc/OnFire					LoadImage/Location
+%		!	ValueImgLoc/OnFire					LoadImage/Load
 
 	% Execute
-	!	LoadImage/OnLoad							Debug/Fire
-	!	LoadImage/OnLoad							Pupil/Image/Fire
-	!	LoadImage/OnLoad							Pupil/Find/Fire
+%	!	LoadImage/OnLoad							Debug/Fire
+%	!	LoadImage/OnLoad							Pupil/Image/Fire
+%	!	LoadImage/OnLoad							Pupil/Find/Fire
 
 	%% Merge
 

@@ -39,17 +39,27 @@
    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSBILITY OF SUCH DAMAGE.
 */
 
-#ifndef	SQLN__H
-#define	SQLN__H
+#ifndef	SQLL__H
+#define	SQLL__H
 
-#include "sqln.h"
+#include "sqll.h"
+
+// SQLite
+#include "sqlite3.h"
+
+// ODBC
+#include <sqlext.h>
+
+// Using "PDLL" to avoid having to link to possibly missing DLLs
+#include "../sysl/PDll.h"
+
+/*
 #define	USE_ODBC
 //#define	USE_OLEDB
 
 // ODBC
 #ifdef	USE_ODBC
 //#include <odbcinst.h>
-#include <sqlext.h>
 #endif
 
 // OLE DB
@@ -82,7 +92,7 @@ extern	adtStringSt strRefCount;
 extern	adtStringSt strRefSort;
 extern	adtStringSt strRefFrom;
 extern	adtStringSt strRefTo;
-
+*/
 /*
 DEFINE_REFSTR ( strRefEnv,			L"Environment" );
 DEFINE_REFSTR ( strRefConn,		L"Connection" );
@@ -101,6 +111,105 @@ DEFINE_REFSTR ( strRefRemFlds,	L"Remove Fields" );
 DEFINE_REFSTR ( strRefFrom,		L"From" );
 DEFINE_REFSTR ( strRefTo,			L"To" );
 */
+
+//
+// Objects
+//
+
+//
+// Class - SQLite DLL function handler.
+//
+
+class SQLiteDll : public PDLL
+	{
+	// Default constructors
+	DECLARE_CLASS(SQLiteDll);
+
+	// Functions
+	DECLARE_FUNCTION2(int, sqlite3_open16, void *, sqlite3 **);
+	DECLARE_FUNCTION2(int, sqlite3_open, const char *, sqlite3 **);
+	};
+
+
+//
+// Nodes
+//
+
+
+//
+// Class - Connection.  Node to establish a connection to an SQL database.
+//
+
+class Connection :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	Connection ( void );									// Constructor
+
+	// Run-time data
+	adtString	strConn;									// Target connection string
+	bool			bSqlite;									// SQL lite ?
+	bool			bODBC;									// ODBC ?
+
+	// CCL
+	CCL_OBJECT_BEGIN(Connection)
+		CCL_INTF(IBehaviour)	
+	CCL_OBJECT_END()
+	virtual void		destruct	( void );			// Destruct object
+
+	// Connections
+	DECLARE_RCP(Location)
+	DECLARE_CON(Fire)
+	DECLARE_EMT(Connect)
+	BEGIN_BEHAVIOUR()
+		DEFINE_RCP(Location)
+		DEFINE_CON(Fire)
+		DEFINE_EMT(Connect)
+	END_BEHAVIOUR_NOTIFY()
+
+	private :
+
+	};
+/*
+//
+// Class - Connection.  Node to establish a connection to an SQL database.
+//
+
+class Connection :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	Connection ( void );									// Constructor
+
+	// Run-time data
+	adtString		sConn;								// Connection string
+	#ifdef			USE_ODBC
+	SQLHANDLE		hSQLEnv;								// Environment handle
+	#endif
+	#ifdef			USE_OLEDB
+	#endif
+
+	// CCL
+	CCL_OBJECT_BEGIN(Connection)
+		CCL_INTF(IBehaviour)	
+	CCL_OBJECT_END()
+	virtual void		destruct	( void );			// Destruct object
+
+	// Connections
+	DECLARE_CON(Connection)
+	DECLARE_RCP(Fire)
+	DECLARE_EMT(Connect)
+	BEGIN_BEHAVIOUR()
+		DEFINE_CON(Connection)
+		DEFINE_RCP(Fire)
+		DEFINE_EMT(Connect)
+	END_BEHAVIOUR()
+
+	private :
+
+	};
 
 #ifdef	USE_ODBC
 
@@ -140,45 +249,6 @@ class SQLHandle :
 	};
 
 #endif
-
-//
-// Class - SQLConnection.  Node to establish an SQL connection.
-//
-
-class SQLConnection :
-	public CCLObject,										// Base class
-	public IBehaviour										// Interface
-	{
-	public :
-	SQLConnection ( void );								// Constructor
-
-	// Run-time data
-	adtString		sConn;								// Connection string
-	#ifdef			USE_ODBC
-	SQLHANDLE		hSQLEnv;								// Environment handle
-	#endif
-	#ifdef			USE_OLEDB
-	#endif
-
-	// CCL
-	CCL_OBJECT_BEGIN(SQLConnection)
-		CCL_INTF(IBehaviour)	
-	CCL_OBJECT_END()
-	virtual void		destruct	( void );			// Destruct object
-
-	// Connections
-	DECLARE_CON(Connection)
-	DECLARE_RCP(Fire)
-	DECLARE_EMT(Connect)
-	BEGIN_BEHAVIOUR()
-		DEFINE_CON(Connection)
-		DEFINE_RCP(Fire)
-		DEFINE_EMT(Connect)
-	END_BEHAVIOUR()
-
-	private :
-
-	};
 
 //
 // Class - SQLCreateDatabase.  Node to create a new database.
@@ -996,6 +1066,7 @@ HRESULT SQLVtToSQLType			( VARTYPE, SQLSMALLINT * );
 HRESULT SQLStringItLen			( IIt *, U32 *, U32 * );
 
 #endif
+*/
 
 #endif
 
