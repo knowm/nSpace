@@ -20,6 +20,7 @@ Stats :: Stats ( void )
 	//
 	////////////////////////////////////////////////////////////////////////
 	pImg	= NULL;
+	bEnt	= false;
 	}	// Stats
 
 HRESULT Stats :: onAttach ( bool bAttach )
@@ -44,8 +45,8 @@ HRESULT Stats :: onAttach ( bool bAttach )
 		adtValue		vL;
 
 		// Defaults (optional)
-//		if (pnDesc->load ( adtString(L"Left"), vL ) == S_OK)
-//			iL = vL;
+		if (pnDesc->load ( adtString(L"Entropy"), vL ) == S_OK)
+			bEnt = vL;
 		}	// if
 
 	// Detach
@@ -110,6 +111,32 @@ HRESULT Stats :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 
 			// Result
 			CCLTRY ( pImgUse->store ( adtString(L"Mean"), adtDouble(mean[0]) ) );
+			}	// if
+
+		// Entropy calculation
+		if (hr == S_OK && bEnt && pMat->mat->channels() == 1)
+			{
+			cv::Mat		matHst,matLog;
+
+			// Default to 0-256 graylevels.  Future expansion can have additional options.
+			float				range[]		= { 0, 256 };
+			const float *	histRange	= { range };
+			int				histSize		= 256;
+			float				ent			= 0.0f;
+
+			// Calculate the historgram of the image
+			cv::calcHist ( pMat->mat, 1, 0, cv::Mat(), matHst, 1, 
+											&histSize, &histRange );
+
+			// Normalize
+			matHst /= (double)pMat->mat->total();
+
+			// Compute entropy
+			cv::log ( matHst, matLog );
+			ent = (float)(-1*cv::sum(matHst.mul(matLog)).val[0]);
+
+			// Result
+			CCLTRY ( pImgUse->store ( adtString(L"Entropy"), adtDouble(ent) ) );
 			}	// if
 
 		// Result

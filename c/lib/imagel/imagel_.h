@@ -49,6 +49,7 @@ class cvMatRef :
 	{
 	public :
 	cvMatRef ( void );									// Constructor
+	virtual ~cvMatRef ( void );						// Destructor
 
 	// Run-time data
 	#if	CV_MAJOR_VERSION == 3
@@ -189,6 +190,10 @@ class Create :
 	adtString	strFmt;									// Format
 	adtInt		iW,iH;									// Size
 
+	// Utilities
+	static
+	HRESULT create	( IDictionary *, U32, U32, U32, cvMatRef ** );
+
 	// CCL
 	CCL_OBJECT_BEGIN(Create)
 		CCL_INTF(IBehaviour)
@@ -327,6 +332,39 @@ class FFT :
 		DEFINE_CON(Fire)
 		DEFINE_RCP(Image)
 		DEFINE_RCP(Window)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
+//
+// Class - Match.  Template matching node.
+//
+
+class Match :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	Match ( void );										// Constructor
+
+	// Run-time data
+	IDictionary	*pImg;									// Reference image
+	IDictionary *pTmp;									// Template image
+
+	// CCL
+	CCL_OBJECT_BEGIN(Match)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Template)
+	DECLARE_RCP(Image)
+	DECLARE_EMT(Error)
+	BEGIN_BEHAVIOUR()
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Image)
+		DEFINE_EMT(Error)
+		DEFINE_RCP(Template)
 	END_BEHAVIOUR_NOTIFY()
 	};
 
@@ -529,6 +567,7 @@ class Stats :
 
 	// Run-time data
 	IDictionary	*pImg;									// Image dictionary
+	adtBool		bEnt;										// Calculate entropy ?
 
 	// CCL
 	CCL_OBJECT_BEGIN(Stats)

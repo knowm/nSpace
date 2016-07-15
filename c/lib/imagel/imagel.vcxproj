@@ -31,6 +31,7 @@
     <ClCompile Include="draw.cpp" />
     <ClCompile Include="fft.cpp" />
     <ClCompile Include="flip.cpp" />
+    <ClCompile Include="match.cpp" />
     <ClCompile Include="resize.cpp" />
     <ClCompile Include="stats.cpp" />
     <ClCompile Include="normal.cpp" />
