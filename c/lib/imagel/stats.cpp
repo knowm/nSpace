@@ -123,6 +123,40 @@ HRESULT Stats :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		_RELEASE(pImgUse);
 		}	// if
 
+	// Histogram
+	else if (_RCP(Histogram))
+		{
+		IDictionary	*pImgUse = NULL;
+		IDictionary	*pImgHst = NULL;
+		cvMatRef		*pMat		= NULL;
+		cvMatRef		*pMatHst	= NULL;
+
+		// Default to 0-256 graylevels.  Future expansion can have additional options.
+		float				range[]		= { 0, 256 };
+		const float *	histRange	= { range };
+		int				histSize		= 256;
+
+		// Obtain image refence and result image
+		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
+		CCLTRY ( Prepare::extract ( NULL, v, &pImgHst, &pMatHst ) );
+
+		// Calculate histogram.  Currently defaults to grayscale.
+		CCLOK ( cv::calcHist ( pMat->mat, 1, 0, cv::Mat(), *(pMatHst->mat), 1, 
+										&histSize, &histRange ); )
+
+		// Result
+		if (hr == S_OK)
+			_EMT(Fire,adtIUnknown(pImgHst));
+		else
+			_EMT(Error,adtInt(hr));
+
+		// Clean up
+		_RELEASE(pMat);
+		_RELEASE(pImg);
+		_RELEASE(pMatHst);
+		_RELEASE(pImgHst);
+		}	// else if
+
 	// State
 	else if (_RCP(Image))
 		{

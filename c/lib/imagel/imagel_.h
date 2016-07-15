@@ -212,6 +212,56 @@ class Create :
 	};
 
 //
+// Class - Draw.  Shape drawing node.
+//
+
+class Draw :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	Draw ( void );											// Constructor
+
+	// Run-time data
+	IDictionary	*pImg;									// Image dictionary
+	adtFloat		fR,fB,fG;								// Color
+	adtFloat		fX0,fX1,fY0,fY1;						// Endpoints
+	adtFloat		fW,fH;									// Width,height
+	adtFloat		fAngle;									// Angle
+	adtInt		iThick;									// Thickness
+	adtString	strShp;									// Shape to draw
+
+	// CCL
+	CCL_OBJECT_BEGIN(Draw)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_RCP(Angle)
+	DECLARE_EMT(Error)
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Height)
+	DECLARE_RCP(Image)
+	DECLARE_RCP(Width)
+	DECLARE_RCP(X0)
+	DECLARE_RCP(Y0)
+	DECLARE_RCP(X1)
+	DECLARE_RCP(Y1)
+	BEGIN_BEHAVIOUR()
+		DEFINE_RCP(Angle)
+		DEFINE_EMT(Error)
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Height)
+		DEFINE_RCP(Image)
+		DEFINE_RCP(Width)
+		DEFINE_RCP(X0)
+		DEFINE_RCP(Y0)
+		DEFINE_RCP(X1)
+		DEFINE_RCP(Y1)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
+//
 // Class - Flip.  Image flip node.
 //
 
@@ -277,47 +327,6 @@ class FFT :
 		DEFINE_CON(Fire)
 		DEFINE_RCP(Image)
 		DEFINE_RCP(Window)
-	END_BEHAVIOUR_NOTIFY()
-	};
-
-//
-// Class - Line.  Line drawing node.
-//
-
-class Line :
-	public CCLObject,										// Base class
-	public IBehaviour										// Interface
-	{
-	public :
-	Line ( void );											// Constructor
-
-	// Run-time data
-	IDictionary	*pImg;									// Image dictionary
-	adtInt		iR,iB,iG;								// Color
-	adtInt		iX0,iX1,iY0,iY1;						// Endpoints
-	adtInt		iThick;									// Thickness
-
-	// CCL
-	CCL_OBJECT_BEGIN(Line)
-		CCL_INTF(IBehaviour)
-	CCL_OBJECT_END()
-
-	// Connections
-	DECLARE_EMT(Error)
-	DECLARE_CON(Fire)
-	DECLARE_RCP(Image)
-	DECLARE_RCP(X0)
-	DECLARE_RCP(Y0)
-	DECLARE_RCP(X1)
-	DECLARE_RCP(Y1)
-	BEGIN_BEHAVIOUR()
-		DEFINE_EMT(Error)
-		DEFINE_CON(Fire)
-		DEFINE_RCP(Image)
-		DEFINE_RCP(X0)
-		DEFINE_RCP(Y0)
-		DEFINE_RCP(X1)
-		DEFINE_RCP(Y1)
 	END_BEHAVIOUR_NOTIFY()
 	};
 
@@ -529,10 +538,12 @@ class Stats :
 	// Connections
 	DECLARE_EMT(Error)
 	DECLARE_CON(Fire)
+	DECLARE_RCP(Histogram)
 	DECLARE_RCP(Image)
 	BEGIN_BEHAVIOUR()
 		DEFINE_EMT(Error)
 		DEFINE_CON(Fire)
+		DEFINE_RCP(Histogram)
 		DEFINE_RCP(Image)
 	END_BEHAVIOUR_NOTIFY()
 	};

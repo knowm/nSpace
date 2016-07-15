@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////
 //
-//									LINE.CPP
+//									Draw.CPP
 //
-//				Implementation of the line draw node.
+//				Implementation of the draw shape node.
 //
 ////////////////////////////////////////////////////////////////////////
 
@@ -11,7 +11,7 @@
 
 // Globals
 
-Line :: Line ( void )
+Draw :: Draw ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -19,13 +19,15 @@ Line :: Line ( void )
 	//		-	Constructor for the object
 	//
 	////////////////////////////////////////////////////////////////////////
-	pImg	= NULL;
-	iR = iB = iG = 0;
-	iX0 = iY0 = iX1 = iY1 = 0;
-	iThick = 1;
-	}	// Line
+	pImg		= NULL;
+	fR			= fB = fG = 0.0f;
+	fX0		= fY0 = fX1 = fY1 = 0.0f;
+	iThick	= 1;
+	fAngle	= 0.0f;
+	strShp	= L"Line";
+	}	// Draw
 
-HRESULT Line :: onAttach ( bool bAttach )
+HRESULT Draw :: onAttach ( bool bAttach )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -47,14 +49,31 @@ HRESULT Line :: onAttach ( bool bAttach )
 		adtValue		vL;
 
 		// Defaults (optional)
+		if (pnDesc->load ( adtString(L"Shape"), vL ) == S_OK)
+			adtValue::toString ( vL, strShp );
 		if (pnDesc->load ( adtString(L"Red"), vL ) == S_OK)
-			iR = vL;
+			fR = vL;
 		if (pnDesc->load ( adtString(L"Green"), vL ) == S_OK)
-			iG = vL;
+			fG = vL;
 		if (pnDesc->load ( adtString(L"Blue"), vL ) == S_OK)
-			iB = vL;
+			fB = vL;
+		if (pnDesc->load ( adtString(L"Color"), vL ) == S_OK)
+			{
+			adtInt	iClr(vL);
+
+			// Alternative way to specify a color
+			fB = (float)((iClr >> 0) & 0xff);
+			fG = (float)((iClr >> 8) & 0xff);
+			fR = (float)((iClr >> 16) & 0xff);
+			}	// if
 		if (pnDesc->load ( adtString(L"Thickness"), vL ) == S_OK)
 			iThick = vL;
+		if (pnDesc->load ( adtString(L"Width"), vL ) == S_OK)
+			fW = vL;
+		if (pnDesc->load ( adtString(L"Height"), vL ) == S_OK)
+			fH = vL;
+		if (pnDesc->load ( adtString(L"Angle"), vL ) == S_OK)
+			fAngle = vL;
 		}	// if
 
 	// Detach
@@ -67,7 +86,7 @@ HRESULT Line :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT Line :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Draw :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -89,12 +108,26 @@ HRESULT Line :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		{
 		IDictionary	*pImgUse = NULL;
 		cvMatRef		*pMat		= NULL;
+		cv::Scalar	clr		= CV_RGB(fR,fG,fB);
 
 		// Obtain image refence
 		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
 
 		// Perform operation
-		CCLOK ( cv::line ( *(pMat->mat), cv::Point(iX0,iY0), cv::Point(iX1,iY1), CV_RGB(iR,iG,iB), iThick ); )
+		if (hr == S_OK && !WCASECMP(strShp,L"Line"))
+			cv::line ( *(pMat->mat), cv::Point((int)fX0,(int)fY0), 
+							cv::Point((int)fX1,(int)fY1), clr, iThick );
+		else if (hr == S_OK && !WCASECMP(strShp,L"Ellipse"))
+			{
+			// Rotated rectangle for which to bound the ellipse
+			cv::RotatedRect	rct ( cv::Point2f(fX0,fY0), cv::Size2f(fW,fH), fAngle );
+
+			// Perform draw
+			cv::ellipse ( (*pMat->mat), rct, clr, iThick );
+			}	// else if
+		else if (hr == S_OK && !WCASECMP(strShp,L"Rectangle"))
+			cv::rectangle ( *(pMat->mat), cv::Point((int)fX0,(int)fY0), 
+								cv::Point((int)fX1,(int)fY1), clr, iThick );
 
 		// Result
 		if (hr == S_OK)
@@ -115,13 +148,19 @@ HRESULT Line :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		_QISAFE(unkV,IID_IDictionary,&pImg);
 		}	// else if
 	else if (_RCP(X0))
-		iX0 = v;
+		fX0 = v;
 	else if (_RCP(X1))
-		iX1 = v;
+		fX1 = v;
 	else if (_RCP(Y0))
-		iY0 = v;
+		fY0 = v;
 	else if (_RCP(Y1))
-		iY1 = v;
+		fY1 = v;
+	else if (_RCP(Angle))
+		fAngle = v;
+	else if (_RCP(Height))
+		fH = v;
+	else if (_RCP(Width))
+		fW = v;
 	else
 		hr = ERROR_NO_MATCH;
 

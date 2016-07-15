@@ -10,7 +10,7 @@
 
 // Objects in this module (for CCL linkage, no objects created in app)
 CCL_OBJLIST_BEGIN()
-CCL_OBJLIST_END()
+CCL_OBJLIST_END_NOTDLL()
 
 ////////////////
 // nSpaceClient

@@ -493,7 +493,7 @@ HRESULT Location :: desc ( void )
 			// Clean up
 			if (hr != S_OK)
 				{
-				dbgprintf ( L"Location::desc:Error:Unable to attach behaviour '%s'\r\n", (LPCWSTR)strB );
+				lprintf ( LOG_WARN, L"Unable to attache behaviour : %s\r\n", (LPCWSTR) strB );
 				strB = L"";
 				_RELEASE(pBehave);
 				}	// if
@@ -553,8 +553,6 @@ HRESULT Location :: desc ( void )
 			// Obtain the reference information
 			CCLTRY ( strRef.append ( strPath ) );
 			CCLTRY ( pSpc->get ( strRef, v, NULL ) );
-			if (hr != S_OK)
-				dbgprintf ( L"Location::desc:Error:Unable to access reference '%s'\r\n", (LPCWSTR)strPath );
 			
 			// Create a non-mirrored link between source and this location
 			CCLTRY ( _QISAFE((unkV=v),IID_ILocation,&pLocRef) );
@@ -567,6 +565,10 @@ HRESULT Location :: desc ( void )
 			// of activation, leave off the 'ref/' prefix
 			CCLTRY ( receive ( pRcpOut, strnRefLocn, strPath ) );
 //			CCLTRY ( pDctOut->store ( strnRefLocn, strRef ) );
+
+			// Debug
+			if (hr != S_OK)
+				lprintf ( LOG_WARN, L"Unable to access reference path : %s\r\n", (LPCWSTR) strPath );
 
 			// Clean up
 			_RELEASE(pLocRef);
