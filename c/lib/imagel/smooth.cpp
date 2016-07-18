@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////
 //
-//									THRESH.CPP
+//									SMOOTH.CPP
 //
-//				Implementation of the image threshold node.
+//				Implementation of the image smoothing node.
 //
 ////////////////////////////////////////////////////////////////////////
 
@@ -11,7 +11,7 @@
 
 // Globals
 
-Threshold :: Threshold ( void )
+Smooth :: Smooth ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -20,11 +20,13 @@ Threshold :: Threshold ( void )
 	//
 	////////////////////////////////////////////////////////////////////////
 	pImg	= NULL;
-	vT		= 0;
-	strOp	= L"Zero";
-	}	// Threshold
 
-HRESULT Threshold :: onAttach ( bool bAttach )
+	// Defaults
+	strType	= L"MedianBlur";
+	iSz		= 3;
+	}	// Smooth
+
+HRESULT Smooth :: onAttach ( bool bAttach )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -46,10 +48,10 @@ HRESULT Threshold :: onAttach ( bool bAttach )
 		adtValue		vL;
 
 		// Defaults (optional)
-		if (pnDesc->load ( adtString(L"Op"), vL ) == S_OK)
-			adtValue::toString ( vL, strOp );
-		pnDesc->load ( adtString(L"Value"), vT );
-		pnDesc->load ( adtString(L"Max"), vMax );
+		if (pnDesc->load ( adtString(L"Size"), vL ) == S_OK)
+			iSz = vL;
+		if (pnDesc->load ( adtString(L"Type"), vL ) == S_OK)
+			adtValue::toString ( vL, strType );
 		}	// if
 
 	// Detach
@@ -62,7 +64,7 @@ HRESULT Threshold :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT Threshold :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Smooth :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -88,18 +90,11 @@ HRESULT Threshold :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v
 		// Obtain image refence
 		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
 
-		// Perform operation
-		if (hr == S_OK)
-			{
-			if (!WCASECMP(strOp,L"Zero"))
-				cv::threshold ( *(pMat->mat), *(pMat->mat), adtDouble(vT), 0, cv::THRESH_TOZERO );
-			else if (!WCASECMP(strOp,L"Truncate"))
-				cv::threshold ( *(pMat->mat), *(pMat->mat), adtDouble(vT), 0, cv::THRESH_TRUNC );
-			else if (!WCASECMP(strOp,L"Binary"))
-				cv::threshold ( *(pMat->mat), *(pMat->mat), adtDouble(vT), adtDouble(vMax), cv::THRESH_BINARY );
-			else if (!WCASECMP(strOp,L"BinaryInv"))
-				cv::threshold ( *(pMat->mat), *(pMat->mat), adtDouble(vT), adtDouble(vMax), cv::THRESH_BINARY_INV );
-			}	// if
+		// Perform smoothing operation
+		if (!strType.length())
+			cv::blur ( *(pMat->mat), *(pMat->mat), cv::Size(iSz,iSz) );
+		else if (!WCASECMP(L"Median",strType))
+			cv::medianBlur ( *(pMat->mat), *(pMat->mat), iSz );
 
 		// Result
 		if (hr == S_OK)
@@ -119,8 +114,6 @@ HRESULT Threshold :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v
 		_RELEASE(pImg);
 		_QISAFE(unkV,IID_IDictionary,&pImg);
 		}	// else if
-	else if (_RCP(Value))
-		adtValue::copy ( v, vT );
 	else
 		hr = ERROR_NO_MATCH;
 

@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////
 //
-//									THRESH.CPP
+//									MORPH.CPP
 //
-//				Implementation of the image threshold node.
+//				Implementation of the image morphology node.
 //
 ////////////////////////////////////////////////////////////////////////
 
@@ -11,7 +11,7 @@
 
 // Globals
 
-Threshold :: Threshold ( void )
+Morph :: Morph ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -20,11 +20,10 @@ Threshold :: Threshold ( void )
 	//
 	////////////////////////////////////////////////////////////////////////
 	pImg	= NULL;
-	vT		= 0;
-	strOp	= L"Zero";
-	}	// Threshold
+//	pKer	= NULL;
+	}	// Morph
 
-HRESULT Threshold :: onAttach ( bool bAttach )
+HRESULT Morph :: onAttach ( bool bAttach )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -45,11 +44,10 @@ HRESULT Threshold :: onAttach ( bool bAttach )
 		{
 		adtValue		vL;
 
+
 		// Defaults (optional)
-		if (pnDesc->load ( adtString(L"Op"), vL ) == S_OK)
-			adtValue::toString ( vL, strOp );
-		pnDesc->load ( adtString(L"Value"), vT );
-		pnDesc->load ( adtString(L"Max"), vMax );
+//		if (pnDesc->load ( adtString(L"Size"), vL ) == S_OK)
+//			iSz = vL;
 		}	// if
 
 	// Detach
@@ -57,12 +55,13 @@ HRESULT Threshold :: onAttach ( bool bAttach )
 		{
 		// Shutdown
 		_RELEASE(pImg);
+//		_RELEASE(pKer);
 		}	// else
 
 	return hr;
 	}	// onAttach
 
-HRESULT Threshold :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Morph :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -79,26 +78,26 @@ HRESULT Threshold :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v
 	////////////////////////////////////////////////////////////////////////
 	HRESULT	hr = S_OK;
 
-	// Execute
-	if (_RCP(Fire))
+	// Open/close
+	if (_RCP(Open) || _RCP(Close))
 		{
 		IDictionary	*pImgUse = NULL;
 		cvMatRef		*pMat		= NULL;
+		cv::Mat		matKer;
 
 		// Obtain image refence
 		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
 
+		// TODO: Allow kernel image to be specified, for now use default
+		CCLOK ( matKer = cv::getStructuringElement ( cv::MORPH_RECT, cv::Size(3,3) ); )
+
 		// Perform operation
 		if (hr == S_OK)
 			{
-			if (!WCASECMP(strOp,L"Zero"))
-				cv::threshold ( *(pMat->mat), *(pMat->mat), adtDouble(vT), 0, cv::THRESH_TOZERO );
-			else if (!WCASECMP(strOp,L"Truncate"))
-				cv::threshold ( *(pMat->mat), *(pMat->mat), adtDouble(vT), 0, cv::THRESH_TRUNC );
-			else if (!WCASECMP(strOp,L"Binary"))
-				cv::threshold ( *(pMat->mat), *(pMat->mat), adtDouble(vT), adtDouble(vMax), cv::THRESH_BINARY );
-			else if (!WCASECMP(strOp,L"BinaryInv"))
-				cv::threshold ( *(pMat->mat), *(pMat->mat), adtDouble(vT), adtDouble(vMax), cv::THRESH_BINARY_INV );
+			if (_RCP(Open))
+				cv::morphologyEx ( *(pMat->mat), *(pMat->mat), cv::MORPH_OPEN, matKer );
+			else
+				cv::morphologyEx ( *(pMat->mat), *(pMat->mat), cv::MORPH_CLOSE, matKer );
 			}	// if
 
 		// Result
@@ -119,8 +118,6 @@ HRESULT Threshold :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v
 		_RELEASE(pImg);
 		_QISAFE(unkV,IID_IDictionary,&pImg);
 		}	// else if
-	else if (_RCP(Value))
-		adtValue::copy ( v, vT );
 	else
 		hr = ERROR_NO_MATCH;
 

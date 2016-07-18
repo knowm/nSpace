@@ -17,6 +17,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/features2d/features2d.hpp>
 //#include <opencv2/gpu/gpu.hpp>
 #if		CV_MAJOR_VERSION == 3
 #include <opencv2/core/ocl.hpp>
@@ -144,6 +145,43 @@ class Binary :
 	};
 
 //
+// Class - Contours.  Enumerate contours in an image.
+//
+
+class Contours :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	Contours ( void );									// Constructor
+
+	// Run-time data
+	IDictionary	*pImg;									// Image dictionary
+	std::vector<std::vector<cv::Point>>	
+					contours;								// Active contour list
+	U32			iIdx;										// Enumeration index
+	
+	// CCL
+	CCL_OBJECT_BEGIN(Contours)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_EMT(Error)
+	DECLARE_RCP(First)
+	DECLARE_EMT(End)
+	DECLARE_RCP(Image)
+	DECLARE_CON(Next)
+	BEGIN_BEHAVIOUR()
+		DEFINE_EMT(Error)
+		DEFINE_RCP(First)
+		DEFINE_EMT(End)
+		DEFINE_RCP(Image)
+		DEFINE_CON(Next)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
+//
 // Class - Convert.  Convert between formats.
 //
 
@@ -213,6 +251,36 @@ class Create :
 		DEFINE_RCP(Image)
 		DEFINE_EMT(Error)
 		DEFINE_RCP(Width)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
+//
+// Class - Distance.  Image distance transform.
+//
+
+class Distance :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	Distance ( void );									// Constructor
+
+	// Run-time data
+	IDictionary	*pImg;									// Image dictionary
+
+	// CCL
+	CCL_OBJECT_BEGIN(Distance)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_EMT(Error)
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Image)
+	BEGIN_BEHAVIOUR()
+		DEFINE_EMT(Error)
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Image)
 	END_BEHAVIOUR_NOTIFY()
 	};
 
@@ -365,6 +433,43 @@ class Match :
 		DEFINE_RCP(Image)
 		DEFINE_EMT(Error)
 		DEFINE_RCP(Template)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
+//
+// Class - Morph.  Image morphology node.
+//
+
+class Morph :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	Morph ( void );										// Constructor
+
+	// Run-time data
+	IDictionary	*pImg;									// Image dictionary
+//	IDictionary *pKer;									// Kernel image dictionary
+
+	// CCL
+	CCL_OBJECT_BEGIN(Morph)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_RCP(Close)
+	DECLARE_EMT(Error)
+	DECLARE_EMT(Fire)
+	DECLARE_RCP(Image)
+//	DECLARE_RCP(Kernel)
+	DECLARE_RCP(Open)
+	BEGIN_BEHAVIOUR()
+		DEFINE_RCP(Close)
+		DEFINE_EMT(Error)
+		DEFINE_EMT(Fire)
+		DEFINE_RCP(Image)
+//		DEFINE_RCP(Kernel)
+		DEFINE_RCP(Open)
 	END_BEHAVIOUR_NOTIFY()
 	};
 
@@ -555,6 +660,38 @@ class Roi :
 	};
 
 //
+// Class - Smooth.  Image smoothing node.
+//
+
+class Smooth :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	Smooth ( void );										// Constructor
+
+	// Run-time data
+	IDictionary	*pImg;									// Image dictionary
+	adtString	strType;									// Smooth type
+	adtInt		iSz;										// Kernel size
+
+	// CCL
+	CCL_OBJECT_BEGIN(Smooth)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_EMT(Error)
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Image)
+	BEGIN_BEHAVIOUR()
+		DEFINE_EMT(Error)
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Image)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
+//
 // Class - Stats.  Compute statistics about an image.
 //
 
@@ -601,6 +738,7 @@ class Threshold :
 	// Run-time data
 	IDictionary	*pImg;									// Image dictionary
 	adtValue		vT;										// Treshold value
+	adtValue		vMax;										// Maximum value
 	adtString	strOp;									// Operation
 
 	// CCL

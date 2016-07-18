@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////
 //
-//									THRESH.CPP
+//									CONTOURS.CPP
 //
-//				Implementation of the image threshold node.
+//				Implementation of the image contours node.
 //
 ////////////////////////////////////////////////////////////////////////
 
@@ -11,7 +11,7 @@
 
 // Globals
 
-Threshold :: Threshold ( void )
+Contours :: Contours ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -20,11 +20,10 @@ Threshold :: Threshold ( void )
 	//
 	////////////////////////////////////////////////////////////////////////
 	pImg	= NULL;
-	vT		= 0;
-	strOp	= L"Zero";
-	}	// Threshold
+	iIdx	= 0;
+	}	// Contours
 
-HRESULT Threshold :: onAttach ( bool bAttach )
+HRESULT Contours :: onAttach ( bool bAttach )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -46,10 +45,8 @@ HRESULT Threshold :: onAttach ( bool bAttach )
 		adtValue		vL;
 
 		// Defaults (optional)
-		if (pnDesc->load ( adtString(L"Op"), vL ) == S_OK)
-			adtValue::toString ( vL, strOp );
-		pnDesc->load ( adtString(L"Value"), vT );
-		pnDesc->load ( adtString(L"Max"), vMax );
+//		if (pnDesc->load ( adtString(L"Size"), vL ) == S_OK)
+//			iSz = vL;
 		}	// if
 
 	// Detach
@@ -57,12 +54,13 @@ HRESULT Threshold :: onAttach ( bool bAttach )
 		{
 		// Shutdown
 		_RELEASE(pImg);
+//		_RELEASE(pKer);
 		}	// else
 
 	return hr;
 	}	// onAttach
 
-HRESULT Threshold :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Contours :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -79,8 +77,8 @@ HRESULT Threshold :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v
 	////////////////////////////////////////////////////////////////////////
 	HRESULT	hr = S_OK;
 
-	// Execute
-	if (_RCP(Fire))
+	// First/next
+	if (_RCP(First) || _RCP(Next))
 		{
 		IDictionary	*pImgUse = NULL;
 		cvMatRef		*pMat		= NULL;
@@ -88,24 +86,50 @@ HRESULT Threshold :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v
 		// Obtain image refence
 		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
 
-		// Perform operation
+		// First
+		if (hr == S_OK && _RCP(First))
+			{
+			// Find contours likes to crash readily
+			try
+				{
+				// Execute (crashy)
+				hr = S_FALSE;
+//				cv::findContours (	*(pMat->mat), contours, CV_RETR_EXTERNAL, 
+//											CV_CHAIN_APPROX_SIMPLE );
+
+				// Debug
+				lprintf ( LOG_INFO, L"Contours size %d\r\n", contours.size() );
+				for (int c = 0;c < contours.size();++c)
+					lprintf ( LOG_INFO, L"%d) Size %d\r\n", c, contours[c].size() );
+				}	// try2
+			catch ( cv::Exception & )
+				{
+				lprintf ( LOG_INFO, L"findContours threw an exception\r\n" );
+				hr = S_FALSE;
+				}	// catch
+
+			// Reset enumeration
+			iIdx = 0;
+			}	// if
+
+		// More ?
+		CCLTRYE ( iIdx < contours.size(), ERROR_NOT_FOUND );
+
+		// Next
 		if (hr == S_OK)
 			{
-			if (!WCASECMP(strOp,L"Zero"))
-				cv::threshold ( *(pMat->mat), *(pMat->mat), adtDouble(vT), 0, cv::THRESH_TOZERO );
-			else if (!WCASECMP(strOp,L"Truncate"))
-				cv::threshold ( *(pMat->mat), *(pMat->mat), adtDouble(vT), 0, cv::THRESH_TRUNC );
-			else if (!WCASECMP(strOp,L"Binary"))
-				cv::threshold ( *(pMat->mat), *(pMat->mat), adtDouble(vT), adtDouble(vMax), cv::THRESH_BINARY );
-			else if (!WCASECMP(strOp,L"BinaryInv"))
-				cv::threshold ( *(pMat->mat), *(pMat->mat), adtDouble(vT), adtDouble(vMax), cv::THRESH_BINARY_INV );
+			// Extract
+
+			// For next enumeration
+			++iIdx;
+
 			}	// if
 
 		// Result
-		if (hr == S_OK)
-			_EMT(Fire,adtIUnknown(pImgUse));
-		else
-			_EMT(Error,adtInt(hr));
+//		if (hr == S_OK)
+//			_EMT(Fire,adtIUnknown(pImgUse));
+//		else
+//			_EMT(Error,adtInt(hr));
 
 		// Clean up
 		_RELEASE(pMat);
@@ -119,8 +143,6 @@ HRESULT Threshold :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v
 		_RELEASE(pImg);
 		_QISAFE(unkV,IID_IDictionary,&pImg);
 		}	// else if
-	else if (_RCP(Value))
-		adtValue::copy ( v, vT );
 	else
 		hr = ERROR_NO_MATCH;
 

@@ -184,10 +184,10 @@
 2534d0bd-8628-11d2-868c-006008addfed				// CLSID_Create (imagel)
 2534d0be-8628-11d2-868c-006008addfed				// CLSID_Serial (iol)
 2534d0bf-8628-11d2-868c-006008addfed				// CLSID_File (iol)
-2534d0c0-8628-11d2-868c-006008addfed				// CLSID_SQLConnection
+2534d0c0-8628-11d2-868c-006008addfed				// CLSID_Connection (sqll)
 2534d0c1-8628-11d2-868c-006008addfed				//	CLSID_SQLCreateDatabase
 2534d0c2-8628-11d2-868c-006008addfed				// CLSID_SQLDelete
-2534d0c3-8628-11d2-868c-006008addfed				// CLSID_SQLQuery
+2534d0c3-8628-11d2-868c-006008addfed				// CLSID_Query (sqll)
 2534d0c4-8628-11d2-868c-006008addfed				// CLSID_SQLQueryKey
 2534d0c5-8628-11d2-868c-006008addfed				// CLSID_SQLQueryRange
 2534d0c6-8628-11d2-868c-006008addfed				// CLSID_SQLRecordEnum
@@ -203,10 +203,10 @@
 2534d0d0-8628-11d2-868c-006008addfed				//	CLSID_DataBlock (mathl)
 2534d0d1-8628-11d2-868c-006008addfed				//	CLSID_Resize (imagel)
 2534d0d2-8628-11d2-868c-006008addfed				//	CLSID_Match (imagel)
-2534d0d3-8628-11d2-868c-006008addfed				//	
-2534d0d4-8628-11d2-868c-006008addfed				//	
-2534d0d5-8628-11d2-868c-006008addfed				//	
-2534d0d6-8628-11d2-868c-006008addfed				//	
+2534d0d3-8628-11d2-868c-006008addfed				//	CLSID_Smooth (imagel)
+2534d0d4-8628-11d2-868c-006008addfed				//	CLSID_Distance (imagel)
+2534d0d5-8628-11d2-868c-006008addfed				//	CLSID_Morph (imagel)
+2534d0d6-8628-11d2-868c-006008addfed				//	CLSID_Contours (imagel)
 2534d0d7-8628-11d2-868c-006008addfed				//	
 2534d0d8-8628-11d2-868c-006008addfed				// 
 2534d0d9-8628-11d2-868c-006008addfed				// 

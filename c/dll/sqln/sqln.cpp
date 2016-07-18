@@ -23,6 +23,7 @@ CCL_OBJLIST_BEGIN()
 
 	// Nodes
 	CCL_OBJLIST_ENTRY	(Connection)
+	CCL_OBJLIST_ENTRY	(Query)
 CCL_OBJLIST_END()
 
 

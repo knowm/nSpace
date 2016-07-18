@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////
 //
-//									THRESH.CPP
+//									DISTANCE.CPP
 //
-//				Implementation of the image threshold node.
+//				Implementation of the image distance transform node.
 //
 ////////////////////////////////////////////////////////////////////////
 
@@ -11,7 +11,7 @@
 
 // Globals
 
-Threshold :: Threshold ( void )
+Distance :: Distance ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -20,11 +20,9 @@ Threshold :: Threshold ( void )
 	//
 	////////////////////////////////////////////////////////////////////////
 	pImg	= NULL;
-	vT		= 0;
-	strOp	= L"Zero";
-	}	// Threshold
+	}	// Distance
 
-HRESULT Threshold :: onAttach ( bool bAttach )
+HRESULT Distance :: onAttach ( bool bAttach )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -46,10 +44,8 @@ HRESULT Threshold :: onAttach ( bool bAttach )
 		adtValue		vL;
 
 		// Defaults (optional)
-		if (pnDesc->load ( adtString(L"Op"), vL ) == S_OK)
-			adtValue::toString ( vL, strOp );
-		pnDesc->load ( adtString(L"Value"), vT );
-		pnDesc->load ( adtString(L"Max"), vMax );
+//		if (pnDesc->load ( adtString(L"Size"), vL ) == S_OK)
+//			iSz = vL;
 		}	// if
 
 	// Detach
@@ -62,7 +58,7 @@ HRESULT Threshold :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT Threshold :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Distance :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -89,17 +85,7 @@ HRESULT Threshold :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v
 		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
 
 		// Perform operation
-		if (hr == S_OK)
-			{
-			if (!WCASECMP(strOp,L"Zero"))
-				cv::threshold ( *(pMat->mat), *(pMat->mat), adtDouble(vT), 0, cv::THRESH_TOZERO );
-			else if (!WCASECMP(strOp,L"Truncate"))
-				cv::threshold ( *(pMat->mat), *(pMat->mat), adtDouble(vT), 0, cv::THRESH_TRUNC );
-			else if (!WCASECMP(strOp,L"Binary"))
-				cv::threshold ( *(pMat->mat), *(pMat->mat), adtDouble(vT), adtDouble(vMax), cv::THRESH_BINARY );
-			else if (!WCASECMP(strOp,L"BinaryInv"))
-				cv::threshold ( *(pMat->mat), *(pMat->mat), adtDouble(vT), adtDouble(vMax), cv::THRESH_BINARY_INV );
-			}	// if
+		CCLOK ( cv::distanceTransform ( *(pMat->mat), *(pMat->mat), CV_DIST_L2, 3 ); )
 
 		// Result
 		if (hr == S_OK)
@@ -119,8 +105,6 @@ HRESULT Threshold :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v
 		_RELEASE(pImg);
 		_QISAFE(unkV,IID_IDictionary,&pImg);
 		}	// else if
-	else if (_RCP(Value))
-		adtValue::copy ( v, vT );
 	else
 		hr = ERROR_NO_MATCH;
 

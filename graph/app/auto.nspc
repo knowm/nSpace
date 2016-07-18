@@ -55,9 +55,13 @@
 	%%%%%%
 
 	% SQLN: Open connection
-%	$	Conn Sql.Connection { Location "file:///d:/dev/catseyegui/trunk/catseyeDb.db3" }
-	$	Conn Sql.Connection { Location "/dev/catseyegui/trunk/catseyeDb.db3" }
+	$	Conn Sql.Connection { Location "d:/dev/catseyegui/trunk/catseyeDb.db3" }
 		!	Initialize/OnFire						Conn/Fire
+
+	% SQLN: Query
+	$	Query Sql.Query { Table PHYSICIANS }
+		!	Conn/OnFire								Query/Connection
+		!	Conn/OnFire								Query/Fire
 
 	%%%%%%%%%%%%%%%%%%%%%%%
 	% Image processing/GPU

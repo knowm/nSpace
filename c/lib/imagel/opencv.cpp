@@ -336,14 +336,16 @@ HRESULT image_load ( const WCHAR *pwLoc, IDictionary *pImg )
 			cv::Mat mat ( plImg, false );
 			hr = image_from_mat ( &mat, pImg );
 			}	// if
+
+		// Clean up
+		if (plImg != NULL)
+			cvReleaseImage(&plImg);
 		#endif
 
 		}	// if
 
 	// Clean up
 	_FREEMEM(paLoc);
-//	if (plImg != NULL)
-//		cvReleaseImage(&plImg);
 
 	return hr;
 	}	// image_load

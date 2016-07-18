@@ -20,6 +20,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="conn.cpp" />
+    <ClCompile Include="sqlref.cpp" />
+    <ClCompile Include="query.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sqlite3.h" />

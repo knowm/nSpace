@@ -128,6 +128,34 @@ class SQLiteDll : public PDLL
 	// Functions
 	DECLARE_FUNCTION2(int, sqlite3_open16, void *, sqlite3 **);
 	DECLARE_FUNCTION2(int, sqlite3_open, const char *, sqlite3 **);
+	DECLARE_FUNCTION1(int, sqlite3_close, sqlite3 *);
+	DECLARE_FUNCTION1(int, sqlite3_finalize, sqlite3_stmt *);
+	DECLARE_FUNCTION5(int, sqlite3_prepare_v2, sqlite3 *, const char *,
+								int, sqlite3_stmt **, const char ** );
+	DECLARE_FUNCTION5(int, sqlite3_prepare16_v2, sqlite3 *, const void *,
+								int, sqlite3_stmt **, const void ** );
+	DECLARE_FUNCTION1(const void *, sqlite3_errmsg16, sqlite3 *);
+
+	};
+
+//
+// Class - SQLRef.  Reference counted SQL resources.
+//
+
+class SQLRef :
+	public CCLObject										// Base class
+	{
+	public :
+	SQLRef ( void );										// Constructor
+
+	// Run-time data
+	sqlite3			*plite_db;							// SQLite 3 database
+	sqlite3_stmt	*plite_stmt;						// SQLite 3 statement
+
+	// CCL
+	CCL_OBJECT_BEGIN_INT(SQLRef)
+	CCL_OBJECT_END()
+	virtual void		destruct	( void );			// Destruct object
 	};
 
 
@@ -160,17 +188,83 @@ class Connection :
 
 	// Connections
 	DECLARE_RCP(Location)
+	DECLARE_EMT(Error)
 	DECLARE_CON(Fire)
-	DECLARE_EMT(Connect)
 	BEGIN_BEHAVIOUR()
 		DEFINE_RCP(Location)
+		DEFINE_EMT(Error)
 		DEFINE_CON(Fire)
-		DEFINE_EMT(Connect)
 	END_BEHAVIOUR_NOTIFY()
 
 	private :
 
 	};
+
+//
+// Class - Query.  Node to perform a generic SQL query.
+//
+
+class Query :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	Query ( void );										// Constructor
+
+	// Run-time data
+	SQLRef			*pConn;								// Connection object
+	adtString		sTableName;							// Table name
+	adtBool			bDistinct;							// Distinct record result ?
+	IContainer		*pCons;								// Constraints
+	IIt				*pConsIt;							// Constraints iterator
+//	DBBINDING		*pbCons;								// Constraint bindings
+	U32				szCons;								// # of constraints
+	IIt				*pFldsIt;							// Fields iterator
+	adtBool			bSort;								// Sort result ?
+	adtBool			bCount;								// Count query only ?
+	IMemoryMapped	*pQryBfr;							// Query buffer
+	WCHAR				*pwQryBfr;							// Query buffer
+	IDictionary		*pJoin;								// Join information
+	adtString		sSort;								// Sort field ?
+	adtInt			iCount;								// Max. query count
+
+	// CCL
+	CCL_OBJECT_BEGIN(Query)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+	virtual HRESULT	construct( void );			// Construct object
+	virtual void		destruct	( void );			// Destruct object
+
+	// Connections
+	DECLARE_RCP(Connection)
+	DECLARE_RCP(Constraints)
+	DECLARE_RCP(Count)
+	DECLARE_RCP(Distinct)
+	DECLARE_RCP(Fields)
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Join)
+	DECLARE_RCP(Sort)
+	DECLARE_RCP(Table)
+	DECLARE_EMT(Error)
+	BEGIN_BEHAVIOUR()
+		DEFINE_RCP(Connection)
+		DEFINE_RCP(Constraints)
+		DEFINE_RCP(Count)
+		DEFINE_RCP(Distinct)
+		DEFINE_RCP(Fields)
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Join)
+		DEFINE_RCP(Sort)
+		DEFINE_RCP(Table)
+		DEFINE_EMT(Error)
+	END_BEHAVIOUR_NOTIFY()
+
+	private :
+
+	// Internal utilities
+
+	};
+
 /*
 //
 // Class - Connection.  Node to establish a connection to an SQL database.

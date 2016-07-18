@@ -108,8 +108,13 @@ HRESULT Connection :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &
 	// Fire
 	if (_RCP(Fire))
 		{
+		SQLRef	*pConn	= NULL;
+
 		// State check
 		CCLTRYE ( strConn.length() > 0, ERROR_INVALID_STATE );
+
+		// Prepare a connection reference
+		CCLTRYE ( (pConn = new SQLRef()) != NULL, E_OUTOFMEMORY );
 
 		//
 		// SQLite
@@ -121,14 +126,19 @@ HRESULT Connection :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &
 			int		ret;
 
 			// Open connection to database
-			CCLTRY ( strConn.toAscii ( &paConn ) );
-			CCLTRYE ( (ret = sqliteDll.sqlite3_open ( paConn, &pDB ))
+//			CCLTRY ( strConn.toAscii ( &paConn ) );
+//			CCLTRYE ( (ret = sqliteDll.sqlite3_open ( paConn, &pDB ))
+//							== SQLITE_OK, ret );
+			CCLTRYE ( (ret = sqliteDll.sqlite3_open16 ( &strConn.at(), &pDB ))
 							== SQLITE_OK, ret );
 
 			// Debug
 			if (hr != S_OK || pDB == NULL)
 				lprintf ( LOG_WARN, L"Unable to open database file : %s\r\n", 
 								(LPCWSTR)strConn );
+
+			// Store in reference counted object
+			CCLOK ( pConn->plite_db = pDB; )
 
 			// Clean up
 			_FREEMEM(paConn);
@@ -142,6 +152,15 @@ HRESULT Connection :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &
 			// Port from old code
 			hr = E_NOTIMPL;
 			}	// else if
+
+		// Result
+		if (hr == S_OK)
+			_EMT(Fire,adtIUnknown(pConn));
+		else
+			_EMT(Error,adtInt(hr));
+
+		// Clean up
+		_RELEASE(pConn);
 
 		/*
 		SQLHandle	*pConn	= NULL;

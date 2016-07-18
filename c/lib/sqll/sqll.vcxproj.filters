@@ -18,6 +18,12 @@
     <ClCompile Include="conn.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="query.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sqlref.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sqlite3.h">
