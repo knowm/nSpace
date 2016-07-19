@@ -81,7 +81,13 @@ HRESULT Contours :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v 
 	if (_RCP(First) || _RCP(Next))
 		{
 		IDictionary	*pImgUse = NULL;
+		IDictionary	*pImgC	= NULL;
 		cvMatRef		*pMat		= NULL;
+		adtIUnknown	unkV(v);
+//		cvMatRef
+
+		// Expecting dictionary to contain next contour
+		CCLTRY ( _QISAFE(unkV,IID_IDictionary,&pImgC) );
 
 		// Obtain image refence
 		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
@@ -93,9 +99,8 @@ HRESULT Contours :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v 
 			try
 				{
 				// Execute (crashy)
-				hr = S_FALSE;
-//				cv::findContours (	*(pMat->mat), contours, CV_RETR_EXTERNAL, 
-//											CV_CHAIN_APPROX_SIMPLE );
+				cv::findContours (	*(pMat->mat), contours, CV_RETR_EXTERNAL, 
+											CV_CHAIN_APPROX_SIMPLE );
 
 				// Debug
 				lprintf ( LOG_INFO, L"Contours size %d\r\n", contours.size() );
@@ -118,20 +123,28 @@ HRESULT Contours :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v 
 		// Next
 		if (hr == S_OK)
 			{
-			// Extract
+			cvMatRef	*pMatC	= NULL;
+
+			// Create matrix reference for result
+			CCLTRYE ( (pMatC = new cvMatRef()) != NULL, E_OUTOFMEMORY );
+			CCLTRYE ( (pMatC->mat = new cv::Mat(contours[iIdx])) != NULL,
+							E_OUTOFMEMORY );
+
+			// Store in result dictionary
+			CCLTRY ( pImgC->store (	adtString(L"cvMatRef"), adtIUnknown(pMatC) ) );
 
 			// For next enumeration
 			++iIdx;
-
 			}	// if
 
 		// Result
-//		if (hr == S_OK)
-//			_EMT(Fire,adtIUnknown(pImgUse));
-//		else
-//			_EMT(Error,adtInt(hr));
+		if (hr == S_OK)
+			_EMT(Next,adtIUnknown(pImgC));
+		else
+			_EMT(End,adtInt(hr));
 
 		// Clean up
+		_RELEASE(pImgC);
 		_RELEASE(pMat);
 		_RELEASE(pImgUse);
 		}	// if

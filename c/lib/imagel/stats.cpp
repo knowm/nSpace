@@ -19,8 +19,9 @@ Stats :: Stats ( void )
 	//		-	Constructor for the object
 	//
 	////////////////////////////////////////////////////////////////////////
-	pImg	= NULL;
-	bEnt	= false;
+	pImg			= NULL;
+	bEnt			= false;
+	bBoundRct	= false;
 	}	// Stats
 
 HRESULT Stats :: onAttach ( bool bAttach )
@@ -47,6 +48,8 @@ HRESULT Stats :: onAttach ( bool bAttach )
 		// Defaults (optional)
 		if (pnDesc->load ( adtString(L"Entropy"), vL ) == S_OK)
 			bEnt = vL;
+		if (pnDesc->load ( adtString(L"BoundRect"), vL ) == S_OK)
+			bBoundRct = vL;
 		}	// if
 
 	// Detach
@@ -91,16 +94,23 @@ HRESULT Stats :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			cv::Point	ptMin,ptMax;
 			double		dMin,dMax;
 
-			// Values and locations of min and max
-			cv::minMaxLoc ( *(pMat->mat), &dMin, &dMax, &ptMin, &ptMax );
+			try
+				{
+				// Values and locations of min and max
+				cv::minMaxLoc ( *(pMat->mat), &dMin, &dMax, &ptMin, &ptMax );
 
-			// Result
-			CCLTRY ( pImgUse->store ( adtString(L"Min"), adtDouble(dMin) ) );
-			CCLTRY ( pImgUse->store ( adtString(L"MinX"), adtInt(ptMin.x) ) );
-			CCLTRY ( pImgUse->store ( adtString(L"MinY"), adtInt(ptMin.y) ) );
-			CCLTRY ( pImgUse->store ( adtString(L"Max"), adtDouble(dMax) ) );
-			CCLTRY ( pImgUse->store ( adtString(L"MaxX"), adtInt(ptMax.x) ) );
-			CCLTRY ( pImgUse->store ( adtString(L"MaxY"), adtInt(ptMax.y) ) );
+				// Result
+				CCLTRY ( pImgUse->store ( adtString(L"Min"), adtDouble(dMin) ) );
+				CCLTRY ( pImgUse->store ( adtString(L"MinX"), adtInt(ptMin.x) ) );
+				CCLTRY ( pImgUse->store ( adtString(L"MinY"), adtInt(ptMin.y) ) );
+				CCLTRY ( pImgUse->store ( adtString(L"Max"), adtDouble(dMax) ) );
+				CCLTRY ( pImgUse->store ( adtString(L"MaxX"), adtInt(ptMax.x) ) );
+				CCLTRY ( pImgUse->store ( adtString(L"MaxY"), adtInt(ptMax.y) ) );
+				}	// try
+			catch ( cv::Exception &e )
+				{
+				lprintf ( LOG_INFO, L"minMaxLoc:%S\r\n", e.err.c_str() );
+				}	// catch
 			}	// if
 
 		// Mean, standard deviation
@@ -114,29 +124,51 @@ HRESULT Stats :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			}	// if
 
 		// Entropy calculation
-		if (hr == S_OK && bEnt && pMat->mat->channels() == 1)
+		if (hr == S_OK && bEnt == true && pMat->mat->channels() == 1)
 			{
 			cv::Mat		matHst,matLog;
 
-			// Default to 0-256 graylevels.  Future expansion can have additional options.
-			float				range[]		= { 0, 256 };
-			const float *	histRange	= { range };
-			int				histSize		= 256;
-			float				ent			= 0.0f;
+			try
+				{
+				// Default to 0-256 graylevels.  Future expansion can have additional options.
+				float				range[]		= { 0, 256 };
+				const float *	histRange	= { range };
+				int				histSize		= 256;
+				float				ent			= 0.0f;
 
-			// Calculate the historgram of the image
-			cv::calcHist ( pMat->mat, 1, 0, cv::Mat(), matHst, 1, 
-											&histSize, &histRange );
+				// Calculate the historgram of the image
+				cv::calcHist ( pMat->mat, 1, 0, cv::Mat(), matHst, 1, 
+												&histSize, &histRange );
 
-			// Normalize
-			matHst /= (double)pMat->mat->total();
+				// Normalize
+				matHst /= (double)pMat->mat->total();
 
-			// Compute entropy
-			cv::log ( matHst, matLog );
-			ent = (float)(-1*cv::sum(matHst.mul(matLog)).val[0]);
+				// Compute entropy
+				cv::log ( matHst, matLog );
+				ent = (float)(-1*cv::sum(matHst.mul(matLog)).val[0]);
+
+				// Result
+				CCLTRY ( pImgUse->store ( adtString(L"Entropy"), adtDouble(ent) ) );
+				}	// try
+			catch ( cv::Exception &e )
+				{
+				lprintf ( LOG_INFO, L"entropy:%S\r\n", e.err.c_str() );
+				}	// catch
+			}	// if
+
+		// Bounding rectangle
+		if (hr == S_OK && bBoundRct == true)
+			{
+			cv::Rect rct;
+
+			// Calculate bounding rectangle, assumes array of points
+			rct = cv::boundingRect ( *(pMat->mat) );
 
 			// Result
-			CCLTRY ( pImgUse->store ( adtString(L"Entropy"), adtDouble(ent) ) );
+			CCLTRY ( pImgUse->store ( adtString(L"Left"), adtInt(rct.x) ) );
+			CCLTRY ( pImgUse->store ( adtString(L"Top"), adtInt(rct.y) ) );
+			CCLTRY ( pImgUse->store ( adtString(L"Width"), adtInt(rct.width) ) );
+			CCLTRY ( pImgUse->store ( adtString(L"Height"), adtInt(rct.height) ) );
 			}	// if
 
 		// Result

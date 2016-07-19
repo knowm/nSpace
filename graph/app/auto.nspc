@@ -54,25 +54,30 @@
 	% SQL
 	%%%%%%
 
+	% MISCN: Create a dictionary to receive results
+	$	CreateRowDct Misc.Create { Id Adt.Dictionary }
+		!	Initialize/OnFire						CreateRowDct/Fire
+
 	% SQLN: Open connection
 	$	Conn Sql.Connection { Location "d:/dev/catseyegui/trunk/catseyeDb.db3" }
 		!	Initialize/OnFire						Conn/Fire
 
 	% SQLN: Query
-	$	Query Sql.Query { Table PHYSICIANS }
+	$	Query Sql.Query { Table OPERATORS }
 		!	Conn/OnFire								Query/Connection
 		!	Conn/OnFire								Query/Fire
+
+	% SQLN: Enumerator
+	$	Enum Sql.RecordEnum {}
+		!	CreateRowDct/OnFire					Enum/Dictionary
+		!	Query/OnFire							Enum/Statement
+		!	Query/OnFire							Enum/Next
+		!	Enum/OnNext								Debug/Fire
+		!	Enum/OnNext								Enum/Next
 
 	%%%%%%%%%%%%%%%%%%%%%%%
 	% Image processing/GPU
 	%%%%%%%%%%%%%%%%%%%%%%%
-
-	%% Pupil
-
-	% Subgraph: Pupil find
-%	#	Pupil											Abbott/Lib/Image/PupilFindWithLEDs/ {}
-%	#	Pupil											Abbott/Lib/Image/PupilLEDs/ {}
-%		!	Pupil/OnLights/OnFire				Debug/Fire
 
 	% MISCN: Create a dictionary for the image
 %	$	CreateImgDct Misc.Create { Id Adt.Dictionary }
@@ -92,8 +97,6 @@
 
 	% Execute
 %	!	LoadImage/OnLoad							Debug/Fire
-%	!	LoadImage/OnLoad							Pupil/Image/Fire
-%	!	LoadImage/OnLoad							Pupil/Find/Fire
 
 	%% Merge
 

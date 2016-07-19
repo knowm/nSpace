@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="conn.cpp" />
+    <ClCompile Include="recenum.cpp" />
     <ClCompile Include="sqlref.cpp" />
     <ClCompile Include="query.cpp" />
   </ItemGroup>

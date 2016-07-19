@@ -59,6 +59,13 @@ class cvMatRef :
 	cv::Mat		*mat;										// Matrix - CPU
 	#endif
 
+	// Operators
+//	#if	CV_MAJOR_VERSION == 3
+//	operator cv::UMat() { return (mat != NULL) ? *mat : cv::UMat(); }
+//	#else
+//	operator cv::Mat() { return (mat != NULL) ? *mat : cv::Mat(); }
+//	#endif
+
 	// CCL
 	CCL_OBJECT_BEGIN_INT(cvMatRef)
 	CCL_OBJECT_END()
@@ -302,6 +309,7 @@ class Draw :
 	adtFloat		fW,fH;									// Width,height
 	adtFloat		fAngle;									// Angle
 	adtInt		iThick;									// Thickness
+	adtFloat		fRad;										// Radius
 	adtString	strShp;									// Shape to draw
 
 	// CCL
@@ -705,6 +713,7 @@ class Stats :
 	// Run-time data
 	IDictionary	*pImg;									// Image dictionary
 	adtBool		bEnt;										// Calculate entropy ?
+	adtBool		bBoundRct;								// Calculate bounding rectangle ?
 
 	// CCL
 	CCL_OBJECT_BEGIN(Stats)

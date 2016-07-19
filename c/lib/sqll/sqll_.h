@@ -126,15 +126,22 @@ class SQLiteDll : public PDLL
 	DECLARE_CLASS(SQLiteDll);
 
 	// Functions
-	DECLARE_FUNCTION2(int, sqlite3_open16, void *, sqlite3 **);
-	DECLARE_FUNCTION2(int, sqlite3_open, const char *, sqlite3 **);
+	DECLARE_FUNCTION1(int, sqlite3_column_count, sqlite3_stmt * );
+	DECLARE_FUNCTION2(double, sqlite3_column_double, sqlite3_stmt *, int );
+	DECLARE_FUNCTION2(int, sqlite3_column_int, sqlite3_stmt *, int );
+	DECLARE_FUNCTION2(const void *, sqlite3_column_text16, sqlite3_stmt *, int );
+	DECLARE_FUNCTION2(int, sqlite3_column_type, sqlite3_stmt *, int );
+	DECLARE_FUNCTION2(const void *, sqlite3_column_name16, sqlite3_stmt *, int );
 	DECLARE_FUNCTION1(int, sqlite3_close, sqlite3 *);
+	DECLARE_FUNCTION1(const void *, sqlite3_errmsg16, sqlite3 *);
 	DECLARE_FUNCTION1(int, sqlite3_finalize, sqlite3_stmt *);
+	DECLARE_FUNCTION2(int, sqlite3_open, const char *, sqlite3 **);
+	DECLARE_FUNCTION2(int, sqlite3_open16, void *, sqlite3 **);
 	DECLARE_FUNCTION5(int, sqlite3_prepare_v2, sqlite3 *, const char *,
 								int, sqlite3_stmt **, const char ** );
 	DECLARE_FUNCTION5(int, sqlite3_prepare16_v2, sqlite3 *, const void *,
 								int, sqlite3_stmt **, const void ** );
-	DECLARE_FUNCTION1(const void *, sqlite3_errmsg16, sqlite3 *);
+	DECLARE_FUNCTION1(int, sqlite3_step, sqlite3_stmt *);
 
 	};
 
@@ -263,6 +270,41 @@ class Query :
 
 	// Internal utilities
 
+	};
+
+//
+// Class - RecordEnum.  Node to perform record enumeration on a result set.
+//
+
+class RecordEnum :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	RecordEnum ( void );									// Constructor
+
+	// Run-time data
+	SQLRef			*pStmt;								// Statement object
+	IDictionary		*pDct;								// Results dictionary
+
+	// CCL
+	CCL_OBJECT_BEGIN(RecordEnum)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_RCP(Dictionary)
+	DECLARE_EMT(End)
+	DECLARE_CON(Next)
+	DECLARE_RCP(Statement)
+	BEGIN_BEHAVIOUR()
+		DEFINE_RCP(Dictionary)
+		DEFINE_EMT(End)
+		DEFINE_CON(Next)
+		DEFINE_RCP(Statement)
+	END_BEHAVIOUR_NOTIFY()
+
+	private :
 	};
 
 /*

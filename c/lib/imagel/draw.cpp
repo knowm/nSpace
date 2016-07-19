@@ -23,6 +23,7 @@ Draw :: Draw ( void )
 	fR			= fB = fG = 0.0f;
 	fX0		= fY0 = fX1 = fY1 = 0.0f;
 	iThick	= 1;
+	fRad		= 1.0f;
 	fAngle	= 0.0f;
 	strShp	= L"Line";
 	}	// Draw
@@ -70,6 +71,8 @@ HRESULT Draw :: onAttach ( bool bAttach )
 			iThick = vL;
 		if (pnDesc->load ( adtString(L"Width"), vL ) == S_OK)
 			fW = vL;
+		if (pnDesc->load ( adtString(L"Radius"), vL ) == S_OK)
+			fRad = vL;
 		if (pnDesc->load ( adtString(L"Height"), vL ) == S_OK)
 			fH = vL;
 		if (pnDesc->load ( adtString(L"Angle"), vL ) == S_OK)
@@ -125,6 +128,8 @@ HRESULT Draw :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			// Perform draw
 			cv::ellipse ( (*pMat->mat), rct, clr, iThick );
 			}	// else if
+		else if (hr == S_OK && !WCASECMP(strShp,L"Circle"))
+			cv::circle ( *(pMat->mat), cv::Point((int)(float)fX0,(int)(float)fY0), (int)(float)fRad, clr, iThick );
 		else if (hr == S_OK && !WCASECMP(strShp,L"Rectangle"))
 			cv::rectangle ( *(pMat->mat), cv::Point((int)fX0,(int)fY0), 
 								cv::Point((int)fX1,(int)fY1), clr, iThick );
