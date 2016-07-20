@@ -55,25 +55,25 @@
 	%%%%%%
 
 	% MISCN: Create a dictionary to receive results
-	$	CreateRowDct Misc.Create { Id Adt.Dictionary }
-		!	Initialize/OnFire						CreateRowDct/Fire
+%	$	CreateRowDct Misc.Create { Id Adt.Dictionary }
+%		!	Initialize/OnFire						CreateRowDct/Fire
 
 	% SQLN: Open connection
-	$	Conn Sql.Connection { Location "d:/dev/catseyegui/trunk/catseyeDb.db3" }
-		!	Initialize/OnFire						Conn/Fire
+%	$	Conn Sql.Connection { Location "d:/dev/catseyegui/trunk/catseyeDb.db3" }
+%		!	Initialize/OnFire						Conn/Fire
 
 	% SQLN: Query
-	$	Query Sql.Query { Table OPERATORS }
-		!	Conn/OnFire								Query/Connection
-		!	Conn/OnFire								Query/Fire
+%	$	Query Sql.Query { Table OPERATORS }
+%		!	Conn/OnFire								Query/Connection
+%		!	Conn/OnFire								Query/Fire
 
 	% SQLN: Enumerator
-	$	Enum Sql.RecordEnum {}
-		!	CreateRowDct/OnFire					Enum/Dictionary
-		!	Query/OnFire							Enum/Statement
-		!	Query/OnFire							Enum/Next
-		!	Enum/OnNext								Debug/Fire
-		!	Enum/OnNext								Enum/Next
+%	$	Enum Sql.RecordEnum {}
+%		!	CreateRowDct/OnFire					Enum/Dictionary
+%		!	Query/OnFire							Enum/Statement
+%		!	Query/OnFire							Enum/Next
+%		!	Enum/OnNext								Debug/Fire
+%		!	Enum/OnNext								Enum/Next
 
 	%%%%%%%%%%%%%%%%%%%%%%%
 	% Image processing/GPU

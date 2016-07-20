@@ -233,6 +233,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sqll", "lib\sqll\sqll.vcxpr
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sqln", "dll\sqln\sqln.vcxproj", "{D771383A-862F-418B-AC36-B2C9CEBF00AE}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "geometry", "geometry", "{B060C18B-FDBD-4381-A53D-6447D907C022}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\lib\math\geometry\RectIntRect.nspc = ..\graph\lib\math\geometry\RectIntRect.nspc
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -680,5 +685,6 @@ Global
 		{58CCE292-A622-4483-A310-8022215D158C} = {9AB41F9C-430F-45DC-9D5F-533D052C9D8C}
 		{EA960234-7A49-4F69-A725-65EDCA57F825} = {9AB41F9C-430F-45DC-9D5F-533D052C9D8C}
 		{DE2F0159-E927-490E-8BD4-7182CFF70EBD} = {9AB41F9C-430F-45DC-9D5F-533D052C9D8C}
+		{B060C18B-FDBD-4381-A53D-6447D907C022} = {090F15CC-3374-4408-9E54-B343AA3565CE}
 	EndGlobalSection
 EndGlobal

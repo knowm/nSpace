@@ -91,10 +91,13 @@ HRESULT Smooth :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
 
 		// Perform smoothing operation
-		if (!strType.length())
-			cv::blur ( *(pMat->mat), *(pMat->mat), cv::Size(iSz,iSz) );
-		else if (!WCASECMP(L"Median",strType))
-			cv::medianBlur ( *(pMat->mat), *(pMat->mat), iSz );
+		if (hr == S_OK)
+			{
+			if (!strType.length())
+				cv::blur ( *(pMat->mat), *(pMat->mat), cv::Size(iSz,iSz) );
+			else if (!WCASECMP(L"Median",strType))
+				cv::medianBlur ( *(pMat->mat), *(pMat->mat), iSz );
+			}	// if
 
 		// Result
 		if (hr == S_OK)

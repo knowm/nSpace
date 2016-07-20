@@ -1,0 +1,131 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%							RectIntRect.NSPC
+%
+%		Compute the intersection between two rectangles
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+	$	Left0					Misc.Dist {}		% Upper left corner
+	$	Top0					Misc.Dist {}		% Upper left corner
+	$	Width0				Misc.Dist {}		% Width for rect 0
+	$	Height0				Misc.Dist {}		% Height for rect 0
+	$	Left1					Misc.Dist {}		% Upper left corner
+	$	Top1					Misc.Dist {}		% Upper left corner
+	$	Width1				Misc.Dist {}		% Width for rect 1
+	$	Height1				Misc.Dist {}		% Height for rect 1
+
+	% Actions
+	$	Initialize			Misc.Dist {}		% Initalize graph
+	$	Test					Misc.Dist {}		% Perform test
+
+	% Notifications
+	$	OnLeft				Misc.Dist {}		% Upper left of intersection area
+	$	OnTop					Misc.Dist {}		% Upper left of intersection area
+	$	OnWidth				Misc.Dist {}		% Width of intersection
+	$	OnHeight				Misc.Dist {}		% Height of intersection
+	$	OnInt					Misc.Dist {}		% Intersection signal
+	$	OnNoInt				Misc.Dist {}		% No intersection signal
+
+	% DEBUG
+%	$	Debug Misc.Debug {}
+
+	%%%%%%%
+	% Test
+	%%%%%%%
+
+	% MISCN: Flag to false if no intersection found
+	$	IntBool Misc.Toggle {}
+		!	Test/OnFire										IntBool/True
+		!	IntBool/OnTrue									OnInt/Fire
+		!	IntBool/OnFalse								OnNoInt/Fire
+
+	%% X-axis
+
+	% MATHN: Compute end points
+	$	Right0 Math.Binary { Op Add }
+		!	Left0/OnFire									Right0/Left
+		!	Width0/OnFire									Right0/Right
+		!	Test/OnFire										Right0/Fire
+	$	Right1 Math.Binary { Op Add }
+		!	Left1/OnFire									Right1/Left
+		!	Width1/OnFire									Right1/Right
+		!	Test/OnFire										Right1/Fire
+
+	% MATHN: Subtract each point from the other
+	$	L0R1Sub Math.Binary { Op Sub }
+		!	Left0/OnFire									L0R1Sub/Left
+		!	Right1/OnFire									L0R1Sub/Right
+		!	Test/OnFire										L0R1Sub/Fire
+	$	R0L1Sub Math.Binary { Op Sub }
+		!	Right0/OnFire									R0L1Sub/Left
+		!	Left1/OnFire									R0L1Sub/Right
+		!	Test/OnFire										R0L1Sub/Fire
+
+	% MISCN: Positive value means intersection and width
+	$	L0R1Pos Misc.Compare { Left 0:int }
+		!	L0R1Sub/OnFire									L0R1Pos/Right
+	$	R0L1Pos Misc.Compare { Left 0:int }
+		!	R0L1Sub/OnFire									R0L1Pos/Right
+		!	L0R1Pos/OnGreater								R0L1Pos/Fire
+
+	% Postive
+	!	L0R1Pos/OnLess										OnWidth/Fire
+	!	L0R1Pos/OnEqual									OnWidth/Fire
+	!	R0L1Pos/OnLess										OnWidth/Fire
+	!	R0L1Pos/OnEqual									OnWidth/Fire
+
+	% No intersection in X
+	!	R0L1Pos/OnGreater									IntBool/False
+
+	%% Y-axis
+
+	% MATHN: Compute end points
+	$	Bottom0 Math.Binary { Op Add }
+		!	Top0/OnFire										Bottom0/Left
+		!	Height0/OnFire									Bottom0/Right
+		!	Test/OnFire										Bottom0/Fire
+	$	Bottom1 Math.Binary { Op Add }
+		!	Top1/OnFire										Bottom1/Left
+		!	Height1/OnFire									Bottom1/Right
+		!	Test/OnFire										Bottom1/Fire
+
+	% MATHN: Subtract each point from the other
+	$	T0B1Sub Math.Binary { Op Sub }
+		!	Top0/OnFire										T0B1Sub/Left
+		!	Bottom1/OnFire									T0B1Sub/Right
+		!	Test/OnFire										T0B1Sub/Fire
+	$	B0T1Sub Math.Binary { Op Sub }
+		!	Bottom0/OnFire									B0T1Sub/Left
+		!	Top1/OnFire										B0T1Sub/Right
+		!	Test/OnFire										B0T1Sub/Fire
+
+	% MISCN: Positive value means intersection and width
+	$	T0B1Pos Misc.Compare { Left 0:int }
+		!	T0B1Sub/OnFire									T0B1Pos/Right
+		!	OnWidth/OnFire									T0B1Pos/Fire
+	$	B0T1Pos Misc.Compare { Left 0:int }
+		!	B0T1Sub/OnFire									B0T1Pos/Right
+		!	T0B1Pos/OnGreater								B0T1Pos/Fire
+
+	% Postive
+	!	T0B1Pos/OnLess										OnHeight/Fire
+	!	T0B1Pos/OnEqual									OnHeight/Fire
+	!	B0T1Pos/OnLess										OnHeight/Fire
+	!	B0T1Pos/OnEqual									OnHeight/Fire
+
+	% No intersection in Y
+	!	B0T1Pos/OnGreater									IntBool/False
+
+	%%
+
+	% Trigger analysis
+	!	Test/OnFire											L0R1Pos/Fire
+
+	% Intersection flag
+	!	Test/OnFire											IntBool/Fire
+
+

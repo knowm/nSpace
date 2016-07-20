@@ -112,7 +112,7 @@ HRESULT Binary :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 				CCLTRY(Prepare::extract ( NULL, vR, &pImgR, &pMatR ));
 				CCLOK ( bImgR = true; )
 				}	// if
-			CCLTRY(Prepare::extract ( NULL, vL, &pImgO, &pMatO ));
+			CCLTRY(Prepare::extract ( NULL, v, &pImgO, &pMatO ));
 
 			// Apply operation
 			if (hr == S_OK)
