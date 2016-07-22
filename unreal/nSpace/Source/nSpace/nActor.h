@@ -33,7 +33,8 @@ class NSPACE_API AnActor : public AActor
 	public:	
 
 	// Sets default values for this actor's properties
-	AnActor();
+	AnActor();												// Constructor
+	virtual ~AnActor();									// Destructor
 
 	// Run-time data
 	nSpaceClient		*pCli;							// nSpace client

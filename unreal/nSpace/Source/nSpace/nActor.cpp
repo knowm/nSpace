@@ -45,6 +45,27 @@ AnActor::AnActor()
 
 	}	// AnActor
 
+AnActor::~AnActor()
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Destructor for the object.
+	//
+	////////////////////////////////////////////////////////////////////////
+	_RELEASE(pTick);
+	_RELEASE(pThrd);
+	_RELEASE(pMnIt);
+	_RELEASE(pMnQ);
+	_RELEASE(pStIt);
+	_RELEASE(pStQ);
+	_RELEASE(pWrkIt);
+	_RELEASE(pWrkQ);
+	_RELEASE(pDctRen);
+	if (pCli != NULL)
+		delete pCli;
+	}	// ~AnActor
+
 HRESULT AnActor :: addMain ( nElement *pElem )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -185,6 +206,139 @@ void AnActor::EndPlay(const EEndPlayReason::Type rsn )
 	Super::EndPlay(rsn);
 	}	// EndPlay
 
+HRESULT AnActor :: onValue (	const WCHAR *pwRoot, 
+										const WCHAR *pwLoc,
+										const ADTVALUE &vV )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Process a received value.  It is assumed the string values
+	//			have already been validated.
+	//
+	//	PARAMETERS
+	//		-	pwRoot is the path to the listened location
+	//		-	pwLoc is the location relative to the root for the value
+	//		-	vV contains the value
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT		hr			= S_OK;
+	adtInt		iIdx;
+
+	// Debug
+	CCLOK ( dbgprintf ( L"AnActor::onValue:%s:%s\r\n", pwRoot, pwLoc ); )
+
+	// Check for render location indices, ignore reserved names
+	if (	!WCASENCMP(pwLoc,L"Locations/Dict/",15) &&
+			pwLoc[15] != '_' && (iIdx = adtString(&pwLoc[15])) >= 1)
+		{
+		IDictionary		*pDct	= NULL;
+		int				len	= 0;
+		adtIUnknown		unkV(vV);
+		adtString		strL;
+		adtValue			vL;
+
+		// Descriptor
+		CCLTRY(_QISAFE(unkV,IID_IDictionary,&pDct));
+
+		// Render location specified ?
+		CCLTRY ( pDct->load ( adtString(L"Location"), vL ) );
+		CCLTRYE( (len = (strL = vL).length()) > 0, E_UNEXPECTED );
+
+		// Local usage requires trailing slash
+		if (hr == S_OK && strL[len-1] != '/')
+			hr = strL.append ( L"/" );
+
+		// Renderer at index exists
+		if (hr == S_OK && pDctRen->load ( iIdx, vL ) == S_OK)
+			{
+			IDictionary *pDsc		= NULL;
+			nElement		*pElem	= NULL;
+			adtIUnknown	unkV(vL);
+
+			// Access descriptor and root element for existing renderer
+			CCLTRY  ( _QISAFE(unkV,IID_IDictionary,&pDsc) );
+			CCLTRY  ( pDsc->load ( adtString(L"Element"), vL ) );
+			CCLTRYE ( (pElem = (nElement *)(IUnknown *)(unkV=vL)) != NULL, E_UNEXPECTED );
+			CCLTRYE ( pElem->pRenLoc != NULL, E_UNEXPECTED );
+			_RELEASE(pDsc);
+
+			// Location changed ?
+//			if (hr == S_OK && WCASECMP(pElem->pRenLoc->strLocRen,strL))
+//				{
+				// Shutdown the location
+				pElem->pRenLoc->setRoot(NULL,L"");
+
+				// Remove from world
+				pElem->pRenLoc->Destroy();
+
+				// Remove from render dictionary
+				pDctRen->remove ( iIdx );
+
+				// A new render location will be created below.
+//				}	// if
+
+			// Location same
+//			else if (hr == S_OK && pElem->pRoot != NULL)
+//				{
+//				FVector	fTrans;
+
+				// Render location object exists and location is the same, just update the position.
+
+				// Fill in coordinate.  See comments in 'nElement' for assignment
+//				if (hr == S_OK && pDct->load ( adtString(L"X"), vL ) == S_OK)
+//					fTrans.Y = 25*adtDouble(vL);
+//				if (hr == S_OK && pDct->load ( adtString(L"Y"), vL ) == S_OK)
+//					fTrans.Z = 25*adtDouble(vL);
+//				if (hr == S_OK && pDct->load ( adtString(L"Z"), vL ) == S_OK)
+//					fTrans.X = 25*adtDouble(vL);
+
+				// Position has to be updated in main loop so 'recieve' new position
+//				dbgprintf ( L"AnActor::onValue:Move %g,%g,%g\r\n", fTrans.X, fTrans.Y, fTrans.Z );
+
+//				pElem->pRoot->onReceive ( pElem, L"", L"Element/Transform/Translate/A1/OnFire/Value", adtDouble(fTrans.X) );
+//				pElem->pRoot->onReceive ( pElem, L"", L"Element/Transform/Translate/A2/OnFire/Value", adtDouble(fTrans.Y) );
+//				pElem->pRoot->onReceive ( pElem, L"", L"Element/Transform/Translate/A3/OnFire/Value", adtDouble(fTrans.Z) );
+
+				// Schedule the element for work
+//				addMain ( pElem );
+//				}	// else if
+
+			}	// else if
+
+		// Need a new renderer at index ?
+		if (hr == S_OK && pDctRen->load ( iIdx, vL ) != S_OK)
+			{
+			nElement	*pElem	= NULL;
+
+			// Create a group element to be root of the hierarchy.
+			CCLTRYE ( (pElem = new nElement ( this, strL, iIdx ))
+							!= NULL, E_OUTOFMEMORY );
+			_ADDREF(pElem);
+
+			// Store root element in descriptor
+			CCLTRY ( pDct->store ( adtString(L"Element"), adtIUnknown(pElem) ) );
+
+			// Store descriptor in list
+			CCLTRY ( pDctRen->store ( iIdx, adtIUnknown(pDct) ) );
+
+			// Construct/create object
+			CCLTRY ( pElem->construct() );
+
+			// Clean up
+			_RELEASE(pElem);
+			}	// if
+
+		// Clean up
+		_RELEASE(pDct);
+		}	// if
+
+	return hr;
+	}	// onValue
+
 void AnActor::Tick( float DeltaTime )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -272,8 +426,7 @@ HRESULT AnActort :: onReceive (	const WCHAR *pwRoot,
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-//	return pThis->onValue ( pwRoot, pwLoc, v );
-	return S_OK;
+	return pThis->onValue ( pwRoot, pwLoc, v );
 	}	// onReceive
 
 HRESULT AnActort :: tick ( void )
@@ -291,7 +444,7 @@ HRESULT AnActort :: tick ( void )
 	//
 	////////////////////////////////////////////////////////////////////////
 	HRESULT	hr	= S_OK;
-/*
+
 	// Wait for work
 	CCLTRYE ( pThis->evWork.wait ( -1 ), ERROR_TIMEOUT );
 
@@ -335,7 +488,7 @@ HRESULT AnActort :: tick ( void )
 
 	// Keep running ?
 	CCLTRYE ( pThis->bWork == true, S_FALSE );
-*/
+
 	return hr;
 	}	// tick
 
@@ -353,8 +506,8 @@ HRESULT AnActort :: tickAbort ( void )
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-//	pThis->bWork = false;
-//	pThis->evWork.signal();
+	pThis->bWork = false;
+	pThis->evWork.signal();
 	return S_OK;
 	}	// tickAbort
 
@@ -372,13 +525,13 @@ HRESULT AnActort :: tickBegin ( void )
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	HRESULT		hr			= S_OK;
+	HRESULT	hr			= S_OK;
 //	nElement	*pElem	= NULL;
 
 	// Initialize COM for thread
 	CCLTRYE ( CoInitializeEx ( NULL, COINIT_MULTITHREADED ) == S_OK,
 					GetLastError() );
-/*
+
 	// Create dictionary for render locations
 	CCLTRY ( COCREATE ( L"Adt.Dictionary", IID_IDictionary, &pThis->pDctRen ) );
 
@@ -397,7 +550,7 @@ HRESULT AnActort :: tickBegin ( void )
 	// Create queue for scheduling stores from worker thread
 	CCLTRY ( COCREATE ( L"Adt.Queue", IID_IList, &pThis->pStQ ) );
 	CCLTRY ( pThis->pStQ->iterate ( &pThis->pStIt ) );
-*/
+
 	//
 	// Client
 	//
@@ -409,7 +562,7 @@ HRESULT AnActort :: tickBegin ( void )
 	CCLTRY(pThis->pCli->open(L"{ Namespace Unreal }", false, NULL));
 
 	// Listen to the default render locations which contains desired visuals to be rendered
-//	CCLTRY ( pThis->pCli->listen ( pThis->strRenLoc, true, this ) );
+	CCLTRY ( pThis->pCli->listen ( pThis->strRenLoc, true, this ) );
 
 	// Debug
 //	if (hr != S_OK)
@@ -433,7 +586,7 @@ HRESULT AnActort :: tickEnd ( void )
 	//
 	////////////////////////////////////////////////////////////////////////
 	HRESULT	hr		= S_OK;
-/*	IIt		*pIt	= NULL;
+	IIt		*pIt	= NULL;
 
 	// Stop listening to render location
 	if (pThis->pCli != NULL)
@@ -486,8 +639,7 @@ HRESULT AnActort :: tickEnd ( void )
 
 	// Clean up
 	_RELEASE(pThis->pDctRen);
-	_RELEASE(pThis->pImgC);
-*/	if (pThis->pCli != NULL)
+	if (pThis->pCli != NULL)
 		{
 		// Close link
 		pThis->pCli->close();
@@ -502,4 +654,3 @@ HRESULT AnActort :: tickEnd ( void )
 
 	return hr;
 	}	// tickEnd
-

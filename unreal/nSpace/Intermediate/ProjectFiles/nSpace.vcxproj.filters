@@ -4,7 +4,7 @@
 	<ItemGroup>
 		<None Include="..\..\nSpace.uproject" />
 		<Filter Include="Source">
-			<UniqueIdentifier>{36AA4D47-369B-4701-A261-A70CD03FF80B}</UniqueIdentifier>
+			<UniqueIdentifier>{4FE58E0A-56BD-40FC-9763-DB367731B5C2}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\nSpace.Target.cs">
 			<Filter>Source</Filter>
@@ -13,7 +13,7 @@
 			<Filter>Source</Filter>
 		</None >
 		<Filter Include="Config">
-			<UniqueIdentifier>{062BA12B-206C-4438-99C2-505D2EB71AEF}</UniqueIdentifier>
+			<UniqueIdentifier>{0136B823-9717-47FC-AA92-DA9B53FE5432}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Config\DefaultEditor.ini">
 			<Filter>Config</Filter>
@@ -25,7 +25,7 @@
 			<Filter>Config</Filter>
 		</None >
 		<Filter Include="Source\nSpace">
-			<UniqueIdentifier>{30E52A5F-F2F2-4D5C-9554-A85C5AE7B0A9}</UniqueIdentifier>
+			<UniqueIdentifier>{984989E1-B2EA-46D9-BFCA-7C9DBDAF7568}</UniqueIdentifier>
 		</Filter>
 		<ClCompile Include="..\..\Source\nSpace\nActor.cpp">
 			<Filter>Source\nSpace</Filter>
