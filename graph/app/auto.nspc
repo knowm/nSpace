@@ -80,32 +80,43 @@
 	%%%%%%%%%%%%%%%%%%%%%%%
 
 	% MISCN: Create a dictionary for the image
-	$	CreateImgDct Misc.Create { Id Adt.Dictionary }
-		!	Initialize/OnFire						CreateImgDct/Fire
+%	$	CreateImgDct Misc.Create { Id Adt.Dictionary }
+%		!	Initialize/OnFire						CreateImgDct/Fire
 
 	% MISCN: Image location
-	$	ValueImgLoc Misc.Dist { Value "c:/temp/Catseye_Study_1029_151002090209_OD_VISX_SI.bmp" }
+%	$	ValueImgLoc Misc.Dist { Value "c:/temp/Catseye_Study_1029_151002090209_OD_VISX_SI.bmp" }
 %	$	ValueImgLoc Misc.Dist { Value "c:/temp/blank.png" }
 %	$	ValueImgLoc Misc.Dist { Value "c:/temp/pupil_nir_half.png" }
-		!	Initialize/OnFire						ValueImgLoc/Fire
+%		!	Initialize/OnFire						ValueImgLoc/Fire
 
 	% IMAGEN: Load image
-	$	LoadImage Image.PersistImage {}
-		!	CreateImgDct/OnFire					LoadImage/Image
-		!	ValueImgLoc/OnFire					LoadImage/Location
-		!	ValueImgLoc/OnFire					LoadImage/Load
+%	$	LoadImage Image.PersistImage {}
+%		!	CreateImgDct/OnFire					LoadImage/Image
+%		!	ValueImgLoc/OnFire					LoadImage/Location
+%		!	ValueImgLoc/OnFire					LoadImage/Load
 
 	% Execute
-	!	LoadImage/OnLoad							Debug/Fire
+%	!	LoadImage/OnLoad							Debug/Fire
 
 	%% GPU testing
 
 	% IMAGEN: Upload from dictionary into image processing logic
-	$	Prepare Image.Prepare {}
-		!	LoadImage/OnLoad						Prepare/Upload
-		!	Prepare/OnUpload						Debug/Fire
-		!	Prepare/OnUpload						Prepare/Download
-		!	Prepare/OnDownload					Debug/Fire
+%	$	Prepare Image.Prepare {}
+%		!	LoadImage/OnLoad						Prepare/Upload
+%		!	Prepare/OnUpload						Debug/Fire
+
+	% IMAGEN: Draw circle
+%	$	Circle Image.Draw { X0 320:int Y0 240:int Shape Circle Color 0xffffff:int Thickness -1:int Radius 10:int }
+%		!	Prepare/OnUpload						Circle/Fire
+
+	% Download image for saving
+%	!	Prepare/OnUpload							Prepare/Download
+%	!	Prepare/OnDownload						Debug/Fire
+
+	% IMAGEN: Save result
+%	$	SaveImage Image.PersistImage { Location "c:/temp/debug.png" }
+%		!	Prepare/OnDownload					SaveImage/Image
+%		!	Prepare/OnDownload					SaveImage/Save
 
 	%% Merge
 

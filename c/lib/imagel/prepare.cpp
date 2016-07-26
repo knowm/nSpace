@@ -97,9 +97,9 @@ HRESULT Prepare :: gpuInit ( void )
 	if (cv::ocl::haveOpenCL())
 		{
 		lprintf ( LOG_INFO, L"OpenCL enabled device detected\r\n" );
-//		cv::ocl::setUseOpenCL(false);
-		cv::ocl::setUseOpenCL(true);
-		bUMat = true;
+		cv::ocl::setUseOpenCL(false);
+//		cv::ocl::setUseOpenCL(true);
+//		bUMat = true;
 		}	// if
 
 	// Any CUDA-enabled devices ?
@@ -205,7 +205,7 @@ HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			{
 			// Since uploading to a GPU involves a copy, 'own' the pixel
 			// data for CPU in case the download goes back into the same image bits.
-			*(pMat->mat) = pMat->mat->clone();
+			*(pMat->mat) = mat->clone();
 			}	// else
 
 		// Store 'uploaded' image in image dictionary

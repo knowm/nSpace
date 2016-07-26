@@ -77,6 +77,10 @@ HRESULT Draw :: onAttach ( bool bAttach )
 			fH = vL;
 		if (pnDesc->load ( adtString(L"Angle"), vL ) == S_OK)
 			fAngle = vL;
+		if (pnDesc->load ( adtString(L"X0"), vL ) == S_OK)
+			fX0 = vL;
+		if (pnDesc->load ( adtString(L"Y0"), vL ) == S_OK)
+			fY0 = vL;
 		}	// if
 
 	// Detach
