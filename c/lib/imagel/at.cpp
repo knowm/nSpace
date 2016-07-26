@@ -97,8 +97,7 @@ HRESULT At :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 				// Unfortunately the type has to be checked to ensure the correct
 				// template is used.
 	//			dbgprintf ( L"%d , %d\r\n", (S32)iX, (S32) iY );
-				#if	CV_MAJOR_VERSION == 3
-				switch (CV_MAT_DEPTH(pMat->mat->type()))
+/*				switch (CV_MAT_DEPTH(pMat->mat->type()))
 					{
 					// 8-bit
 					case CV_8U :
@@ -142,7 +141,7 @@ HRESULT At :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 							pMat->mat->getMat(cv::ACCESS_WRITE).at<float>(iY,iX) = adtFloat(vAt);
 						break;
 					}	// switch
-				#else		
+*/
 				switch (CV_MAT_DEPTH(pMat->mat->type()))
 					{
 					// 8-bit
@@ -187,7 +186,7 @@ HRESULT At :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 							pMat->mat->at<float>(iY,iX) = adtFloat(vAt);
 						break;
 					}	// switch
-				#endif
+
 				}	// try
 			catch ( cv::Exception ex )
 				{

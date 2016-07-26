@@ -118,27 +118,61 @@ HRESULT Draw :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 
 		// Perform operation
 		if (hr == S_OK && !WCASECMP(strShp,L"Line"))
-			cv::line ( *(pMat->mat), cv::Point((int)fX0,(int)fY0), 
-							cv::Point((int)fX1,(int)fY1), clr, iThick );
+			{
+			if (pMat->isGPU())
+				hr = E_NOTIMPL;
+			else if (pMat->isUMat())
+				cv::line ( *(pMat->umat), cv::Point((int)fX0,(int)fY0), 
+								cv::Point((int)fX1,(int)fY1), clr, iThick );
+			else
+				cv::line ( *(pMat->mat), cv::Point((int)fX0,(int)fY0), 
+								cv::Point((int)fX1,(int)fY1), clr, iThick );
+			}	// if
 		else if (hr == S_OK && !WCASECMP(strShp,L"Ellipse"))
 			{
 			// Rotated rectangle for which to bound the ellipse
 			cv::RotatedRect	rct ( cv::Point2f(fX0,fY0), cv::Size2f(fW,fH), fAngle );
 
 			// Perform draw
-			cv::ellipse ( (*pMat->mat), rct, clr, iThick );
+			if (pMat->isGPU())
+				hr = E_NOTIMPL;
+			else if (pMat->isUMat())
+				cv::ellipse ( (*pMat->umat), rct, clr, iThick );
+			else
+				cv::ellipse ( (*pMat->mat), rct, clr, iThick );
 			}	// else if
 		else if (hr == S_OK && !WCASECMP(strShp,L"Circle"))
-			cv::circle ( *(pMat->mat), cv::Point((int)(float)fX0,(int)(float)fY0), (int)(float)fRad, clr, iThick );
+			{
+			if (pMat->isGPU())
+				hr = E_NOTIMPL;
+			else if (pMat->isUMat())
+				cv::circle ( *(pMat->umat), cv::Point((int)(float)fX0,(int)(float)fY0), 
+									(int)(float)fRad, clr, iThick );
+			else
+				cv::circle ( *(pMat->mat), cv::Point((int)(float)fX0,(int)(float)fY0), 
+									(int)(float)fRad, clr, iThick );
+			}	// else if
 		else if (hr == S_OK && !WCASECMP(strShp,L"Rectangle"))
-			cv::rectangle ( *(pMat->mat), cv::Point((int)fX0,(int)fY0), 
-								cv::Point((int)fX1,(int)fY1), clr, iThick );
+			{
+			if (pMat->isGPU())
+				hr = E_NOTIMPL;
+			else if (pMat->isUMat())
+				cv::rectangle ( *(pMat->umat), cv::Point((int)fX0,(int)fY0), 
+									cv::Point((int)fX1,(int)fY1), clr, iThick );
+			else
+				cv::rectangle ( *(pMat->mat), cv::Point((int)fX0,(int)fY0), 
+									cv::Point((int)fX1,(int)fY1), clr, iThick );
+			}	// else if
 
 		// Result
 		if (hr == S_OK)
 			_EMT(Fire,adtIUnknown(pImgUse));
 		else
 			_EMT(Error,adtInt(hr));
+
+		// Debug
+		if (hr != S_OK)
+			lprintf ( LOG_DBG, L"draw '%s' failed : 0x%x\r\n", (LPCWSTR)strShp, hr );
 
 		// Clean up
 		_RELEASE(pMat);

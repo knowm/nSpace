@@ -97,7 +97,12 @@ HRESULT Stats :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			try
 				{
 				// Values and locations of min and max
-				cv::minMaxLoc ( *(pMat->mat), &dMin, &dMax, &ptMin, &ptMax );
+				if (pMat->isGPU())
+					cv::cuda::minMaxLoc ( *(pMat->gpumat), &dMin, &dMax, &ptMin, &ptMax );
+				else if (pMat->isUMat())
+					cv::minMaxLoc ( *(pMat->umat), &dMin, &dMax, &ptMin, &ptMax );
+				else
+					cv::minMaxLoc ( *(pMat->mat), &dMin, &dMax, &ptMin, &ptMax );
 
 				// Result
 				CCLTRY ( pImgUse->store ( adtString(L"Min"), adtDouble(dMin) ) );
@@ -116,17 +121,25 @@ HRESULT Stats :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		// Mean, standard deviation
 		if (hr == S_OK)
 			{
-			cv::Scalar 
-			mean = cv::mean ( (*pMat->mat) );
+			cv::Scalar mean	= 0;
+			cv::Scalar stddev = 0;
+
+			if (pMat->isGPU())
+				cv::cuda::meanStdDev ( *(pMat->gpumat), mean, stddev );
+			else if (pMat->isUMat())
+				cv::meanStdDev ( *(pMat->umat), mean, stddev );
+			else
+				cv::meanStdDev ( *(pMat->mat), mean, stddev );
 
 			// Result
 			CCLTRY ( pImgUse->store ( adtString(L"Mean"), adtDouble(mean[0]) ) );
+			CCLTRY ( pImgUse->store ( adtString(L"StdDev"), adtDouble(stddev[0]) ) );
 			}	// if
 
 		// Entropy calculation
 		if (hr == S_OK && bEnt == true && pMat->mat->channels() == 1)
 			{
-			cv::Mat		matHst,matLog;
+			cv::Mat				matHst,matLog;
 
 			try
 				{
@@ -137,15 +150,54 @@ HRESULT Stats :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 				float				ent			= 0.0f;
 
 				// Calculate the historgram of the image
-				cv::calcHist ( pMat->mat, 1, 0, cv::Mat(), matHst, 1, 
-												&histSize, &histRange );
+				if (pMat->isGPU())
+					{
+					cv::cuda::GpuMat	gpuHst,gpuLog;
 
-				// Normalize
-				matHst /= (double)pMat->mat->total();
+					// Histogram
+					cv::cuda::calcHist ( *(pMat->gpumat), gpuHst );
 
-				// Compute entropy
-				cv::log ( matHst, matLog );
-				ent = (float)(-1*cv::sum(matHst.mul(matLog)).val[0]);
+					// Normalize
+					cv::cuda::divide ( gpuHst, cv::Scalar(pMat->gpumat->rows*pMat->gpumat->cols), gpuHst );
+
+					// Compute entropy
+					cv::cuda::log ( gpuHst, gpuLog );
+
+//					ent = (float)(-1*cv::cuda::sum(gpuHst.mul(matLog)).val[0]);
+					}	// if
+				else if (pMat->isUMat())
+					{
+					// 'calcHist' not available for UMat ?
+					hr = E_NOTIMPL;
+//					cv::UMat	matHst,mnatLog;
+
+					// Histogram
+//					cv::calcHist ( pMat->umat, 1, 0, cv::noArray(), matHst, 1, 
+//													&histSize, &histRange );
+
+					// Normalize
+//					matHst /= (double)pMat->umat->total();
+//					cv::divide ( matHst, cv::Scalar((double)pMat->umat->total()), matHst );
+
+					// Compute entropy
+//					cv::log ( matHst, matLog );
+//					ent = (float)(-1*cv::sum(matHst.mul(matLog)).val[0]);
+					}	// if
+				else
+					{
+					cv::Mat	matHst,matLog;
+
+					// Histogram
+					cv::calcHist ( pMat->mat, 1, 0, cv::noArray(), matHst, 1, 
+													&histSize, &histRange );
+
+					// Normalize
+					matHst /= (double)pMat->mat->total();
+
+					// Compute entropy
+					cv::log ( matHst, matLog );
+					ent = (float)(-1*cv::sum(matHst.mul(matLog)).val[0]);
+					}	// else
 
 				// Result
 				CCLTRY ( pImgUse->store ( adtString(L"Entropy"), adtDouble(ent) ) );
@@ -162,7 +214,18 @@ HRESULT Stats :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			cv::Rect rct;
 
 			// Calculate bounding rectangle, assumes array of points
-			rct = cv::boundingRect ( *(pMat->mat) );
+			if (pMat->isGPU())
+				{
+				// How for gpu ?
+//				rct = cv::cuda::boundingRect ( *(pMat->gpumat) );
+				hr = E_NOTIMPL;
+				}	// if
+			else if (pMat->isUMat())
+				{
+				rct = cv::boundingRect ( *(pMat->umat) );
+				}	// else if
+			else
+				rct = cv::boundingRect ( *(pMat->gpumat) );
 
 			// Result
 			CCLTRY ( pImgUse->store ( adtString(L"Left"), adtInt(rct.x) ) );
@@ -170,6 +233,10 @@ HRESULT Stats :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			CCLTRY ( pImgUse->store ( adtString(L"Width"), adtInt(rct.width) ) );
 			CCLTRY ( pImgUse->store ( adtString(L"Height"), adtInt(rct.height) ) );
 			}	// if
+
+		// Debug
+		if (hr != S_OK)
+			lprintf ( LOG_DBG, L"stats failed : 0x%x\r\n", hr );
 
 		// Result
 		if (hr == S_OK)
@@ -199,9 +266,26 @@ HRESULT Stats :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
 		CCLTRY ( Prepare::extract ( NULL, v, &pImgHst, &pMatHst ) );
 
-		// Calculate histogram.  Currently defaults to grayscale.
-		CCLOK ( cv::calcHist ( pMat->mat, 1, 0, cv::Mat(), *(pMatHst->mat), 1, 
-										&histSize, &histRange ); )
+		// Calculate the historgram of the image
+		if (hr == S_OK)
+			{
+			if (pMat->isGPU())
+				cv::cuda::calcHist ( *(pMat->gpumat), *(pMatHst->gpumat) );
+			else if (pMat->isUMat())
+				// 'calcHist' not available for UMat ?
+				hr = E_NOTIMPL;
+			else
+				{
+				// Calculate histogram.  Currently defaults to grayscale.
+				cv::calcHist ( pMat->mat, 1, 0, cv::Mat(), *(pMatHst->mat), 1, 
+									&histSize, &histRange );
+				}	// else
+			}	// if
+
+
+		// Debug
+		if (hr != S_OK)
+			lprintf ( LOG_DBG, L"histogram failed : 0x%x\r\n", hr );
 
 		// Result
 		if (hr == S_OK)

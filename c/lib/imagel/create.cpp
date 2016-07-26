@@ -10,6 +10,8 @@
 #include <stdio.h>
 
 // Globals
+extern bool	bCuda;									// CUDA enabled
+extern bool	bUMat;									// UMat/OpenCL enabled
 
 Create :: Create ( void )
 	{
@@ -26,7 +28,7 @@ Create :: Create ( void )
 	}	// Create
 
 HRESULT Create :: create ( IDictionary *pDct, U32 w, U32 h, U32 f,
-									cvMatRef **ppMat )
+									cvMatRef **ppMat, bool bCpu )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -38,6 +40,8 @@ HRESULT Create :: create ( IDictionary *pDct, U32 w, U32 h, U32 f,
 	//		-	w,h are the dimensions of the image
 	//		-	f is the OpenCV format
 	//		-	ppMat is optional and will receive the referenced matrix object.
+	//		-	bCpu is true to create a CPU bound cv::Mat regardless of
+	//			the current GPU settings.
 	//
 	//	RETURN VALUE
 	//		S_OK if successful
@@ -48,14 +52,21 @@ HRESULT Create :: create ( IDictionary *pDct, U32 w, U32 h, U32 f,
 
 	// Create a matrix based on the GPU mode
 	CCLTRYE( (pMat = new cvMatRef()) != NULL, E_OUTOFMEMORY );
-	#if	CV_MAJOR_VERSION == 3
-	CCLTRYE ( (pMat->mat = new cv::UMat ( h, w, f )) != NULL,
-					E_OUTOFMEMORY );
-	#else
-	CCLTRYE ( (pMat->mat = new cv::Mat ( h, w, f )) != NULL,
-					E_OUTOFMEMORY );
-	#endif
-	CCLOK   ( *(pMat->mat) = cv::Scalar(0); )
+	if (!bCpu && bCuda)
+		{
+		CCLTRYE ( (pMat->gpumat = new cv::cuda::GpuMat ( h, w, f )) != NULL,
+						E_OUTOFMEMORY );
+		}	// if
+	else if (!bCpu && bUMat)
+		{
+		CCLTRYE ( (pMat->umat = new cv::UMat ( h, w, f )) != NULL,
+						E_OUTOFMEMORY );
+		}	// else if
+	else
+		{
+		CCLTRYE ( (pMat->mat = new cv::Mat ( h, w, f )) != NULL,
+						E_OUTOFMEMORY );
+		}	// else
 
 	// Store image in image dictionary
 	CCLTRY ( pDct->store (	adtString(L"cvMatRef"), adtIUnknown(pMat) ) );

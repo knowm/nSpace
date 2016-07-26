@@ -91,7 +91,16 @@ HRESULT Normalize :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v
 		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
 
 		// Perform operation
-		CCLOK ( cv::normalize ( *(pMat->mat), *(pMat->mat), adtDouble(vFrom), adtDouble(vTo), cv::NORM_MINMAX ); )
+		if (hr == S_OK)
+			{
+			if (pMat->isGPU())
+				cv::cuda::normalize ( *(pMat->gpumat), *(pMat->gpumat), adtDouble(vFrom), adtDouble(vTo), 
+												cv::NORM_MINMAX, -1 );
+			else if (pMat->isUMat())
+				cv::normalize ( *(pMat->umat), *(pMat->umat), adtDouble(vFrom), adtDouble(vTo), cv::NORM_MINMAX );
+			else
+				cv::normalize ( *(pMat->mat), *(pMat->mat), adtDouble(vFrom), adtDouble(vTo), cv::NORM_MINMAX );
+			}	// if
 
 		// Result
 		if (hr == S_OK)

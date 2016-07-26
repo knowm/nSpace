@@ -93,11 +93,30 @@ HRESULT Smooth :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		// Perform smoothing operation
 		if (hr == S_OK)
 			{
-			if (!strType.length())
-				cv::blur ( *(pMat->mat), *(pMat->mat), cv::Size(iSz,iSz) );
-			else if (!WCASECMP(L"Median",strType))
-				cv::medianBlur ( *(pMat->mat), *(pMat->mat), iSz );
+			if (pMat->isGPU())
+				{
+				// TODO: Need to implement 'Filter' calls
+				hr = E_NOTIMPL;
+				}	// if
+			else if (pMat->isUMat())
+				{
+				if (!strType.length())
+					cv::blur ( *(pMat->umat), *(pMat->umat), cv::Size(iSz,iSz) );
+				else if (!WCASECMP(L"Median",strType))
+					cv::medianBlur ( *(pMat->umat), *(pMat->umat), iSz );
+				}	// if
+			else
+				{
+				if (!strType.length())
+					cv::blur ( *(pMat->mat), *(pMat->mat), cv::Size(iSz,iSz) );
+				else if (!WCASECMP(L"Median",strType))
+					cv::medianBlur ( *(pMat->mat), *(pMat->mat), iSz );
+				}	// else
 			}	// if
+
+		// Debug
+		if (hr != S_OK)
+			lprintf ( LOG_DBG, L"Blur '%s' failed : 0x%x\r\n", (LPCWSTR)strType, hr );
 
 		// Result
 		if (hr == S_OK)

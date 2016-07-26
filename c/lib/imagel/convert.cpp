@@ -87,18 +87,51 @@ HRESULT Convert :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		// Convert 'to' specified format. Add formats as needed.
 		if (hr == S_OK)
 			{
-			if (!WCASECMP(strTo,L"F32x2"))
-				pMat->mat->convertTo ( *(pMat->mat), CV_32FC1 );
-			else if (!WCASECMP(strTo,L"U16x2"))
-				pMat->mat->convertTo ( *(pMat->mat), CV_16UC1 );
-			else if (!WCASECMP(strTo,L"S16x2"))
-				pMat->mat->convertTo ( *(pMat->mat), CV_16SC1 );
-			else if (!WCASECMP(strTo,L"U8x2"))
-				pMat->mat->convertTo ( *(pMat->mat), CV_8UC1 );
-			else if (!WCASECMP(strTo,L"S8x2"))
-				pMat->mat->convertTo ( *(pMat->mat), CV_8SC1 );
+			if (pMat->isGPU())
+				{
+				if (!WCASECMP(strTo,L"F32x2"))
+					pMat->gpumat->convertTo ( *(pMat->gpumat), CV_32FC1 );
+				else if (!WCASECMP(strTo,L"U16x2"))
+					pMat->gpumat->convertTo ( *(pMat->gpumat), CV_16UC1 );
+				else if (!WCASECMP(strTo,L"S16x2"))
+					pMat->gpumat->convertTo ( *(pMat->gpumat), CV_16SC1 );
+				else if (!WCASECMP(strTo,L"U8x2"))
+					pMat->gpumat->convertTo ( *(pMat->gpumat), CV_8UC1 );
+				else if (!WCASECMP(strTo,L"S8x2"))
+					pMat->gpumat->convertTo ( *(pMat->gpumat), CV_8SC1 );
+				else
+					hr = E_NOTIMPL;
+				}	// if
+			else if (pMat->isUMat())
+				{
+				if (!WCASECMP(strTo,L"F32x2"))
+					pMat->umat->convertTo ( *(pMat->umat), CV_32FC1 );
+				else if (!WCASECMP(strTo,L"U16x2"))
+					pMat->umat->convertTo ( *(pMat->umat), CV_16UC1 );
+				else if (!WCASECMP(strTo,L"S16x2"))
+					pMat->umat->convertTo ( *(pMat->umat), CV_16SC1 );
+				else if (!WCASECMP(strTo,L"U8x2"))
+					pMat->umat->convertTo ( *(pMat->umat), CV_8UC1 );
+				else if (!WCASECMP(strTo,L"S8x2"))
+					pMat->umat->convertTo ( *(pMat->umat), CV_8SC1 );
+				else
+					hr = E_NOTIMPL;
+				}	// else if
 			else
-				hr = E_NOTIMPL;
+				{
+				if (!WCASECMP(strTo,L"F32x2"))
+					pMat->mat->convertTo ( *(pMat->mat), CV_32FC1 );
+				else if (!WCASECMP(strTo,L"U16x2"))
+					pMat->mat->convertTo ( *(pMat->mat), CV_16UC1 );
+				else if (!WCASECMP(strTo,L"S16x2"))
+					pMat->mat->convertTo ( *(pMat->mat), CV_16SC1 );
+				else if (!WCASECMP(strTo,L"U8x2"))
+					pMat->mat->convertTo ( *(pMat->mat), CV_8UC1 );
+				else if (!WCASECMP(strTo,L"S8x2"))
+					pMat->mat->convertTo ( *(pMat->mat), CV_8SC1 );
+				else
+					hr = E_NOTIMPL;
+				}	// else
 			}	// if
 
 		// Result

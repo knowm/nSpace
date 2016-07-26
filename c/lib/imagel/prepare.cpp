@@ -11,6 +11,8 @@
 
 // Globals
 static bool	bGPUInit = false;							// GPU detectiion/initialization has occured
+bool	bCuda		= false;									// CUDA enabled
+bool	bUMat		= false;									// UMat/OpenCL enabled
 
 Prepare :: Prepare ( void )
 	{
@@ -82,17 +84,35 @@ HRESULT Prepare :: gpuInit ( void )
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
+	int	ret;
 
 	// Already initialized ?
 	if (bGPUInit)
 		return S_OK;
 
-	#if	CV_MAJOR_VERSION == 3
 	// Open CV 3.X has automatic OpenCL support via the new "UMat" object
+	// UMat/OpenCL support currently disabled due to missing UMat function
+	// in library.
+	bUMat = false;
 	if (cv::ocl::haveOpenCL())
-		cv::ocl::setUseOpenCL(false);
-	#endif
+		{
+		lprintf ( LOG_INFO, L"OpenCL enabled device detected\r\n" );
+//		cv::ocl::setUseOpenCL(false);
+		cv::ocl::setUseOpenCL(true);
+		bUMat = true;
+		}	// if
 
+	// Any CUDA-enabled devices ?
+	bCuda = false;
+	if ((ret = cv::cuda::getCudaEnabledDeviceCount()) > 0)
+		{
+		lprintf ( LOG_INFO, L"Cuda enabled devices : %d\r\n", ret );
+		bCuda = true;
+		}	// if
+	else
+		lprintf ( LOG_INFO, L"No Cuda enabled devices\r\n" );
+	
+	// GPU initialized
 	bGPUInit = true;
 
 	return S_OK;
@@ -156,22 +176,37 @@ HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		{
 		IDictionary	*pImgUse = NULL;
 		cvMatRef		*pMat		= NULL;
+		cv::Mat		*mat		= NULL;
 
 		// Obtain image refence
 		CCLTRY ( extract ( pImg, v, &pImgUse, NULL ) );
 
 		// Since nothing in the image library can be done without 'uploading' an
-		// image first, initialize GPU support here
+		// image first, initialize any GPU support here
 		if (hr == S_OK && !bGPUInit)
 			gpuInit();
 
 		// Wrap image bits in OpenCv matrix
-		CCLTRYE( (pMat = new cvMatRef()) != NULL, E_OUTOFMEMORY );
-		CCLTRY ( image_to_mat ( pImgUse, &(pMat->mat) ) );
+		CCLTRY ( image_to_mat ( pImgUse, &mat ) );
 
-		// Since uploading to a GPU involves a copy, 'own' the pixel
-		// data for self in case the download goes back into the same image bits.
-		CCLOK ( *(pMat->mat) = pMat->mat->clone(); )
+		// Create a blank matrix type
+		CCLTRY ( Create::create ( pImgUse, mat->cols, mat->rows, mat->type(), &pMat ) );
+
+		// GPU
+		if (hr == S_OK && pMat->isGPU())
+			pMat->gpumat->upload ( *mat );
+
+		// OCL
+		else if (hr == S_OK && pMat->isUMat())
+			mat->copyTo ( *(pMat->umat) );
+
+		// CPU
+		else if (hr == S_OK)
+			{
+			// Since uploading to a GPU involves a copy, 'own' the pixel
+			// data for CPU in case the download goes back into the same image bits.
+			*(pMat->mat) = pMat->mat->clone();
+			}	// else
 
 		// Store 'uploaded' image in image dictionary
 		CCLTRY ( pImgUse->store (	adtString(L"cvMatRef"), adtIUnknown(pMat) ) );
@@ -195,12 +230,21 @@ HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		{
 		IDictionary	*pImgUse = NULL;
 		cvMatRef		*pMat		= NULL;
+		cv::Mat		mat;
 
 		// Obtain image refence
 		CCLTRY ( extract ( pImg, v, &pImgUse, &pMat ) );
 
+		// Download into local matri if GPU is enabled
+		if (pMat->isGPU())
+			pMat->gpumat->download(mat);
+		else if (pMat->isUMat())
+			mat = pMat->umat->getMat(cv::ACCESS_READ);
+		else
+			mat = *(pMat->mat);
+
 		// Store resulting image in dictionary
-		CCLTRY ( image_from_mat ( pMat->mat, pImgUse ) );
+		CCLTRY ( image_from_mat ( &mat, pImgUse ) );
 
 		// Ensure any matrix object is removed
 		if (pImgUse != NULL)

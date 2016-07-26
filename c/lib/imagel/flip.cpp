@@ -90,8 +90,18 @@ HRESULT Flip :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 
 		// Perform operation
 		if (hr == S_OK && (bHorz || bVert))
-			cv::flip ( *(pMat->mat), *(pMat->mat),	(bHorz && bVert)	? -1 : 
-																(bVert)				? 0 : 1 );
+			{
+			if (pMat->isGPU())
+				cv::cuda::flip ( *(pMat->gpumat), *(pMat->gpumat),	
+										(bHorz && bVert)	? -1 : 
+										(bVert)				? 0 : 1 );
+			else if (pMat->isUMat())
+				cv::flip ( *(pMat->umat), *(pMat->umat),	(bHorz && bVert)	? -1 : 
+																		(bVert)				? 0 : 1 );
+			else
+				cv::flip ( *(pMat->mat), *(pMat->mat),	(bHorz && bVert)	? -1 : 
+																	(bVert)				? 0 : 1 );
+			}	// if
 
 		// Result
 		if (hr == S_OK)

@@ -95,14 +95,43 @@ HRESULT Match :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		CCLTRY(Prepare::extract ( pImg, adtValue(), &pImgR, &pMatR ));
 		CCLTRY(Prepare::extract ( pTmp, adtValue(), &pImgT, &pMatT ));
 
-		// Create an matrix to receive the results
+		// All images must be of the same type
+		CCLTRYE (	(pMatT->mat != NULL && pMatR->mat != NULL) ||
+						(pMatT->umat != NULL && pMatR->umat != NULL) ||
+						(pMatT->gpumat != NULL && pMatR->gpumat != NULL),
+						ERROR_INVALID_STATE );
+
+		// Create a matrix to receive the results
 		CCLTRY ( Create::create ( pImgO, (pMatR->mat->rows) - (pMatT->mat->rows) + 1,
 													(pMatR->mat->cols) - (pMatT->mat->cols) + 1,
 													CV_32FC1, &pMatO ) );
 
 		// Perform matching with normalized coefficients
-		CCLOK ( cv::matchTemplate ( *(pMatR->mat), *(pMatT->mat), *(pMatO->mat),
-												CV_TM_CCORR_NORMED ); )
+		if (hr == S_OK)
+			{
+			if (pMatR->isGPU())
+				{
+				// CUDA does things differently
+				cv::cuda::TemplateMatching *pTm = NULL;
+
+				// Create a matching
+				CCLTRYE ( (pTm = cv::cuda::createTemplateMatching ( pMatR->gpumat->type(), 
+								CV_TM_CCORR_NORMED )) != NULL, E_OUTOFMEMORY );
+
+				// Execute
+				CCLOK ( pTm->match ( *(pMatR->gpumat), *(pMatT->gpumat), *(pMatO->gpumat) ); )
+
+				// Clean up
+				if (pTm != NULL)
+					delete pTm;
+				}	// if
+			else if (pMatR->isUMat())
+				cv::matchTemplate ( *(pMatR->umat), *(pMatT->umat), *(pMatO->umat),
+											CV_TM_CCORR_NORMED );
+			else
+				cv::matchTemplate ( *(pMatR->mat), *(pMatT->mat), *(pMatO->mat),
+											CV_TM_CCORR_NORMED );
+			}	// if
 
 		// Clean up
 		_RELEASE(pMatO);
@@ -112,6 +141,10 @@ HRESULT Match :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		_RELEASE(pMatR);
 		_RELEASE(pImgR);
 
+		// Debug
+		if (hr != S_OK)
+			lprintf ( LOG_DBG, L"matchTemplate failed : 0x%x\r\n", hr );
+
 		// Result
 		if (hr == S_OK)
 			_EMT(Fire,v);
@@ -120,6 +153,7 @@ HRESULT Match :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 //			lprintf ( LOG_ERR, L"%s:Fire:Error:hr 0x%x:%d\r\n", (LPCWSTR)strnName, hr, iOp );
 			_EMT(Error,adtInt(hr) );
 			}	// else
+
 		}	// else if
 
 	// State

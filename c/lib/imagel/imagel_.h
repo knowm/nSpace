@@ -13,15 +13,20 @@
 #include "imagel.h"
 #include "../../lib/nspcl/nspcl.h"
 
-// OpenCV
+// OpenCV - Currently expecting 3.1+
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/features2d/features2d.hpp>
-//#include <opencv2/gpu/gpu.hpp>
-#if		CV_MAJOR_VERSION == 3
+
+// OpenCL
 #include <opencv2/core/ocl.hpp>
-#endif
+
+// CUDA
+#include <opencv2/cudafeatures2d.hpp>
+#include <opencv2/cudaimgproc.hpp>
+#include <opencv2/cudaarithm.hpp>
+#include <opencv2/cudawarping.hpp>
 
 // Operations
 #define	MATHOP_NOP		-1
@@ -52,25 +57,18 @@ class cvMatRef :
 	cvMatRef ( void );									// Constructor
 	virtual ~cvMatRef ( void );						// Destructor
 
-	// Run-time data
-	#if	CV_MAJOR_VERSION == 3
-	cv::UMat		*mat;
-	#else
-	cv::Mat		*mat;										// Matrix - CPU
-	#endif
+	// Utilities
+	bool isGPU	( void ) { return (gpumat != NULL); }
+	bool isUMat ( void ) { return (umat != NULL); }
 
-	// Operators
-//	#if	CV_MAJOR_VERSION == 3
-//	operator cv::UMat() { return (mat != NULL) ? *mat : cv::UMat(); }
-//	#else
-//	operator cv::Mat() { return (mat != NULL) ? *mat : cv::Mat(); }
-//	#endif
+	// Run-time data
+	cv::Mat				*mat;								// CPU matrix
+	cv::cuda::GpuMat	*gpumat;							// GPU matrix
+	cv::UMat				*umat;							// Universal/OpenCL matrix
 
 	// CCL
 	CCL_OBJECT_BEGIN_INT(cvMatRef)
 	CCL_OBJECT_END()
-	virtual void		destruct	( void );			// Destruct object
-
 	};
 
 /////////
@@ -237,7 +235,8 @@ class Create :
 
 	// Utilities
 	static
-	HRESULT create	( IDictionary *, U32, U32, U32, cvMatRef ** );
+	HRESULT create	( IDictionary *, U32, U32, U32, cvMatRef **,
+							bool = false );
 
 	// CCL
 	CCL_OBJECT_BEGIN(Create)
@@ -773,15 +772,9 @@ class Threshold :
 //HRESULT image_fft			( cv::ocl::oclMat *, bool = false, bool = false );
 HRESULT image_load		( const WCHAR *, IDictionary * );
 HRESULT image_save		( IDictionary *, const WCHAR * );
-#if		CV_MAJOR_VERSION == 3
-HRESULT image_fft			( cv::UMat *, cv::UMat *, bool = false, bool = false );
-HRESULT image_from_mat	( cv::UMat *, IDictionary * );
-HRESULT image_to_mat		( IDictionary *, cv::UMat ** );
-#else
 HRESULT image_fft			( cv::Mat *, cv::Mat *, bool = false, bool = false );
 HRESULT image_from_mat	( cv::Mat *, IDictionary * );
 HRESULT image_to_mat		( IDictionary *, cv::Mat ** );
-#endif
 
 // From 'mathl'
 HRESULT mathOp			( const WCHAR *, int * );

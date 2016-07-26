@@ -91,14 +91,51 @@ HRESULT Threshold :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v
 		// Perform operation
 		if (hr == S_OK)
 			{
-			if (!WCASECMP(strOp,L"Zero"))
-				cv::threshold ( *(pMat->mat), *(pMat->mat), adtDouble(vT), 0, cv::THRESH_TOZERO );
-			else if (!WCASECMP(strOp,L"Truncate"))
-				cv::threshold ( *(pMat->mat), *(pMat->mat), adtDouble(vT), 0, cv::THRESH_TRUNC );
-			else if (!WCASECMP(strOp,L"Binary"))
-				cv::threshold ( *(pMat->mat), *(pMat->mat), adtDouble(vT), adtDouble(vMax), cv::THRESH_BINARY );
-			else if (!WCASECMP(strOp,L"BinaryInv"))
-				cv::threshold ( *(pMat->mat), *(pMat->mat), adtDouble(vT), adtDouble(vMax), cv::THRESH_BINARY_INV );
+			//
+			// GPU
+			//
+			if (pMat->isGPU())
+				{
+				if (!WCASECMP(strOp,L"Zero"))
+					cv::cuda::threshold ( *(pMat->gpumat), *(pMat->gpumat), adtDouble(vT), 0, cv::THRESH_TOZERO );
+				else if (!WCASECMP(strOp,L"Truncate"))
+					cv::cuda::threshold ( *(pMat->gpumat), *(pMat->gpumat), adtDouble(vT), 0, cv::THRESH_TRUNC );
+				else if (!WCASECMP(strOp,L"Binary"))
+					cv::cuda::threshold ( *(pMat->gpumat), *(pMat->gpumat), adtDouble(vT), adtDouble(vMax), cv::THRESH_BINARY );
+				else if (!WCASECMP(strOp,L"BinaryInv"))
+					cv::cuda::threshold ( *(pMat->gpumat), *(pMat->gpumat), adtDouble(vT), adtDouble(vMax), cv::THRESH_BINARY_INV );
+				}	// if
+
+			//
+			// UMat
+			//
+			else if (pMat->isUMat())
+				{
+				if (!WCASECMP(strOp,L"Zero"))
+					cv::threshold ( *(pMat->umat), *(pMat->umat), adtDouble(vT), 0, cv::THRESH_TOZERO );
+				else if (!WCASECMP(strOp,L"Truncate"))
+					cv::threshold ( *(pMat->umat), *(pMat->umat), adtDouble(vT), 0, cv::THRESH_TRUNC );
+				else if (!WCASECMP(strOp,L"Binary"))
+					cv::threshold ( *(pMat->umat), *(pMat->umat), adtDouble(vT), adtDouble(vMax), cv::THRESH_BINARY );
+				else if (!WCASECMP(strOp,L"BinaryInv"))
+					cv::threshold ( *(pMat->umat), *(pMat->umat), adtDouble(vT), adtDouble(vMax), cv::THRESH_BINARY_INV );
+				}	// else if
+
+			//
+			// Mat
+			//
+			else
+				{
+				if (!WCASECMP(strOp,L"Zero"))
+					cv::threshold ( *(pMat->mat), *(pMat->mat), adtDouble(vT), 0, cv::THRESH_TOZERO );
+				else if (!WCASECMP(strOp,L"Truncate"))
+					cv::threshold ( *(pMat->mat), *(pMat->mat), adtDouble(vT), 0, cv::THRESH_TRUNC );
+				else if (!WCASECMP(strOp,L"Binary"))
+					cv::threshold ( *(pMat->mat), *(pMat->mat), adtDouble(vT), adtDouble(vMax), cv::THRESH_BINARY );
+				else if (!WCASECMP(strOp,L"BinaryInv"))
+					cv::threshold ( *(pMat->mat), *(pMat->mat), adtDouble(vT), adtDouble(vMax), cv::THRESH_BINARY_INV );
+				}	// else
+
 			}	// if
 
 		// Result

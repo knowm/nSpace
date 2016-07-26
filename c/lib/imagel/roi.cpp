@@ -120,18 +120,37 @@ HRESULT Roi :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			{
 			// Create a new region of interest
 			CCLTRYE( (pMatDst = new cvMatRef()) != NULL, E_OUTOFMEMORY );
-			#if	CV_MAJOR_VERSION == 3
-			CCLTRYE((pMatDst->mat = new cv::UMat ( *(pMatSrc->mat), cv::Rect(iL,iT,(iR-iL),(iB-iT)) ))
+			if (hr == S_OK && pMatSrc->isGPU())
+				{
+				CCLTRYE((pMatDst->gpumat = new cv::cuda::GpuMat ( *(pMatSrc->gpumat), cv::Rect(iL,iT,(iR-iL),(iB-iT)) ))
+								!= NULL, E_OUTOFMEMORY);
+
+				// Requesting own copy of Roi ?
+				if (hr == S_OK && bCopy == true)
+					*(pMatDst->gpumat) = pMatDst->gpumat->clone();
+				}	// if
+			else if (hr == S_OK && pMatSrc->isUMat())
+				{
+				CCLTRYE((pMatDst->umat = new cv::UMat ( *(pMatSrc->umat), cv::Rect(iL,iT,(iR-iL),(iB-iT)) ))
+								!= NULL, E_OUTOFMEMORY);
+
+				// Requesting own copy of Roi ?
+				if (hr == S_OK && bCopy == true)
+					*(pMatDst->umat) = pMatDst->umat->clone();
+				}	// else if
+			else
+				{
+				CCLTRYE((pMatDst->mat = new cv::Mat ( *(pMatSrc->mat), cv::Rect(iL,iT,(iR-iL),(iB-iT)) ))
 							!= NULL, E_OUTOFMEMORY);
-			#else
-			CCLTRYE((pMatDst->mat = new cv::Mat ( *(pMatSrc->mat), cv::Rect(iL,iT,(iR-iL),(iB-iT)) ))
-							!= NULL, E_OUTOFMEMORY);
-			#endif
+
+				// Requesting own copy of Roi ?
+				if (hr == S_OK && bCopy == true)
+					*(pMatDst->mat) = pMatDst->mat->clone();
+				}	// else
+
+			// Result
 			CCLTRY ( pDst->store (	adtString(L"cvMatRef"), adtIUnknown(pMatDst) ) );
 
-			// Requesting own copy of Roi ?
-			if (hr == S_OK && bCopy == true)
-				*(pMatDst->mat) = pMatDst->mat->clone();
 			}	// try
 		catch ( cv::Exception ex )
 			{

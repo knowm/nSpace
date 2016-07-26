@@ -94,10 +94,28 @@ HRESULT Morph :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		// Perform operation
 		if (hr == S_OK)
 			{
-			if (_RCP(Open))
-				cv::morphologyEx ( *(pMat->mat), *(pMat->mat), cv::MORPH_OPEN, matKer );
+			if (pMat->isGPU())
+				{
+				cv::cuda::Filter *pFilter = NULL;
+
+				// Create filter object
+				CCLTRYE ( (pFilter = cv::cuda::createMorphologyFilter (
+									(_RCP(Open)) ? cv::MORPH_OPEN : cv::MORPH_CLOSE,
+									pMat->gpumat->type(), matKer )) != NULL, E_OUTOFMEMORY );
+
+				// Apply 
+				CCLOK ( pFilter->apply ( *(pMat->gpumat), *(pMat->gpumat) ); )
+
+				// Clean up
+				if (pFilter != NULL)
+					delete pFilter;
+				}	// if
+			else if (pMat->isUMat())
+				cv::morphologyEx ( *(pMat->umat), *(pMat->umat), 
+					(_RCP(Open)) ? cv::MORPH_OPEN : cv::MORPH_CLOSE, matKer );
 			else
-				cv::morphologyEx ( *(pMat->mat), *(pMat->mat), cv::MORPH_CLOSE, matKer );
+				cv::morphologyEx ( *(pMat->mat), *(pMat->mat), 
+					(_RCP(Open)) ? cv::MORPH_OPEN : cv::MORPH_CLOSE, matKer );
 			}	// if
 
 		// Result

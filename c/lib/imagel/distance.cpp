@@ -85,13 +85,29 @@ HRESULT Distance :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v 
 		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
 
 		// Perform operation
-		CCLOK ( cv::distanceTransform ( *(pMat->mat), *(pMat->mat), CV_DIST_L2, 3 ); )
+		if (hr == S_OK)
+			{
+			if (pMat->isGPU())
+				{
+				// TODO: No cuda version of this
+				hr = E_NOTIMPL;
+//				cv::cuda::distanceTransform ( *(pMat->gpumat), *(pMat->gpumat), CV_DIST_L2, 3 );
+				}	// if
+			else if (pMat->isUMat())
+				cv::distanceTransform ( *(pMat->umat), *(pMat->umat), CV_DIST_L2, 3 );
+			else
+				cv::distanceTransform ( *(pMat->mat), *(pMat->mat), CV_DIST_L2, 3 );
+			}	// if
 
 		// Result
 		if (hr == S_OK)
 			_EMT(Fire,adtIUnknown(pImgUse));
 		else
 			_EMT(Error,adtInt(hr));
+
+		// Debug
+		if (hr != S_OK)
+			lprintf ( LOG_DBG, L"distanceTranform failed : 0x%x\r\n", hr );
 
 		// Clean up
 		_RELEASE(pMat);

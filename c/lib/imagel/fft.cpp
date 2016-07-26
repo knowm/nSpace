@@ -153,12 +153,9 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			// Create new window.  Assuming it is faster to just do per element
 			// multiplication rather than row by row.
 			CCLTRYE( (pWnd = new cvMatRef()) != NULL, E_OUTOFMEMORY );
-			#if	CV_MAJOR_VERSION == 3
-			CCLTRYE ( (pWnd->mat = new cv::UMat(pMat->mat->rows,pMat->mat->cols,CV_32FC1)) != NULL, E_OUTOFMEMORY );
-			CCLOK   ( matWnd.copyTo ( *(pWnd->mat) ); )
-			#else
+//			CCLTRYE ( (pWnd->mat = new cv::UMat(pMat->mat->rows,pMat->mat->cols,CV_32FC1)) != NULL, E_OUTOFMEMORY );
+//			CCLOK   ( matWnd.copyTo ( *(pWnd->mat) ); )
 			CCLTRYE ( (pWnd->mat = new cv::Mat(matWnd)) != NULL, E_OUTOFMEMORY );
-			#endif
 
 //						#if	CV_MAJOR_VERSION == 3
 //						pWnd->mat->getMat(cv::ACCESS_WRITE).at<float>(cv::Point(c,r)) = ev;
