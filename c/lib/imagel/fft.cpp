@@ -66,11 +66,14 @@ HRESULT FFT :: fft ( cv::Mat *pMat, cv::Mat *pWnd, bool bRows )
 		cv::merge ( matPlanes, 2, matCmplx );
 	
 		// Compute DFT
-		// TODO: Option for scaling/inverse/magnitude
 		cv::dft ( matCmplx, matCmplx, (bRows) ? cv::DFT_ROWS : 0 );
 
 		// Normalize by the number of samples (convention ?)
-		cv::divide ( matCmplx, cv::Scalar(matCmplx.cols), matCmplx );
+		// This doesn't seem to do what is expected with the matCmplx object
+//		if (bRows)
+//			cv::divide ( matCmplx, cv::Scalar(matCmplx.cols), matCmplx );
+//		else
+//			cv::divide ( matCmplx, cv::Scalar(matCmplx.cols*matCmplx.rows), matCmplx );
 
 		// Separate real/imaginary results
 		cv::split ( matCmplx, matPlanes );
@@ -80,9 +83,6 @@ HRESULT FFT :: fft ( cv::Mat *pMat, cv::Mat *pWnd, bool bRows )
 		matMag = matPlanes[0];
 	
 		// TODO: Log, base, etc. will be moved into own nodes.
-//cvMatRef ref;
-//ref.mat = &matMag;
-//image_to_debug ( &ref, L"dft", L"c:/temp/dft.png" );
 
 		// Ensure no log of zeroes
 		cv::add ( matMag, cv::Scalar::all(1e-20), matMag );
@@ -179,8 +179,13 @@ HRESULT FFT :: fft ( cv::UMat *pMat, cv::UMat *pWnd, bool bRows )
 
 		// Compute DFT
 		// TODO: Option for scaling/inverse/magnitude
-		cv::dft ( matCmplx, matCmplx, 
-						(bRows) ? cv::DFT_ROWS|cv::DFT_SCALE : cv::DFT_SCALE );
+		cv::dft ( matCmplx, matCmplx, (bRows) ? cv::DFT_ROWS : 0 );
+
+		// Normalize by the number of samples (assumes 'by rows', convention?)
+		if (bRows)
+			cv::divide ( matCmplx, cv::Scalar(matCmplx.cols), matCmplx );
+		else
+			cv::divide ( matCmplx, cv::Scalar(matCmplx.cols*matCmplx.rows), matCmplx );
 
 		// Separate real/imaginary results
 //		cv::split ( matCmplx, matPlanes );
@@ -284,12 +289,13 @@ HRESULT FFT :: fft ( cv::cuda::GpuMat *pMat, cv::cuda::GpuMat *pWnd,
 
 		// Compute DFT
 		// TODO: Option for scaling/inverse/magnitude
-		cv::cuda::dft ( matCmplx, matCmplx, matCmplx.size(),
-//cv::Size(matCmplx.cols,matCmplx.rows),
-							 (bRows) ? cv::DFT_ROWS : 0 );
+		cv::cuda::dft ( matCmplx, matCmplx, matCmplx.size(), (bRows) ? cv::DFT_ROWS : 0 );
 
-		// Normalize by the number of samples (convention ?)
-		cv::cuda::divide ( matCmplx, cv::Scalar(matCmplx.cols), matCmplx );
+		// Normalize by the number of samples (assumes 'by rows', convention?)
+//		if (bRows)
+//			cv::cuda::divide ( matCmplx, cv::Scalar(matCmplx.cols), matCmplx );
+//		else
+//			cv::cuda::divide ( matCmplx, cv::Scalar(matCmplx.cols*matCmplx.rows), matCmplx );
 
 		// Separate real/imaginary results
 		cv::cuda::split ( matCmplx, matPlanes );
@@ -299,9 +305,6 @@ HRESULT FFT :: fft ( cv::cuda::GpuMat *pMat, cv::cuda::GpuMat *pWnd,
 		matMag = matPlanes[0];
 
 		// TODO: Log, base, etc. will be moved into own nodes.
-//cvMatRef ref;
-//ref.gpumat = &matMag;
-//image_to_debug ( &ref, L"dft", L"c:/temp/dft.png" );
 
 		// Ensure no log of zeroes
 		cv::cuda::add ( matMag, cv::Scalar::all(1e-20), matMag );
@@ -423,6 +426,7 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		CCLTRY ( window(pMat) );
 
 		// Compute FFT/Magnitude
+//		CCLOK ( image_to_debug ( pMat, L"FFT", L"c:/temp/fft.png" ); )
 		if (hr == S_OK && pMat->isGPU())
 			hr = fft ( pMat->gpumat, pWnd->gpumat, true );
 		else if (hr == S_OK && pMat->isUMat())

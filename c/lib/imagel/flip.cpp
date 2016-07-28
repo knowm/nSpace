@@ -89,12 +89,23 @@ HRESULT Flip :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
 
 		// Perform operation
+//		CCLOK ( image_to_debug ( pMat, L"Flip", L"c:/temp/flip1.png" ); )
 		if (hr == S_OK && (bHorz || bVert))
 			{
 			if (pMat->isGPU())
-				cv::cuda::flip ( *(pMat->gpumat), *(pMat->gpumat),	
+				{
+				cv::cuda::GpuMat	matFlip;
+
+				// NOTE NOTE NOTE
+				// Apparently there are some operations that do not work on the GPU
+				// where src == dst so copy is required.
+				pMat->gpumat->copyTo ( matFlip );
+
+				// Perform flip
+				cv::cuda::flip ( matFlip, *(pMat->gpumat),	
 										(bHorz && bVert)	? -1 : 
 										(bVert)				? 0 : 1 );
+				}	// if
 			else if (pMat->isUMat())
 				cv::flip ( *(pMat->umat), *(pMat->umat),	(bHorz && bVert)	? -1 : 
 																		(bVert)				? 0 : 1 );
@@ -102,6 +113,7 @@ HRESULT Flip :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 				cv::flip ( *(pMat->mat), *(pMat->mat),	(bHorz && bVert)	? -1 : 
 																	(bVert)				? 0 : 1 );
 			}	// if
+//		CCLOK ( image_to_debug ( pMat, L"Flip", L"c:/temp/flip2.png" ); )
 
 		// Result
 		if (hr == S_OK)

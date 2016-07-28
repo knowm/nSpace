@@ -88,7 +88,7 @@
 %	$	ValueImgLoc Misc.Dist { Value "c:/temp/Catseye_Study_1029_151002090209_OD_VISX_SI.bmp" }
 %	$	ValueImgLoc Misc.Dist { Value "c:/temp/blank.png" }
 %	$	ValueImgLoc Misc.Dist { Value "c:/temp/pupil_nir_half.png" }
-		!	Initialize/OnFire						ValueImgLoc/Fire
+%		!	Initialize/OnFire						ValueImgLoc/Fire
 
 	% IMAGEN: Load image
 %	$	LoadImage Image.PersistImage {}
@@ -112,10 +112,10 @@
 	%% OCT testing
 
 	% MISCN: Defaults
-%	$	ValueMin Misc.Dist { Value 100:float }
-%%	$	ValueMin Misc.Dist { Value -25:float }
+%	$	ValueMin Misc.Dist { Value 0:float }
+%%	$	ValueMin Misc.Dist { Value -15:float }
 %		!	LoadImage/OnLoad						ValueMin/Fire
-%	$	ValueMax Misc.Dist { Value 200:float }
+%	$	ValueMax Misc.Dist { Value 150:float }
 %%	$	ValueMax Misc.Dist { Value 50:float }
 %		!	LoadImage/OnLoad						ValueMax/Fire
 

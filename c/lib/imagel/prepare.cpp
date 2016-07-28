@@ -92,11 +92,22 @@ HRESULT Prepare :: gpuInit ( void )
 	bCuda = false;
 	if ((ret = cv::cuda::getCudaEnabledDeviceCount()) > 0)
 		{
+		// Perform some sort of GPU operation to intiailize Cuda for the
+		// first time which can take while (many seconds on a fresh system)
 		cv::cuda::GpuMat	gpumat;
 		cv::Mat				mat(10,10,CV_8UC1);
 		gpumat.upload(mat);
+
+		// Enable Cuda
 		lprintf ( LOG_INFO, L"Cuda enabled devices : %d\r\n", ret );
 		bCuda = true;
+
+		// For debug to force CPU mode
+//		bCuda = false;
+
+		// Do not use OpenCL
+		bUMat = false;
+		cv::ocl::setUseOpenCL(false);
 		}	// if
 	else
 		{
@@ -108,6 +119,7 @@ HRESULT Prepare :: gpuInit ( void )
 		bUMat = false;
 		if (cv::ocl::haveOpenCL())
 			{
+			// Do not use OpenCL until there is a chance to test
 			lprintf ( LOG_INFO, L"OpenCL enabled device detected\r\n" );
 			cv::ocl::setUseOpenCL(false);
 //			cv::ocl::setUseOpenCL(true);
@@ -115,7 +127,7 @@ HRESULT Prepare :: gpuInit ( void )
 			}	// if
 
 		}	// else
-	
+
 	// GPU initialized
 	bGPUInit = true;
 

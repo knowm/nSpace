@@ -129,7 +129,8 @@ HRESULT image_save ( IDictionary *pImg, const WCHAR *pwLoc )
 	return hr;
 	}	// image_save
 
-HRESULT image_to_debug ( cvMatRef *pMat, const WCHAR *pwCtx, const WCHAR *pwLoc )
+HRESULT image_to_debug ( cvMatRef *pMat, const WCHAR *pwCtx, 
+									const WCHAR *pwLoc )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -147,6 +148,7 @@ HRESULT image_to_debug ( cvMatRef *pMat, const WCHAR *pwCtx, const WCHAR *pwLoc 
 	////////////////////////////////////////////////////////////////////////
 	HRESULT		hr			= S_OK;
 	char			*paLoc	= NULL;
+	U32			type		= 0;
 	cv::Point	ptMin,ptMax;
 	double		dMin,dMax;
 	adtString	strLoc(pwLoc);
@@ -154,16 +156,26 @@ HRESULT image_to_debug ( cvMatRef *pMat, const WCHAR *pwCtx, const WCHAR *pwLoc 
 
 	// Values and locations of min and max
 	if (pMat->isGPU())
+		{
 		cv::cuda::minMaxLoc ( *(pMat->gpumat), &dMin, &dMax, &ptMin, &ptMax );
+		type = pMat->gpumat->type();
+		}	// if
 	else if (pMat->isUMat())
+		{
 		cv::minMaxLoc ( *(pMat->umat), &dMin, &dMax, &ptMin, &ptMax );
+		type = pMat->umat->type();
+		}	// if
 	else
+		{
 		cv::minMaxLoc ( *(pMat->mat), &dMin, &dMax, &ptMin, &ptMax );
-	dbgprintf ( L"%s (%s) : Min : %g @ (%d,%d) : Max : %g @ (%d,%d)\r\n",
+		type = pMat->mat->type();
+		}	// if
+	dbgprintf ( L"%s (%s) : Min : %g @ (%d,%d) : Max : %g @ (%d,%d) : type %d\r\n",
 						pwCtx, 
 						(pMat->isGPU()) ? L"GPU" :
 						(pMat->isUMat()) ? L"UMAT" : L"CPU",
-						dMin, ptMin.x, ptMin.y, dMax, ptMax.x, ptMax.y );
+						dMin, ptMin.x, ptMin.y, dMax, ptMax.x, ptMax.y,
+						type );
 
 	// Download
 	if (pMat->isGPU())
@@ -186,8 +198,8 @@ HRESULT image_to_debug ( cvMatRef *pMat, const WCHAR *pwCtx, const WCHAR *pwLoc 
 						matSave.at<float>(1,3) );
 
 	// Conversion for saving to image
-	cv::normalize ( matSave, matSave, 0, 65535, cv::NORM_MINMAX );
-	matSave.convertTo ( matSave, CV_16UC1 );
+	cv::normalize ( matSave, matSave, 0, 255, cv::NORM_MINMAX );
+	matSave.convertTo ( matSave, CV_8UC1 );
 
 	// Save to file
 	if (strLoc.toAscii ( &paLoc ) == S_OK)

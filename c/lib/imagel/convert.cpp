@@ -165,20 +165,9 @@ HRESULT Convert :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 
 		// Obtain image refence
 		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
-/*
-// Debug
-if (pMat->isGPU())
-{
-cv::Mat matDbg;
-pMat->gpumat->download(matDbg);
-cv::normalize ( matDbg, matDbg, 0, 65535, cv::NORM_MINMAX );
-matDbg.convertTo ( matDbg, CV_16UC1 );
-cv::imwrite ( "c:/temp/convert.png", matDbg );
-}
-*/
-//CCLOK ( image_to_debug ( pMat, L"Convert", L"c:/temp/convert1.png" ); )
 
 		// Convert 'to' specified format. Add formats as needed.
+//		CCLOK ( image_to_debug ( pMat, L"Convert", L"c:/temp/convert1.png" ); )
 		if (hr == S_OK)
 			{
 			if (!WCASECMP(strTo,L"F32x2"))
@@ -194,20 +183,8 @@ cv::imwrite ( "c:/temp/convert.png", matDbg );
 			else
 				hr = E_NOTIMPL;
 			}	// if
+//		CCLOK ( image_to_debug ( pMat, L"Convert", L"c:/temp/convert2.png" ); )
 
-//CCLOK ( image_to_debug ( pMat, L"Convert", L"c:/temp/convert2.png" ); )
-
-/*
-// Debug
-if (pMat->isGPU())
-{
-cv::Mat matDbg;
-pMat->gpumat->download(matDbg);
-cv::normalize ( matDbg, matDbg, 0, 65535, cv::NORM_MINMAX );
-matDbg.convertTo ( matDbg, CV_16UC1 );
-cv::imwrite ( "c:/temp/convert.png", matDbg );
-}
-*/
 		// Result
 		if (hr == S_OK)
 			_EMT(Fire,adtIUnknown(pImgUse));
