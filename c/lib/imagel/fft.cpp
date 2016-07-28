@@ -21,9 +21,336 @@ FFT :: FFT ( void )
 	//
 	////////////////////////////////////////////////////////////////////////
 	pImg		= NULL;
-	bZeroDC	= false;
 	pWnd		= NULL;
 	}	// FFT
+
+HRESULT FFT :: fft ( cv::Mat *pMat, cv::Mat *pWnd, bool bRows )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	cv::Mat based FFT.
+	//
+	//	PARAMETERS
+	//		-	pMat contains the image data.
+	//		-	pWnd is an optional window function (NULL for none)
+	//		-	bRows is true if image FFT should be row by row rather than
+	//			full 2D FFT.
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT	hr	= S_OK;
+	cv::Mat	matPad,matDft,matPlanes[2],matCmplx,matQ[4];
+	cv::Mat	matTmp,matMag,matReal;
+	int		m,n,cx,cy;
+
+	// Open CV uses exceptions
+	try
+		{
+		// Apply window function
+		if (	pWnd != NULL && pWnd->type() == pMat->type() &&
+				pWnd->cols == pMat->cols && pWnd->rows == pMat->rows)
+			cv::multiply ( *pMat, *pWnd, *pMat );
+
+		// Create a windowed version of the image
+		m = cv::getOptimalDFTSize ( pMat->rows );
+		n = cv::getOptimalDFTSize ( pMat->cols );
+		cv::copyMakeBorder ( (*pMat), matPad, 0, m - pMat->rows, 0, n - pMat->cols, 
+									cv::BORDER_CONSTANT, cv::Scalar::all(0) );
+
+		// Produce a real and (zeroed) imaginary pair
+		matPlanes[0] = cv::Mat_<float>(matPad);
+		matPlanes[1] = cv::Mat::zeros ( matPad.size(), CV_32F );		
+		cv::merge ( matPlanes, 2, matCmplx );
+	
+		// Compute DFT
+		// TODO: Option for scaling/inverse/magnitude
+		cv::dft ( matCmplx, matCmplx, (bRows) ? cv::DFT_ROWS : 0 );
+
+		// Normalize by the number of samples (convention ?)
+		cv::divide ( matCmplx, cv::Scalar(matCmplx.cols), matCmplx );
+
+		// Separate real/imaginary results
+		cv::split ( matCmplx, matPlanes );
+
+		// Compute the magnitude of DFT
+		cv::magnitude ( matPlanes[0], matPlanes[1], matPlanes[0] );
+		matMag = matPlanes[0];
+	
+		// TODO: Log, base, etc. will be moved into own nodes.
+//cvMatRef ref;
+//ref.mat = &matMag;
+//image_to_debug ( &ref, L"dft", L"c:/temp/dft.png" );
+
+		// Ensure no log of zeroes
+		cv::add ( matMag, cv::Scalar::all(1e-20), matMag );
+
+		// Log scale
+		cv::log ( matMag, matMag );
+
+		// Need to take 20*log10(x)
+		// Open CV log is natural log so scale for log10 (2.303)
+		cv::multiply ( matMag, cv::Scalar::all(20.0/2.303), matMag );
+
+		// Crop the spectrum if it has an odd number of rows or columns
+		matMag = matMag ( cv::Rect ( 0, 0, matMag.cols & -2, matMag.rows & -2 ) );
+
+		// Rearrange the quadrants of Fourier image so that the origin is at the image center
+		cx = matMag.cols/2;
+		cy = matMag.rows/2;
+
+		// ROIs for quadrants
+		matQ[0] = matMag ( cv::Rect ( 0, 0, cx, cy ) );
+		matQ[1] = matMag ( cv::Rect ( cx, 0, cx, cy ) );
+		matQ[2] = matMag ( cv::Rect ( 0, cy, cx, cy ) );
+		matQ[3] = matMag ( cv::Rect ( cx, cy, cx, cy ) );
+
+		// Swap quadrants
+		matQ[0].copyTo ( matTmp );
+		matQ[1].copyTo ( matQ[0] );
+		matTmp.copyTo  ( matQ[1] );
+
+		matQ[2].copyTo ( matTmp );
+		matQ[3].copyTo ( matQ[2] );
+		matTmp.copyTo  ( matQ[3] );
+
+		// Just keep the positive frequencies (option ?)
+		matMag	= matMag ( cv::Rect ( cx, 0, cx, matMag.rows ) );
+
+		// Result is new matrix
+		matMag.copyTo ( *pMat );
+		}	// try
+	catch ( cv::Exception & )
+		{
+		lprintf ( LOG_WARN, L"fft:cv::Mat:exception\r\n" );
+		hr = E_UNEXPECTED;
+//		dbgprintf ( L"image_fft:OpenCV exception:%S\r\n", ex.msg.c_str() );
+		}	// catch
+
+	return hr;
+	}	// fft
+
+HRESULT FFT :: fft ( cv::UMat *pMat, cv::UMat *pWnd, bool bRows )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	cv::Umat based FFT.
+	//
+	//	PARAMETERS
+	//		-	pMat contains the image data.
+	//		-	pWnd is an optional window function (NULL for none)
+	//		-	bRows is true if image FFT should be row by row rather than
+	//			full 2D FFT.
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT	hr	= S_OK;
+	cv::UMat	matPad,matDft,matPlanes[2],matCmplx,matQ[4];
+	cv::UMat	matTmp,matMag,matReal;
+	int		m,n,cx,cy;
+
+	// Open CV uses exceptions
+	try
+		{
+		// Apply window function
+		if (	pWnd != NULL && pWnd->type() == pMat->type() &&
+				pWnd->cols == pMat->cols && pWnd->rows == pMat->rows)
+			cv::multiply ( *pMat, *pWnd, *pMat );
+
+		// Create a windowed version of the image
+		m = cv::getOptimalDFTSize ( pMat->rows );
+		n = cv::getOptimalDFTSize ( pMat->cols );
+		cv::copyMakeBorder ( (*pMat), matPad, 0, m - pMat->rows, 0, n - pMat->cols, 
+									cv::BORDER_CONSTANT, cv::Scalar::all(0) );
+
+		// Produce a real and (zeroed) imaginary pair
+		matPlanes[0] = matPad;
+		matPlanes[1] = cv::UMat ( matPad.size(), CV_32F );
+		matPlanes[1].setTo ( cv::Scalar(0) );
+//		cv::merge ( matPlanes, 2, matCmplx );
+		hr = E_NOTIMPL;
+		if (hr != S_OK)
+			return hr;
+
+		// Compute DFT
+		// TODO: Option for scaling/inverse/magnitude
+		cv::dft ( matCmplx, matCmplx, 
+						(bRows) ? cv::DFT_ROWS|cv::DFT_SCALE : cv::DFT_SCALE );
+
+		// Separate real/imaginary results
+//		cv::split ( matCmplx, matPlanes );
+		hr = E_NOTIMPL;
+
+		// Compute the magnitude of DFT
+		cv::magnitude ( matPlanes[0], matPlanes[1], matPlanes[0] );
+		matMag = matPlanes[0];
+	
+		// TODO: Log, base, etc. will be moved into own nodes.
+
+		// Ensure no log of zeroes
+		cv::add ( matMag, cv::Scalar::all(1e-20), matMag );
+
+		// Log scale
+		cv::log ( matMag, matMag );
+
+		// Need to take 20*log10(x)
+		// Open CV log is natural log so scale for log10 (2.303)
+		cv::multiply ( matMag, cv::Scalar::all(20.0/2.303), matMag );
+
+		// Crop the spectrum if it has an odd number of rows or columns
+		matMag = matMag ( cv::Rect ( 0, 0, matMag.cols & -2, matMag.rows & -2 ) );
+
+		// Rearrange the quadrants of Fourier image so that the origin is at the image center
+		cx = matMag.cols/2;
+		cy = matMag.rows/2;
+
+		// ROIs for quadrants
+		matQ[0] = matMag ( cv::Rect ( 0, 0, cx, cy ) );
+		matQ[1] = matMag ( cv::Rect ( cx, 0, cx, cy ) );
+		matQ[2] = matMag ( cv::Rect ( 0, cy, cx, cy ) );
+		matQ[3] = matMag ( cv::Rect ( cx, cy, cx, cy ) );
+
+		// Swap quadrants
+		matQ[0].copyTo ( matTmp );
+		matQ[1].copyTo ( matQ[0] );
+		matTmp.copyTo  ( matQ[1] );
+
+		matQ[2].copyTo ( matTmp );
+		matQ[3].copyTo ( matQ[2] );
+		matTmp.copyTo  ( matQ[3] );
+
+		// Just keep the positive frequencies (option ?)
+		matMag	= matMag ( cv::Rect ( cx, 0, cx, matMag.rows ) );
+
+		// Result is new matrix
+		matMag.copyTo ( *pMat );
+		}	// try
+	catch ( cv::Exception & )
+		{
+		lprintf ( LOG_WARN, L"fft:cv::UMat:exception\r\n" );
+		hr = E_UNEXPECTED;
+//		dbgprintf ( L"image_fft:OpenCV exception:%S\r\n", ex.msg.c_str() );
+		}	// catch
+
+	return hr;
+	}	// fft
+
+HRESULT FFT :: fft ( cv::cuda::GpuMat *pMat, cv::cuda::GpuMat *pWnd, 
+							bool bRows )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	cv::cuda::GpuMat based FFT.
+	//
+	//	PARAMETERS
+	//		-	pMat contains the image data.
+	//		-	pWnd is an optional window function (NULL for none)
+	//		-	bRows is true if image FFT should be row by row rather than
+	//			full 2D FFT.
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT				hr	= S_OK;
+	cv::cuda::GpuMat	matPad,matDft,matPlanes[2],matCmplx,matQ[4];
+	cv::cuda::GpuMat	matTmp,matMag,matReal;
+	int					m,n,cx,cy;
+	// Open CV uses exceptions
+	try
+		{
+		// Apply window function
+		if (	pWnd != NULL && pWnd->type() == pMat->type() &&
+				pWnd->cols == pMat->cols && pWnd->rows == pMat->rows)
+			cv::cuda::multiply ( *pMat, *pWnd, *pMat );
+
+		// Create a windowed version of the image
+		m = cv::getOptimalDFTSize ( pMat->rows );
+		n = cv::getOptimalDFTSize ( pMat->cols );
+		cv::cuda::copyMakeBorder ( (*pMat), matPad, 0, m - pMat->rows, 0, n - pMat->cols, 
+											cv::BORDER_CONSTANT, cv::Scalar::all(0) );
+
+		// Produce a real and (zeroed) imaginary pair
+		Convert::convertTo ( &matPad, &matPlanes[0], CV_32F );
+		matPlanes[1] = cv::cuda::GpuMat ( matPad.size(), CV_32F );
+		matPlanes[1].setTo ( cv::Scalar(0) );
+		cv::cuda::merge ( matPlanes, 2, matCmplx );
+
+		// Compute DFT
+		// TODO: Option for scaling/inverse/magnitude
+		cv::cuda::dft ( matCmplx, matCmplx, matCmplx.size(),
+//cv::Size(matCmplx.cols,matCmplx.rows),
+							 (bRows) ? cv::DFT_ROWS : 0 );
+
+		// Normalize by the number of samples (convention ?)
+		cv::cuda::divide ( matCmplx, cv::Scalar(matCmplx.cols), matCmplx );
+
+		// Separate real/imaginary results
+		cv::cuda::split ( matCmplx, matPlanes );
+
+		// Compute the magnitude of DFT
+		cv::cuda::magnitude ( matPlanes[0], matPlanes[1], matPlanes[0] );
+		matMag = matPlanes[0];
+
+		// TODO: Log, base, etc. will be moved into own nodes.
+//cvMatRef ref;
+//ref.gpumat = &matMag;
+//image_to_debug ( &ref, L"dft", L"c:/temp/dft.png" );
+
+		// Ensure no log of zeroes
+		cv::cuda::add ( matMag, cv::Scalar::all(1e-20), matMag );
+
+		// Log scale
+		cv::cuda::log ( matMag, matMag );
+
+		// Need to take 20*log10(x)
+		// Open CV log is natural log so scale for log10 (2.303)
+		cv::cuda::multiply ( matMag, cv::Scalar::all(20.0/2.303), matMag );
+
+		// Crop the spectrum if it has an odd number of rows or columns
+		matMag = matMag ( cv::Rect ( 0, 0, matMag.cols & -2, matMag.rows & -2 ) );
+
+		// Rearrange the quadrants of Fourier image so that the origin is at the image center
+		cx = matMag.cols/2;
+		cy = matMag.rows/2;
+
+		// ROIs for quadrants
+		matQ[0] = matMag ( cv::Rect ( 0, 0, cx, cy ) );
+		matQ[1] = matMag ( cv::Rect ( cx, 0, cx, cy ) );
+		matQ[2] = matMag ( cv::Rect ( 0, cy, cx, cy ) );
+		matQ[3] = matMag ( cv::Rect ( cx, cy, cx, cy ) );
+
+		// Swap quadrants
+		matQ[0].copyTo ( matTmp );
+		matQ[1].copyTo ( matQ[0] );
+		matTmp.copyTo  ( matQ[1] );
+
+		matQ[2].copyTo ( matTmp );
+		matQ[3].copyTo ( matQ[2] );
+		matTmp.copyTo  ( matQ[3] );
+
+		// Just keep the positive frequencies (option ?)
+		matMag	= matMag ( cv::Rect ( cx, 0, cx, matMag.rows ) );
+
+		// Result is new matrix
+		matMag.copyTo ( *pMat );
+		}	// try
+	catch ( cv::Exception &ex )
+		{
+		lprintf ( LOG_WARN, L"fft:cv::cuda:GpuMat:exception:%S\r\n",
+						ex.err.c_str() );
+		hr = E_UNEXPECTED;
+//		dbgprintf ( L"image_fft:OpenCV exception:%S\r\n", ex.msg.c_str() );
+		}	// catch
+
+	return hr;
+	}	// fft
 
 HRESULT FFT :: onAttach ( bool bAttach )
 	{
@@ -47,8 +374,6 @@ HRESULT FFT :: onAttach ( bool bAttach )
 		adtValue		vL;
 
 		// Defaults
-		if (pnDesc->load ( adtString(L"ZeroDC"), vL ) == S_OK)
-			bZeroDC = adtBool(vL);
 		if (pnDesc->load ( adtString(L"Window"), vL ) == S_OK)
 			adtValue::toString ( vL, strWnd );
 		}	// if
@@ -94,87 +419,23 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		// Obtain image refence
 		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
 
-		//
-		// Windowing.  Only generate a single row window function as
-		// things change.  If the window function or number of columns
-		// change it is time to re-create the window
-		//
-
-		// Thread safey
-		csSync.enter();
-
-		// Verify size
-		if (	hr == S_OK		&& 
-				(pWnd != NULL	&& (pWnd->mat->cols != pMat->mat->cols || pWnd->mat->rows != pMat->mat->rows)) ||
-				(pWnd == NULL	&& strWnd.length() > 0 && WCASECMP(strWnd,L"None")) )
-			{
-			// Will write to a local array first
-			cv::Mat matWnd (pMat->mat->rows,pMat->mat->cols,CV_32FC1);
-
-			// Previous window
-			_RELEASE(pWnd);
-
-			// Generate function
-			if (!WCASECMP(strWnd,L"Blackman-Nutall"))
-				{
-				// Coefficients for window
-				float a0 = 0.3635819f;
-				float a1 = 0.4891775f;
-				float a2 = 0.1365995f;
-				float a3 = 0.0106441f;
-				float ev = 0.0f;
-
-				// Compute window (slow)
-				for (int r = 0;r < pMat->mat->rows;++r)
-					for (int c = 0;c < pMat->mat->cols;++c)
-						{
-						// Evaulate
-						ev =	(float) (a0 -
-											a1 * cos ( (2*CV_PI*c)/(pMat->mat->cols-1) ) +
-											a2 * cos ( (4*CV_PI*c)/(pMat->mat->cols-1) ) -
-											a3 * cos ( (6*CV_PI*c)/(pMat->mat->cols-1) ) );
-
-						// Set
-						matWnd.at<float>(cv::Point(c,r)) = ev;
-
-						// Debug
-//						matWnd.at<float>(cv::Point(c,r)) = 0;
-						}	// for
-
-				}	// if
-
-			// Unknown function
-			else
-				{
-				lprintf ( LOG_ERR, L"Unimplemented window function : %s", (LPCWSTR) strWnd );
-				hr = E_NOTIMPL;
-				}	// else
-
-			// Create new window.  Assuming it is faster to just do per element
-			// multiplication rather than row by row.
-			CCLTRYE( (pWnd = new cvMatRef()) != NULL, E_OUTOFMEMORY );
-//			CCLTRYE ( (pWnd->mat = new cv::UMat(pMat->mat->rows,pMat->mat->cols,CV_32FC1)) != NULL, E_OUTOFMEMORY );
-//			CCLOK   ( matWnd.copyTo ( *(pWnd->mat) ); )
-			CCLTRYE ( (pWnd->mat = new cv::Mat(matWnd)) != NULL, E_OUTOFMEMORY );
-
-//						#if	CV_MAJOR_VERSION == 3
-//						pWnd->mat->getMat(cv::ACCESS_WRITE).at<float>(cv::Point(c,r)) = ev;
-//						#else
-//						pWnd->mat->at<float>(cv::Point(c,r)) = ev;
-//						#endif
-
-
-			}	// if
+		// Windowing
+		CCLTRY ( window(pMat) );
 
 		// Compute FFT/Magnitude
-		CCLTRY ( image_fft ( pMat->mat, (pWnd != NULL) ? pWnd->mat : NULL, true, bZeroDC ) );
+		if (hr == S_OK && pMat->isGPU())
+			hr = fft ( pMat->gpumat, pWnd->gpumat, true );
+		else if (hr == S_OK && pMat->isUMat())
+			hr = fft ( pMat->umat, pWnd->umat, true );
+		else
+			hr = fft ( pMat->mat, pWnd->mat, true );
 
-		// Thread safey
-		csSync.leave();
+		// Debug
+		if (hr != S_OK)
+			lprintf ( LOG_WARN, L"FFT failed, hr 0x%x\r\n", hr );
+//		CCLOK ( image_to_debug ( pMat, L"FFT", L"c:/temp/fft.png" ); )
 
 		// Result
-//		if (hr != S_OK)
-//			dbgprintf ( L"FFT::Write:hr 0x%x, I/O %d/%d\r\n", hr, uLeft, (U32)iSzIo );
 		if (hr == S_OK)
 			_EMT(Fire,adtIUnknown(pImgUse));
 		else
@@ -198,9 +459,7 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		adtValue::toString ( v, strWnd );
 
 		// Assume a new window is needed
-		csSync.enter();
 		_RELEASE(pWnd);
-		csSync.leave();
 		}	// else if
 	else
 		hr = ERROR_NO_MATCH;
@@ -208,41 +467,110 @@ HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	return hr;
 	}	// receive
 
+HRESULT FFT :: window ( cvMatRef *pMat )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Verify the current window function is appropriate.
+	//
+	//	PARAMETERS
+	//		-	pMat is the source image
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT	hr			= S_OK;
+	bool		bWndUp	= false;
+	int		rows,cols;
 
+	//
+	// Windowing.  Only generate a single row window function as
+	// things change.  If the window function or number of columns
+	// change it is time to re-create the window
+	//
 
-		//
-		// Perform calculation based on matrix type
-		//
-		/*
-		// OpenCl
-		if (hr == S_OK && pImgUse->load ( adtString(L"cv::ocl::oclMat"), vL ) == S_OK)
+	// Sizing
+	if (pMat->isGPU())
+		{
+		rows = pMat->gpumat->rows;
+		cols = pMat->gpumat->cols;
+		}	// if
+	else if (pMat->isUMat())
+		{
+		rows = pMat->umat->rows;
+		cols = pMat->umat->cols;
+		}	// if
+	else
+		{
+		rows = pMat->mat->rows;
+		cols = pMat->mat->cols;
+		}	// if
+
+	// No window exists but one is specified
+	if (!bWndUp) bWndUp = (pWnd == NULL	&& strWnd.length() > 0 && WCASECMP(strWnd,L"None"));
+
+	// Verify size
+	if (!bWndUp) bWndUp = (pWnd->mat->cols != cols || pWnd->mat->rows != rows);
+
+	// New window ?
+	if (hr == S_OK && bWndUp)
+		{
+		// Will write to a local array first
+		cv::Mat matWnd (rows,cols,CV_32FC1);
+
+		// Previous window
+		_RELEASE(pWnd);
+
+		// Generate function
+		if (!WCASECMP(strWnd,L"Blackman-Nutall"))
 			{
-			cv::ocl::oclMat	*pMat = NULL;
+			// Coefficients for window
+			float a0 = 0.3635819f;
+			float a1 = 0.4891775f;
+			float a2 = 0.1365995f;
+			float a3 = 0.0106441f;
+			float ev = 0.0f;
 
-			// Extract matrix
-			CCLTRYE ( (pMat = (cv::ocl::oclMat *)(U64)adtLong(vL)) != NULL, E_INVALIDARG );
+			// Compute window (slow)
+			for (int r = 0;r < rows;++r)
+				for (int c = 0;c < cols;++c)
+					{
+					// Evaulate
+					ev =	(float) (a0 -
+										a1 * cos ( (2*CV_PI*c)/(cols-1) ) +
+										a2 * cos ( (4*CV_PI*c)/(cols-1) ) -
+										a3 * cos ( (6*CV_PI*c)/(cols-1) ) );
 
-			// Execute
-			CCLTRY ( image_fft ( pMat, true, bZeroDC ) );
+					// Set
+					matWnd.at<float>(cv::Point(c,r)) = ev;
+
+					// Debug
+//						matWnd.at<float>(cv::Point(c,r)) = 0;
+					}	// for
+
 			}	// if
 
-		// CPU
-		else 
+		// Unknown function
+		else
 			{
-			cvMatRef		*pMat		= NULL;
-
-			// CPU matrix required at a minimum
-			CCLTRY ( pImgUse->load ( adtString(L"cvMatRef"), vL ) );
-			CCLTRYE ( (pMat = (cvMatRef *)(U64)adtLong(vL)) != NULL, E_INVALIDARG );
-
-			// Execute
-			CCLTRY ( image_fft ( pMat, true, bZeroDC ) );
+			lprintf ( LOG_ERR, L"Unimplemented window function : %s", (LPCWSTR) strWnd );
+			hr = E_NOTIMPL;
 			}	// else
-		*/
 
-/*
-		// TODO: TEMPORARY.  This thresholding will be moved into a node
-		// in dB
-		CCLOK ( threshold ( matMag, matMag, 50, 0, THRESH_TRUNC ); )
-		CCLOK ( threshold ( matMag, matMag, 15, 0, THRESH_TOZERO ); )
-*/
+		// Need to create window matrix of matching type
+		CCLTRY ( Create::create ( NULL, cols, rows, CV_32FC1, &pWnd ) );
+
+		// Transfer data to window object
+		if (pWnd->isGPU())
+			pWnd->gpumat->upload ( matWnd );
+		else if (pWnd->isUMat())
+			matWnd.copyTo ( *(pWnd->umat) );
+		else
+			matWnd.copyTo ( *(pWnd->mat) );
+		}	// if
+
+	return hr;
+	}	// window
+

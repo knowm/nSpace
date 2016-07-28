@@ -101,10 +101,17 @@ HRESULT Contours :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v 
 				// Execute (warning, findContours can be crashy)
 				if (pMat->isGPU())
 					{
-					// TODO: No cuda version of this
-					hr = E_NOTIMPL;
-//					cv::cuda::findContours (	*(pMat->gpumat), contours, CV_RETR_EXTERNAL, 
-//														CV_CHAIN_APPROX_SIMPLE );
+					cv::Mat		matNoGpu;
+
+					// Currently no GPU based version
+					pMat->gpumat->download ( matNoGpu );
+
+					// Execute
+					cv::findContours (	matNoGpu, contours, CV_RETR_EXTERNAL, 
+												CV_CHAIN_APPROX_SIMPLE );
+
+					// No need to restore back up to GPU as purpose of function
+					// is not to modify image even if it is destructive
 					}	// if
 				else if (pMat->isUMat())
 					cv::findContours (	*(pMat->umat), contours, CV_RETR_EXTERNAL, 

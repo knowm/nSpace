@@ -84,10 +84,11 @@
 %		!	Initialize/OnFire						CreateImgDct/Fire
 
 	% MISCN: Image location
+%	$	ValueImgLoc Misc.Dist { Value "c:/temp/OCT_1.png" }
 %	$	ValueImgLoc Misc.Dist { Value "c:/temp/Catseye_Study_1029_151002090209_OD_VISX_SI.bmp" }
 %	$	ValueImgLoc Misc.Dist { Value "c:/temp/blank.png" }
 %	$	ValueImgLoc Misc.Dist { Value "c:/temp/pupil_nir_half.png" }
-%		!	Initialize/OnFire						ValueImgLoc/Fire
+		!	Initialize/OnFire						ValueImgLoc/Fire
 
 	% IMAGEN: Load image
 %	$	LoadImage Image.PersistImage {}
@@ -97,6 +98,58 @@
 
 	% Execute
 %	!	LoadImage/OnLoad							Debug/Fire
+
+	% IMAGEN: Save result
+%	$	SaveImage Image.PersistImage { Location "c:/temp/load.png" }
+%		!	LoadImage/OnLoad						SaveImage/Image
+%		!	LoadImage/OnLoad						SaveImage/Save
+
+	% IMAGEN: Upload from dictionary into image processing logic
+%	$	Prepare Image.Prepare {}
+%		!	LoadImage/OnLoad						Prepare/Upload
+%		!	Prepare/OnUpload						Prepare/Download
+
+	%% OCT testing
+
+	% MISCN: Defaults
+%	$	ValueMin Misc.Dist { Value 100:float }
+%%	$	ValueMin Misc.Dist { Value -25:float }
+%		!	LoadImage/OnLoad						ValueMin/Fire
+%	$	ValueMax Misc.Dist { Value 200:float }
+%%	$	ValueMax Misc.Dist { Value 50:float }
+%		!	LoadImage/OnLoad						ValueMax/Fire
+
+	%% Test image is old format
+
+	% IMAGEN: Upload from dictionary into image processing logic
+%	$	Prepare Image.Prepare {}
+%		!	LoadImage/OnLoad						Prepare/Image
+%		!	LoadImage/OnLoad						Prepare/Upload
+
+	% MATHN: Divide down to 12 bits
+%	$	OctDiv Image.Binary { Right 16:int Op Div }
+%		!	Prepare/OnUpload						OctDiv/Left
+%		!	Prepare/OnUpload						OctDiv/Fire
+
+	% IMAGEN: To signed 16-bit
+%	$	OctSign Image.Convert { Format "S16x2" }
+%		!	OctDiv/OnFire							OctSign/Fire
+
+	% MATHN: Signed 16-bit
+%	$	OctSub Image.Binary { Right 2048:int Op Sub }
+%		!	OctSign/OnFire							OctSub/Left
+%		!	OctSign/OnFire							OctSub/Fire
+
+	% Download image back into buffer
+%	!	Prepare/OnUpload							Prepare/Download
+
+
+	% Subgraph: Perform OCT conversion
+%	#	ToMag											Abbott/Lib/Oct/RawToMag/ {}
+%		!	LoadImage/OnLoad						ToMag/Image/Fire
+%		!	LoadImage/OnLoad						ToMag/Convert/Fire
+%		!	ValueMin/OnFire						ToMag/Minimum/Fire
+%		!	ValueMax/OnFire						ToMag/Maximum/Fire
 
 	%% GPU testing
 
@@ -117,6 +170,8 @@
 %	$	SaveImage Image.PersistImage { Location "c:/temp/debug.png" }
 %		!	Prepare/OnDownload					SaveImage/Image
 %		!	Prepare/OnDownload					SaveImage/Save
+%		!	ToMag/OnImage/OnFire					SaveImage/Image
+%		!	ToMag/OnImage/OnFire					SaveImage/Save
 
 	%% Merge
 

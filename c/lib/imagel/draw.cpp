@@ -116,15 +116,22 @@ HRESULT Draw :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		IDictionary	*pImgUse = NULL;
 		cvMatRef		*pMat		= NULL;
 		cv::Scalar	clr		= CV_RGB(fR,fG,fB);
+		cv::Mat		matNoGpu;
 
 		// Obtain image refence
 		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
+
+		// No GPU support for drawing
+		// Download the current image into a local matrix for processing
+		if (hr == S_OK && pMat->isGPU())
+			pMat->gpumat->download ( matNoGpu );
 
 		// Perform operation
 		if (hr == S_OK && !WCASECMP(strShp,L"Line"))
 			{
 			if (pMat->isGPU())
-				hr = E_NOTIMPL;
+				cv::line ( matNoGpu, cv::Point((int)fX0,(int)fY0), 
+								cv::Point((int)fX1,(int)fY1), clr, iThick );
 			else if (pMat->isUMat())
 				cv::line ( *(pMat->umat), cv::Point((int)fX0,(int)fY0), 
 								cv::Point((int)fX1,(int)fY1), clr, iThick );
@@ -139,7 +146,7 @@ HRESULT Draw :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 
 			// Perform draw
 			if (pMat->isGPU())
-				hr = E_NOTIMPL;
+				cv::ellipse ( matNoGpu, rct, clr, iThick );
 			else if (pMat->isUMat())
 				cv::ellipse ( (*pMat->umat), rct, clr, iThick );
 			else
@@ -148,7 +155,8 @@ HRESULT Draw :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		else if (hr == S_OK && !WCASECMP(strShp,L"Circle"))
 			{
 			if (pMat->isGPU())
-				hr = E_NOTIMPL;
+				cv::circle ( matNoGpu, cv::Point((int)(float)fX0,(int)(float)fY0), 
+									(int)(float)fRad, clr, iThick );
 			else if (pMat->isUMat())
 				cv::circle ( *(pMat->umat), cv::Point((int)(float)fX0,(int)(float)fY0), 
 									(int)(float)fRad, clr, iThick );
@@ -159,7 +167,8 @@ HRESULT Draw :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		else if (hr == S_OK && !WCASECMP(strShp,L"Rectangle"))
 			{
 			if (pMat->isGPU())
-				hr = E_NOTIMPL;
+				cv::rectangle ( matNoGpu, cv::Point((int)fX0,(int)fY0), 
+									cv::Point((int)fX1,(int)fY1), clr, iThick );
 			else if (pMat->isUMat())
 				cv::rectangle ( *(pMat->umat), cv::Point((int)fX0,(int)fY0), 
 									cv::Point((int)fX1,(int)fY1), clr, iThick );
@@ -167,6 +176,10 @@ HRESULT Draw :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 				cv::rectangle ( *(pMat->mat), cv::Point((int)fX0,(int)fY0), 
 									cv::Point((int)fX1,(int)fY1), clr, iThick );
 			}	// else if
+
+		// Upload changes back to GPU
+		if (hr == S_OK && pMat->isGPU())
+			pMat->gpumat->upload ( matNoGpu );
 
 		// Result
 		if (hr == S_OK)

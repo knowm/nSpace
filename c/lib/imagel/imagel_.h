@@ -201,6 +201,13 @@ class Convert :
 	IDictionary	*pImg;									// Source image
 	adtString	strTo;									// Convert 'to' format
 
+	// Utilities
+	static
+	HRESULT convertTo	( cvMatRef *, cvMatRef *, U32 );
+	static
+	HRESULT convertTo	( cv::cuda::GpuMat *, 
+								cv::cuda::GpuMat *, U32 );
+
 	// CCL
 	CCL_OBJECT_BEGIN(Convert)
 		CCL_INTF(IBehaviour)
@@ -388,9 +395,7 @@ class FFT :
 	// Run-time data
 	IDictionary	*pImg;									// Image dictionary
 	adtString	strWnd;									// Window function
-	adtBool		bZeroDC;									// Zero DC component
 	cvMatRef		*pWnd;									// Window function
-	sysCS			csSync;									// Thread safety
 
 	// CCL
 	CCL_OBJECT_BEGIN(FFT)
@@ -408,6 +413,12 @@ class FFT :
 		DEFINE_RCP(Image)
 		DEFINE_RCP(Window)
 	END_BEHAVIOUR_NOTIFY()
+
+	// Internal utilities
+	HRESULT fft		(	cv::cuda::GpuMat *, 	cv::cuda::GpuMat *, bool );
+	HRESULT fft		(	cv::UMat *, cv::UMat *, bool );
+	HRESULT fft		(	cv::Mat *, 	cv::Mat *, bool );
+	HRESULT window ( cvMatRef * );
 	};
 
 //
@@ -456,7 +467,10 @@ class Morph :
 
 	// Run-time data
 	IDictionary	*pImg;									// Image dictionary
-//	IDictionary *pKer;									// Kernel image dictionary
+	cv::cuda::Filter 
+					*pfOpen;									// Open filter
+	cv::cuda::Filter 
+					*pfClose;								// Close filter
 
 	// CCL
 	CCL_OBJECT_BEGIN(Morph)
@@ -559,7 +573,6 @@ class Prepare :
 
 	// Run-time data
 	IDictionary	*pImg;									// Image dictionary
-	bool			bCuda,bOcl;								// Cuda/OpenCl enabled
 
 	// Utilities
 	static
@@ -775,6 +788,7 @@ HRESULT image_save		( IDictionary *, const WCHAR * );
 HRESULT image_fft			( cv::Mat *, cv::Mat *, bool = false, bool = false );
 HRESULT image_from_mat	( cv::Mat *, IDictionary * );
 HRESULT image_to_mat		( IDictionary *, cv::Mat ** );
+HRESULT image_to_debug	( cvMatRef *, const WCHAR *, const WCHAR * );
 
 // From 'mathl'
 HRESULT mathOp			( const WCHAR *, int * );

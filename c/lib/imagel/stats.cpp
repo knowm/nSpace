@@ -167,21 +167,21 @@ HRESULT Stats :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 					}	// if
 				else if (pMat->isUMat())
 					{
+					cv::Mat	matHst,matLog;
+
 					// 'calcHist' not available for UMat ?
-					hr = E_NOTIMPL;
-//					cv::UMat	matHst,mnatLog;
+					matHst = pMat->umat->getMat(cv::ACCESS_READ);
 
 					// Histogram
-//					cv::calcHist ( pMat->umat, 1, 0, cv::noArray(), matHst, 1, 
-//													&histSize, &histRange );
+					cv::calcHist ( &matHst, 1, 0, cv::noArray(), 
+										matHst, 1, &histSize, &histRange );
 
 					// Normalize
-//					matHst /= (double)pMat->umat->total();
-//					cv::divide ( matHst, cv::Scalar((double)pMat->umat->total()), matHst );
+					matHst /= (double)pMat->mat->total();
 
 					// Compute entropy
-//					cv::log ( matHst, matLog );
-//					ent = (float)(-1*cv::sum(matHst.mul(matLog)).val[0]);
+					cv::log ( matHst, matLog );
+					ent = (float)(-1*cv::sum(matHst.mul(matLog)).val[0]);
 					}	// if
 				else
 					{
@@ -216,14 +216,16 @@ HRESULT Stats :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			// Calculate bounding rectangle, assumes array of points
 			if (pMat->isGPU())
 				{
-				// How for gpu ?
-//				rct = cv::cuda::boundingRect ( *(pMat->gpumat) );
-				hr = E_NOTIMPL;
+				cv::Mat		matNoGpu;
+
+				// Currently no GPU based version ?
+				pMat->gpumat->download ( matNoGpu );
+
+				// Execute
+				rct = cv::boundingRect ( matNoGpu );
 				}	// if
 			else if (pMat->isUMat())
-				{
 				rct = cv::boundingRect ( *(pMat->umat) );
-				}	// else if
 			else
 				rct = cv::boundingRect ( *(pMat->gpumat) );
 
@@ -272,8 +274,19 @@ HRESULT Stats :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			if (pMat->isGPU())
 				cv::cuda::calcHist ( *(pMat->gpumat), *(pMatHst->gpumat) );
 			else if (pMat->isUMat())
+				{
+				cv::Mat	matHst,matLog;
+
 				// 'calcHist' not available for UMat ?
-				hr = E_NOTIMPL;
+				matHst = pMat->umat->getMat(cv::ACCESS_READ);
+
+				// Histogram
+				cv::calcHist ( &matHst, 1, 0, cv::noArray(), 
+									matHst, 1, &histSize, &histRange );
+
+				// Result
+				matHst.copyTo ( *(pMat->umat) );
+				}	// else if
 			else
 				{
 				// Calculate histogram.  Currently defaults to grayscale.

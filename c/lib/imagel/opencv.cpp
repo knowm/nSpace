@@ -31,240 +31,6 @@ static adtString	strRefHeight(L"Height");
 static adtString	strRefBits(L"Bits");
 static adtString	strRefFormat(L"Format");
 
-HRESULT image_fft ( cv::Mat *pMat, cv::Mat *pWnd, bool bRows, bool bZeroDC )
-	{
-	////////////////////////////////////////////////////////////////////////
-	//
-	//	PURPOSE
-	//		-	Computes the FFT of an image.  Replaces image with FFT.
-	//
-	//	PARAMETERS
-	//		-	pMat contains the image data.
-	//		-	pWnd is an optional window function (NULL for none)
-	//		-	bRows is true if image FFT should be row by row rather than
-	//			full 2D FFT.
-	//		-	bZeroDC is true to zero the DC component of the FFT
-	//
-	//	RETURN VALUE
-	//		S_OK if successful
-	//
-	////////////////////////////////////////////////////////////////////////
-	HRESULT	hr	= S_OK;
-	Mat		matPad,matDft,matPlanes[2],matCmplx,matQ[4];
-	Mat		matTmp,matMag,matReal;
-	int		m,n,cx,cy;
-
-	// Open CV uses exceptions
-	try
-		{
-		// Apply window function
-		if (	pWnd != NULL && pWnd->type() == pMat->type() &&
-				pWnd->cols == pMat->cols && pWnd->rows == pMat->rows)
-			multiply ( *pMat, *pWnd, *pMat );
-
-		// Create a windowed version of the image
-		m = getOptimalDFTSize ( pMat->rows );
-		n = getOptimalDFTSize ( pMat->cols );
-		copyMakeBorder ( (*pMat), matPad, 0, m - pMat->rows, 0, n - pMat->cols, 
-								BORDER_CONSTANT, Scalar::all(0) );
-
-		// Produce a real and (zeroed) imaginary pair
-		matPlanes[0] = Mat_<float>(matPad);
-		matPlanes[1] = Mat::zeros ( matPad.size(), CV_32F );		
-		merge ( matPlanes, 2, matCmplx );
-	
-		// Compute DFT
-		// TODO: Option for scaling/inverse/magnitude
-		dft ( matCmplx, matCmplx, (bRows) ? DFT_ROWS|DFT_SCALE : DFT_SCALE );
-
-		// Separate real/imaginary results
-		#if	CV_MAJOR_VERSION == 2
-		split ( matCmplx, matPlanes );
-		#endif
-
-		// Compute the magnitude of DFT
-		magnitude ( matPlanes[0], matPlanes[1], matPlanes[0] );
-		matMag = matPlanes[0];
-	
-		// TODO: Log, base, etc. will be moved into own nodes.
-
-		// Ensure no log of zeroes
-		add ( matMag, Scalar::all(1e-20), matMag );
-
-		// Log scale
-		log ( matMag, matMag );
-
-		// Need to take 20*log10(x)
-		// Open CV log is natural log so scale for log10 (2.303)
-		multiply ( matMag, Scalar::all(20.0/2.303), matMag );
-
-		// Crop the spectrum if it has an odd number of rows or columns
-		matMag = matMag ( Rect ( 0, 0, matMag.cols & -2, matMag.rows & -2 ) );
-
-		// Rearrange the quadrants of Fourier image so that the origin is at the image center
-		cx = matMag.cols/2;
-		cy = matMag.rows/2;
-
-		// ROIs for quadrants
-		matQ[0] = matMag ( Rect ( 0, 0, cx, cy ) );
-		matQ[1] = matMag ( Rect ( cx, 0, cx, cy ) );
-		matQ[2] = matMag ( Rect ( 0, cy, cx, cy ) );
-		matQ[3] = matMag ( Rect ( cx, cy, cx, cy ) );
-
-		// Swap quadrants
-		matQ[0].copyTo ( matTmp );
-		matQ[1].copyTo ( matQ[0] );
-		matTmp.copyTo  ( matQ[1] );
-
-		matQ[2].copyTo ( matTmp );
-		matQ[3].copyTo ( matQ[2] );
-		matTmp.copyTo  ( matQ[3] );
-
-		// Just keep the positive frequencies (option ?)
-		matMag	= matMag ( Rect ( cx, 0, cx, matMag.rows ) );
-		/*
-		// DEBUG
-		FILE *f = NULL;
-		fopen_s ( &f, "c:/temp/data.txt", "w" );
-		if (f != NULL)
-			{
-			for (int r = 0;r < matMag.rows;++r)
-				for (int c = 0;c < matMag.cols;++c)
-					fprintf ( f, "%d, %g\r\n", r*matMag.cols+c, matMag.at<float>(Point(c,r)) );
-			fclose(f);
-			}	// if
-		*/
-
-		// Zero the DC component on request
-		if (bZeroDC)
-			for (int r = 0;r < matMag.rows;++r)
-				matMag.at<float>(Point(0,r)) = 0.0f;
-//				matMag.getMat(cv::ACCESS_WRITE).at<float>(Point(0,r)) = 0.0f;
-
-		// Result is new matrix
-		CCLOK ( matMag.copyTo ( *pMat ); )
-		}	// try
-	catch ( cv::Exception ex )
-		{
-		const char *c = ex.msg.c_str();
-		dbgprintf ( L"image_fft:OpenCV exception\r\n" );
-//		dbgprintf ( L"image_fft:OpenCV exception:%S\r\n", ex.msg.c_str() );
-		}	// catch
-
-	return hr;
-	}	// image_fft
-/*
-HRESULT image_fft ( cv::ocl::oclMat *pMat, bool bRows, bool bZeroDC )
-	{
-	////////////////////////////////////////////////////////////////////////
-	//
-	//	PURPOSE
-	//		-	Computes the FFT of an image.  Replaces image with FFT.
-	//			(OpenCL version)
-	//
-	//	PARAMETERS
-	//		-	pMat contains the image data.
-	//		-	bRows is true if image FFT should be row by row rather than
-	//			full 2D FFT.
-	//		-	bZeroDC is true to zero the DC component of the FFT
-	//
-	//	RETURN VALUE
-	//		S_OK if successful
-	//
-	////////////////////////////////////////////////////////////////////////
-	HRESULT		hr	= S_OK;
-	ocl::oclMat	matPad,matDft,matPlanes[2],matCmplx,matQ[4];
-	ocl::oclMat	matTmp,matMag,matReal;
-	int			m,n,cx,cy;
-
-	// Open CV uses exceptions
-	try
-		{
-		// Convert source image to 32-bit floating point to match logic below
-		pMat->convertTo ( matTmp, CV_32FC1 );
-
-		// Create a windowed version of the image
-		m = getOptimalDFTSize ( matTmp.rows );
-		n = getOptimalDFTSize ( matTmp.cols );
-		ocl::copyMakeBorder (	matTmp, matPad, 0, m - matTmp.rows, 0, n - matTmp.cols, 
-										BORDER_CONSTANT, Scalar::all(0) );
-
-		// Produce a real and (zeroed) imaginary pair
-		matPlanes[0] = Mat_<float>(matPad);
-		matPlanes[1] = Mat::zeros ( matPad.size(), CV_32F );
-		ocl::merge ( matPlanes, 2, matCmplx );
-
-		// Compute DFT
-		// TODO: Option for scaling/inverse
-		ocl::dft ( matCmplx, matCmplx, cv::Size(n,m),  
-						(bRows) ? DFT_ROWS|DFT_SCALE : DFT_SCALE );
-
-		// Separate real/imaginary results
-		ocl::split ( matCmplx, matPlanes );
-
-		// Compute the magnitude of DFT
-		ocl::magnitude ( matPlanes[0], matPlanes[1], matPlanes[0] );
-		matMag = matPlanes[0];
-	
-		// TODO: Log, base, etc. will be moved into own nodes.
-
-		// Ensure no log of zeroes
-		matMag += Scalar::all(1e-20);
-
-		// Log scale
-		ocl::log ( matMag, matMag );
-
-		// Need to take 20*log10(x)
-		// Open CV log is natural log so scale for log10 (2.303)
-		matMag = (20.0/2.303) * matMag;
-
-		// Crop the spectrum if it has an odd number of rows or columns
-		matMag = matMag ( Rect ( 0, 0, matMag.cols & -2, matMag.rows & -2 ) );
-
-		// Rearrange the quadrants of Fourier image so that the origin is at the image center
-		cx = matMag.cols/2;
-		cy = matMag.rows/2;
-
-		// ROIs for quadrants
-		matQ[0] = matMag ( Rect ( 0, 0, cx, cy ) );
-		matQ[1] = matMag ( Rect ( cx, 0, cx, cy ) );
-		matQ[2] = matMag ( Rect ( 0, cy, cx, cy ) );
-		matQ[3] = matMag ( Rect ( cx, cy, cx, cy ) );
-
-		// Swap quadrants
-		matQ[0].copyTo ( matTmp );
-		matQ[1].copyTo ( matQ[0] );
-		matTmp.copyTo  ( matQ[1] );
-
-		matQ[2].copyTo ( matTmp );
-		matQ[3].copyTo ( matQ[2] );
-		matTmp.copyTo  ( matQ[3] );
-
-		// Just keep the positive frequencies (option ?)
-		matMag	= matMag ( Rect ( cx, 0, cx, matMag.rows ) );
-
-		// Zero the DC component on request
-//		if (bZeroDC)
-//			for (int r = 0;r < matMag.rows;++r)
-//				matMag.at<float>(Point(0,r)) = 0.0f;
-
-		// TODO: TEMPORARY.  This thresholding will be moved into a node
-		// in dB
-		CCLOK ( ocl::threshold ( matMag, matMag, 50, 0, THRESH_TRUNC ); )
-		CCLOK ( ocl::threshold ( matMag, matMag, 15, 0, THRESH_TOZERO ); )
-
-		// Result is new matrix
-		CCLOK ( matMag.copyTo ( *pMat ); )
-		}	// try
-	catch ( cv::Exception ex )
-		{
-		lprintf ( LOG_ERR, L"OpenCV exception\r\n" );
-		}	// catch
-
-	return hr;
-	}	// image_fft
-*/
-
 HRESULT image_load ( const WCHAR *pwLoc, IDictionary *pImg )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -362,6 +128,76 @@ HRESULT image_save ( IDictionary *pImg, const WCHAR *pwLoc )
 
 	return hr;
 	}	// image_save
+
+HRESULT image_to_debug ( cvMatRef *pMat, const WCHAR *pwCtx, const WCHAR *pwLoc )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Output/save debug information about an image.
+	//
+	//	PARAMETERS
+	//		-	pMat is the matrix object
+	//		-	pwCtx is the context
+	//		-	pwLoc is the destination for the image
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT		hr			= S_OK;
+	char			*paLoc	= NULL;
+	cv::Point	ptMin,ptMax;
+	double		dMin,dMax;
+	adtString	strLoc(pwLoc);
+	cv::Mat		matSave;
+
+	// Values and locations of min and max
+	if (pMat->isGPU())
+		cv::cuda::minMaxLoc ( *(pMat->gpumat), &dMin, &dMax, &ptMin, &ptMax );
+	else if (pMat->isUMat())
+		cv::minMaxLoc ( *(pMat->umat), &dMin, &dMax, &ptMin, &ptMax );
+	else
+		cv::minMaxLoc ( *(pMat->mat), &dMin, &dMax, &ptMin, &ptMax );
+	dbgprintf ( L"%s (%s) : Min : %g @ (%d,%d) : Max : %g @ (%d,%d)\r\n",
+						pwCtx, 
+						(pMat->isGPU()) ? L"GPU" :
+						(pMat->isUMat()) ? L"UMAT" : L"CPU",
+						dMin, ptMin.x, ptMin.y, dMax, ptMax.x, ptMax.y );
+
+	// Download
+	if (pMat->isGPU())
+		pMat->gpumat->download ( matSave );
+	else if (pMat->isUMat())
+		pMat->umat->copyTo ( matSave );
+	else
+		pMat->mat->copyTo ( matSave );
+
+	// Some sample point values
+	if (matSave.type() == CV_32FC1)
+		dbgprintf ( L"%g %g %g %g - %g %g %g %g\r\n",
+						matSave.at<float>(0,0),
+						matSave.at<float>(0,1),
+						matSave.at<float>(0,2),
+						matSave.at<float>(0,3),
+						matSave.at<float>(1,0),
+						matSave.at<float>(1,1),
+						matSave.at<float>(1,2),
+						matSave.at<float>(1,3) );
+
+	// Conversion for saving to image
+	cv::normalize ( matSave, matSave, 0, 65535, cv::NORM_MINMAX );
+	matSave.convertTo ( matSave, CV_16UC1 );
+
+	// Save to file
+	if (strLoc.toAscii ( &paLoc ) == S_OK)
+		cv::imwrite ( paLoc, matSave );
+	
+	// Clean up
+	_FREEMEM(paLoc);
+
+	return hr;
+	}	// image_to_debug
 
 HRESULT image_from_mat ( Mat *pM, IDictionary *pImg )
 	{

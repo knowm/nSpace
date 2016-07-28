@@ -11,8 +11,8 @@
 
 // Globals
 static bool	bGPUInit = false;							// GPU detectiion/initialization has occured
-bool	bCuda		= false;									// CUDA enabled
-bool	bUMat		= false;									// UMat/OpenCL enabled
+bool	bCuda				= false;							// CUDA enabled
+bool	bUMat				= false;							// UMat/OpenCL enabled
 
 Prepare :: Prepare ( void )
 	{
@@ -23,8 +23,6 @@ Prepare :: Prepare ( void )
 	//
 	////////////////////////////////////////////////////////////////////////
 	pImg		= NULL;
-	bCuda		= false;
-	bOcl		= false;
 	}	// Prepare
 
 HRESULT Prepare :: extract (	IDictionary *pDct, const ADTVALUE &vAlt,
@@ -90,27 +88,33 @@ HRESULT Prepare :: gpuInit ( void )
 	if (bGPUInit)
 		return S_OK;
 
-	// Open CV 3.X has automatic OpenCL support via the new "UMat" object
-	// UMat/OpenCL support currently disabled due to missing UMat function
-	// in library.
-	bUMat = false;
-	if (cv::ocl::haveOpenCL())
-		{
-		lprintf ( LOG_INFO, L"OpenCL enabled device detected\r\n" );
-		cv::ocl::setUseOpenCL(false);
-//		cv::ocl::setUseOpenCL(true);
-//		bUMat = true;
-		}	// if
-
 	// Any CUDA-enabled devices ?
 	bCuda = false;
 	if ((ret = cv::cuda::getCudaEnabledDeviceCount()) > 0)
 		{
+		cv::cuda::GpuMat	gpumat;
+		cv::Mat				mat(10,10,CV_8UC1);
+		gpumat.upload(mat);
 		lprintf ( LOG_INFO, L"Cuda enabled devices : %d\r\n", ret );
 		bCuda = true;
 		}	// if
 	else
+		{
 		lprintf ( LOG_INFO, L"No Cuda enabled devices\r\n" );
+
+		// Open CV 3.X has automatic OpenCL support via the new "UMat" object
+		// UMat/OpenCL support currently disabled due to missing UMat function
+		// in library.
+		bUMat = false;
+		if (cv::ocl::haveOpenCL())
+			{
+			lprintf ( LOG_INFO, L"OpenCL enabled device detected\r\n" );
+			cv::ocl::setUseOpenCL(false);
+//			cv::ocl::setUseOpenCL(true);
+//			bUMat = true;
+			}	// if
+
+		}	// else
 	
 	// GPU initialized
 	bGPUInit = true;
@@ -221,6 +225,8 @@ HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			}	// else
 
 		// Clean up
+		if (mat != NULL)
+			delete mat;
 		_RELEASE(pMat);
 		_RELEASE(pImgUse);
 		}	// if

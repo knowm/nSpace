@@ -36,7 +36,7 @@ HRESULT Create :: create ( IDictionary *pDct, U32 w, U32 h, U32 f,
 	//		-	Create an appropiate matrix reference object for the image.
 	//
 	//	PARAMETERS
-	//		-	pDct will receive the information
+	//		-	pDct is an optional dictionary to receive the information
 	//		-	w,h are the dimensions of the image
 	//		-	f is the OpenCV format
 	//		-	ppMat is optional and will receive the referenced matrix object.
@@ -69,7 +69,8 @@ HRESULT Create :: create ( IDictionary *pDct, U32 w, U32 h, U32 f,
 		}	// else
 
 	// Store image in image dictionary
-	CCLTRY ( pDct->store (	adtString(L"cvMatRef"), adtIUnknown(pMat) ) );
+	if (hr == S_OK && pDct != NULL)
+		hr = pDct->store ( adtString(L"cvMatRef"), adtIUnknown(pMat) );
 
 	// Result
 	if (hr == S_OK && ppMat != NULL)

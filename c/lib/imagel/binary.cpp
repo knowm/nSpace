@@ -47,7 +47,7 @@ HRESULT Binary :: onAttach ( bool bAttach )
 
 		// Defaults (optional)
 		pnDesc->load ( adtString(L"Left"), vL );
-		pnDesc->load ( adtString(L"Rightt"), vR );
+		pnDesc->load ( adtString(L"Right"), vR );
 		if (	pnDesc->load ( adtStringSt(L"Op"), vL ) == S_OK	&& 
 				adtValue::type(vL) == VTYPE_STR						&&
 				vL.pstr != NULL )
@@ -114,10 +114,13 @@ HRESULT Binary :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 				}	// if
 			CCLTRY(Prepare::extract ( NULL, v, &pImgO, &pMatO ));
 
+			// Debug
+//			CCLOK ( image_to_debug ( pMatL, L"Binary", L"c:/temp/binL.png" ); )
+
 			// All images must be of the same type
-			CCLTRYE (	(pMatL->mat != NULL && pMatR->mat != NULL && pMatO->mat != NULL) ||
-							(pMatL->umat != NULL && pMatR->umat != NULL && pMatO->umat != NULL) ||
-							(pMatL->gpumat != NULL && pMatR->gpumat != NULL && pMatO->gpumat != NULL),
+			CCLTRYE (	(pMatL->mat != NULL && (pMatR == NULL || pMatR->mat != NULL) && pMatO->mat != NULL) ||
+							(pMatL->umat != NULL && (pMatR == NULL || pMatR->umat != NULL) && pMatO->umat != NULL) ||
+							(pMatL->gpumat != NULL && (pMatR == NULL || pMatR->gpumat != NULL) && pMatO->gpumat != NULL),
 							ERROR_INVALID_STATE );
 
 			// Apply operation
@@ -138,7 +141,7 @@ HRESULT Binary :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 						else
 							{
 							if (pMatL->isGPU())
-								cv::add ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
+								cv::cuda::add ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
 							else if (pMatL->isUMat())
 								cv::add ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat) );
 							else
@@ -158,7 +161,7 @@ HRESULT Binary :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 						else
 							{
 							if (pMatL->isGPU())
-								cv::subtract ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
+								cv::cuda::subtract ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
 							else if (pMatL->isUMat())
 								cv::subtract ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat) );
 							else
@@ -178,7 +181,7 @@ HRESULT Binary :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 						else
 							{
 							if (pMatL->isGPU())
-								cv::multiply ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
+								cv::cuda::multiply ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
 							else if (pMatL->isUMat())
 								cv::multiply ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat) );
 							else
@@ -198,7 +201,7 @@ HRESULT Binary :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 						else
 							{
 							if (pMatL->isGPU())
-								cv::divide ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
+								cv::cuda::divide ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
 							else if (pMatL->isUMat())
 								cv::divide ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat) );
 							else
@@ -220,7 +223,7 @@ HRESULT Binary :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 						else
 							{
 							if (pMatL->isGPU())
-								cv::bitwise_and ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
+								cv::cuda::bitwise_and ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
 							else if (pMatL->isUMat())
 								cv::bitwise_and ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat) );
 							else
@@ -240,7 +243,7 @@ HRESULT Binary :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 						else
 							{
 							if (pMatL->isGPU())
-								cv::bitwise_xor ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
+								cv::cuda::bitwise_xor ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
 							else if (pMatL->isUMat())
 								cv::bitwise_xor ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat) );
 							else
@@ -260,7 +263,7 @@ HRESULT Binary :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 						else
 							{
 							if (pMatL->isGPU())
-								cv::bitwise_or ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
+								cv::cuda::bitwise_or ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
 							else if (pMatL->isUMat())
 								cv::bitwise_or ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat) );
 							else
@@ -272,10 +275,14 @@ HRESULT Binary :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 					default :
 						hr = E_NOTIMPL;
 					}	// switch
+
 				}	// if
 
 			// Result
 			CCLTRY ( adtValue::copy ( adtIUnknown(pImgO), vRes ) );
+
+			// Debug
+//			CCLOK ( image_to_debug ( pMatO, L"Binary", L"c:/temp/binO.png" ); )
 
 			// Clean up
 			_RELEASE(pMatO);

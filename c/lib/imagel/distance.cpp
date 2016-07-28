@@ -89,9 +89,16 @@ HRESULT Distance :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v 
 			{
 			if (pMat->isGPU())
 				{
-				// TODO: No cuda version of this
-				hr = E_NOTIMPL;
-//				cv::cuda::distanceTransform ( *(pMat->gpumat), *(pMat->gpumat), CV_DIST_L2, 3 );
+				cv::Mat		matNoGpu;
+
+				// Currently no GPU based version
+				pMat->gpumat->download ( matNoGpu );
+
+				// Execute
+				cv::distanceTransform ( matNoGpu, matNoGpu, CV_DIST_L2, 3 );
+
+				// Restore
+				pMat->gpumat->upload ( matNoGpu );
 				}	// if
 			else if (pMat->isUMat())
 				cv::distanceTransform ( *(pMat->umat), *(pMat->umat), CV_DIST_L2, 3 );

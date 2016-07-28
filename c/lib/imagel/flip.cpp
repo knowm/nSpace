@@ -124,7 +124,15 @@ HRESULT Flip :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
 
 		// Perform operation
-		CCLOK ( cv::transpose ( *(pMat->mat), *(pMat->mat) ); )
+		if (hr == S_OK)
+			{
+			if (pMat->isGPU())
+				cv::cuda::transpose ( *(pMat->gpumat), *(pMat->gpumat) );
+			else if (pMat->isUMat())
+				cv::transpose ( *(pMat->umat), *(pMat->umat) );
+			else
+				cv::transpose ( *(pMat->mat), *(pMat->mat) );
+			}	// if
 
 		// Result
 		if (hr == S_OK)

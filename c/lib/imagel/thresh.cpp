@@ -88,6 +88,9 @@ HRESULT Threshold :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v
 		// Obtain image refence
 		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
 
+		// Debug
+//		CCLOK ( image_to_debug ( pMat, L"Threshold 1", L"c:/temp/thresh1.png" ); )
+
 		// Perform operation
 		if (hr == S_OK)
 			{
@@ -137,6 +140,9 @@ HRESULT Threshold :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v
 				}	// else
 
 			}	// if
+
+		// Debug
+//		CCLOK ( image_to_debug ( pMat, L"Threshold 2", L"c:/temp/thresh2.png" ); )
 
 		// Result
 		if (hr == S_OK)

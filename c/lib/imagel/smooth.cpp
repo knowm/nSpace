@@ -95,8 +95,19 @@ HRESULT Smooth :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			{
 			if (pMat->isGPU())
 				{
-				// TODO: Need to implement 'Filter' calls
-				hr = E_NOTIMPL;
+				cv::Mat		matNoGpu;
+
+				// There must be a GPU way of doing this.  Manually convolution with kernel ?
+				pMat->gpumat->download ( matNoGpu );
+
+				// Execute
+				if (!strType.length())
+					cv::blur ( matNoGpu, matNoGpu, cv::Size(iSz,iSz) );
+				else if (!WCASECMP(L"Median",strType))
+					cv::medianBlur ( matNoGpu, matNoGpu, iSz );
+
+				// Restore
+				pMat->gpumat->upload ( matNoGpu );
 				}	// if
 			else if (pMat->isUMat())
 				{

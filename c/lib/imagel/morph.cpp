@@ -53,6 +53,18 @@ HRESULT Morph :: onAttach ( bool bAttach )
 	// Detach
 	else
 		{
+		// Clean up
+		if (pfOpen != NULL)
+			{
+			delete pfOpen;
+			pfOpen = NULL;
+			}	// if
+		if (pfClose != NULL)
+			{
+			delete pfClose;
+			pfClose = NULL;
+			}	// if
+
 		// Shutdown
 		_RELEASE(pImg);
 //		_RELEASE(pKer);
@@ -96,19 +108,22 @@ HRESULT Morph :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			{
 			if (pMat->isGPU())
 				{
-				cv::cuda::Filter *pFilter = NULL;
+				// Need filters ?
+				if (pfOpen == NULL)
+					{
+					// Create filter objects
+					CCLTRYE ( (pfOpen = cv::cuda::createMorphologyFilter ( cv::MORPH_OPEN,
+									pMat->gpumat->type(), matKer )) != NULL, E_OUTOFMEMORY );
+					CCLTRYE ( (pfClose = cv::cuda::createMorphologyFilter ( cv::MORPH_CLOSE,
+									pMat->gpumat->type(), matKer )) != NULL, E_OUTOFMEMORY );
+					}	// if
 
 				// Create filter object
-				CCLTRYE ( (pFilter = cv::cuda::createMorphologyFilter (
-									(_RCP(Open)) ? cv::MORPH_OPEN : cv::MORPH_CLOSE,
-									pMat->gpumat->type(), matKer )) != NULL, E_OUTOFMEMORY );
-
-				// Apply 
-				CCLOK ( pFilter->apply ( *(pMat->gpumat), *(pMat->gpumat) ); )
-
-				// Clean up
-				if (pFilter != NULL)
-					delete pFilter;
+				// TODO: Only create once, delete on detachment
+				if (hr == S_OK && _RCP(Open))
+					pfOpen->apply ( *(pMat->gpumat), *(pMat->gpumat) );
+				else if (hr == S_OK && _RCP(Close))
+					pfClose->apply ( *(pMat->gpumat), *(pMat->gpumat) );
 				}	// if
 			else if (pMat->isUMat())
 				cv::morphologyEx ( *(pMat->umat), *(pMat->umat), 
