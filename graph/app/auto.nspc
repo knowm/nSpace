@@ -89,6 +89,7 @@
 %	$	ValueImgLoc Misc.Dist { Value "c:/temp/blank.png" }
 %	$	ValueImgLoc Misc.Dist { Value "c:/temp/pupil_nir_half.png" }
 %		!	Initialize/OnFire						ValueImgLoc/Fire
+%		!	ValueImgLoc/OnFire					Debug/Fire
 
 	% IMAGEN: Load image
 %	$	LoadImage Image.PersistImage {}
@@ -98,16 +99,6 @@
 
 	% Execute
 %	!	LoadImage/OnLoad							Debug/Fire
-
-	% IMAGEN: Save result
-%	$	SaveImage Image.PersistImage { Location "c:/temp/load.png" }
-%		!	LoadImage/OnLoad						SaveImage/Image
-%		!	LoadImage/OnLoad						SaveImage/Save
-
-	% IMAGEN: Upload from dictionary into image processing logic
-%	$	Prepare Image.Prepare {}
-%		!	LoadImage/OnLoad						Prepare/Upload
-%		!	Prepare/OnUpload						Prepare/Download
 
 	%% OCT testing
 
@@ -142,7 +133,6 @@
 
 	% Download image back into buffer
 %	!	Prepare/OnUpload							Prepare/Download
-
 
 	% Subgraph: Perform OCT conversion
 %	#	ToMag											Abbott/Lib/Oct/RawToMag/ {}

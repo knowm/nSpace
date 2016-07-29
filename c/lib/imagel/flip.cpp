@@ -136,15 +136,23 @@ HRESULT Flip :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
 
 		// Perform operation
+//		CCLOK ( image_to_debug ( pMat, L"Transpose", L"c:/temp/trans1.png" ); )
 		if (hr == S_OK)
 			{
 			if (pMat->isGPU())
 				cv::cuda::transpose ( *(pMat->gpumat), *(pMat->gpumat) );
 			else if (pMat->isUMat())
-				cv::transpose ( *(pMat->umat), *(pMat->umat) );
+				{
+				cv::UMat	matTrans;
+
+				// NOTE: UMat does not like source and destination to be the same
+				pMat->umat->copyTo ( matTrans );
+				cv::transpose ( matTrans, *(pMat->umat) );
+				}	// else if
 			else
 				cv::transpose ( *(pMat->mat), *(pMat->mat) );
 			}	// if
+//		CCLOK ( image_to_debug ( pMat, L"Transpose", L"c:/temp/trans2.png" ); )
 
 		// Result
 		if (hr == S_OK)

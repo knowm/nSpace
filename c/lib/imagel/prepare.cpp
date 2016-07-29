@@ -107,23 +107,38 @@ HRESULT Prepare :: gpuInit ( void )
 
 		// Do not use OpenCL
 		bUMat = false;
-		cv::ocl::setUseOpenCL(false);
 		}	// if
 	else
 		{
+		// Debug
 		lprintf ( LOG_INFO, L"No Cuda enabled devices\r\n" );
+		bUMat = false;
 
 		// Open CV 3.X has automatic OpenCL support via the new "UMat" object
-		// UMat/OpenCL support currently disabled due to missing UMat function
-		// in library.
-		bUMat = false;
 		if (cv::ocl::haveOpenCL())
+			bUMat = true;
+
+		// At the moment there are certain graphics cards that have brain dead
+		// performance so do not use OpenCL in those cases.
+		cv::ocl::Device	
+		dev = cv::ocl::Device::getDefault();
+		dbgprintf ( L"Name : %S : %S : %d.%d\r\n", dev.name().c_str(), dev.vendorName().c_str(),
+						dev.deviceVersionMajor(), dev.deviceVersionMinor() );
+		dbgprintf ( L"%S\r\n", dev.name().c_str() );
+		if (strstr ( dev.name().c_str(), "Iris" ) != NULL)
+			bUMat = false;
+
+		// Debug
+		lprintf ( LOG_INFO, L"OpenCL %s\r\n", (bUMat) ? L"enabled" : L"disabled" );
+
+		// Perform some sort of GPU operation to intiailize Cuda for the
+		// first time which can take while (many seconds on a fresh system)
+		cv::ocl::setUseOpenCL(bUMat);
+		if (bUMat)
 			{
-			// Do not use OpenCL until there is a chance to test
-			lprintf ( LOG_INFO, L"OpenCL enabled device detected\r\n" );
-			cv::ocl::setUseOpenCL(false);
-//			cv::ocl::setUseOpenCL(true);
-//			bUMat = true;
+			cv::UMat	umat;
+			cv::Mat	mat(10,10,CV_8UC1);
+			mat.copyTo ( umat );
 			}	// if
 
 		}	// else
