@@ -111,10 +111,13 @@ HRESULT Value :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		_QISAFE(unkV,IID_IDictionary,&pDsc);
 
 		// For a new descriptor, update type
-		if (pDsc->load ( strRefType, vL ) == S_OK )
-			adtValue::toString ( vL, strType );
-		else
-			strType = L"";
+		if (pDsc != NULL)
+			{
+			if (pDsc->load ( strRefType, vL ) == S_OK )
+				adtValue::toString ( vL, strType );
+			else
+				strType = L"";
+			}	// if
 
 		// Forward through emitter
 		_EMT(Descriptor,adtIUnknown(pDsc));

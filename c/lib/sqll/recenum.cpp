@@ -7,49 +7,189 @@
 ////////////////////////////////////////////////////////////////////////
 
 /*
-   Copyright (c) 2003, nSpace, LLC
+   Copyright (c) nSpace, LLC
    All right reserved
-
-   Redistribution and use in source and binary forms, with or without 
-   modification, are permitted provided that the following conditions
-   are met:
-
-      - Redistributions of source code must retain the above copyright 
-        notice, this list of conditions and the following disclaimer.
-      - nSpace, LLC as the copyright holder reserves the right to 
-        maintain, update, and provide future releases of the source code.
-      - The copyrights to all improvements and modifications to this 
-        distribution shall reside in nSpace, LLC.
-      - Redistributions in binary form must reproduce the above copyright
-        notice, this list of conditions and the following disclaimer in 
-        the documentation and/or other materials provided with the 
-        distribution.
-      - Neither the name of nSpace, LLC nor the names of its contributors 
-        may be used to endorse or promote products derived from this 
-        software without specific prior written permission.
-
-   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
-   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR 
-   A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT 
-   OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
-   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
-   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSBILITY OF SUCH DAMAGE.
 */
 
-#include "sqln_.h"
+#include "sqll_.h"
 #include <stdio.h>
 #include <stddef.h>
+
+// Globals
+extern SQLiteDll	sqliteDll;
+
+RecordEnum :: RecordEnum ( void )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Constructor for the node
+	//
+	////////////////////////////////////////////////////////////////////////
+	pStmt		= NULL;
+	pDct		= NULL;
+	}	// RecordEnum
+
+HRESULT RecordEnum :: onAttach ( bool bAttach )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Called when this behaviour is assigned to a node
+	//
+	//	PARAMETERS
+	//		-	bAttach is true for attachment, false for detachment.
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT	hr = S_OK;
+
+	// Attach
+	if (bAttach)
+		{
+//		adtValue		vL;
+
+		// Defaults
+//		if (pnDesc->load ( adtString(L"Table"), vL ) == S_OK)
+//			adtValue::toString ( vL, sTableName );
+		}	// if
+
+	// Detach
+	else
+		{
+		// Shutdown
+		_RELEASE(pDct);
+		_RELEASE(pStmt);
+		}	// else
+
+	return hr;
+	}	// onAttach
+
+HRESULT RecordEnum :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	The node has received a value on the specified receptor.
+	//
+	//	PARAMETERS
+	//		-	pR is the receptor
+	//		-	v is the value
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT	hr = S_OK;
+
+	// Next record
+	if (_RCP(Next))
+		{
+		int ret;
+
+		// State check
+		CCLTRYE ( pStmt != NULL && pStmt->plite_stmt != NULL, ERROR_INVALID_STATE );
+		CCLTRYE ( pDct != NULL, ERROR_INVALID_STATE );
+
+		// Move to the first/next result.  SQLITE_ROW means a new row of data is ready
+		CCLTRYE( (ret = sqliteDll.sqlite3_step ( pStmt->plite_stmt ))
+						== SQLITE_ROW, ret );
+
+		// Read out data
+		if (hr == S_OK)
+			{
+			U32	iCols = 0;
+
+			// Number of columns in result set
+			CCLTRYE ( (iCols = sqliteDll.sqlite3_column_count ( pStmt->plite_stmt )) > 0,
+							E_UNEXPECTED );
+
+			// Retrieve each column
+			for (U32 c = 0;hr == S_OK && c < iCols;++c)
+				{
+				adtString	strCol;
+				adtValue		vCol;
+
+				// Column name
+				strCol = (LPCWSTR) sqliteDll.sqlite3_column_name16 ( pStmt->plite_stmt, c );
+				if (strCol.length() == 0)
+					continue;
+
+				// Retrieve the value for the column
+				switch ((ret = sqliteDll.sqlite3_column_type ( pStmt->plite_stmt, c )))
+					{
+					case SQLITE_INTEGER :
+						CCLTRY ( adtValue::copy ( 
+							adtInt (
+								sqliteDll.sqlite3_column_int ( pStmt->plite_stmt, c ) ), vCol ) );
+						break;
+					case SQLITE_FLOAT :
+						CCLTRY ( adtValue::copy ( 
+							adtDouble (
+								sqliteDll.sqlite3_column_double ( pStmt->plite_stmt, c ) ), vCol ) );
+						break;
+					case SQLITE_TEXT :
+						{
+						adtString	strV;
+						strV = (LPCWSTR) sqliteDll.sqlite3_column_text16 ( pStmt->plite_stmt, c );
+						CCLTRY ( adtValue::copy ( strV, vCol ) );
+						}	
+						break;
+					case SQLITE_NULL :
+						adtValue::clear(vCol);
+						break;
+					case SQLITE_BLOB :
+					default :
+						lprintf ( LOG_WARN, L"Unhandled data type : %d\r\n", ret );
+					}	// switch
+
+				// Store in results
+				CCLTRY ( pDct->store ( strCol, vCol ) );
+				
+				// Debug
+//				lprintf ( LOG_INFO, L"Column %d) %s\r\n", c, (LPCWSTR)strCol );
+				}	// for
+
+			}	// if
+	
+		// Result
+		if (hr == S_OK)
+			_EMT(Next,adtIUnknown(pDct));
+		else
+			_EMT(End,adtInt(hr));
+
+		// Debug
+		if (hr != S_OK)
+			lprintf ( LOG_WARN, L"Next failed : %d\r\n", hr );
+		}	// if
+
+	// State
+	else if (_RCP(Statement))
+		{
+		adtIUnknown		unkV(v);
+		_RELEASE(pStmt);
+		pStmt = (SQLRef *)(IUnknown *)unkV;
+		_ADDREF(pStmt);
+		}	// else if
+	else if (_RCP(Dictionary))
+		{
+		adtIUnknown		unkV(v);
+		_RELEASE(pDct);
+		_QISAFE(unkV,IID_IDictionary,&pDct);
+		}	// else if
+	else
+		hr = ERROR_NO_MATCH;
+
+	return hr;
+	}	// receive
 
 #ifdef	USE_ODBC
 
 // Globals
 
-SQLRecordEnum :: SQLRecordEnum ( void )
+RecordEnum :: RecordEnum ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -64,9 +204,9 @@ SQLRecordEnum :: SQLRecordEnum ( void )
 	ColumnCount	= 0;
 	pBfr			= NULL;
 	uBfrSz		= 0;
-	}	// SQLRecordEnum
+	}	// RecordEnum
 
-HRESULT SQLRecordEnum :: construct ( void )
+HRESULT RecordEnum :: construct ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -94,7 +234,7 @@ HRESULT SQLRecordEnum :: construct ( void )
 	return hr;
 	}	// construct
 
-void SQLRecordEnum :: destruct ( void )
+void RecordEnum :: destruct ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -112,7 +252,7 @@ void SQLRecordEnum :: destruct ( void )
 	_RELEASE(pBfr);
 	}	// destruct
 
-HRESULT SQLRecordEnum :: getObject ( SQLHANDLE hStmt, SQLUSMALLINT col,
+HRESULT RecordEnum :: getObject ( SQLHANDLE hStmt, SQLUSMALLINT col,
 													adtValue &vValue )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -163,7 +303,7 @@ HRESULT SQLRecordEnum :: getObject ( SQLHANDLE hStmt, SQLUSMALLINT col,
 	return hr;
 	}	// getObject
 
-HRESULT SQLRecordEnum :: prepare ( void )
+HRESULT RecordEnum :: prepare ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -204,7 +344,7 @@ HRESULT SQLRecordEnum :: prepare ( void )
 		// Name
 		pCol						= &(pCols[ColumnNumber]);
 		pCol->sName				= wColName;
-//		OutputDebugString ( L"SQLRecordEnum::prepare:" );
+//		OutputDebugString ( L"RecordEnum::prepare:" );
 //		OutputDebugString ( pCol->sName );
 //		OutputDebugString ( L"\n" );
 
@@ -281,7 +421,7 @@ HRESULT SQLRecordEnum :: prepare ( void )
 	return hr;
 	}	// prepare
 
-HRESULT SQLRecordEnum :: receive ( IReceptor *pr, const WCHAR *pl, 
+HRESULT RecordEnum :: receive ( IReceptor *pr, const WCHAR *pl, 
 												const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -316,7 +456,7 @@ HRESULT SQLRecordEnum :: receive ( IReceptor *pr, const WCHAR *pl,
 			sqlr = SQLFetch ( hStmt );
 			hr = (sqlr == SQL_NO_DATA) ? ERROR_NOT_FOUND : SQLSTMT(hStmt,sqlr);
 	//if (hr == ERROR_NOT_FOUND)
-	//	OutputDebugString ( L"SQLRecordEnum::receiveNext:No data!\n" );
+	//	OutputDebugString ( L"RecordEnum::receiveNext:No data!\n" );
 			}	// if
 
 		// If successful, output result
@@ -424,7 +564,7 @@ HRESULT SQLRecordEnum :: receive ( IReceptor *pr, const WCHAR *pl,
 
 #ifdef	USE_OLEDB
 
-SQLRecordEnum :: SQLRecordEnum ( void )
+RecordEnum :: RecordEnum ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -445,9 +585,9 @@ SQLRecordEnum :: SQLRecordEnum ( void )
 
 	// Interfaces
 	addInterface ( IID_INodeBehaviour, (INodeBehaviour *) this );
-	}	// SQLRecordEnum
+	}	// RecordEnum
 
-HRESULT SQLRecordEnum :: construct ( void )
+HRESULT RecordEnum :: construct ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -475,7 +615,7 @@ HRESULT SQLRecordEnum :: construct ( void )
 	return hr;
 	}	// construct
 
-void SQLRecordEnum :: destruct ( void )
+void RecordEnum :: destruct ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -494,7 +634,7 @@ void SQLRecordEnum :: destruct ( void )
 	FactCache.Release();
 	}	// destruct
 
-HRESULT SQLRecordEnum :: prepare ( void )
+HRESULT RecordEnum :: prepare ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -576,7 +716,7 @@ HRESULT SQLRecordEnum :: prepare ( void )
 	return hr;
 	}	// prepare
 
-HRESULT SQLRecordEnum :: receiveContext ( const adtValue &v )
+HRESULT RecordEnum :: receiveContext ( const adtValue &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -618,7 +758,7 @@ HRESULT SQLRecordEnum :: receiveContext ( const adtValue &v )
 	return hr;
 	}	// receiveContext
 
-HRESULT SQLRecordEnum :: receiveNext ( const adtValue &v )
+HRESULT RecordEnum :: receiveNext ( const adtValue &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -725,7 +865,7 @@ HRESULT SQLRecordEnum :: receiveNext ( const adtValue &v )
 	return hr;
 	}	// receiveNext
 
-HRESULT SQLRecordEnum :: receivePosition ( const adtValue &v )
+HRESULT RecordEnum :: receivePosition ( const adtValue &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -758,7 +898,7 @@ HRESULT SQLRecordEnum :: receivePosition ( const adtValue &v )
 // Context
 //
 
-HRESULT SQLRecordEnum :: receiveCount ( const adtValue &v )
+HRESULT RecordEnum :: receiveCount ( const adtValue &v )
 	{
 	iMax = adtInt(v);
 	return S_OK;

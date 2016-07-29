@@ -7,46 +7,386 @@
 ////////////////////////////////////////////////////////////////////////
 
 /*
-   Copyright (c) 2003, nSpace, LLC
+   Copyright (c) nSpace, LLC
    All right reserved
-
-   Redistribution and use in source and binary forms, with or without 
-   modification, are permitted provided that the following conditions
-   are met:
-
-      - Redistributions of source code must retain the above copyright 
-        notice, this list of conditions and the following disclaimer.
-      - nSpace, LLC as the copyright holder reserves the right to 
-        maintain, update, and provide future releases of the source code.
-      - The copyrights to all improvements and modifications to this 
-        distribution shall reside in nSpace, LLC.
-      - Redistributions in binary form must reproduce the above copyright
-        notice, this list of conditions and the following disclaimer in 
-        the documentation and/or other materials provided with the 
-        distribution.
-      - Neither the name of nSpace, LLC nor the names of its contributors 
-        may be used to endorse or promote products derived from this 
-        software without specific prior written permission.
-
-   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
-   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR 
-   A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT 
-   OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
-   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
-   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSBILITY OF SUCH DAMAGE.
 */
 
-#include "sqln_.h"
+#include "sqll_.h"
 #include <stdio.h>
+
+// Macros
+#define	SIZE_SQLBFR		1024
+
+// Globals
+extern SQLiteDll	sqliteDll;
+
+Query :: Query ( void )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Constructor for the node
+	//
+	////////////////////////////////////////////////////////////////////////
+	pConn			= NULL;
+	bDistinct	= false;
+	pConsIt		= NULL;
+	pFldsIt		= NULL;
+	bCount		= false;
+	pCons			= NULL;
+	szCons		= 0;
+	pQryBfr		= NULL;
+	pwQryBfr		= NULL;
+	pJoin			= NULL;
+	iCount		= 0;
+	}	// Query
+
+HRESULT Query :: construct ( void )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	OVERLOAD
+	//	FROM		CCLObject
+	//
+	//	PURPOSE
+	//		-	Called when the object is being created.
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT		hr			= S_OK;
+
+	// SQL query string buffer
+	CCLTRY ( COCREATE ( L"Io.MemoryBlock", IID_IMemoryMapped, &pQryBfr ) );
+	CCLTRY ( pQryBfr->setSize ( SIZE_SQLBFR ) );
+	CCLTRY ( pQryBfr->lock ( 0, 0, (PVOID *) &pwQryBfr, NULL ) );
+
+	return hr;
+	}	// construct
+
+void Query :: destruct ( void )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	OVERLOAD
+	//	FROM		CCLObject
+	//
+	//	PURPOSE
+	//		-	Called when the object is being destroyed
+	//
+	////////////////////////////////////////////////////////////////////////
+//	if (pvCons != NULL) delete[] pvCons;
+	_RELEASE(pCons);
+	_RELEASE(pConsIt);
+	_RELEASE(pFldsIt);
+	_RELEASE(pJoin);
+	_RELEASE(pConn);
+	_UNLOCK(pQryBfr,pwQryBfr);
+	_RELEASE(pQryBfr);
+	}	// destruct
+
+HRESULT Query :: onAttach ( bool bAttach )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Called when this behaviour is assigned to a node
+	//
+	//	PARAMETERS
+	//		-	bAttach is true for attachment, false for detachment.
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT	hr = S_OK;
+
+	// Attach
+	if (bAttach)
+		{
+		adtValue		vL;
+
+		// Defaults
+		if (pnDesc->load ( adtString(L"Table"), vL ) == S_OK)
+			adtValue::toString ( vL, sTableName );
+		if (pnDesc->load ( adtString(L"SortBy"), vL ) == S_OK)
+			adtValue::toString ( vL, sSort );
+		}	// if
+
+	// Detach
+	else
+		{
+		// Shutdown
+		_RELEASE(pConn);
+		}	// else
+
+	return hr;
+	}	// onAttach
+
+HRESULT Query :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	The node has received a value on the specified receptor.
+	//
+	//	PARAMETERS
+	//		-	pR is the receptor
+	//		-	v is the value
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT	hr = S_OK;
+
+	// Fire
+	if (_RCP(Fire))
+		{
+		SQLRef	*pStmt	= NULL;
+		int		ret;
+
+		// State check
+		CCLTRYE ( (pConn != NULL),				ERROR_INVALID_STATE );
+		CCLTRYE ( sTableName.length() > 0,	ERROR_INVALID_STATE );
+
+		// TODO: API Switch based on database connection
+		CCLTRYE ( (pConn->plite_db != NULL),	ERROR_INVALID_STATE );
+
+		// Create a reference object to hold the statement results
+		CCLTRYE ( (pStmt = new SQLRef()) != NULL, E_OUTOFMEMORY );
+
+		// Time to generate query string.
+		// Form is : SELECT (Fields) FROM (Table) WHERE (Constraints)
+
+		// SELECT
+		CCLOK		( WCSCPY ( pwQryBfr, SIZE_SQLBFR, L"SELECT " ); )
+
+		// Distinct ?
+		if (hr == S_OK && bDistinct == true)
+			WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"DISTINCT " );
+
+		// Fields (F1,F2,...,Fn) or All (*)
+		if (hr == S_OK && pFldsIt != NULL)
+			{
+			adtValue		vVal;
+
+			// Iterate fields
+			CCLTRY	( pFldsIt->begin() );
+			while (hr == S_OK && pFldsIt->read ( vVal ) == S_OK)
+				{
+				// Field name
+//				CCLOK ( WCSCAT ( pwQryBfr, L"[" ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, adtString(vVal) ); )
+//				CCLOK ( WCSCAT ( pwQryBfr, L"]," ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"," ); )
+
+				// Next
+				pFldsIt->next();
+				}	// while
+			CCLOK ( pwQryBfr[wcslen(pwQryBfr)-1] = WCHAR('\0'); )
+			}	// if
+		else if (hr == S_OK && pFldsIt == NULL)
+			CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"*" ); )
+
+		// FROM
+		CCLOK		( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L" FROM " ); )
+
+		// Oddity: Access seems to need parathesis, used as embedded joins
+		// Count number of joins and prepend the correct number of left parens.
+		if (hr == S_OK && pJoin != NULL)
+			{
+			U32				i,cnt;
+			CCLTRY ( pJoin->size ( &cnt ) );
+			if (hr == S_OK)
+				for (i = 0;i < cnt;++i)
+					WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"(" );
+			}	// if
+
+		// Table name
+		CCLOK		( WCSCAT ( pwQryBfr, SIZE_SQLBFR, sTableName ); )
+
+		// Optional joins
+		if (hr == S_OK && pJoin != NULL)
+			{
+			IDictionary	*pCtxJ	= NULL;
+			IIt			*pIt		= NULL;
+			adtValue		vJ;
+			adtString	sTableJ,sFrom,sTo;
+		
+			// Iterate join context list
+			CCLTRY ( pJoin->iterate ( &pIt ) );
+
+			// Iterate joins
+			while (hr == S_OK && pIt->read ( vJ ) == S_OK)
+				{
+				// Context
+				CCLTRYE ( adtValue::type(vJ) == VTYPE_UNK && vJ.punk != NULL, E_UNEXPECTED );
+				CCLTRY  ( _QI(vJ.punk,IID_IDictionary,&pCtxJ) );
+
+				// Check parameters
+				CCLTRY(pCtxJ->load (	adtString(L"Table"), vJ ));
+				CCLTRY(adtValue::toString(vJ,sTableJ));
+				CCLTRY(pCtxJ->load ( adtString(L"From"), vJ ));
+				CCLTRY(adtValue::toString(vJ,sFrom));
+				CCLTRY(pCtxJ->load ( adtString(L"To"), vJ ));
+				CCLTRY(adtValue::toString(vJ,sTo));
+
+				// Generate the join statement.
+				// Format is : JOIN <Join table> ON (<Table>.<From> = <Join table>.<To>)
+
+				// JOIN
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L" INNER JOIN " ); )
+
+				// Join table
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, sTableJ ); )
+
+				// ON
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L" ON " ); )
+
+				// <Table>.<From>
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"[" ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, sTableName ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"].[" ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, sFrom ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"]=[" ); )
+
+				// <Join table>.<To>
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, sTableJ ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"].[" ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, sTo ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"])" ); )
+
+				// Next entry
+				pIt->next();
+
+				// Clean up
+				_RELEASE(pCtxJ);
+				}	// while
+
+			// Clean up
+			_RELEASE(pIt);
+			}	// if
+
+		/*
+		// Optional constraints
+		if (hr == S_OK && szCons == 0 && pCons != NULL)
+			{
+			// Remove previous constraints
+			if (pvCons != NULL) { delete[] pvCons; pvCons = NULL; }
+
+			// Constraint size
+			CCLTRY(pCons->size ( &szCons ));
+
+			// Allocate new value list for binding
+			if (hr == S_OK && szCons > 0)
+				hr = ((pvCons = new SQLCol[szCons]) != NULL) ? S_OK : E_OUTOFMEMORY;
+			}	// if
+		if (hr == S_OK && szCons > 0)
+			{
+			// WHERE
+			CCLOK		( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L" WHERE " ); )
+
+			// Names, values
+			CCLOK		( idx = 0; )
+			CCLTRYE	( pConsIn != NULL, E_UNEXPECTED );
+			CCLTRY	( pConsIn->begin() );
+			while (hr == S_OK && pConsIn->read ( unkV ) == S_OK && idx < szCons)
+				{
+				// Properties
+				CCLTRY( _QISAFE(unkV,IID_IDictionary,&pDict) );
+
+				// Name
+				CCLTRY( pDict->load ( strRefKey, strV ) );
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"[" ); )
+				CCLOK	( WCSCAT ( pwQryBfr, SIZE_SQLBFR, strV ); )
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"] " ); )
+
+				// Constraint operator ( <, >, LIKE, etc. )
+				CCLTRY( pDict->load ( strRefOp, strV ) );
+				CCLOK	( WCSCAT ( pwQryBfr, SIZE_SQLBFR, strV ); )
+				CCLOK ( bLike = (WCASECMP(strV,L"LIKE") == 0); )
+
+				// Value, bind
+				CCLOK ( WCSCAT ( pwQryBfr, SIZE_SQLBFR, L" ? " ); )
+				CCLTRY( pDict->load ( strRefValue, pvCons[idx].sData ) );
+
+				// If the operator is 'like' and the value is a string, add the wildcards
+				if (hr == S_OK && bLike && adtValue::type(pvCons[idx].sData) == VTYPE_STR)
+					{
+					U32 len = adtString(pvCons[idx].sData).length() + 2;
+					CCLTRY ( strV.allocate ( len ) );
+					CCLOK  ( WCSCPY ( &strV.at(), len, L"%" ); )
+					CCLOK  ( WCSCAT ( &strV.at(), len, adtString(pvCons[idx].sData) ); )
+					CCLOK  ( WCSCAT ( &strV.at(), len, L"%" ); )
+					CCLTRY ( adtValue::copy ( strV, pvCons[idx].sData ) );
+					}	// if
+
+				CCLTRY( SQLBindVariantParam ( pStmt->Handle, idx+1,
+							&(pvCons[idx].sData), &(pvCons[idx].uSz) ) );
+				CCLOK ( ++idx; )
+
+				// Next constraint
+				if (hr == S_OK && idx < szCons)
+					WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"AND " );
+				_RELEASE(pDict);
+				pConsIn->next();
+				}	// while
+			CCLOK ( pwQryBfr[wcslen(pwQryBfr)-1] = WCHAR('\0'); )
+			}	// if
+		*/
+
+		// Sort ?  Prefix with table name in case of join
+		if (hr == S_OK && sSort.length() > 0)
+			{
+			WCSCAT ( pwQryBfr, SIZE_SQLBFR, L" ORDER BY \"" );
+			WCSCAT ( pwQryBfr, SIZE_SQLBFR, sSort );
+			WCSCAT ( pwQryBfr, SIZE_SQLBFR, L"\" ASC" );
+			}	// if
+
+		// Execute.  We should not get SQL_NEED_DATA here because keys are not blobs
+		// and other data types are known size
+		// Do not error just if the query fails, missing fields, etc.
+//		CCLOK ( OutputDebugString ( pwQryBfr ); )
+//		CCLOK ( OutputDebugString ( L"\n" ); )
+//		CCLOK ( SQLSTMT(pStmt->Handle,SQLExecDirect ( pStmt->Handle, pwQryBfr, 
+//																		(SQLINTEGER)wcslen(pwQryBfr) ));)
+
+		// Prepare/parse the statement
+		CCLTRYE( (ret = sqliteDll.sqlite3_prepare16_v2 ( pConn->plite_db, pwQryBfr, 
+						(int)(2*wcslen(pwQryBfr)), &(pStmt->plite_stmt), NULL )) == SQLITE_OK, ret );
+
+		// Result
+		if (hr == S_OK)	_EMT(Fire,adtIUnknown(pStmt) );
+		else					_EMT(Error,adtInt(hr) );
+
+		// Debug
+		if (hr != S_OK)
+			lprintf ( LOG_WARN, L"SQLite query failed : %s : %s \r\n", 
+							sqliteDll.sqlite3_errmsg16(pConn->plite_db), pwQryBfr );
+
+		// Clean up
+		_RELEASE(pStmt);
+//		_RELEASE(pStmt);
+		}	// if
+
+	// State
+	else if (_RCP(Connection))
+		{
+		adtIUnknown		unkV(v);
+		_RELEASE(pConn);
+		pConn = (SQLRef *)(IUnknown *)unkV;
+		_ADDREF(pConn);
+		}	// else if
+	else
+		hr = ERROR_NO_MATCH;
+
+	return hr;
+	}	// receive
 
 #ifdef	USE_ODBC
 
-#define	SIZE_SQLBFR		1024
 
 // Globals
 

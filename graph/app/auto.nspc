@@ -50,33 +50,128 @@
 %		!	ValueImgLoc/OnFire					LoadPng/Load
 %		!	LoadPng/OnLoad							Debug/Fire
 
+	%%%%%%
+	% SQL
+	%%%%%%
+
+	% MISCN: Create a dictionary to receive results
+%	$	CreateRowDct Misc.Create { Id Adt.Dictionary }
+%		!	Initialize/OnFire						CreateRowDct/Fire
+
+	% SQLN: Open connection
+%	$	Conn Sql.Connection { Location "d:/dev/catseyegui/trunk/catseyeDb.db3" }
+%		!	Initialize/OnFire						Conn/Fire
+
+	% SQLN: Query
+%	$	Query Sql.Query { Table OPERATORS }
+%		!	Conn/OnFire								Query/Connection
+%		!	Conn/OnFire								Query/Fire
+
+	% SQLN: Enumerator
+%	$	Enum Sql.RecordEnum {}
+%		!	CreateRowDct/OnFire					Enum/Dictionary
+%		!	Query/OnFire							Enum/Statement
+%		!	Query/OnFire							Enum/Next
+%		!	Enum/OnNext								Debug/Fire
+%		!	Enum/OnNext								Enum/Next
+
 	%%%%%%%%%%%%%%%%%%%%%%%
 	% Image processing/GPU
 	%%%%%%%%%%%%%%%%%%%%%%%
 
-	%% Pupil
-
-	% Subgraph: Pupil find
-	#	Pupil											Abbott/Lib/Image/PupilFindWithLEDs/ {}
-
 	% MISCN: Create a dictionary for the image
-	$	CreateImgDct Misc.Create { Id Adt.Dictionary }
-		!	Initialize/OnFire						CreateImgDct/Fire
+%	$	CreateImgDct Misc.Create { Id Adt.Dictionary }
+%		!	Initialize/OnFire						CreateImgDct/Fire
 
 	% MISCN: Image location
-	$	ValueImgLoc Misc.Dist { Value "c:/temp/Catseye_Study_1029_151002090209_OD_VISX_SI.bmp" }
-		!	Initialize/OnFire						ValueImgLoc/Fire
+%	$	ValueImgLoc Misc.Dist { Value "c:/temp/OCT_1.png" }
+%	$	ValueImgLoc Misc.Dist { Value "c:/temp/Catseye_Study_1029_151002090209_OD_VISX_SI.bmp" }
+%	$	ValueImgLoc Misc.Dist { Value "c:/temp/blank.png" }
+%	$	ValueImgLoc Misc.Dist { Value "c:/temp/pupil_nir_half.png" }
+%		!	Initialize/OnFire						ValueImgLoc/Fire
 
 	% IMAGEN: Load image
-	$	LoadImage Image.PersistImage {}
-		!	CreateImgDct/OnFire					LoadImage/Image
-		!	ValueImgLoc/OnFire					LoadImage/Location
-		!	ValueImgLoc/OnFire					LoadImage/Load
+%	$	LoadImage Image.PersistImage {}
+%		!	CreateImgDct/OnFire					LoadImage/Image
+%		!	ValueImgLoc/OnFire					LoadImage/Location
+%		!	ValueImgLoc/OnFire					LoadImage/Load
 
 	% Execute
-	!	LoadImage/OnLoad							Debug/Fire
-	!	LoadImage/OnLoad							Pupil/Image/Fire
-	!	LoadImage/OnLoad							Pupil/Find/Fire
+%	!	LoadImage/OnLoad							Debug/Fire
+
+	% IMAGEN: Save result
+%	$	SaveImage Image.PersistImage { Location "c:/temp/load.png" }
+%		!	LoadImage/OnLoad						SaveImage/Image
+%		!	LoadImage/OnLoad						SaveImage/Save
+
+	% IMAGEN: Upload from dictionary into image processing logic
+%	$	Prepare Image.Prepare {}
+%		!	LoadImage/OnLoad						Prepare/Upload
+%		!	Prepare/OnUpload						Prepare/Download
+
+	%% OCT testing
+
+	% MISCN: Defaults
+%	$	ValueMin Misc.Dist { Value 0:float }
+%%	$	ValueMin Misc.Dist { Value -15:float }
+%		!	LoadImage/OnLoad						ValueMin/Fire
+%	$	ValueMax Misc.Dist { Value 150:float }
+%%	$	ValueMax Misc.Dist { Value 50:float }
+%		!	LoadImage/OnLoad						ValueMax/Fire
+
+	%% Test image is old format
+
+	% IMAGEN: Upload from dictionary into image processing logic
+%	$	Prepare Image.Prepare {}
+%		!	LoadImage/OnLoad						Prepare/Image
+%		!	LoadImage/OnLoad						Prepare/Upload
+
+	% MATHN: Divide down to 12 bits
+%	$	OctDiv Image.Binary { Right 16:int Op Div }
+%		!	Prepare/OnUpload						OctDiv/Left
+%		!	Prepare/OnUpload						OctDiv/Fire
+
+	% IMAGEN: To signed 16-bit
+%	$	OctSign Image.Convert { Format "S16x2" }
+%		!	OctDiv/OnFire							OctSign/Fire
+
+	% MATHN: Signed 16-bit
+%	$	OctSub Image.Binary { Right 2048:int Op Sub }
+%		!	OctSign/OnFire							OctSub/Left
+%		!	OctSign/OnFire							OctSub/Fire
+
+	% Download image back into buffer
+%	!	Prepare/OnUpload							Prepare/Download
+
+
+	% Subgraph: Perform OCT conversion
+%	#	ToMag											Abbott/Lib/Oct/RawToMag/ {}
+%		!	LoadImage/OnLoad						ToMag/Image/Fire
+%		!	LoadImage/OnLoad						ToMag/Convert/Fire
+%		!	ValueMin/OnFire						ToMag/Minimum/Fire
+%		!	ValueMax/OnFire						ToMag/Maximum/Fire
+
+	%% GPU testing
+
+	% IMAGEN: Upload from dictionary into image processing logic
+%	$	Prepare Image.Prepare {}
+%		!	LoadImage/OnLoad						Prepare/Upload
+%		!	Prepare/OnUpload						Debug/Fire
+
+	% IMAGEN: Draw circle
+%	$	Circle Image.Draw { X0 320:int Y0 240:int Shape Circle Color 0xffffff:int Thickness -1:int Radius 10:int }
+%		!	Prepare/OnUpload						Circle/Fire
+
+	% Download image for saving
+%	!	Prepare/OnUpload							Prepare/Download
+%	!	Prepare/OnDownload						Debug/Fire
+
+	% IMAGEN: Save result
+%	$	SaveImage Image.PersistImage { Location "c:/temp/debug.png" }
+%		!	Prepare/OnDownload					SaveImage/Image
+%		!	Prepare/OnDownload					SaveImage/Save
+%		!	ToMag/OnImage/OnFire					SaveImage/Image
+%		!	ToMag/OnImage/OnFire					SaveImage/Save
 
 	%% Merge
 

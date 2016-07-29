@@ -25,13 +25,18 @@
   <ItemGroup>
     <ClCompile Include="at.cpp" />
     <ClCompile Include="binary.cpp" />
+    <ClCompile Include="contours.cpp" />
     <ClCompile Include="convert.cpp" />
     <ClCompile Include="create.cpp" />
     <ClCompile Include="cvmatref.cpp" />
+    <ClCompile Include="distance.cpp" />
     <ClCompile Include="draw.cpp" />
     <ClCompile Include="fft.cpp" />
     <ClCompile Include="flip.cpp" />
+    <ClCompile Include="match.cpp" />
+    <ClCompile Include="morph.cpp" />
     <ClCompile Include="resize.cpp" />
+    <ClCompile Include="smooth.cpp" />
     <ClCompile Include="stats.cpp" />
     <ClCompile Include="normal.cpp" />
     <ClCompile Include="opencv.cpp" />

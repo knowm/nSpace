@@ -13,14 +13,20 @@
 #include "imagel.h"
 #include "../../lib/nspcl/nspcl.h"
 
-// OpenCV
+// OpenCV - Currently expecting 3.1+
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
-//#include <opencv2/gpu/gpu.hpp>
-#if		CV_MAJOR_VERSION == 3
+#include <opencv2/features2d/features2d.hpp>
+
+// OpenCL
 #include <opencv2/core/ocl.hpp>
-#endif
+
+// CUDA
+#include <opencv2/cudafeatures2d.hpp>
+#include <opencv2/cudaimgproc.hpp>
+#include <opencv2/cudaarithm.hpp>
+#include <opencv2/cudawarping.hpp>
 
 // Operations
 #define	MATHOP_NOP		-1
@@ -49,19 +55,20 @@ class cvMatRef :
 	{
 	public :
 	cvMatRef ( void );									// Constructor
+	virtual ~cvMatRef ( void );						// Destructor
+
+	// Utilities
+	bool isGPU	( void ) { return (gpumat != NULL); }
+	bool isUMat ( void ) { return (umat != NULL); }
 
 	// Run-time data
-	#if	CV_MAJOR_VERSION == 3
-	cv::UMat		*mat;
-	#else
-	cv::Mat		*mat;										// Matrix - CPU
-	#endif
+	cv::Mat				*mat;								// CPU matrix
+	cv::cuda::GpuMat	*gpumat;							// GPU matrix
+	cv::UMat				*umat;							// Universal/OpenCL matrix
 
 	// CCL
 	CCL_OBJECT_BEGIN_INT(cvMatRef)
 	CCL_OBJECT_END()
-	virtual void		destruct	( void );			// Destruct object
-
 	};
 
 /////////
@@ -143,6 +150,43 @@ class Binary :
 	};
 
 //
+// Class - Contours.  Enumerate contours in an image.
+//
+
+class Contours :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	Contours ( void );									// Constructor
+
+	// Run-time data
+	IDictionary	*pImg;									// Image dictionary
+	std::vector<std::vector<cv::Point>>	
+					contours;								// Active contour list
+	U32			iIdx;										// Enumeration index
+	
+	// CCL
+	CCL_OBJECT_BEGIN(Contours)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_EMT(Error)
+	DECLARE_RCP(First)
+	DECLARE_EMT(End)
+	DECLARE_RCP(Image)
+	DECLARE_CON(Next)
+	BEGIN_BEHAVIOUR()
+		DEFINE_EMT(Error)
+		DEFINE_RCP(First)
+		DEFINE_EMT(End)
+		DEFINE_RCP(Image)
+		DEFINE_CON(Next)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
+//
 // Class - Convert.  Convert between formats.
 //
 
@@ -156,6 +200,13 @@ class Convert :
 	// Run-time data
 	IDictionary	*pImg;									// Source image
 	adtString	strTo;									// Convert 'to' format
+
+	// Utilities
+	static
+	HRESULT convertTo	( cvMatRef *, cvMatRef *, U32 );
+	static
+	HRESULT convertTo	( cv::cuda::GpuMat *, 
+								cv::cuda::GpuMat *, U32 );
 
 	// CCL
 	CCL_OBJECT_BEGIN(Convert)
@@ -189,6 +240,11 @@ class Create :
 	adtString	strFmt;									// Format
 	adtInt		iW,iH;									// Size
 
+	// Utilities
+	static
+	HRESULT create	( IDictionary *, U32, U32, U32, cvMatRef **,
+							bool = false );
+
 	// CCL
 	CCL_OBJECT_BEGIN(Create)
 		CCL_INTF(IBehaviour)
@@ -212,6 +268,36 @@ class Create :
 	};
 
 //
+// Class - Distance.  Image distance transform.
+//
+
+class Distance :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	Distance ( void );									// Constructor
+
+	// Run-time data
+	IDictionary	*pImg;									// Image dictionary
+
+	// CCL
+	CCL_OBJECT_BEGIN(Distance)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_EMT(Error)
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Image)
+	BEGIN_BEHAVIOUR()
+		DEFINE_EMT(Error)
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Image)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
+//
 // Class - Draw.  Shape drawing node.
 //
 
@@ -229,6 +315,7 @@ class Draw :
 	adtFloat		fW,fH;									// Width,height
 	adtFloat		fAngle;									// Angle
 	adtInt		iThick;									// Thickness
+	adtFloat		fRad;										// Radius
 	adtString	strShp;									// Shape to draw
 
 	// CCL
@@ -308,9 +395,7 @@ class FFT :
 	// Run-time data
 	IDictionary	*pImg;									// Image dictionary
 	adtString	strWnd;									// Window function
-	adtBool		bZeroDC;									// Zero DC component
 	cvMatRef		*pWnd;									// Window function
-	sysCS			csSync;									// Thread safety
 
 	// CCL
 	CCL_OBJECT_BEGIN(FFT)
@@ -327,6 +412,85 @@ class FFT :
 		DEFINE_CON(Fire)
 		DEFINE_RCP(Image)
 		DEFINE_RCP(Window)
+	END_BEHAVIOUR_NOTIFY()
+
+	// Internal utilities
+	HRESULT fft		(	cv::cuda::GpuMat *, 	cv::cuda::GpuMat *, bool );
+	HRESULT fft		(	cv::UMat *, cv::UMat *, bool );
+	HRESULT fft		(	cv::Mat *, 	cv::Mat *, bool );
+	HRESULT window ( cvMatRef * );
+	};
+
+//
+// Class - Match.  Template matching node.
+//
+
+class Match :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	Match ( void );										// Constructor
+
+	// Run-time data
+	IDictionary	*pImg;									// Reference image
+	IDictionary *pTmp;									// Template image
+
+	// CCL
+	CCL_OBJECT_BEGIN(Match)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Template)
+	DECLARE_RCP(Image)
+	DECLARE_EMT(Error)
+	BEGIN_BEHAVIOUR()
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Image)
+		DEFINE_EMT(Error)
+		DEFINE_RCP(Template)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
+//
+// Class - Morph.  Image morphology node.
+//
+
+class Morph :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	Morph ( void );										// Constructor
+
+	// Run-time data
+	IDictionary	*pImg;									// Image dictionary
+	cv::cuda::Filter 
+					*pfOpen;									// Open filter
+	cv::cuda::Filter 
+					*pfClose;								// Close filter
+
+	// CCL
+	CCL_OBJECT_BEGIN(Morph)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_RCP(Close)
+	DECLARE_EMT(Error)
+	DECLARE_EMT(Fire)
+	DECLARE_RCP(Image)
+//	DECLARE_RCP(Kernel)
+	DECLARE_RCP(Open)
+	BEGIN_BEHAVIOUR()
+		DEFINE_RCP(Close)
+		DEFINE_EMT(Error)
+		DEFINE_EMT(Fire)
+		DEFINE_RCP(Image)
+//		DEFINE_RCP(Kernel)
+		DEFINE_RCP(Open)
 	END_BEHAVIOUR_NOTIFY()
 	};
 
@@ -409,7 +573,6 @@ class Prepare :
 
 	// Run-time data
 	IDictionary	*pImg;									// Image dictionary
-	bool			bCuda,bOcl;								// Cuda/OpenCl enabled
 
 	// Utilities
 	static
@@ -517,6 +680,38 @@ class Roi :
 	};
 
 //
+// Class - Smooth.  Image smoothing node.
+//
+
+class Smooth :
+	public CCLObject,										// Base class
+	public IBehaviour										// Interface
+	{
+	public :
+	Smooth ( void );										// Constructor
+
+	// Run-time data
+	IDictionary	*pImg;									// Image dictionary
+	adtString	strType;									// Smooth type
+	adtInt		iSz;										// Kernel size
+
+	// CCL
+	CCL_OBJECT_BEGIN(Smooth)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_EMT(Error)
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Image)
+	BEGIN_BEHAVIOUR()
+		DEFINE_EMT(Error)
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Image)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
+//
 // Class - Stats.  Compute statistics about an image.
 //
 
@@ -529,6 +724,8 @@ class Stats :
 
 	// Run-time data
 	IDictionary	*pImg;									// Image dictionary
+	adtBool		bEnt;										// Calculate entropy ?
+	adtBool		bBoundRct;								// Calculate bounding rectangle ?
 
 	// CCL
 	CCL_OBJECT_BEGIN(Stats)
@@ -562,6 +759,7 @@ class Threshold :
 	// Run-time data
 	IDictionary	*pImg;									// Image dictionary
 	adtValue		vT;										// Treshold value
+	adtValue		vMax;										// Maximum value
 	adtString	strOp;									// Operation
 
 	// CCL
@@ -587,15 +785,10 @@ class Threshold :
 //HRESULT image_fft			( cv::ocl::oclMat *, bool = false, bool = false );
 HRESULT image_load		( const WCHAR *, IDictionary * );
 HRESULT image_save		( IDictionary *, const WCHAR * );
-#if		CV_MAJOR_VERSION == 3
-HRESULT image_fft			( cv::UMat *, cv::UMat *, bool = false, bool = false );
-HRESULT image_from_mat	( cv::UMat *, IDictionary * );
-HRESULT image_to_mat		( IDictionary *, cv::UMat ** );
-#else
 HRESULT image_fft			( cv::Mat *, cv::Mat *, bool = false, bool = false );
 HRESULT image_from_mat	( cv::Mat *, IDictionary * );
 HRESULT image_to_mat		( IDictionary *, cv::Mat ** );
-#endif
+HRESULT image_to_debug	( cvMatRef *, const WCHAR *, const WCHAR * );
 
 // From 'mathl'
 HRESULT mathOp			( const WCHAR *, int * );

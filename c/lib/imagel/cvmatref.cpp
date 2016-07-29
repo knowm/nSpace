@@ -16,21 +16,20 @@ cvMatRef :: cvMatRef ( void )
 	//		-	Constructor for the object
 	//
 	////////////////////////////////////////////////////////////////////////
-	mat = NULL;
+	mat		= NULL;
+	gpumat	= NULL;
+	umat		= NULL;
 
 	// So creators do not have to do the initial AddRef
 	AddRef();
 	}	// cvMatRef
 
-void cvMatRef :: destruct ( void )
+cvMatRef :: ~cvMatRef ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
-	//	OVERLOAD
-	//	FROM		CCLObject
-	//
 	//	PURPOSE
-	//		-	Called when the object is being destroyed
+	//		-	Destructor for the object
 	//
 	////////////////////////////////////////////////////////////////////////
 	if (mat != NULL)
@@ -38,4 +37,15 @@ void cvMatRef :: destruct ( void )
 		delete mat;
 		mat = NULL;
 		}	 // if
-	}	// destruct
+	if (gpumat != NULL)
+		{
+		delete gpumat;
+		gpumat = NULL;
+		}	 // if
+	if (umat != NULL)
+		{
+		delete umat;
+		umat = NULL;
+		}	 // if
+	}	// ~cvMatRef
+

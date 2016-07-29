@@ -1,61 +1,100 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
+
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ItemGroup>
-    <None Include="..\..\nSpace.uproject" />
-    <Filter Include="Source">
-      <UniqueIdentifier>{D3BC88D5-4836-480B-AF34-CACA347E908F}</UniqueIdentifier>
-    </Filter>
-    <None Include="..\..\Source\nSpace.Target.cs">
-      <Filter>Source</Filter>
-    </None>
-    <None Include="..\..\Source\nSpaceEditor.Target.cs">
-      <Filter>Source</Filter>
-    </None>
-    <Filter Include="Config">
-      <UniqueIdentifier>{D05419B8-12A9-403A-B294-342673230A2F}</UniqueIdentifier>
-    </Filter>
-    <None Include="..\..\Config\DefaultEditor.ini">
-      <Filter>Config</Filter>
-    </None>
-    <None Include="..\..\Config\DefaultEngine.ini">
-      <Filter>Config</Filter>
-    </None>
-    <None Include="..\..\Config\DefaultGame.ini">
-      <Filter>Config</Filter>
-    </None>
-    <Filter Include="Source\nSpace">
-      <UniqueIdentifier>{E8BFE068-0922-46AF-B8C7-69834BF215CF}</UniqueIdentifier>
-    </Filter>
-    <None Include="..\..\Source\nSpace\nSpace.Build.cs">
-      <Filter>Source\nSpace</Filter>
-    </None>
-    <ClCompile Include="..\..\Source\nSpace\nSpace.cpp">
-      <Filter>Source\nSpace</Filter>
-    </ClCompile>
-    <ClInclude Include="..\..\Source\nSpace\nSpace.h">
-      <Filter>Source\nSpace</Filter>
-    </ClInclude>
-    <ClCompile Include="..\..\Source\nSpace\nSpaceGameMode.cpp">
-      <Filter>Source\nSpace</Filter>
-    </ClCompile>
-    <ClInclude Include="..\..\Source\nSpace\nSpaceGameMode.h">
-      <Filter>Source\nSpace</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\Source\nSpace\nPlayerController.h">
-      <Filter>Source\nSpace</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\nSpace\nActor.h">
-      <Filter>Source\nSpace</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\Source\nSpace\nPlayerController.cpp">
-      <Filter>Source\nSpace</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source\nSpace\nActor.cpp">
-      <Filter>Source\nSpace</Filter>
-    </ClCompile>
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="..\..\nSpace.uproject" />
+		<Filter Include="Source">
+			<UniqueIdentifier>{4FE58E0A-56BD-40FC-9763-DB367731B5C2}</UniqueIdentifier>
+		</Filter>
+		<None Include="..\..\Source\nSpace.Target.cs">
+			<Filter>Source</Filter>
+		</None >
+		<None Include="..\..\Source\nSpaceEditor.Target.cs">
+			<Filter>Source</Filter>
+		</None >
+		<Filter Include="Config">
+			<UniqueIdentifier>{0136B823-9717-47FC-AA92-DA9B53FE5432}</UniqueIdentifier>
+		</Filter>
+		<None Include="..\..\Config\DefaultEditor.ini">
+			<Filter>Config</Filter>
+		</None >
+		<None Include="..\..\Config\DefaultEngine.ini">
+			<Filter>Config</Filter>
+		</None >
+		<None Include="..\..\Config\DefaultGame.ini">
+			<Filter>Config</Filter>
+		</None >
+		<Filter Include="Source\nSpace">
+			<UniqueIdentifier>{984989E1-B2EA-46D9-BFCA-7C9DBDAF7568}</UniqueIdentifier>
+		</Filter>
+		<ClCompile Include="..\..\Source\nSpace\nActor.cpp">
+			<Filter>Source\nSpace</Filter>
+		</ClCompile >
+		<ClInclude Include="..\..\Source\nSpace\nActor.h">
+			<Filter>Source\nSpace</Filter>
+		</ClInclude >
+		<ClCompile Include="..\..\Source\nSpace\nCamera.cpp">
+			<Filter>Source\nSpace</Filter>
+		</ClCompile >
+		<ClInclude Include="..\..\Source\nSpace\nCamera.h">
+			<Filter>Source\nSpace</Filter>
+		</ClInclude >
+		<ClCompile Include="..\..\Source\nSpace\nElement.cpp">
+			<Filter>Source\nSpace</Filter>
+		</ClCompile >
+		<ClInclude Include="..\..\Source\nSpace\nElement.h">
+			<Filter>Source\nSpace</Filter>
+		</ClInclude >
+		<ClCompile Include="..\..\Source\nSpace\nGameMode.cpp">
+			<Filter>Source\nSpace</Filter>
+		</ClCompile >
+		<ClInclude Include="..\..\Source\nSpace\nGameMode.h">
+			<Filter>Source\nSpace</Filter>
+		</ClInclude >
+		<ClCompile Include="..\..\Source\nSpace\nGroup.cpp">
+			<Filter>Source\nSpace</Filter>
+		</ClCompile >
+		<ClInclude Include="..\..\Source\nSpace\nGroup.h">
+			<Filter>Source\nSpace</Filter>
+		</ClInclude >
+		<ClCompile Include="..\..\Source\nSpace\nImage.cpp">
+			<Filter>Source\nSpace</Filter>
+		</ClCompile >
+		<ClInclude Include="..\..\Source\nSpace\nImage.h">
+			<Filter>Source\nSpace</Filter>
+		</ClInclude >
+		<ClCompile Include="..\..\Source\nSpace\nLabel.cpp">
+			<Filter>Source\nSpace</Filter>
+		</ClCompile >
+		<ClInclude Include="..\..\Source\nSpace\nLabel.h">
+			<Filter>Source\nSpace</Filter>
+		</ClInclude >
+		<ClCompile Include="..\..\Source\nSpace\nLoc.cpp">
+			<Filter>Source\nSpace</Filter>
+		</ClCompile >
+		<ClInclude Include="..\..\Source\nSpace\nLoc.h">
+			<Filter>Source\nSpace</Filter>
+		</ClInclude >
+		<ClCompile Include="..\..\Source\nSpace\nPlayerController.cpp">
+			<Filter>Source\nSpace</Filter>
+		</ClCompile >
+		<ClInclude Include="..\..\Source\nSpace\nPlayerController.h">
+			<Filter>Source\nSpace</Filter>
+		</ClInclude >
+		<ClCompile Include="..\..\Source\nSpace\nShape.cpp">
+			<Filter>Source\nSpace</Filter>
+		</ClCompile >
+		<ClInclude Include="..\..\Source\nSpace\nShape.h">
+			<Filter>Source\nSpace</Filter>
+		</ClInclude >
+		<None Include="..\..\Source\nSpace\nSpace.Build.cs">
+			<Filter>Source\nSpace</Filter>
+		</None >
+		<ClCompile Include="..\..\Source\nSpace\nSpace.cpp">
+			<Filter>Source\nSpace</Filter>
+		</ClCompile >
+		<ClInclude Include="..\..\Source\nSpace\nSpace.h">
+			<Filter>Source\nSpace</Filter>
+		</ClInclude >
+	</ItemGroup>
 </Project>

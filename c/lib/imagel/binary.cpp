@@ -47,7 +47,7 @@ HRESULT Binary :: onAttach ( bool bAttach )
 
 		// Defaults (optional)
 		pnDesc->load ( adtString(L"Left"), vL );
-		pnDesc->load ( adtString(L"Rightt"), vR );
+		pnDesc->load ( adtString(L"Right"), vR );
 		if (	pnDesc->load ( adtStringSt(L"Op"), vL ) == S_OK	&& 
 				adtValue::type(vL) == VTYPE_STR						&&
 				vL.pstr != NULL )
@@ -112,7 +112,16 @@ HRESULT Binary :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 				CCLTRY(Prepare::extract ( NULL, vR, &pImgR, &pMatR ));
 				CCLOK ( bImgR = true; )
 				}	// if
-			CCLTRY(Prepare::extract ( NULL, vL, &pImgO, &pMatO ));
+			CCLTRY(Prepare::extract ( NULL, v, &pImgO, &pMatO ));
+
+			// Debug
+//			CCLOK ( image_to_debug ( pMatL, L"Binary", L"c:/temp/binL.png" ); )
+
+			// All images must be of the same type
+			CCLTRYE (	(pMatL->mat != NULL && (pMatR == NULL || pMatR->mat != NULL) && pMatO->mat != NULL) ||
+							(pMatL->umat != NULL && (pMatR == NULL || pMatR->umat != NULL) && pMatO->umat != NULL) ||
+							(pMatL->gpumat != NULL && (pMatR == NULL || pMatR->gpumat != NULL) && pMatO->gpumat != NULL),
+							ERROR_INVALID_STATE );
 
 			// Apply operation
 			if (hr == S_OK)
@@ -121,57 +130,159 @@ HRESULT Binary :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 					{
 					case MATHOP_ADD :
 						if (bImgR)
-							cv::add ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
+							{
+							if (pMatL->isGPU())
+								cv::cuda::add ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat) );
+							else if (pMatL->isUMat())
+								cv::add ( *(pMatL->umat), *(pMatR->umat), *(pMatO->umat) );
+							else
+								cv::add ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
+							}	// if
 						else
-							cv::add ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
+							{
+							if (pMatL->isGPU())
+								cv::cuda::add ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
+							else if (pMatL->isUMat())
+								cv::add ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat) );
+							else
+								cv::add ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
+							}	// else
 						break;
 					case MATHOP_SUB :
 						if (bImgR)
-							cv::subtract ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
+							{
+							if (pMatL->isGPU())
+								cv::cuda::subtract ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat) );
+							else if (pMatL->isUMat())
+								cv::subtract ( *(pMatL->umat), *(pMatR->umat), *(pMatO->umat) );
+							else
+								cv::subtract ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
+							}	// if
 						else
-							cv::subtract ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
+							{
+							if (pMatL->isGPU())
+								cv::cuda::subtract ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
+							else if (pMatL->isUMat())
+								cv::subtract ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat) );
+							else
+								cv::subtract ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
+							}	// else
 						break;
 					case MATHOP_MUL :
 						if (bImgR)
-							cv::multiply ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
+							{
+							if (pMatL->isGPU())
+								cv::cuda::multiply ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat) );
+							else if (pMatL->isUMat())
+								cv::multiply ( *(pMatL->umat), *(pMatR->umat), *(pMatO->umat) );
+							else
+								cv::multiply ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
+							}	// if
 						else
-							cv::multiply ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
+							{
+							if (pMatL->isGPU())
+								cv::cuda::multiply ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
+							else if (pMatL->isUMat())
+								cv::multiply ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat) );
+							else
+								cv::multiply ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
+							}	// else
 						break;
 					case MATHOP_DIV :
 						if (bImgR)
-							cv::divide ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
+							{
+							if (pMatL->isGPU())
+								cv::cuda::divide ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat) );
+							else if (pMatL->isUMat())
+								cv::divide ( *(pMatL->umat), *(pMatR->umat), *(pMatO->umat) );
+							else
+								cv::divide ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
+							}	// if
 						else
-							cv::divide ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
+							{
+							if (pMatL->isGPU())
+								cv::cuda::divide ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
+							else if (pMatL->isUMat())
+								cv::divide ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat) );
+							else
+								cv::divide ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
+							}	// else
 						break;
 
 					// Bitwise
 					case MATHOP_AND :
 						if (bImgR)
-							cv::bitwise_and ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
+							{
+							if (pMatL->isGPU())
+								cv::cuda::bitwise_and ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat) );
+							else if (pMatL->isUMat())
+								cv::bitwise_and ( *(pMatL->umat), *(pMatR->umat), *(pMatO->umat) );
+							else
+								cv::bitwise_and ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
+							}	// if
 						else
-							cv::bitwise_and ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
+							{
+							if (pMatL->isGPU())
+								cv::cuda::bitwise_and ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
+							else if (pMatL->isUMat())
+								cv::bitwise_and ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat) );
+							else
+								cv::bitwise_and ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
+							}	// else
 						break;
 					case MATHOP_XOR :
 						if (bImgR)
-							cv::bitwise_xor ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
+							{
+							if (pMatL->isGPU())
+								cv::cuda::bitwise_xor ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat) );
+							else if (pMatL->isUMat())
+								cv::bitwise_xor ( *(pMatL->umat), *(pMatR->umat), *(pMatO->umat) );
+							else
+								cv::bitwise_xor ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
+							}	// if
 						else
-							cv::bitwise_xor ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
+							{
+							if (pMatL->isGPU())
+								cv::cuda::bitwise_xor ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
+							else if (pMatL->isUMat())
+								cv::bitwise_xor ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat) );
+							else
+								cv::bitwise_xor ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
+							}	// else
 						break;
 					case MATHOP_OR :
 						if (bImgR)
-							cv::bitwise_or ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
+							{
+							if (pMatL->isGPU())
+								cv::cuda::bitwise_or ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat) );
+							else if (pMatL->isUMat())
+								cv::bitwise_or ( *(pMatL->umat), *(pMatR->umat), *(pMatO->umat) );
+							else
+								cv::bitwise_or ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
+							}	// if
 						else
-							cv::bitwise_or ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
+							{
+							if (pMatL->isGPU())
+								cv::cuda::bitwise_or ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
+							else if (pMatL->isUMat())
+								cv::bitwise_or ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat) );
+							else
+								cv::bitwise_or ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
+							}	// else
 						break;
 
 					// Not implemented
 					default :
 						hr = E_NOTIMPL;
 					}	// switch
+
 				}	// if
 
 			// Result
 			CCLTRY ( adtValue::copy ( adtIUnknown(pImgO), vRes ) );
+
+			// Debug
+//			CCLOK ( image_to_debug ( pMatO, L"Binary", L"c:/temp/binO.png" ); )
 
 			// Clean up
 			_RELEASE(pMatO);

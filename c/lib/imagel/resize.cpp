@@ -92,7 +92,15 @@ HRESULT Resize :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
 
 		// Resize the image
-		CCLOK ( cv::resize ( *(pMat->mat), *(pMat->mat), cv::Size(iW,iH) ); )
+		if (hr == S_OK)
+			{
+			if (pMat->isGPU())
+				cv::cuda::resize ( *(pMat->gpumat), *(pMat->gpumat), cv::Size(iW,iH) );
+			else if (pMat->isUMat())
+				cv::resize ( *(pMat->umat), *(pMat->umat), cv::Size(iW,iH) );
+			else
+				cv::resize ( *(pMat->mat), *(pMat->mat), cv::Size(iW,iH) );
+			}	// if
 
 		// Result
 		if (hr == S_OK)

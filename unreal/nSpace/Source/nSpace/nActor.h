@@ -2,7 +2,7 @@
 //
 //									nActor.h
 //
-//			Include file for the nSpace actor
+//				Include file for the nSpace actor
 //
 ////////////////////////////////////////////////////////////////////
 
@@ -10,7 +10,15 @@
 
 // Unreal
 #include "GameFramework/Actor.h"
+
+// nSpace engine
+#include "nSpace.h"
+
 #include "nActor.generated.h"
+
+// Forward decs.
+class AnActort;
+class nElement;
 
 //
 // Class - AnActor.  Primary nSpace actor for game engine.  
@@ -23,14 +31,44 @@ class NSPACE_API AnActor : public AActor
 	GENERATED_BODY()
 	
 	public:	
+
 	// Sets default values for this actor's properties
-	AnActor();
+	AnActor();												// Constructor
+	virtual ~AnActor();									// Destructor
+
+	// Run-time data
+	nSpaceClient		*pCli;							// nSpace client
+	IDictionary			*pDctRen;						// Render location dictionary
+	adtString			strRefActor;					// References
+	adtString			strRenLoc;						// Render state location
+	sysCS					csRen;							// Global render mutex
+
+	// Worker thread
+	AnActort				*pTick;							// Worker thread
+	IThread				*pThrd;							// Worker thread
+	IList					*pWrkQ;							// Worker queue
+	IIt					*pWrkIt;							// Worker queue iterator
+	sysEvent				evWork;							// Worker thread event
+	bool					bWork;							// True to keep working
+	IList					*pStQ;							// Store queue
+	IIt					*pStIt;							// Store queue iterator
+
+	// Game loop thread
+	IList					*pMnQ;							// Main queue
+	IIt					*pMnIt;							// Main queue iterator
+
+	// Utilities
+	HRESULT addMain	( nElement * );
+	HRESULT addWork	( nElement * );
+	HRESULT addStore	( const WCHAR *, const ADTVALUE &, const WCHAR * = NULL );
 
 	// 'AActor' memebers
 	virtual void BeginPlay	( ) override;
 	virtual void EndPlay		( const EEndPlayReason::Type) override;
-//	virtual void Tick			( float DeltaSeconds) override;
+	virtual void Tick			( float DeltaSeconds) override;
 
+	// Internal utilities
+	HRESULT onValue(const WCHAR *, const WCHAR *, const ADTVALUE &);
 	};
 
 //
@@ -47,8 +85,7 @@ class NSPACE_API AnActort :
 	AnActort ( AnActor * );								// Constructor
 
 	// Run-time datas
-	AnActor			*pR;									// Parent object
-	nSpaceClient	*pnCli;								// nSpace client
+	AnActor			*pThis;								// Parent object
 
 	// 'nSpaceClientCB' members
 	STDMETHOD(onReceive)	( const WCHAR *, const WCHAR *, const ADTVALUE & );
