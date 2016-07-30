@@ -150,8 +150,10 @@ HRESULT FFT :: fft ( cv::UMat *pMat, cv::UMat *pWnd, bool bRows )
 	//
 	////////////////////////////////////////////////////////////////////////
 	HRESULT	hr	= S_OK;
-	cv::UMat	matPad,matDft,matPlanes[2],matCmplx,matQ[4];
+	cv::UMat	matPad,matDft,matCmplx,matQ[4];
 	cv::UMat	matTmp,matMag,matReal;
+	std::vector<cv::UMat>	
+				matPlanes(2);
 	int		m,n,cx,cy;
 
 	// Open CV uses exceptions
@@ -172,24 +174,19 @@ HRESULT FFT :: fft ( cv::UMat *pMat, cv::UMat *pWnd, bool bRows )
 		matPlanes[0] = matPad;
 		matPlanes[1] = cv::UMat ( matPad.size(), CV_32F );
 		matPlanes[1].setTo ( cv::Scalar(0) );
-//		cv::merge ( matPlanes, 2, matCmplx );
-		hr = E_NOTIMPL;
-		if (hr != S_OK)
-			return hr;
+		cv::merge ( matPlanes, matCmplx );
 
 		// Compute DFT
-		// TODO: Option for scaling/inverse/magnitude
 		cv::dft ( matCmplx, matCmplx, (bRows) ? cv::DFT_ROWS : 0 );
 
 		// Normalize by the number of samples (assumes 'by rows', convention?)
-		if (bRows)
-			cv::divide ( matCmplx, cv::Scalar(matCmplx.cols), matCmplx );
-		else
-			cv::divide ( matCmplx, cv::Scalar(matCmplx.cols*matCmplx.rows), matCmplx );
+//		if (bRows)
+//			cv::divide ( matCmplx, cv::Scalar(matCmplx.cols), matCmplx );
+//		else
+//			cv::divide ( matCmplx, cv::Scalar(matCmplx.cols*matCmplx.rows), matCmplx );
 
 		// Separate real/imaginary results
-//		cv::split ( matCmplx, matPlanes );
-		hr = E_NOTIMPL;
+		cv::split ( matCmplx, matPlanes );
 
 		// Compute the magnitude of DFT
 		cv::magnitude ( matPlanes[0], matPlanes[1], matPlanes[0] );
@@ -222,7 +219,7 @@ HRESULT FFT :: fft ( cv::UMat *pMat, cv::UMat *pWnd, bool bRows )
 
 		// Swap quadrants
 		matQ[0].copyTo ( matTmp );
-		matQ[1].copyTo ( matQ[0] );
+		matQ[1].copyTo ( matQ[0] );					// CRASH! On Intel Iris
 		matTmp.copyTo  ( matQ[1] );
 
 		matQ[2].copyTo ( matTmp );
@@ -235,9 +232,10 @@ HRESULT FFT :: fft ( cv::UMat *pMat, cv::UMat *pWnd, bool bRows )
 		// Result is new matrix
 		matMag.copyTo ( *pMat );
 		}	// try
-	catch ( cv::Exception & )
+	catch ( cv::Exception &ex )
 		{
-		lprintf ( LOG_WARN, L"fft:cv::UMat:exception\r\n" );
+		lprintf ( LOG_WARN, L"fft:cv::UMat:exception:%S\r\n",
+						ex.err.c_str() );
 		hr = E_UNEXPECTED;
 //		dbgprintf ( L"image_fft:OpenCV exception:%S\r\n", ex.msg.c_str() );
 		}	// catch
@@ -349,7 +347,6 @@ HRESULT FFT :: fft ( cv::cuda::GpuMat *pMat, cv::cuda::GpuMat *pWnd,
 		lprintf ( LOG_WARN, L"fft:cv::cuda:GpuMat:exception:%S\r\n",
 						ex.err.c_str() );
 		hr = E_UNEXPECTED;
-//		dbgprintf ( L"image_fft:OpenCV exception:%S\r\n", ex.msg.c_str() );
 		}	// catch
 
 	return hr;

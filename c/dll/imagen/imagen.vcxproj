@@ -163,7 +163,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <RegisterOutput>true</RegisterOutput>
       <ModuleDefinitionFile>..\dll.def</ModuleDefinitionFile>
-      <AdditionalDependencies>opencv_core$(SDK_OPENCV_VER).lib;opencv_imgproc$(SDK_OPENCV_VER).lib;opencv_highgui$(SDK_OPENCV_VER).lib;opencv_cudaarithm$(SDK_OPENCV_VER).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_core$(SDK_OPENCV_VER).lib;opencv_imgproc$(SDK_OPENCV_VER).lib;opencv_highgui$(SDK_OPENCV_VER).lib;opencv_imgcodecs$(SDK_OPENCV_VER).lib;opencv_cudaarithm$(SDK_OPENCV_VER).lib;opencv_cudaimgproc$(SDK_OPENCV_VER).lib;opencv_cudawarping$(SDK_OPENCV_VER).lib;opencv_cudafilters$(SDK_OPENCV_VER).lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
