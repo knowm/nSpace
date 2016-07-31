@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{4560AF12-FA84-49FA-94E4-19CB5A898DF0}"
 EndProject
@@ -236,6 +236,10 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plotl.2015", "lib\plotl\plotl.2015.vcxproj", "{98FC8B7C-4110-495A-BF80-F3502D670F90}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plotn.2015", "dll\plotn\plotn.2015.vcxproj", "{CDB92F04-527F-47D6-8339-3E457F5FA17F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ext", "ext", "{B9187F45-DF26-41E6-B33B-6A1F9D01AE18}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mod_nspace", "dll\ext\mod_nspace\mod_nspace.vcxproj", "{18CB1363-F002-4B15-8F7F-F00E280DD92E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -507,6 +511,14 @@ Global
 		{CDB92F04-527F-47D6-8339-3E457F5FA17F}.Release|Win32.Build.0 = Release|Win32
 		{CDB92F04-527F-47D6-8339-3E457F5FA17F}.Release|x64.ActiveCfg = Release|x64
 		{CDB92F04-527F-47D6-8339-3E457F5FA17F}.Release|x64.Build.0 = Release|x64
+		{18CB1363-F002-4B15-8F7F-F00E280DD92E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{18CB1363-F002-4B15-8F7F-F00E280DD92E}.Debug|Win32.Build.0 = Debug|Win32
+		{18CB1363-F002-4B15-8F7F-F00E280DD92E}.Debug|x64.ActiveCfg = Debug|x64
+		{18CB1363-F002-4B15-8F7F-F00E280DD92E}.Debug|x64.Build.0 = Debug|x64
+		{18CB1363-F002-4B15-8F7F-F00E280DD92E}.Release|Win32.ActiveCfg = Release|Win32
+		{18CB1363-F002-4B15-8F7F-F00E280DD92E}.Release|Win32.Build.0 = Release|Win32
+		{18CB1363-F002-4B15-8F7F-F00E280DD92E}.Release|x64.ActiveCfg = Release|x64
+		{18CB1363-F002-4B15-8F7F-F00E280DD92E}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -574,5 +586,7 @@ Global
 		{2EA99CC7-9341-4268-A12D-CDE8D8268E79} = {5A572578-54D6-40FE-93BC-F8E838082B52}
 		{98FC8B7C-4110-495A-BF80-F3502D670F90} = {4560AF12-FA84-49FA-94E4-19CB5A898DF0}
 		{CDB92F04-527F-47D6-8339-3E457F5FA17F} = {060BE89F-4362-4D47-8ED0-67F456629B3C}
+		{B9187F45-DF26-41E6-B33B-6A1F9D01AE18} = {060BE89F-4362-4D47-8ED0-67F456629B3C}
+		{18CB1363-F002-4B15-8F7F-F00E280DD92E} = {B9187F45-DF26-41E6-B33B-6A1F9D01AE18}
 	EndGlobalSection
 EndGlobal
