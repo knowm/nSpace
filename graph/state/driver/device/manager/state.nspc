@@ -1,0 +1,19 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%									STATE.NSPC
+%
+%				Default state for the system device manager
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% NSPC: Active list of devices
+	$	Devices	Nspc.Value { Value {} }
+
+	% NSPC: New device has arrived by name
+	$	OnArrive Nspc.Value { Type String }
+
+	% NSPC: Device has been removed by name
+	$	OnRemove Nspc.Value { Type String }
+

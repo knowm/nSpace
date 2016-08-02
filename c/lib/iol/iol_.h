@@ -480,6 +480,59 @@ class File :
 	HRESULT	fileIo	( BOOL, DWORD, DWORD, DWORD * );
 	};
 
+#if	defined(_WIN32)
+
+//
+// Class - NotifyDevices.  Node to notify contains of system device changes.
+//
+
+class NotifyDevices :
+	public CCLObject,										// Base class
+	public IBehaviour,									// Interface
+	public ITickable										// Interface
+	{
+	public :
+	NotifyDevices ( void );								// Constructor
+
+	// Run-time data
+	IThread		*pThrd;									// Running window thread
+	HWND			hWndDev;									// Handle to hidden window
+	HDEVNOTIFY	hDev;										// Device notification
+	IDictionary	*pDctN;									// Notification dictionary
+
+	// 'ITickable' members
+	STDMETHOD(tick)		( void );
+	STDMETHOD(tickAbort)	( void );
+	STDMETHOD(tickBegin)	( void );
+	STDMETHOD(tickEnd)	( void );
+
+	// CCL
+	CCL_OBJECT_BEGIN(NotifyDevices)
+		CCL_INTF(IBehaviour)
+		CCL_INTF(ITickable)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_RCP(Start)
+	DECLARE_RCP(Stop)
+	DECLARE_EMT(Fire)
+	BEGIN_BEHAVIOUR()
+		DEFINE_RCP(Start)
+		DEFINE_RCP(Stop)
+		DEFINE_EMT(Fire)
+	END_BEHAVIOUR_NOTIFY()
+
+	private :
+
+	// Internal utilties
+	void	notify ( void ) { _EMT(Fire,adtIUnknown(pDctN)); }
+
+	// Win32 window callback
+	static LRESULT CALLBACK windowProc	( HWND, UINT, WPARAM, LPARAM );
+	};
+
+#endif
+
 //
 // Class - Persist.  Node to save/load values to/from streams.
 //

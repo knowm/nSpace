@@ -188,6 +188,11 @@ HRESULT Device :: receive ( IReceptor *pr, const WCHAR *pl,
 			_EMT(Error,adtInt(hr));
 
 		// Clean up
+		if (hr != S_OK && hIntf != INVALID_HANDLE_VALUE)
+			{
+			WinUsb_Free ( hIntf );
+			hIntf = INVALID_HANDLE_VALUE;
+			}	// if
 		_RELEASE(pDev);
 		}	// if
 

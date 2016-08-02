@@ -27,6 +27,7 @@ CCL_OBJLIST_BEGIN()
 	// Nodes
 	#ifdef	_WIN32
 	CCL_OBJLIST_ENTRY	(EnumDevices)
+	CCL_OBJLIST_ENTRY	(NotifyDevices)
 	#endif
 	CCL_OBJLIST_ENTRY	(File)
 	CCL_OBJLIST_ENTRY	(Resource)

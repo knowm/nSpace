@@ -1,0 +1,195 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								INST.NSPC
+%
+%						System device manager 
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+
+	% Actions
+	$	Initialize			Misc.Dist {}		% Initialize
+	$	Uninitialize		Misc.Dist {}		% Uninitialize
+
+	% Notifications
+	$	OnArrive				Misc.Dist {}		% Device arrival
+	$	OnDepart				Misc.Dist {}		% Device departure
+
+	% DEBUG
+	$	Debug Misc.Debug {}
+		!	OnArrive/OnFire						Debug/Fire
+		!	OnDepart/OnFire						Debug/Fire
+
+	%%%%%%%%
+	% Setup
+	%%%%%%%%
+
+	% Subgraph: Driver state
+	#	State											State/Driver/Device/Manager/State/ {}
+
+	% MISCN: Create file stream source
+	$	CreateFileSrc Misc.Create { Id Io.StmSrcFile }
+		!	Initialize/OnFire						CreateFileSrc/Fire
+
+	%%%%%%%%%%%%%%%%
+	% Notifications
+	%%%%%%%%%%%%%%%%
+
+	%% Monitor device activity so that available devices can be kept
+	%% up-to-date
+
+	% ION: Environment specific device notification
+	$	NotifyDevs Io.NotifyDevices {}
+		!	Initialize/OnFire						NotifyDevs/Start
+		!	Uninitialize/OnFire					NotifyDevs/Stop
+		!	NotifyDevs/OnFire						Debug/Fire
+
+	% MISCN: Demux the event
+	$	DemuxEvent Misc.Demux { Key Event Values ( Arrive Depart ) }
+		!	NotifyDevs/OnFire						DemuxEvent/Dictionary
+		!	NotifyDevs/OnFire						DemuxEvent/Fire
+
+	% Local notification
+	!	DemuxEvent/OnArrive						OnArrive/Fire
+	!	DemuxEvent/OnDepart						OnDepart/Fire
+
+	% ADTN: Load device name
+	$	LoadName Adt.Load { Key Name }
+		!	OnArrive/OnFire						LoadName/Dictionary
+		!	OnArrive/OnFire						LoadName/Fire
+		!	OnDepart/OnFire						LoadName/Dictionary
+		!	OnDepart/OnFire						LoadName/Fire
+
+	%%
+	%% Arrive
+	%%
+
+	% ADTN: Store device information in list
+	$	StoreDevDct Adt.Store {}
+		!	State/Devices/OnFire					StoreDevDct/Dictionary
+		!	LoadName/OnFire						StoreDevDct/Key
+		!	OnArrive/OnFire						StoreDevDct/Fire
+
+	% Device arrival
+	!	OnArrive/OnFire							State/OnArrive/Fire
+
+	%%
+	%% Depart
+	%%
+
+	% Device removal
+	!	OnDepart/OnFire							State/OnRemove/Fire
+
+	% ADTN: Remove device information from list
+	$	RemoveDevDct Adt.Remove {}
+		!	State/Devices/OnFire					RemoveDevDct/Container
+		!	LoadName/OnFire						RemoveDevDct/Key
+		!	OnDepart/OnFire						RemoveDevDct/Fire
+
+	%%%%%%%%%%%%%%%
+	%% Enumeration
+	%%%%%%%%%%%%%%%
+
+	%% Notifications are only for changes.  On start-up enumerating the existing devices
+	%% is necessary. TODO: Dynamically loading modules ?
+
+	% ADTN: Store device type in a dictionary
+	$	StoreDevType Adt.Store { Key Type Value Device }
+
+	%%%%%%
+	% USB
+	%%%%%%
+
+	%% Enum
+
+	% MISCN: GUID for USB device interfacea
+	$	ValueGuidUsb Misc.Dist { Value "{A5DCBF10-6530-11D2-901F-00C04FB951ED}" }
+		!	Initialize/OnFire						ValueGuidUsb/Fire
+
+	% MISCN: Enumerate USB devices.  (GUID_DEVINTERFACE_USB_DEVICE)
+	$	EnumDev Io.EnumDevices {}
+		!	ValueGuidUsb/OnFire					EnumDev/Class
+		!	Initialize/OnFire						EnumDev/First
+
+	% MISCN: Create a dictionary for the device
+	$	CreateUsbDct Misc.Create { Id Adt.Dictionary }
+		!	EnumDev/OnNext							CreateUsbDct/Fire
+
+	% Device
+	!	CreateUsbDct/OnFire						StoreDevType/Dictionary
+	!	CreateUsbDct/OnFire						StoreDevType/Fire
+
+	% ADTN: Store information about device
+	$	StoreUsbName Adt.Store { Key Name }
+		!	CreateUsbDct/OnFire					StoreUsbName/Dictionary
+		!	EnumDev/OnNext							StoreUsbName/Fire
+	$	StoreUsbGuid Adt.Store { Key GUID }
+		!	ValueGuidUsb/OnFire					StoreUsbGuid/Value
+		!	CreateUsbDct/OnFire					StoreUsbGuid/Dictionary
+		!	CreateUsbDct/OnFire					StoreUsbGuid/Fire
+
+	% Arrival
+	!	StoreUsbName/OnFire						OnArrive/Fire
+
+	% Next device
+	!	EnumDev/OnNext								EnumDev/Next
+
+	%% Additional information.
+	%% As USB devices arrive, interrogate their additional information to
+	%% make it easier for clients to find devices they are looking for...
+
+	% ADTN: Load GUID of new device
+	$	LoadUsbGuid Adt.Load { Key GUID }
+		!	OnArrive/OnFire						LoadUsbGuid/Dictionary
+
+	% MISCN: USB ?
+	$	IsUsb Misc.Compare { Left "{A5DCBF10-6530-11D2-901F-00C04FB951ED}" }
+		!	LoadUsbGuid/OnFire					IsUsb/Fire
+
+	% ADTN: Load name/path of device
+	$	LoadUsbName Adt.Load { Key Name }
+		!	OnArrive/OnFire						LoadUsbName/Dictionary
+		!	IsUsb/OnEqual							LoadUsbName/Fire
+%		!	LoadUsbName/OnFire					Debug/Fire
+
+	% ION: Device must be open to interrogate 
+	$	StmSrcUsb Io.StreamSource { Options { ReadOnly false:bool Async true:bool } }
+		!	CreateFileSrc/OnFire					StmSrcUsb/Source
+		!	LoadUsbName/OnFire					StmSrcUsb/Location
+		!	LoadUsbName/OnFire					StmSrcUsb/Open
+%		!	StmSrcUsb/OnOpen						Debug/Fire
+
+	% USBN: Open as USB device to obtain information about it
+	$	DevUsb Usb.Device {}
+		!	StmSrcUsb/OnOpen						DevUsb/Stream
+		!	StmSrcUsb/OnOpen						DevUsb/Open
+
+	% ADTN: Copy relevant keys into device dictionary
+	$	LoadUsbKeys Adt.Keys { Keys ( IdVendor IdProduct Manufacturer Product SerialNumber ) }
+		!	DevUsb/OnDevice						LoadUsbKeys/Dictionary
+		!	DevUsb/OnDevice						LoadUsbKeys/Load
+	$	StoreUsbKeys Adt.Keys { Keys ( IdVendor IdProduct Manufacturer Product SerialNumber ) }
+		!	OnArrive/OnFire						StoreUsbKeys/Dictionary
+		!	LoadUsbKeys/OnIdVendor				StoreUsbKeys/IdVendor
+		!	LoadUsbKeys/OnIdProduct				StoreUsbKeys/IdProduct
+		!	LoadUsbKeys/OnManufacturer			StoreUsbKeys/Manufacturer
+		!	LoadUsbKeys/OnProduct				StoreUsbKeys/Product
+		!	LoadUsbKeys/OnSerialNumber			StoreUsbKeys/SerialNumber
+		!	DevUsb/OnDevice						StoreUsbKeys/Store
+		!	StoreUsbKeys/OnStore					Debug/Fire
+
+	% Close USB device
+	!	DevUsb/OnDevice							DevUsb/Close
+
+	% ION: Close device stream
+	$	CloseUsb Io.Resource {}
+		!	StmSrcUsb/OnOpen						CloseUsb/Resource
+		!	StmSrcUsb/OnOpen						CloseUsb/Close
+
+	% Latent connections
+	!	OnArrive/OnFire							LoadUsbGuid/Fire
+
+

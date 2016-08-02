@@ -50,6 +50,19 @@
 %		!	ValueImgLoc/OnFire					LoadPng/Load
 %		!	LoadPng/OnLoad							Debug/Fire
 
+	%%%%%%%%%%%%%%%%%%%%%%
+	% Device notification
+	%%%%%%%%%%%%%%%%%%%%%%
+
+	% Subgraph: Device manager
+%	#	Manager										Driver/Device/Manager/Inst/ {}
+
+	% ION: Device notification
+%	$	NotifyDevs Io.NotifyDevices {}
+%		!	Initialize/OnFire						NotifyDevs/Start
+%		!	Uninitialize/OnFire					NotifyDevs/Stop
+%		!	NotifyDevs/OnFire						Debug/Fire
+
 	%%%%%%
 	% SQL
 	%%%%%%

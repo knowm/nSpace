@@ -143,17 +143,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "driver", "driver", "{5FB7D0
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "device", "device", "{8C5C6696-B7E0-4BAF-981E-737EFC4F4E3F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "flycapture", "flycapture", "{ADEAFFCC-BFD1-45A8-AF1B-49E7A750AE3C}"
-	ProjectSection(SolutionItems) = preProject
-		..\graph\state\driver\device\flycapture\state.nspc = ..\graph\state\driver\device\flycapture\state.nspc
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "device", "device", "{2EE40921-B690-4BED-BE0B-91E45782140A}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "flycapture", "flycapture", "{0F4B4427-F513-46FB-AD68-6B5CD3167565}"
-	ProjectSection(SolutionItems) = preProject
-		..\graph\driver\device\flycapture\inst.nspc = ..\graph\driver\device\flycapture\inst.nspc
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plotl", "lib\plotl\plotl.vcxproj", "{6C3DC051-9F23-4C86-9FFB-50524DB5992C}"
 EndProject
@@ -236,6 +226,16 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "geometry", "geometry", "{B060C18B-FDBD-4381-A53D-6447D907C022}"
 	ProjectSection(SolutionItems) = preProject
 		..\graph\lib\math\geometry\RectIntRect.nspc = ..\graph\lib\math\geometry\RectIntRect.nspc
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "manager", "manager", "{0418EEA3-9AEF-464F-B12F-4EFA1FA657DC}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\driver\device\manager\inst.nspc = ..\graph\driver\device\manager\inst.nspc
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "manager", "manager", "{2809E90A-849A-4E98-AF04-9F35947A4CFE}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\state\driver\device\manager\state.nspc = ..\graph\state\driver\device\manager\state.nspc
 	EndProjectSection
 EndProject
 Global
@@ -679,8 +679,8 @@ Global
 		{5CFBA96B-9923-43AD-AEA6-3958D0D106BA} = {790404EC-635B-4797-8F52-F1D45345FE5A}
 		{2EE40921-B690-4BED-BE0B-91E45782140A} = {80092055-29F3-48FF-B851-E10B9573E29C}
 		{8C5C6696-B7E0-4BAF-981E-737EFC4F4E3F} = {5FB7D055-D8F7-4E0D-84D2-715E428B0003}
-		{ADEAFFCC-BFD1-45A8-AF1B-49E7A750AE3C} = {8C5C6696-B7E0-4BAF-981E-737EFC4F4E3F}
-		{0F4B4427-F513-46FB-AD68-6B5CD3167565} = {2EE40921-B690-4BED-BE0B-91E45782140A}
+		{2809E90A-849A-4E98-AF04-9F35947A4CFE} = {8C5C6696-B7E0-4BAF-981E-737EFC4F4E3F}
+		{0418EEA3-9AEF-464F-B12F-4EFA1FA657DC} = {2EE40921-B690-4BED-BE0B-91E45782140A}
 		{8A293E20-BE4E-4587-AFD7-878265581C12} = {F17316B8-66FA-4F6F-BC29-2959E171A6F9}
 		{58CCE292-A622-4483-A310-8022215D158C} = {9AB41F9C-430F-45DC-9D5F-533D052C9D8C}
 		{EA960234-7A49-4F69-A725-65EDCA57F825} = {9AB41F9C-430F-45DC-9D5F-533D052C9D8C}
