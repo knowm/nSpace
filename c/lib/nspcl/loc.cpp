@@ -753,7 +753,7 @@ HRESULT Location :: receive ( IReceptor *prSrc, const WCHAR *pwLoc,
 	////////////////////////////////////////////////////////////////////////
 	HRESULT		hr			= S_OK;
 	bool			bBehave	= (pBehave != NULL);
-	U32			sz;
+//	U32			sz;
 
 	// Sanity check for double referenced values.  This was a bug
 	// early on, check it in case something goes wrong.
@@ -764,95 +764,15 @@ HRESULT Location :: receive ( IReceptor *prSrc, const WCHAR *pwLoc,
 		DebugBreak();
 	#endif
 
-	// SPECIAL CASE: Connectors only receive 'value' locations.
+	// SPECIAL CASE: Connectors only receive 'value' locations/keys.
 	if ((bRcp || bEmt) && WCASECMP(pwLoc,L"Value"))
 		return S_OK;
 
-	// Receiving a value
-	if (csInt.enter())
-		{
-		// If location is already receiving a value, queue it up for later.
-		// The queue is not created until now because only a small number
-		// of locations will end up having to deal with this.
-		if (bRx)
-//		if (bRx && pBehave != NULL)
-			{
-			// Need a queue ?
-			if (pRxQ == NULL)
-				{
-				// Create the reception value queue and set up iterator
-				CCLTRY(COCREATE(L"Adt.Queue",IID_IList,&pRxQ));
-				CCLTRY(pRxQ->iterate ( &pRxIt ) );
-				}	// if
-
-			// Queue information for later processing
-			CCLTRY ( pRxQ->write ( adtIUnknown(prSrc) ) );
-			CCLTRY ( pRxQ->write ( adtString(pwLoc) ) );
-			CCLTRY ( pRxQ->write ( v ) );
-
-			// Debug
-			if (hr == S_OK)
-				{
-				U32	sz;
-				pRxQ->size ( &sz );
-				if (!(sz % 10))
-					lprintf ( LOG_WARN, L"Queue:%s:%d\r\n", (LPCWSTR) this->strName, sz );
-				}	// if
-
-			// Done
-			csInt.leave();
-			}	// if
-
-		// Not busy, receive
-		else
-			{
-			// Now busy
-			bRx = true;
-
-			// Release internal lock
-			csInt.leave();
-
-			// Receive the value
-			receiveInt ( prSrc, (*pwLoc == '/') ? pwLoc+1 : pwLoc, v );
-
-			// Any queue receptions to process ?
-			if (	hr == S_OK						&&
-					csInt.enter()					&& 
-					pRxQ != NULL					&&
-					pRxQ->size ( &sz ) == S_OK && 
-					sz > 0 )
-				{
-				adtValue	vSrc,vLoc,vV;
-
-				// Process queue values
-				while (hr == S_OK && pRxIt->read ( vSrc ) == S_OK)
-					{
-					// Read location and value
-					CCLOK  ( pRxIt->next(); )
-					CCLTRY ( pRxIt->read ( vLoc ) );
-					CCLOK  ( pRxIt->next(); )
-					CCLTRY ( pRxIt->read ( vV ) );
-					CCLOK  ( pRxIt->next(); )
-
-					// Release internal lock
-					csInt.leave();
-
-					// Receive value, direct cast ok since this function queued values.
-					CCLOK ( receiveInt ( (IReceptor *)vSrc.punk,	
-								(*(vLoc.pstr) == '/') ? vLoc.pstr+1 : vLoc.pstr, vV ); )
-
-					// Internal lock
-					csInt.enter();
-					}	// while
-
-				}	// if
-
-			// Done receiving, clean up
-			bRx = false;
-			csInt.leave();
-			}	// else
-
-		}	// if
+	// See 'Behave.cpp'.  Previously all locations were thread protected,
+	// now just behaviours need to be thread protected.  This allows multiple
+	// threads to be sending values down different paths through the
+	// same intersecting locations.
+	CCLOK ( receiveInt ( prSrc, (*pwLoc == '/') ? pwLoc+1 : pwLoc, v ); );
 
 	return hr;
 	}	// receive

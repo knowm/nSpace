@@ -405,15 +405,20 @@ HRESULT Endpoint :: tick ( void )
 		// Read from end point. 
 		CCLTRY (pktIo ( FALSE, iSzPkt, INFINITE, &uXfer ));
 
-		// Write to destination stream
-		CCLTRY ( pStmIo->write ( pcBfrPkt, uXfer, NULL ) );
+		// Valid stream ?
+		if (hr == S_OK && pStmIo != NULL)
+			{
+			// Write to destination stream
+			CCLTRY ( pStmIo->write ( pcBfrPkt, uXfer, NULL ) );
 
-		// Next block
-		CCLOK ( uLeft -= uXfer; )
+			// Next block
+			CCLOK ( uLeft -= uXfer; )
 
-		// A short packet means end of transfer
-		if (hr == S_OK && uXfer < iSzPkt)
-			break;
+			// A short packet means end of transfer
+			if (hr == S_OK && uXfer < iSzPkt)
+				break;
+			}	// if
+
 		}	// while
 
 	// Send out read stream

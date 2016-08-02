@@ -62,6 +62,11 @@
 	% Latest value in queue
 	!	Next/OnFire									ValueQIt/First
 
+	% ADTN: For debug
+	$	StatQ Adt.Stat {}
+		!	CreateValueQ/OnFire					StatQ/Container
+		!	Next/OnFire								StatQ/Fire
+
 	% ADTN: Clear queue
 	$	ResetValueQ Adt.Remove {}
 		!	CreateValueQ/OnFire					ResetValueQ/Container

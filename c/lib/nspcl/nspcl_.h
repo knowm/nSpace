@@ -36,8 +36,11 @@ class Behaviour :
 	Behaviour ( IBehaviour *);							// Constructor
 
 	// Run-time data
-	IBehaviour	*pBehave;								// Contained behaviour
-	sysCS			csRx;										// Thread safety
+	IBehaviour	*pBehave,*pBehaveR;					// Contained behaviour
+	sysCS			csRx,csInt;								// Thread safety
+	IList			*pRxQ;									// Receiver queue
+	IIt			*pRxIt;									// Receiver iterator
+	bool			bReceive,bReceiving;					// Receive flags
 
 	// 'IBehaviour' members
 	STDMETHOD(attach)		( IDictionary *, bool );

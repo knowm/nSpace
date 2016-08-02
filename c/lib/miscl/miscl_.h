@@ -69,8 +69,83 @@ class AsyncEmit :
 	};
 
 //
-// Class - AsyncQ.  
+// Class - AsyncQ.
 //! \brief An asynchronous queue node.
+//
+
+class AsyncQ :
+	public CCLObject,										// Base class
+	public IBehaviour,									// Interface
+	public ITickable										// Interface
+	{
+	public :
+	AsyncQ ( void );										// Constructor
+
+	// Run-time data
+	IThread		*pThrd;									// AsyncQ thread
+	bool			bRun;										// AsyncQ thread run ?
+	IList			*pQw;										// Work queue
+	IIt			*pQwIt;									// Work queue iterators
+	IDictionary	*pQs;										// Queues by Id
+	IDictionary	*pQvs;									// Latest queue values by Id
+	adtInt		iMaxSz;									// Maximum queue sizes
+	adtBool		bBlock;									// Block on full queue ?
+	sysCS			csWork;									// Work protection
+	sysEvent		evWork;									// Work event
+	adtValue		vQId;										// Queue Id
+	adtValue		vIdE,vQE;								// Internal
+	adtValue		vQ;										// Queue variable
+	adtIUnknown	unkV;										// Internal
+
+	// 'ITickable' members
+	STDMETHOD(tick)		( void );
+	STDMETHOD(tickAbort)	( void );
+	STDMETHOD(tickBegin)	( void ) { return S_OK; }
+	STDMETHOD(tickEnd)	( void ) { return S_OK; }
+
+	// CCL
+	CCL_OBJECT_BEGIN(AsyncQ)
+		CCL_INTF(IBehaviour)
+		CCL_INTF(ITickable)
+	CCL_OBJECT_END()
+	virtual void		destruct		( void );		// Destruct object
+
+
+	//! \name Connections 
+	//@{
+	//! \brief Queue the specified value for asynchronous emission.
+	DECLARE_CON(Fire)
+	DECLARE_CON(Id)
+	DECLARE_RCP(Next)
+	//! \brief Re-emit the current value in the front of the queue.
+	DECLARE_RCP(Retry)
+	//! \brief Start accepting and asynchronously emitting values
+	DECLARE_RCP(Start)
+	//! \brief Shutdown queueing and emission of values.
+	DECLARE_RCP(Stop)
+	//! \brief Emit a signal when the queue becomes empty.
+	DECLARE_EMT(Empty)
+	//@}
+	BEGIN_BEHAVIOUR()
+		DEFINE_CON(Fire)
+		DEFINE_CON(Id)
+
+		DEFINE_RCP(Next)
+		DEFINE_RCP(Retry)
+		DEFINE_RCP(Start)
+		DEFINE_RCP(Stop)
+		DEFINE_EMT(Empty)
+	END_BEHAVIOUR_NOTIFY()
+
+	private :
+
+	// Internal utilities
+	HRESULT getQ ( const adtValue &, IList ** );
+	};
+
+/*
+//
+// Class - AsyncQ.  
 //
 
 class AsyncQ :
@@ -143,6 +218,7 @@ class AsyncQ :
 	// Internal utilities
 	HRESULT qValue ( const ADTVALUE & );
 	};
+*/
 
 //
 // Class - Clone.  
@@ -159,6 +235,7 @@ class Clone :
 	// Run-time data
 	adtValue		vClone;									// Value to clone
 	adtValue		vRes;										// Result value
+	adtIUnknown	unkV;										// Run-time variable
 
 	// CCL
 	CCL_OBJECT_BEGIN(Clone)

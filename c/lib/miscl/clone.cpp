@@ -69,23 +69,24 @@ HRESULT Clone :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	// Fire
 	if (_RCP(Fire))
 		{
-		const ADTVALUE	*pV	= NULL;
+		adtValue	vUse;
 
 		// Value to clone
-		CCLOK ( pV = (!adtValue::empty(vClone)) ? &vClone : &v; )
+		CCLTRY ( adtValue::copy ( (!adtValue::empty(vClone)) ? vClone : v,
+											vUse ) );
 
 		// Non-object
-		if (hr == S_OK && pV->vtype != VTYPE_UNK)
-			hr = adtValue::copy ( *pV, vRes );
+		if (hr == S_OK && adtValue::type(vUse) != VTYPE_UNK)
+			hr = adtValue::copy ( vUse, vRes );
 
 		// Object
-		else if (hr == S_OK && pV->vtype == VTYPE_UNK)
+		else if (hr == S_OK && adtValue::type(vUse) == VTYPE_UNK)
 			{
 			ICloneable	*pC	= NULL;
 			IUnknown		*pUnk	= NULL;
 
 			// Must support self-cloning
-			CCLTRY ( _QISAFE(pV->punk,IID_ICloneable,&pC ) );
+			CCLTRY ( _QISAFE((unkV=vUse),IID_ICloneable,&pC));
 			CCLTRY ( pC->clone ( &pUnk ) );
 
 			// Result
@@ -100,8 +101,8 @@ HRESULT Clone :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			hr = E_UNEXPECTED;
 
 		// Result
-		if (hr == S_OK)	_EMT(Fire,vRes );
-		else					_EMT(Error,adtInt(hr) );
+		if (hr == S_OK)	_EMT(Fire,vRes);
+		else					_EMT(Error,adtInt(hr));
 		}	// if
 
 	// State
