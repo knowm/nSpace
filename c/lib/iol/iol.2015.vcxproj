@@ -24,6 +24,7 @@
     <ClCompile Include="file.cpp" />
     <ClCompile Include="lock.cpp" />
     <ClCompile Include="memblck.cpp" />
+    <ClCompile Include="notifydevs.cpp" />
     <ClCompile Include="persist.cpp" />
     <ClCompile Include="resource.cpp" />
     <ClCompile Include="serial.cpp" />
