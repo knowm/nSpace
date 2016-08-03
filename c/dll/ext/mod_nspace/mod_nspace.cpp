@@ -128,4 +128,3 @@ void nspace_register_hooks ( apr_pool_t *p )
 	ap_hook_child_init ( nspace_child_init, NULL, NULL, APR_HOOK_LAST );
 
 	}	// nspace_register_hooks
-
