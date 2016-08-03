@@ -73,6 +73,10 @@ HRESULT Binary :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 	////////////////////////////////////////////////////////////////////////
 	HRESULT	hr = S_OK;
 
+	// Debug
+//	if (!WCASECMP(this->strnName,L"LightAvgX"))
+//		dbgprintf ( L"Hi\r\n" );
+	
 	// Execute
 	if (_RCP(Fire))
  		{

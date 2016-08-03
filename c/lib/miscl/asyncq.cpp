@@ -213,8 +213,8 @@ HRESULT AsyncQ :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 				}	// if
 
 			// TODO: Implement blocking option ?
-			else
-				dbgprintf ( L"AsyncQ::receive:WARNING Queue full\r\n" );
+//			else
+//				dbgprintf ( L"AsyncQ::receive:WARNING Queue full\r\n" );
 
 			// Clean up
 			_RELEASE(pQ);

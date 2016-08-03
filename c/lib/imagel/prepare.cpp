@@ -110,6 +110,7 @@ HRESULT Prepare :: gpuInit ( void )
 		}	// if
 	else
 		{
+/*
 		// Debug
 		lprintf ( LOG_INFO, L"No Cuda enabled devices\r\n" );
 		bUMat = false;
@@ -128,6 +129,9 @@ HRESULT Prepare :: gpuInit ( void )
 		if (strstr ( dev.name().c_str(), "Iris" ) != NULL)
 			bUMat = false;
 
+		// Do not really have a good OpenCL source to test with, disable for now
+		bUMat = false;
+
 		// Debug
 		lprintf ( LOG_INFO, L"OpenCL %s\r\n", (bUMat) ? L"enabled" : L"disabled" );
 
@@ -140,7 +144,7 @@ HRESULT Prepare :: gpuInit ( void )
 			cv::Mat	mat(10,10,CV_8UC1);
 			mat.copyTo ( umat );
 			}	// if
-
+*/
 		}	// else
 
 	// GPU initialized

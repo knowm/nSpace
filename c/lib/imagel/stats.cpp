@@ -227,7 +227,7 @@ HRESULT Stats :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			else if (pMat->isUMat())
 				rct = cv::boundingRect ( *(pMat->umat) );
 			else
-				rct = cv::boundingRect ( *(pMat->gpumat) );
+				rct = cv::boundingRect ( *(pMat->mat) );
 
 			// Result
 			CCLTRY ( pImgUse->store ( adtString(L"Left"), adtInt(rct.x) ) );
