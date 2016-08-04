@@ -337,7 +337,7 @@ HRESULT FFT :: fft ( cv::cuda::GpuMat *pMat, cv::cuda::GpuMat *pWnd,
 //		matTmp.copyTo  ( matQ[3] );
 
 		// Just keep the positive frequencies (option ?)
-//		matMag	= matMag ( cv::Rect ( cx, 0, cx, matMag.rows ) );
+		matMag	= matMag ( cv::Rect ( cx, 0, cx, matMag.rows ) );
 
 		// Result is new matrix
 		matMag.copyTo ( *pMat );
