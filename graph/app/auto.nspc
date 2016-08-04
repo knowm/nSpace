@@ -97,6 +97,7 @@
 %		!	Initialize/OnFire						CreateImgDct/Fire
 
 	% MISCN: Image location
+%	$	ValueImgLoc Misc.Dist { Value "c:/temp/template.png" }
 %	$	ValueImgLoc Misc.Dist { Value "c:/temp/OCT_1.png" }
 %	$	ValueImgLoc Misc.Dist { Value "c:/temp/Catseye_Study_1029_151002090209_OD_VISX_SI.bmp" }
 %	$	ValueImgLoc Misc.Dist { Value "c:/temp/blank.png" }
@@ -170,7 +171,7 @@
 %	!	Prepare/OnDownload						Debug/Fire
 
 	% IMAGEN: Save result
-%	$	SaveImage Image.PersistImage { Location "c:/temp/debug.png" }
+	$	SaveImage Image.PersistImage { Location "c:/temp/debug.png" }
 %		!	Prepare/OnDownload					SaveImage/Image
 %		!	Prepare/OnDownload					SaveImage/Save
 %		!	ToMag/OnImage/OnFire					SaveImage/Image

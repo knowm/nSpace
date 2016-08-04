@@ -102,19 +102,19 @@ HRESULT FFT :: fft ( cv::Mat *pMat, cv::Mat *pWnd, bool bRows )
 		cy = matMag.rows/2;
 
 		// ROIs for quadrants
-		matQ[0] = matMag ( cv::Rect ( 0, 0, cx, cy ) );
-		matQ[1] = matMag ( cv::Rect ( cx, 0, cx, cy ) );
-		matQ[2] = matMag ( cv::Rect ( 0, cy, cx, cy ) );
-		matQ[3] = matMag ( cv::Rect ( cx, cy, cx, cy ) );
+//		matQ[0] = matMag ( cv::Rect ( 0, 0, cx, cy ) );
+//		matQ[1] = matMag ( cv::Rect ( cx, 0, cx, cy ) );
+//		matQ[2] = matMag ( cv::Rect ( 0, cy, cx, cy ) );
+//		matQ[3] = matMag ( cv::Rect ( cx, cy, cx, cy ) );
 
 		// Swap quadrants
-		matQ[0].copyTo ( matTmp );
-		matQ[1].copyTo ( matQ[0] );
-		matTmp.copyTo  ( matQ[1] );
+//		matQ[0].copyTo ( matTmp );
+//		matQ[1].copyTo ( matQ[0] );
+//		matTmp.copyTo  ( matQ[1] );
 
-		matQ[2].copyTo ( matTmp );
-		matQ[3].copyTo ( matQ[2] );
-		matTmp.copyTo  ( matQ[3] );
+//		matQ[2].copyTo ( matTmp );
+//		matQ[3].copyTo ( matQ[2] );
+//		matTmp.copyTo  ( matQ[3] );
 
 		// Just keep the positive frequencies (option ?)
 		matMag	= matMag ( cv::Rect ( cx, 0, cx, matMag.rows ) );
@@ -212,19 +212,19 @@ HRESULT FFT :: fft ( cv::UMat *pMat, cv::UMat *pWnd, bool bRows )
 		cy = matMag.rows/2;
 
 		// ROIs for quadrants
-		matQ[0] = matMag ( cv::Rect ( 0, 0, cx, cy ) );
-		matQ[1] = matMag ( cv::Rect ( cx, 0, cx, cy ) );
-		matQ[2] = matMag ( cv::Rect ( 0, cy, cx, cy ) );
-		matQ[3] = matMag ( cv::Rect ( cx, cy, cx, cy ) );
+//		matQ[0] = matMag ( cv::Rect ( 0, 0, cx, cy ) );
+//		matQ[1] = matMag ( cv::Rect ( cx, 0, cx, cy ) );
+//		matQ[2] = matMag ( cv::Rect ( 0, cy, cx, cy ) );
+//		matQ[3] = matMag ( cv::Rect ( cx, cy, cx, cy ) );
 
 		// Swap quadrants
-		matQ[0].copyTo ( matTmp );
-		matQ[1].copyTo ( matQ[0] );					// CRASH! On Intel Iris
-		matTmp.copyTo  ( matQ[1] );
+//		matQ[0].copyTo ( matTmp );
+//		matQ[1].copyTo ( matQ[0] );					// CRASH! On Intel Iris
+//		matTmp.copyTo  ( matQ[1] );
 
-		matQ[2].copyTo ( matTmp );
-		matQ[3].copyTo ( matQ[2] );
-		matTmp.copyTo  ( matQ[3] );
+//		matQ[2].copyTo ( matTmp );
+//		matQ[3].copyTo ( matQ[2] );
+//		matTmp.copyTo  ( matQ[3] );
 
 		// Just keep the positive frequencies (option ?)
 		matMag	= matMag ( cv::Rect ( cx, 0, cx, matMag.rows ) );
@@ -322,22 +322,22 @@ HRESULT FFT :: fft ( cv::cuda::GpuMat *pMat, cv::cuda::GpuMat *pWnd,
 		cy = matMag.rows/2;
 
 		// ROIs for quadrants
-		matQ[0] = matMag ( cv::Rect ( 0, 0, cx, cy ) );
-		matQ[1] = matMag ( cv::Rect ( cx, 0, cx, cy ) );
-		matQ[2] = matMag ( cv::Rect ( 0, cy, cx, cy ) );
-		matQ[3] = matMag ( cv::Rect ( cx, cy, cx, cy ) );
+//		matQ[0] = matMag ( cv::Rect ( 0, 0, cx, cy ) );
+//		matQ[1] = matMag ( cv::Rect ( cx, 0, cx, cy ) );
+//		matQ[2] = matMag ( cv::Rect ( 0, cy, cx, cy ) );
+//		matQ[3] = matMag ( cv::Rect ( cx, cy, cx, cy ) );
 
 		// Swap quadrants
-		matQ[0].copyTo ( matTmp );
-		matQ[1].copyTo ( matQ[0] );
-		matTmp.copyTo  ( matQ[1] );
+//		matQ[0].copyTo ( matTmp );
+//		matQ[1].copyTo ( matQ[0] );
+//		matTmp.copyTo  ( matQ[1] );
 
-		matQ[2].copyTo ( matTmp );
-		matQ[3].copyTo ( matQ[2] );
-		matTmp.copyTo  ( matQ[3] );
+//		matQ[2].copyTo ( matTmp );
+//		matQ[3].copyTo ( matQ[2] );
+//		matTmp.copyTo  ( matQ[3] );
 
 		// Just keep the positive frequencies (option ?)
-		matMag	= matMag ( cv::Rect ( cx, 0, cx, matMag.rows ) );
+//		matMag	= matMag ( cv::Rect ( cx, 0, cx, matMag.rows ) );
 
 		// Result is new matrix
 		matMag.copyTo ( *pMat );
