@@ -43,7 +43,7 @@ class Behaviour :
 	bool			bReceive,bReceiving;					// Receive flags
 
 	// 'IBehaviour' members
-	STDMETHOD(attach)		( IDictionary *, bool );
+	STDMETHOD(attach)		( IDictionary *, IReceptor *, bool );
 	STDMETHOD(receive)	( IReceptor *, const WCHAR *, const ADTVALUE & );
 
 	// CCL

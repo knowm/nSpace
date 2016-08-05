@@ -473,6 +473,8 @@ HRESULT Location :: desc ( void )
 			CCLTRY ( pDsc->load ( strnRefBehave, v ) );
 			CCLTRYE( (strB = v).length() > 0, E_UNEXPECTED );
 //			CCLOK  ( dbgprintf ( L"Location::%s:%s:%s\r\n", (LPCWSTR) strDscName, (LPCWSTR) strType, (LPCWSTR) strB ); )
+			if (!WCASECMP(strB,L"Math.Counter"))
+				dbgprintf ( L"Hi\r\n" );
 
 			// Create the behaviour for the node
 			if (hr == S_OK)
@@ -484,8 +486,8 @@ HRESULT Location :: desc ( void )
 				CCLTRYE ( (pBehave = new Behaviour(pBehaveInt)) != NULL, E_OUTOFMEMORY );
 				}	// if
 
-			// Attach
-			CCLTRY ( pBehave->attach ( this, true ) );
+			// Attach using the wrapper as the outer receptor
+			CCLTRY ( pBehave->attach ( this, pBehave, true ) );
 
 			// nSpace value behaviour ?
 			CCLOK ( bBehaveV = !WCASECMP(strB,L"nSpc.Value"); )
@@ -509,7 +511,7 @@ HRESULT Location :: desc ( void )
 //			CCLOK  ( dbgprintf ( L"Location::desc:detach:%s:%s:%s\r\n", (LPCWSTR) strDscName, (LPCWSTR) strType, (LPCWSTR) strB ); )
 
 			// Detach from location
-			pBehave->attach ( this, false );
+			pBehave->attach ( this, NULL, false );
 
 			// Clean up
 			strB = L"";

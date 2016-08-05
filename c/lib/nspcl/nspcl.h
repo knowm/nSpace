@@ -95,7 +95,8 @@ extern	adtStringSt strnRefVal;
  	adtString		strnName;												\
 	STDMETHOD(receive)	( IReceptor *, const WCHAR *,				\
 									const ADTVALUE & );						\
-	STDMETHOD(attach)		( IDictionary *_pnLoc, bool bAttach )	\
+	STDMETHOD(attach)		( IDictionary *_pnLoc,						\
+									IReceptor *_pnRcp,  bool bAttach )	\
 		{																			\
 		HRESULT	hr	= S_OK;													\
 		pnLoc	= _pnLoc;														\
@@ -121,11 +122,11 @@ extern	adtStringSt strnRefVal;
 
 #define	DEFINE_EMT(a)														\
 			CCLTRY(pnSpc->connection ( pnLoc, L"On" #a,				\
-							L"Emitter", this,									\
+							L"Emitter", _pnRcp,								\
 							(bAttach) ? &DECLARE_LOC_NAME(pe,On ## a) : NULL ));
 #define	DEFINE_RCP(a)														\
 			CCLTRY(pnSpc->connection ( pnLoc, L## #a,					\
-							L"Receptor", this,								\
+							L"Receptor", _pnRcp,								\
 							(bAttach) ? &DECLARE_LOC_NAME(pr,a) : NULL ));
 #define	DEFINE_CON(a)														\
 			DEFINE_RCP(a)														\
@@ -262,7 +263,7 @@ DEFINE_GUID	(	IID_IBehaviour, 0x2534d015, 0x8628, 0x11d2, 0x86, 0x8c,
 
 DECLARE_INTERFACE_(IBehaviour,IReceptor)
 	{
-	STDMETHOD(attach)			( IDictionary *, bool )					PURE;
+	STDMETHOD(attach)			( IDictionary *, IReceptor *,  bool )	PURE;
 	};
 
 //

@@ -6,11 +6,18 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
+// nSpace
+//#include "nspace.h"
+//#include <winsock2.h>
+//#include <ws2tcpip.h>
+//#include <IPHlpApi.h>
+
 // Apache
 #include <httpd.h>
 #include <http_config.h>
 #include <http_protocol.h>
 #include <ap_config.h>
+
 
 // Prototypes
 void	nspace_child_init			( apr_pool_t *p, server_rec *s );

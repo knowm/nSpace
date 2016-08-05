@@ -50,6 +50,23 @@
 %		!	ValueImgLoc/OnFire					LoadPng/Load
 %		!	LoadPng/OnLoad							Debug/Fire
 
+	%%%%%%%%%%
+	% General
+	%%%%%%%%%%
+
+	% MATHN: Counter
+%	$	Cnt Math.Counter { Reset 0:int }
+%		!	Initialize/OnFire						Cnt/Reset
+
+	% MISCN: Done ?
+%	$	MoreCnt Misc.Compare { Left 16384:int }
+%		!	Cnt/OnFire								MoreCnt/Fire
+%		!	MoreCnt/OnGreater						Cnt/Increment
+%		!	MoreCnt/OnEqual						Debug/Fire
+%		!	MoreCnt/OnEqual						Debug/Fire
+%		!	MoreCnt/OnEqual						Debug/Fire
+%		!	MoreCnt/OnEqual						Debug/Fire
+
 	%%%%%%%%%%%%%%%%%%%%%%
 	% Device notification
 	%%%%%%%%%%%%%%%%%%%%%%

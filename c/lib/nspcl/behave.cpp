@@ -28,7 +28,8 @@ Behaviour :: Behaviour ( IBehaviour *_pBehave )
 	AddRef();
 	}	// Behaviour
 
-HRESULT Behaviour :: attach ( IDictionary *pnLoc, bool bAttach )
+HRESULT Behaviour :: attach ( IDictionary *pnLoc, IReceptor *pRcp,
+										bool bAttach )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -39,6 +40,7 @@ HRESULT Behaviour :: attach ( IDictionary *pnLoc, bool bAttach )
 	//
 	//	PARAMETERS
 	//		-	pnLoc is the location
+	//		-	pRcp is the outer receptor
 	//		-	bAttach is true to attach, false to detach
 	//
 	//	RETURN Behaviour
@@ -55,7 +57,7 @@ HRESULT Behaviour :: attach ( IDictionary *pnLoc, bool bAttach )
 		bReceive = false;
 
 	// Contained object
-	hr = (pBehave != NULL) ? pBehave->attach ( pnLoc, bAttach ) : E_UNEXPECTED;
+	hr = (pBehave != NULL) ? pBehave->attach ( pnLoc, pRcp, bAttach ) : E_UNEXPECTED;
 
 	// Receive flag
 	if (pBehave != NULL && hr == S_OK)
