@@ -122,7 +122,7 @@ void Debug :: logCallback	( cLogEntry *e, void *p )
 //	CCLOK ( pThis->peOnLog->emit(adtIUnknown(pThis->pDctLog) ); )
 	}	// logCallback
 
-HRESULT Debug :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Debug :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

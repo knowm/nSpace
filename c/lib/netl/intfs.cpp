@@ -68,7 +68,7 @@ HRESULT Interfaces :: onAttach ( bool bAttach )
 	return S_OK;
 	}	// onAttach
 
-HRESULT Interfaces :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Interfaces :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -135,7 +135,7 @@ HRESULT Interfaces :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &
 		#endif
 
 		// Proceed to 'next' adapter
-		CCLTRY ( receive ( prNext, pl, v ) );
+		CCLTRY ( receive ( prNext, prl, v ) );
 		}	// if
 
 	// Next

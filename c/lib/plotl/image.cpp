@@ -160,8 +160,7 @@ HRESULT Image :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT Image :: receive ( IReceptor *pr, const WCHAR *pl, 
-										const ADTVALUE &v )
+HRESULT Image :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

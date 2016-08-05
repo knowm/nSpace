@@ -126,7 +126,7 @@ HRESULT Keys :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT Keys :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Keys :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -174,7 +174,7 @@ HRESULT Keys :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 
 			// If value exists, emit, otherwise not found
 			if (hr == S_OK && pDict->load ( vK, vV ) == S_OK)
-				pR->receive ( this, pl, vV );
+				pR->receive ( this, prl, vV );
 			else
 				{
 				_EMT(NotFound,vK);
@@ -256,7 +256,7 @@ HRESULT Keys :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 
 		// Execute store if enabled
 		if (hr == S_OK && bAuto)
-			receive ( prStore, pl, v );
+			receive ( prStore, prl, v );
 
 		// Notify graph of store
 //		CCLOK ( peS->emit ( strRecep ); )

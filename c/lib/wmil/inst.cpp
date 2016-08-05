@@ -57,7 +57,7 @@ HRESULT Instance :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT Instance :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Instance :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

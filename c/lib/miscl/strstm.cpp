@@ -127,7 +127,7 @@ HRESULT StringStream :: onAttach ( bool bAttach )
 	return S_OK;
 	}	// onAttach
 
-HRESULT StringStream :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT StringStream :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

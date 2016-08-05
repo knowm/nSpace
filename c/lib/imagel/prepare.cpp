@@ -189,7 +189,7 @@ HRESULT Prepare :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT Prepare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Prepare :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

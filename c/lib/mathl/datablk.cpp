@@ -332,7 +332,7 @@ HRESULT DataBlock :: onAttach ( bool bAttach )
 	return S_OK;
 	}	// onAttach
 
-HRESULT DataBlock :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT DataBlock :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

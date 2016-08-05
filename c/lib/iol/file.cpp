@@ -211,7 +211,7 @@ HRESULT File :: onAttach ( bool bAttach )
 	}	// onAttach
 
 
-HRESULT File :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT File :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

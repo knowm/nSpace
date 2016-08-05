@@ -388,7 +388,7 @@ HRESULT DictParse :: parse ( IContainer *pFmt )
 	return hr;
 	}	// parse
 
-HRESULT DictParse :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT DictParse :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

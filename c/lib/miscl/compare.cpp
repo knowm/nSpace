@@ -44,7 +44,7 @@ HRESULT Compare :: onAttach ( bool bAttach )
 	return S_OK;
 	}	// onAttach
 
-HRESULT Compare :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Compare :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

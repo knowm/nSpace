@@ -66,7 +66,7 @@
 
 class Binary :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Binary ( void );										// Constructor
@@ -100,7 +100,7 @@ class Binary :
 
 class Counter :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Counter ( void );										// Constructor
@@ -136,7 +136,7 @@ class Counter :
 
 class DataBlock :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	DataBlock ( void );									// Constructor
@@ -194,7 +194,7 @@ class DataBlock :
 
 class Formula :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Formula ( void );										// Constructor
@@ -233,7 +233,7 @@ class Formula :
 
 class Function :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Function ( void );									// Constructor
@@ -275,7 +275,7 @@ class Function :
 
 class Matrix3D :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Matrix3D ( void );									// Constructor
@@ -352,7 +352,7 @@ class Matrix3D :
 
 class Transform3D :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Transform3D ( void );								// Constructor
@@ -431,7 +431,7 @@ class Transform3D :
 
 class Unary :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Unary ( void );										// Constructor
@@ -463,7 +463,7 @@ class Unary :
 
 class Vector3 :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Vector3 ( void );										// Constructor

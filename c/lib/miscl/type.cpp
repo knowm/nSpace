@@ -156,7 +156,7 @@ HRESULT Type :: onAttach ( bool bAttach )
 	return S_OK;
 	}	// onAttach
 
-HRESULT Type :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Type :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

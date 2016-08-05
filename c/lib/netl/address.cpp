@@ -47,7 +47,7 @@ HRESULT Address :: onAttach ( bool bAttach )
 	return S_OK;
 	}	// onAttach
 
-HRESULT Address :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Address :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

@@ -71,7 +71,7 @@ HRESULT KeyPath :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT KeyPath :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT KeyPath :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -126,7 +126,7 @@ HRESULT KeyPath :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 		CCLTRYE ( pDct != NULL, ERROR_INVALID_STATE );
 
 		// Perform visit
-		CCLOK ( visit ( pDct, pl, L"/" ); )
+		CCLOK ( visit ( pDct, prl, L"/" ); )
 
 		// Done
 		CCLOK ( _EMT(VisitEnd,v); )

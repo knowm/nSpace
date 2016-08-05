@@ -455,7 +455,7 @@ HRESULT StringFormat :: onAttach ( bool bAttach )
 	return S_OK;
 	}	// onAttach
 
-HRESULT StringFormat :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT StringFormat :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

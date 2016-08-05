@@ -63,7 +63,7 @@ HRESULT Matrix3D :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT Matrix3D :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Matrix3D :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

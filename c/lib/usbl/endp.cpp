@@ -186,7 +186,7 @@ HRESULT Endpoint :: pktIo  ( BOOL bWr, DWORD uIo, DWORD uTo, DWORD *puIo )
 	return hr;
 	}	// pktIo
 
-HRESULT Endpoint :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Endpoint :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

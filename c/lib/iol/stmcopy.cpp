@@ -72,7 +72,7 @@ HRESULT StreamCopy :: onAttach ( bool bAttach )
 	return S_OK;
 	}	// onAttach
 
-HRESULT StreamCopy :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT StreamCopy :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

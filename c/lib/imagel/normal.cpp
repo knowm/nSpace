@@ -64,7 +64,7 @@ HRESULT Normalize :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT Normalize :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Normalize :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

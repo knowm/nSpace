@@ -44,7 +44,7 @@ HRESULT Counter :: onAttach ( bool bAttach )
 	return S_OK;
 	}	// onAttach
 
-HRESULT Counter :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Counter :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

@@ -50,7 +50,7 @@ HRESULT MulticastOp :: onAttach ( bool bAttach )
 	return S_OK;
 	}	// onAttach
 
-HRESULT MulticastOp :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT MulticastOp :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

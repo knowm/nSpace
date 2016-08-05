@@ -57,6 +57,7 @@
 	% MATHN: Counter
 %	$	Cnt Math.Counter { Reset 0:int }
 %		!	Initialize/OnFire						Cnt/Reset
+%		!	Cnt/OnFire								Debug/Fire
 
 	% MISCN: Done ?
 %	$	MoreCnt Misc.Compare { Left 16384:int }

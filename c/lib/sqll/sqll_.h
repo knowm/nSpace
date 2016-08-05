@@ -177,7 +177,7 @@ class SQLRef :
 
 class Connection :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Connection ( void );									// Constructor
@@ -213,7 +213,7 @@ class Connection :
 
 class Query :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Query ( void );										// Constructor
@@ -278,7 +278,7 @@ class Query :
 
 class RecordEnum :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	RecordEnum ( void );									// Constructor
@@ -314,7 +314,7 @@ class RecordEnum :
 
 class Connection :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Connection ( void );									// Constructor
@@ -392,7 +392,7 @@ class SQLHandle :
 
 class SQLCreateDatabase :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	SQLCreateDatabase ( void );						// Constructor
@@ -427,7 +427,7 @@ class SQLCreateDatabase :
 
 class SQLDelete :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	SQLDelete ( void );									// Constructor
@@ -474,7 +474,7 @@ class SQLDelete :
 
 class SQLQuery :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	SQLQuery ( void );									// Constructor
@@ -536,7 +536,7 @@ class SQLQuery :
 
 class SQLRecordEnum :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	SQLRecordEnum ( void );								// Constructor
@@ -585,7 +585,7 @@ class SQLRecordEnum :
 
 class SQL2Table :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	SQL2Table ( void );									// Constructor
@@ -627,7 +627,7 @@ class SQL2Table :
 
 class SQLTableWrite :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	SQLTableWrite ( void );								// Constructor
@@ -695,7 +695,7 @@ class SQLCol
 
 class SQLDelete :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	SQLDelete ( void );									// Constructor
@@ -742,7 +742,7 @@ class SQLDelete :
 
 class SQLQuery :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	SQLQuery ( void );									// Constructor
@@ -808,7 +808,7 @@ class SQLQuery :
 
 class SQLQueryKey :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	SQLQueryKey ( void );								// Constructor
@@ -854,7 +854,7 @@ class SQLQueryKey :
 
 class SQLQueryRange :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	SQLQueryRange ( void );								// Constructor
@@ -903,7 +903,7 @@ class SQLQueryRange :
 
 class SQLRecordEnum :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	SQLRecordEnum ( void );								// Constructor
@@ -954,7 +954,7 @@ class SQLRecordEnum :
 
 class SQLTableCreate :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	SQLTableCreate ( void );							// Constructor
@@ -998,7 +998,7 @@ class SQLTableCreate :
 
 class SQLTableWrite :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	SQLTableWrite ( void );								// Constructor
@@ -1049,7 +1049,7 @@ class SQLTableWrite :
 
 class SQL2Index :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	SQL2Index ( void );									// Constructor
@@ -1099,7 +1099,7 @@ class SQL2Index :
 
 class SQL2Table :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	SQL2Table ( void );									// Constructor
@@ -1148,7 +1148,7 @@ class SQL2Table :
 
 class SQLUpdate :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	SQLUpdate ( void );									// Constructor

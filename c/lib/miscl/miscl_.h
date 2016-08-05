@@ -31,7 +31,7 @@
 
 class AsyncEmit :
 	public CCLObject,										// Base class
-	public IBehaviour,									// Interface
+	public Behaviour,										// Interface
 	public ITickable										// Interface
 	{
 	public :
@@ -75,7 +75,7 @@ class AsyncEmit :
 
 class AsyncQ :
 	public CCLObject,										// Base class
-	public IBehaviour,									// Interface
+	public Behaviour,									// Interface
 	public ITickable										// Interface
 	{
 	public :
@@ -150,7 +150,7 @@ class AsyncQ :
 
 class AsyncQ :
 	public CCLObject,										// Base class
-	public IBehaviour,									// Interface
+	public Behaviour,									// Interface
 	public ITickable										// Interface
 	{
 	public :
@@ -227,7 +227,7 @@ class AsyncQ :
 
 class Clone :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Clone ( void );										// Constructor
@@ -268,7 +268,7 @@ class Clone :
 
 class Compare :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Compare ( void );										// Constructor
@@ -326,7 +326,7 @@ class Compare :
 
 class Create :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Create ( void );										// Constructor
@@ -367,7 +367,7 @@ class Create :
 
 class Decode :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Decode ( void );										// Constructor
@@ -413,7 +413,7 @@ class Decode :
 
 class Debug :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Debug ( void );										// Constructor
@@ -469,7 +469,7 @@ class Debug :
 
 class Demux :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Demux ( void );										// Constructor
@@ -514,7 +514,7 @@ class Demux :
 
 class DictFormat :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	DictFormat ( void );									// Constructor
@@ -558,7 +558,7 @@ class DictFormat :
 
 class DictParse :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	DictParse ( void );									// Constructor
@@ -601,7 +601,7 @@ class DictParse :
 
 class Dist :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Dist ( void );											// Constructor
@@ -632,7 +632,7 @@ class Dist :
 
 class Path :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Path ( void );											// Constructor
@@ -669,7 +669,7 @@ class Path :
 
 class StringFormat :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	StringFormat ( void );								// Constructor
@@ -709,7 +709,7 @@ class StringFormat :
 
 class StringOp :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	StringOp ( void );									// Constructor
@@ -771,7 +771,7 @@ class StringOp :
 
 class StringParse :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	StringParse ( void );								// Constructor
@@ -813,7 +813,7 @@ class StringParse :
 
 class StringStream :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	StringStream ( void );								// Constructor
@@ -868,7 +868,7 @@ class StringStream :
 
 class TimeOp :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	TimeOp ( void );										// Constructor
@@ -918,7 +918,7 @@ class TimeOp :
 
 class Timer :
 	public CCLObject,										// Base class
-	public IBehaviour,									// Interface
+	public Behaviour,									// Interface
 	public ITickable										// Interface
 	{
 	public :
@@ -984,7 +984,7 @@ class Timer :
 
 class Toggle :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Toggle ( void );										// Constructor
@@ -1021,7 +1021,7 @@ class Toggle :
 
 class TokenIt :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	TokenIt ( void );										// Constructor
@@ -1066,7 +1066,7 @@ class TokenIt :
 
 class Type :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Type ( void );											// Constructor

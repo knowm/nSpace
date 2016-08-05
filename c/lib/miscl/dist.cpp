@@ -45,7 +45,7 @@ HRESULT Dist :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT Dist :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Dist :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

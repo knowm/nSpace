@@ -71,7 +71,7 @@ HRESULT Serial :: onAttach ( bool bAttach )
 	return S_OK;
 	}	// onAttach
 
-HRESULT Serial :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Serial :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

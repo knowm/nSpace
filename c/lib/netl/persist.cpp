@@ -120,7 +120,7 @@ HRESULT PersistSkt :: onAttach ( bool bAttach )
 	return S_OK;
 	}	// onAttach
 
-HRESULT PersistSkt :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT PersistSkt :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

@@ -50,7 +50,7 @@ HRESULT SocketOp :: onAttach ( bool bAttach )
 	return S_OK;
 	}	// onAttach
 
-HRESULT SocketOp :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT SocketOp :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

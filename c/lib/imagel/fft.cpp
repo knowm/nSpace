@@ -386,7 +386,7 @@ HRESULT FFT :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT FFT :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT FFT :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

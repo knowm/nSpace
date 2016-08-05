@@ -62,7 +62,7 @@ HRESULT Flip :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT Flip :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Flip :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

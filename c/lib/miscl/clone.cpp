@@ -47,7 +47,7 @@ HRESULT Clone :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT Clone :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Clone :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

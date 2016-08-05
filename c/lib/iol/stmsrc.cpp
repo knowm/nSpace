@@ -84,7 +84,7 @@ HRESULT StreamSource :: onAttach ( bool bAttach )
 	return S_OK;
 	}	// onAttach
 
-HRESULT StreamSource :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT StreamSource :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

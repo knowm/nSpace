@@ -50,7 +50,7 @@ HRESULT Locator :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT Locator :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Locator :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

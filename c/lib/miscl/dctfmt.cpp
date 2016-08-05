@@ -292,7 +292,7 @@ HRESULT DictFormat :: format ( IContainer *pFmt )
 	return hr;
 	}	// format
 
-HRESULT DictFormat :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT DictFormat :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

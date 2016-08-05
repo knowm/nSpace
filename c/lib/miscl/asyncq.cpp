@@ -134,7 +134,7 @@ HRESULT AsyncQ :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT AsyncQ :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT AsyncQ :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -485,7 +485,7 @@ HRESULT AsyncQ :: qValue ( const ADTVALUE &v )
 	return hr;
 	}	// qValue
 
-HRESULT AsyncQ :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT AsyncQ :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

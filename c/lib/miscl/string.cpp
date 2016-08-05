@@ -73,7 +73,7 @@ HRESULT StringOp :: onAttach ( bool bAttach )
 	return S_OK;
 	}	// onAttach
 
-HRESULT StringOp :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT StringOp :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

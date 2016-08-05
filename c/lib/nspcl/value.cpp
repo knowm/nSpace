@@ -67,7 +67,7 @@ HRESULT Value :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT Value :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Value :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

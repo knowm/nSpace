@@ -103,7 +103,7 @@ HRESULT Timer :: onAttach ( bool bAttach )
 	return S_OK;
 	}	// onAttach
 
-HRESULT Timer :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Timer :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

@@ -59,7 +59,7 @@ HRESULT Match :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT Match :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Match :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

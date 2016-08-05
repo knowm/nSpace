@@ -60,7 +60,7 @@ HRESULT Send :: onAttach ( bool bAttach )
 	return S_OK;
 	}	// onAttach
 
-HRESULT Send :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Send :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

@@ -22,7 +22,7 @@ class Receptors;
 //
 // Objects
 //
-
+/*
 //
 // Class - Behaviour.  A wrapper object around a behaviour in order to
 //			provide thread safety protection, etc.
@@ -30,7 +30,7 @@ class Receptors;
 
 class Behaviour :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Behaviour ( IBehaviour *);							// Constructor
@@ -43,16 +43,19 @@ class Behaviour :
 	bool			bReceive,bReceiving;					// Receive flags
 
 	// 'IBehaviour' members
-	STDMETHOD(attach)		( IDictionary *, IReceptor *, bool );
+	STDMETHOD(attach)		( IDictionary *, bool );
+
+	// 'IReceptor' memebers
 	STDMETHOD(receive)	( IReceptor *, const WCHAR *, const ADTVALUE & );
 
 	// CCL
 	CCL_OBJECT_BEGIN_INT(Behaviour)
 		CCL_INTF(IBehaviour)
+		CCL_INTF(IReceptor)
 	CCL_OBJECT_END()
 	virtual void		destruct		( void );		// Destruct object
 	};
-
+*/
 //
 // Class - Connect.  A receptor object for managing "_Connect" location connections.
 //
@@ -245,7 +248,6 @@ class Location :
 	STDMETHOD(activeNotify)	( bool );
 	STDMETHOD(desc)			( void );
 	STDMETHOD(receive)		( IDictionary *, const WCHAR *, const ADTVALUE &, bool = false );
-	STDMETHOD(receiveInt)	( IReceptor *, const WCHAR *, const ADTVALUE & );
 	STDMETHOD(receiveEmpty)	( IReceptor *, const WCHAR * );
 	STDMETHOD(shutdown)		( void );
 
@@ -518,7 +520,7 @@ class TemporalLocIt :
 
 class Connectors :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Connectors ( void );									// Constructor
@@ -579,7 +581,7 @@ class Connectors :
 
 class KeyPath :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	KeyPath ( void );										// Constructor
@@ -628,7 +630,7 @@ class KeyPath :
 
 class Link :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Link ( void );											// Constructor
@@ -694,7 +696,7 @@ class ReflectRx :
 
 class Reflect :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Reflect ( void );										// Constructor
@@ -740,7 +742,7 @@ class Reflect :
 
 class Temporal :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Temporal ( void );									// Constructor
@@ -779,7 +781,7 @@ class Temporal :
 
 class This :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	This ( void );											// Constructor
@@ -834,7 +836,7 @@ class This :
 
 class Value :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Value ( void );										// Constructor
@@ -872,7 +874,7 @@ class Value :
 
 class Values :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Values ( void );										// Constructor

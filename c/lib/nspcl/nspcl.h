@@ -84,39 +84,12 @@ extern	adtStringSt strnRefVal;
 			DECLARE_RCP(a)														\
 			DECLARE_EMT(a)
 
+// Define the behaviour logic, connections, etc
 #define	BEGIN_BEHAVIOUR()													\
-	/** \brief Namespace object for which the node belongs. */	\
-	INamespace		*pnSpc;													\
-	/** \brief Location at which the node is installed. */		\
-	IDictionary		*pnLoc;													\
-	/** \brief Descriptor for the node, that contains the node properties */ \
-	IDictionary		*pnDesc;													\
-	/** \brief Contains a cached version of the user defined node name */ \
- 	adtString		strnName;												\
-	STDMETHOD(receive)	( IReceptor *, const WCHAR *,				\
-									const ADTVALUE & );						\
-	STDMETHOD(attach)		( IDictionary *_pnLoc,						\
-									IReceptor *_pnRcp,  bool bAttach )	\
-		{																			\
-		HRESULT	hr	= S_OK;													\
-		pnLoc	= _pnLoc;														\
-		if (bAttach)															\
+	STDMETHOD(attach)		( IDictionary *_pnLoc, bool bAttach )	\
 			{																		\
-			adtValue		v;														\
-			adtIUnknown	unkV;													\
-																					\
-			CCLTRY(pnLoc->load(strnRefNspc,v));							\
-			CCLTRY(_QISAFE(v.punk,IID_INamespace,&pnSpc));			\
-																					\
-			CCLTRY(pnLoc->load(strnRefDesc,v));							\
-			CCLTRY(_QISAFE((unkV=v),IID_IDictionary,&pnDesc));		\
-																					\
-			CCLTRY(pnLoc->load(strnRefName,v));							\
-			CCLOK(strnName = v;)												\
-																					\
-			if (pnSpc != NULL)	pnSpc->Release();						\
-			if (pnDesc != NULL)	pnDesc->Release();					\
-			}
+			/* Default logic first */										\
+			HRESULT	hr	= Behaviour::attach(_pnLoc,bAttach);		\
 
 #if		defined(__GNUC__) || _MSC_VER >= 1900
 
@@ -151,12 +124,12 @@ extern	adtStringSt strnRefVal;
 #endif
 
 #define	END_BEHAVIOUR()													\
-		if (!bAttach)															\
-			pnSpc->connection ( pnLoc, L"", L"", this, NULL );		\
-		return hr; }
+			CCLTRY(onAttach(bAttach));										\
+			return hr; }														\
+		/* Callback function to process received values */			\
+		STDMETHOD(onReceive)	( IReceptor *, const ADTVALUE & );
  
 #define	END_BEHAVIOUR_NOTIFY()											\
-		CCLTRY(onAttach(bAttach));											\
 		END_BEHAVIOUR()														\
 	STDMETHOD(onAttach)( bool );
 
@@ -263,7 +236,7 @@ DEFINE_GUID	(	IID_IBehaviour, 0x2534d015, 0x8628, 0x11d2, 0x86, 0x8c,
 
 DECLARE_INTERFACE_(IBehaviour,IReceptor)
 	{
-	STDMETHOD(attach)			( IDictionary *, IReceptor *,  bool )	PURE;
+	STDMETHOD(attach)		( IDictionary *, bool )	PURE;
 	};
 
 //
@@ -324,6 +297,43 @@ HRESULT nspcTokens		( const WCHAR *, const WCHAR *, IList * );
 ///////////
 // Classes
 ///////////
+
+//
+// Class - Behaviour.  Base class from which to derive for a behaviour.
+//
+
+class Behaviour :
+	public IBehaviour										// Interface
+	{
+	public :
+	Behaviour ( void );									// Constructor
+
+	// Run-time data
+	INamespace		*pnSpc;								// \brief Namespace object for which the node belongs.
+	IDictionary		*pnLoc;								// \brief Location at which the node is installed.
+	IDictionary		*pnDesc;								// \brief Descriptor for the node, that contains the node properties
+ 	adtString		strnName;							// \brief Contains a cached version of the user defined node name 
+	const WCHAR		*prl;									// Latest received location
+
+	// Utilities
+	STDMETHOD(onAttach)	( bool );					// Behaviour being attached/detached
+	STDMETHOD(onReceive)	( IReceptor *,				// Value received
+									const ADTVALUE & );
+
+	// 'IBehaviour' members
+	STDMETHOD(attach)		( IDictionary *, bool );
+
+	// 'IReceptor' memebers
+	STDMETHOD(receive)	( IReceptor *, const WCHAR *, const ADTVALUE & );
+
+	private :
+
+	// Run-time data
+	sysCS			csRx,csInt;								// Thread safety
+	IList			*pRxQ;									// Receiver queue
+	IIt			*pRxIt;									// Receiver iterator
+	bool			bReceive,bReceiving;					// Receive flags
+	};
 
 //
 // Objects

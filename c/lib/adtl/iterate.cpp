@@ -61,7 +61,7 @@ HRESULT Iterate :: onAttach ( bool bAttach )
 	return S_OK;
 	}	// onAttach
 
-HRESULT Iterate :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Iterate :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -107,7 +107,7 @@ HRESULT Iterate :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			CCLTRY ( pIt->begin() );
 
 			// Next value
-			CCLOK ( receive ( prNext, pl, v ); )
+			CCLOK ( receive ( prNext, prl, v ); )
 			}	// if
 
 		// Last/Previous
@@ -117,7 +117,7 @@ HRESULT Iterate :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			CCLTRY ( pIt->end() );
 
 			// Previous value
-			CCLOK ( receive ( prPrevious, pl, v ); )
+			CCLOK ( receive ( prPrevious, prl, v ); )
 			}	// else if
 
 		}	// if

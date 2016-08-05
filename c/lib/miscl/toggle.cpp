@@ -44,7 +44,7 @@ HRESULT Toggle :: onAttach ( bool bAttach )
 	return S_OK;
 	}	// onAttach
 
-HRESULT Toggle :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Toggle :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

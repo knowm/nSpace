@@ -63,7 +63,7 @@ HRESULT Load :: onAttach ( bool bAttach )
 	return S_OK;
 	}	// onAttach
 
-HRESULT Load :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Load :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

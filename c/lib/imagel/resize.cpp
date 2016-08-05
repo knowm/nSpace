@@ -62,7 +62,7 @@ HRESULT Resize :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT Resize :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Resize :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

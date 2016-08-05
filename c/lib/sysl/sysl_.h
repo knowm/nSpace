@@ -77,7 +77,7 @@ class Thread :
 /*
 class UtilUUID :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	UtilUUID ( void );									// Constructor

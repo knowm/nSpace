@@ -53,7 +53,7 @@ HRESULT DatagramOp :: onAttach ( bool bAttach )
 	return S_OK;
 	}	// onAttach
 
-HRESULT DatagramOp :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT DatagramOp :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

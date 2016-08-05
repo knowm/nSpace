@@ -31,7 +31,7 @@
 
 class Device :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Device ( void );										// Constructor
@@ -77,7 +77,7 @@ class Device :
 
 class Endpoint :
 	public CCLObject,										// Base class
-	public IBehaviour,									// Interface
+	public Behaviour,									// Interface
 	public ITickable										// Interface
 	{
 	public :

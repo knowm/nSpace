@@ -469,7 +469,7 @@ class StackIt :
 
 class Iterate :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Iterate ( void );										// Constructor
@@ -512,7 +512,7 @@ class Iterate :
 
 class Keys :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Keys ( void );											// Constructor
@@ -555,7 +555,7 @@ class Keys :
 
 class Load :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Load ( void );											// Constructor
@@ -592,7 +592,7 @@ class Load :
 
 class Remove :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Remove ( void );										// Constructor
@@ -629,7 +629,7 @@ class Remove :
 
 class Stat :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Stat ( void );											// Constructor
@@ -669,7 +669,7 @@ class Stat :
 
 class Store :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Store ( void );										// Constructor
@@ -705,7 +705,7 @@ class Store :
 
 class Write :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Write ( void );										// Constructor

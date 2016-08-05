@@ -375,7 +375,7 @@ class StmPrsXML :
 
 class EnumDevices :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	EnumDevices ( void );								// Constructor
@@ -428,7 +428,7 @@ class EnumDevices :
 
 class File :
 	public CCLObject,										// Base class
-	public IBehaviour,									// Interface
+	public Behaviour,									// Interface
 	public ITickable										// Interface
 	{
 	public :
@@ -488,7 +488,7 @@ class File :
 
 class NotifyDevices :
 	public CCLObject,										// Base class
-	public IBehaviour,									// Interface
+	public Behaviour,									// Interface
 	public ITickable										// Interface
 	{
 	public :
@@ -539,7 +539,7 @@ class NotifyDevices :
 
 class Persist :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Persist ( void );										// Constructor
@@ -578,7 +578,7 @@ class Persist :
 
 class Resource :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Resource ( void );									// Constructor
@@ -615,7 +615,7 @@ class Resource :
 
 class Serial :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Serial ( void );										// Constructor
@@ -647,7 +647,7 @@ class Serial :
 
 class StreamOp :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	StreamOp ( void );									// Constructor
@@ -690,7 +690,7 @@ class StreamOp :
 
 class StreamCopy :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	StreamCopy ( void );									// Constructor
@@ -726,7 +726,7 @@ class StreamCopy :
 
 class StreamSource :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	StreamSource ( void );								// Constructor

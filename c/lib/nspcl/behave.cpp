@@ -2,13 +2,13 @@
 //
 //									BEHAVE.CPP
 //
-//					Implementation of the behaviour wrapper class
+//				Implementation of the behaviour base class
 //
 ////////////////////////////////////////////////////////////////////////
 
 #include "nspcl_.h"
 
-Behaviour :: Behaviour ( IBehaviour *_pBehave )
+Behaviour :: Behaviour ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -18,18 +18,11 @@ Behaviour :: Behaviour ( IBehaviour *_pBehave )
 	////////////////////////////////////////////////////////////////////////
 
 	// Setup
-	pBehave		= _pBehave;
-	_ADDREF(pBehave);
-	pBehaveR		= NULL;
 	bReceiving	= false;
 	bReceive		= false;
-
-	// Auto add-ref self
-	AddRef();
 	}	// Behaviour
 
-HRESULT Behaviour :: attach ( IDictionary *pnLoc, IReceptor *pRcp,
-										bool bAttach )
+HRESULT Behaviour :: attach ( IDictionary *_pnLoc, bool bAttach )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -40,7 +33,6 @@ HRESULT Behaviour :: attach ( IDictionary *pnLoc, IReceptor *pRcp,
 	//
 	//	PARAMETERS
 	//		-	pnLoc is the location
-	//		-	pRcp is the outer receptor
 	//		-	bAttach is true to attach, false to detach
 	//
 	//	RETURN Behaviour
@@ -52,16 +44,42 @@ HRESULT Behaviour :: attach ( IDictionary *pnLoc, IReceptor *pRcp,
 	// Thread safety
 	csRx.enter();
 
-	// Receive flag
-	if (pBehave == NULL)
-		bReceive = false;
+	// Flag for receiving
+	bReceive = bAttach;
 
-	// Contained object
-	hr = (pBehave != NULL) ? pBehave->attach ( pnLoc, pRcp, bAttach ) : E_UNEXPECTED;
+	// Remember location
+	pnLoc	= _pnLoc;
 
-	// Receive flag
-	if (pBehave != NULL && hr == S_OK)
-		bReceive = true;
+	// Information about environment
+	if (bAttach)
+		{
+		adtValue		v;
+		adtIUnknown	unkV;
+
+		// Namespace
+		CCLTRY(pnLoc->load(strnRefNspc,v));
+		CCLTRY(_QISAFE(v.punk,IID_INamespace,&pnSpc));
+
+		// Descriptor
+		CCLTRY(pnLoc->load(strnRefDesc,v));
+		CCLTRY(_QISAFE((unkV=v),IID_IDictionary,&pnDesc));
+
+		// Name
+		CCLTRY(pnLoc->load(strnRefName,v));
+		CCLOK(strnName = v;)
+
+		// Clean up, no reference counts to avoid circular reference
+		if (pnSpc != NULL)	pnSpc->Release();
+		if (pnDesc != NULL)	pnDesc->Release();
+		}	// if
+
+	// Detach
+	else
+		{
+		// Remove all connections
+		if (pnSpc != NULL && pnLoc != NULL)
+			pnSpc->connection ( pnLoc, L"", L"", this, NULL );
+		}	// else
 
 	// Thread safety
 	csRx.leave();
@@ -69,30 +87,45 @@ HRESULT Behaviour :: attach ( IDictionary *pnLoc, IReceptor *pRcp,
 	return hr;
 	}	// attach
 
-void Behaviour :: destruct ( void )
+HRESULT Behaviour :: onAttach ( bool bAttach )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
-	//	OVERLOAD
-	//	FROM		CCLObject
+	//	FROM	Behaviour
 	//
 	//	PURPOSE
-	//		-	Called when the object is being destroyed
+	//		-	Called when behaviour wants to be notified of attachment.
+	//
+	//	PARAMETERS
+	//		-	pnLoc is the location
+	//		-	bAttach is true to attach, false to detach
+	//
+	//	RETURN Behaviour
+	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
+	return S_OK;
+	}	// onAttach
 
-	// Shutting down
-	if (csInt.enter())
-		{
-		bReceive = false;
-		csInt.leave();
-		}	// if
+HRESULT Behaviour :: onReceive (	IReceptor *pr, const ADTVALUE &v )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	A location has received a value on the specified receptor.
+	//
+	//	PARAMETERS
+	//		-	pr is the receptor
+	//		-	v is the Behaviour
+	//
+	//	RETURN Behaviour
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	return S_OK;
+	}	// onReceive
 
-	// Clean up
-	_RELEASE(pBehave);
-	}	// destruct
-
-HRESULT Behaviour :: receive ( IReceptor *pr, const WCHAR *pl, 
+HRESULT Behaviour :: receive (	IReceptor *pr, const WCHAR *pl, 
 											const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -145,7 +178,7 @@ HRESULT Behaviour :: receive ( IReceptor *pr, const WCHAR *pl,
 				U32	sz;
 				pRxQ->size ( &sz );
 				if (!(sz % 10))
-					lprintf ( LOG_WARN, L"Queue:%p:%d\r\n", pBehave, sz );
+					lprintf ( LOG_WARN, L"Queue:%d\r\n", sz );
 				}	// if
 
 			// Done
@@ -157,16 +190,13 @@ HRESULT Behaviour :: receive ( IReceptor *pr, const WCHAR *pl,
 			{
 			U32 sz;
 
-			// Obtain a behaviour reference for duration of reception
-			pBehaveR = pBehave;
-			_ADDREF(pBehaveR);
-
 			// Busy now
 			bReceiving = true;
 			csInt.leave();
 
 			// Receive the value
-			pBehaveR->receive ( pr, pl, v );
+			prl = pl;
+			onReceive ( pr, v );
 
 			// Still ok to receive ?
 			CCLTRYE(bReceive == true, ERROR_INVALID_STATE);
@@ -194,7 +224,8 @@ HRESULT Behaviour :: receive ( IReceptor *pr, const WCHAR *pl,
 					csInt.leave();
 
 					// Receive value, direct cast ok since this function queued values.
-					pBehaveR->receive ( (IReceptor *)vSrc.punk, vLoc.pstr, vV );
+					prl = vLoc.pstr;
+					onReceive ( (IReceptor *)vSrc.punk, vV );
 
 					// Still ok to receive ?
 					CCLTRYE(bReceive == true, ERROR_INVALID_STATE);
@@ -206,7 +237,6 @@ HRESULT Behaviour :: receive ( IReceptor *pr, const WCHAR *pl,
 				}	// if
 
 			// No longer receiving
-			_RELEASE(pBehaveR);
 			bReceiving = false;
 			csInt.leave();
 			}	// else

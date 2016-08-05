@@ -88,7 +88,7 @@ HRESULT Connection :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT Connection :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Connection :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -211,7 +211,7 @@ HRESULT Connection :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &
 
 #ifdef	USE_ODBC
 
-HRESULT Connection :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Connection :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

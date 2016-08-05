@@ -467,27 +467,17 @@ HRESULT Location :: desc ( void )
 		// Attach
 		if (bActive)
 			{
-			IBehaviour	*pBehaveInt = NULL;
-
 			// Obtain the behaviour
 			CCLTRY ( pDsc->load ( strnRefBehave, v ) );
 			CCLTRYE( (strB = v).length() > 0, E_UNEXPECTED );
 //			CCLOK  ( dbgprintf ( L"Location::%s:%s:%s\r\n", (LPCWSTR) strDscName, (LPCWSTR) strType, (LPCWSTR) strB ); )
-			if (!WCASECMP(strB,L"Math.Counter"))
-				dbgprintf ( L"Hi\r\n" );
 
 			// Create the behaviour for the node
-			if (hr == S_OK)
-				{
-				// Object class Id
-				CCLTRY ( cclCreateObject ( strB, NULL, IID_IBehaviour, (void **) &pBehaveInt ) );
-
-				// Contain object
-				CCLTRYE ( (pBehave = new Behaviour(pBehaveInt)) != NULL, E_OUTOFMEMORY );
-				}	// if
+			// Object class Id
+			CCLTRY ( cclCreateObject ( strB, NULL, IID_IBehaviour, (void **) &pBehave ) );
 
 			// Attach using the wrapper as the outer receptor
-			CCLTRY ( pBehave->attach ( this, pBehave, true ) );
+			CCLTRY ( pBehave->attach ( this, true ) );
 
 			// nSpace value behaviour ?
 			CCLOK ( bBehaveV = !WCASECMP(strB,L"nSpc.Value"); )
@@ -495,11 +485,10 @@ HRESULT Location :: desc ( void )
 			// Clean up
 			if (hr != S_OK)
 				{
-				lprintf ( LOG_WARN, L"Unable to attache behaviour : %s\r\n", (LPCWSTR) strB );
+				lprintf ( LOG_WARN, L"Unable to attach behaviour : %s\r\n", (LPCWSTR) strB );
 				strB = L"";
 				_RELEASE(pBehave);
 				}	// if
-			_RELEASE(pBehaveInt);
 			}	// if
 
 		// Detach
@@ -511,7 +500,7 @@ HRESULT Location :: desc ( void )
 //			CCLOK  ( dbgprintf ( L"Location::desc:detach:%s:%s:%s\r\n", (LPCWSTR) strDscName, (LPCWSTR) strType, (LPCWSTR) strB ); )
 
 			// Detach from location
-			pBehave->attach ( this, NULL, false );
+			pBehave->attach ( this, false );
 
 			// Clean up
 			strB = L"";
@@ -755,7 +744,8 @@ HRESULT Location :: receive ( IReceptor *prSrc, const WCHAR *pwLoc,
 	////////////////////////////////////////////////////////////////////////
 	HRESULT		hr			= S_OK;
 	bool			bBehave	= (pBehave != NULL);
-//	U32			sz;
+	bool			bVal		= !WCASECMP(pwLoc,L"Value");
+	const WCHAR	*pw		= NULL;
 
 	// Sanity check for double referenced values.  This was a bug
 	// early on, check it in case something goes wrong.
@@ -767,14 +757,71 @@ HRESULT Location :: receive ( IReceptor *prSrc, const WCHAR *pwLoc,
 	#endif
 
 	// SPECIAL CASE: Connectors only receive 'value' locations/keys.
-	if ((bRcp || bEmt) && WCASECMP(pwLoc,L"Value"))
+	if ((bRcp || bEmt) && !bVal)
 		return S_OK;
 
-	// See 'Behave.cpp'.  Previously all locations were thread protected,
-	// now just behaviours need to be thread protected.  This allows multiple
-	// threads to be sending values down different paths through the
-	// same intersecting locations.
-	CCLOK ( receiveInt ( prSrc, (*pwLoc == '/') ? pwLoc+1 : pwLoc, v ); );
+	// A received value goes 'down' into the levels until a single
+	// key/value pair is left.  No slash means a single key.
+	if (bVal || (pw = wcschr ( pwLoc, '/')) == NULL)
+		{
+		// Ok to store just locations
+		if (*pwLoc != '\0')
+			{
+			// Store/remove the value at this level
+			if (!adtValue::empty(v))
+				hr = pDctOut->store ( (bVal) ? strnRefVal : adtString(pwLoc), v );
+			else
+				hr = receiveEmpty ( prSrc, pwLoc );
+			}	// if
+
+		// Notification
+		CCLOK ( pLocOut->stored ( pLocOut, bRcp, prSrc, pwLoc, v ); )
+		}	// if
+
+	// Key is still a path, move down to next level
+	else
+		{
+		IReceptor	*pRcp	= NULL;
+		adtIUnknown	unkV;
+		adtString	strKey(pwLoc);
+		adtValue		vL;
+
+		// Isolate key
+		strKey.at(pw-pwLoc) = '\0';
+
+		// Load sub-location
+		if (hr == S_OK && load ( strKey, vL ) != S_OK)
+			{
+			ILocation	*pLoc		= NULL;
+
+			// Debug
+			if (pBehave != NULL)
+				dbgprintf ( L"Location::receiveInt:Behaviour but unknown connector:%s/%s(%s)\r\n",
+								(LPCWSTR) strName, (LPCWSTR) strKey, pwLoc );
+
+			// Create a new sub-location in order to continue storage
+			CCLTRY ( pLocOut->create ( strKey, &pLoc ) );
+
+			// Loaded value
+			CCLTRY ( adtValue::copy ( adtIUnknown((IReceptor *)pLoc), vL ) );
+
+			// Store sublocation at this location
+			CCLTRY ( pDctOut->store ( strKey, vL ) );
+
+			// Clean up
+			_RELEASE(pLoc);
+			}	// if
+
+		// Receive remaining key path into the next level
+		if (hr == S_OK)
+			{
+			CCLTRY ( _QISAFE((unkV=vL),IID_IReceptor,&pRcp) );
+			CCLTRY ( pRcp->receive ( prSrc, pw+1, v ) );
+			}	// if
+
+		// Clean up
+		_RELEASE(pRcp);
+		}	// if
 
 	return hr;
 	}	// receive
@@ -877,108 +924,6 @@ HRESULT Location :: receiveEmpty ( IReceptor *prSrc, const WCHAR *pwKey )
 
 	return hr;
 	}	// receiveEmpty
-
-HRESULT Location :: receiveInt ( IReceptor *prSrc, const WCHAR *pwLoc, 
-											const ADTVALUE &v )
-	{
-	////////////////////////////////////////////////////////////////////////
-	//
-	//	PURPOSE
-	//		-	Perform actual receiving of value.
-	//
-	//	PARAMETERS
-	//		-	prSrc is the source of the reception
-	//		-	pwLoc is the location
-	//		-	v is the value
-	//
-	//	RETURN VALUE
-	//		S_OK if successful
-	//
-	////////////////////////////////////////////////////////////////////////
-	HRESULT		hr		= S_OK;
-	const WCHAR	*pw	= NULL;
-	bool			bVal	= !WCASECMP(pwLoc,L"Value");
-
-	// Debug
-//	if (pDctPar != NULL && pDctPar->load ( strnRefName, vL ) == S_OK)
-//		{
-//		adtString	strPar(vL);
-//		dbgprintf ( L"Location::receive:Parent %s:Name %s:Loc %s\r\n", 
-//							(LPCWSTR)strPar,
-//							(LPCWSTR)strName, pwLoc );
-//		if (!WCASECMP(strPar,L"Uninitialize"))
-//			dbgprintf ( L"Hi\r\n" );
-//		}	// if
-
-		// If a behaviour is attached, allow it to process store
-	//	if (pBehave != NULL)
-	//		pBehave->store ( strKey, vValue );
-
-	// A received value goes 'down' into the levels until a single
-	// key/value pair is left.  No slash means a single key.
-	if (bVal || (pw = wcschr ( pwLoc, '/')) == NULL)
-		{
-		// Ok to store just locations
-		if (*pwLoc != '\0')
-			{
-			// Store/remove the value at this level
-			if (!adtValue::empty(v))
-				hr = pDctOut->store ( (bVal) ? strnRefVal : adtString(pwLoc), v );
-			else
-				hr = receiveEmpty ( prSrc, pwLoc );
-			}	// if
-
-		// Notification
-		CCLOK ( pLocOut->stored ( pLocOut, bRcp, prSrc, pwLoc, v ); )
-		}	// if
-
-	// Key is still a path, move down to next level
-	else
-		{
-		IReceptor	*pRcp	= NULL;
-		adtIUnknown	unkV;
-		adtString	strKey(pwLoc);
-		adtValue		vL;
-
-		// Isolate key
-		strKey.at(pw-pwLoc) = '\0';
-
-		// Load sub-location
-		if (hr == S_OK && load ( strKey, vL ) != S_OK)
-			{
-			ILocation	*pLoc		= NULL;
-
-			// Debug
-			if (pBehave != NULL)
-				dbgprintf ( L"Location::receiveInt:Behaviour but unknown connector:%s/%s(%s)\r\n",
-								(LPCWSTR) strName, (LPCWSTR) strKey, pwLoc );
-
-			// Create a new sub-location in order to continue storage
-			CCLTRY ( pLocOut->create ( strKey, &pLoc ) );
-
-			// Loaded value
-			CCLTRY ( adtValue::copy ( adtIUnknown((IReceptor *)pLoc), vL ) );
-
-			// Store sublocation at this location
-			CCLTRY ( pDctOut->store ( strKey, vL ) );
-
-			// Clean up
-			_RELEASE(pLoc);
-			}	// if
-
-		// Receive remaining key path into the next level
-		if (hr == S_OK)
-			{
-			CCLTRY ( _QISAFE((unkV=vL),IID_IReceptor,&pRcp) );
-			CCLTRY ( pRcp->receive ( prSrc, pw+1, v ) );
-			}	// if
-
-		// Clean up
-		_RELEASE(pRcp);
-		}	// if
-
-	return hr;
-	}	// receiveInt
 
 HRESULT Location :: reflect ( const WCHAR *pwLoc, IReceptor *prDst )
 	{

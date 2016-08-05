@@ -58,7 +58,7 @@ HRESULT Distance :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT Distance :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Distance :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

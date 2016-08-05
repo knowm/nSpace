@@ -71,7 +71,7 @@ HRESULT StreamOp :: onAttach ( bool bAttach )
 	return S_OK;
 	}	// onAttach
 
-HRESULT StreamOp :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT StreamOp :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

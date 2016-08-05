@@ -107,7 +107,7 @@ HRESULT TokenIt :: onAttach ( bool bAttach )
 	return S_OK;
 	}	// onAttach
 
-HRESULT TokenIt :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT TokenIt :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

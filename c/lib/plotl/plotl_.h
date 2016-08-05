@@ -130,7 +130,7 @@ class GnuPlotSrvrt :
 
 class Image :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Image ( void );										// Constructor

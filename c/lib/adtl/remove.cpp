@@ -61,7 +61,7 @@ HRESULT Remove :: onAttach ( bool bAttach )
 	return S_OK;
 	}	// onAttach
 
-HRESULT Remove :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Remove :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

@@ -33,7 +33,7 @@
 
 class Enumerator :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Enumerator ( void );									// Constructor
@@ -70,7 +70,7 @@ class Enumerator :
 
 class Instance :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Instance ( void );									// Constructor
@@ -103,7 +103,7 @@ class Instance :
 
 class Locator :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Locator ( void );										// Constructor
@@ -130,7 +130,7 @@ class Locator :
 
 class Service :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Service ( void );										// Constructor

@@ -114,7 +114,7 @@ HRESULT Decode :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT Decode :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Decode :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -160,7 +160,7 @@ HRESULT Decode :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
 			CCLTRY ( _QISAFE((unkV=vV),IID_IReceptor,&pR) );
 
 			// Result
-			if (hr == S_OK)	pR->receive ( this, pl, adtValue::empty(Value) ? v : (adtValue &) Value );
+			if (hr == S_OK)	pR->receive ( this, prl, adtValue::empty(Value) ? v : (adtValue &) Value );
 			else					_EMT(Default,adtValue::empty(Value) ? v : (adtValue &) Value );
 
 			}	// if

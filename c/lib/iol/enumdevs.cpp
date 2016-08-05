@@ -94,7 +94,7 @@ HRESULT EnumDevices :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT EnumDevices :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT EnumDevices :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -138,7 +138,7 @@ HRESULT EnumDevices :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE 
 		#endif
 
 		// Next item
-		CCLTRY ( receive(prNext,pl,v) );
+		CCLTRY ( receive(prNext,prl,v) );
 		}	// if
 
 	// Next

@@ -60,7 +60,7 @@ typedef	int							SOCKET;
 
 class Address :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Address ( void );										// Constructor
@@ -96,7 +96,7 @@ class Address :
 
 class Avail :
 	public CCLObject,										// Base class
-	public IBehaviour,									// Interface
+	public Behaviour,									// Interface
 	public ITickable										// Interface
 	{
 	public :
@@ -155,7 +155,7 @@ class Avail :
 
 class Client :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Client ( void );										// Constructor
@@ -205,7 +205,7 @@ class Client :
 
 class DatagramOp :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	DatagramOp ( void );									// Constructor
@@ -253,7 +253,7 @@ class DatagramOp :
 
 class Interfaces :
 	public CCLObject,										// Base class
-	public IBehaviour,									// Interface
+	public Behaviour,									// Interface
 	public ITickable										// Interface
 	{
 	public :
@@ -312,7 +312,7 @@ class Interfaces :
 
 class MulticastOp :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	MulticastOp ( void );								// Constructor
@@ -383,7 +383,7 @@ class PersistSktStm :
 
 class PersistSkt :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	PersistSkt ( void );									// Constructor
@@ -427,7 +427,7 @@ class PersistSkt :
 
 class Recv :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Recv ( void );											// Constructor
@@ -467,7 +467,7 @@ class Recv :
 
 class Send :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Send ( void );											// Constructor
@@ -511,7 +511,7 @@ class Send :
 
 class SocketOp :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	SocketOp ( void );										// Constructor

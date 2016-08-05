@@ -124,7 +124,7 @@ HRESULT Query :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT Query :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Query :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

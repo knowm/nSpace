@@ -63,7 +63,7 @@ HRESULT Stat :: onAttach ( bool bAttach )
 	return S_OK;
 	}	// onAttach
 
-HRESULT Stat :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Stat :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

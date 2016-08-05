@@ -482,13 +482,17 @@ HRESULT NamespaceX :: store ( BSTR bstrPath, VARIANT *var )
 	IReceptor	*pRecep	= NULL;
 	adtValue		vR,vSt;
 	adtIUnknown	unkV;
-	adtString	strVar;
-	adtString	strPath(bstrPath);
+//	adtString	strVar;
+	adtString	strPath;
 	U32			len;
 
 	// State check
 	CCLTRYE ( pShell != NULL, ERROR_INVALID_STATE );
 
+	// Storing is done from the root location so ignore any leading slashes
+	CCLOK ( strPath = (bstrPath != NULL && bstrPath[0] == '/') ? 
+								bstrPath+1 : bstrPath; )
+	
 	// Since storing only values (not locations) is supported through this interface,
 	// allow caller to just specify '/Fire' at the end of the path.
 	// Full path needs to be 'XXX/Fire/Value'
@@ -511,7 +515,7 @@ HRESULT NamespaceX :: store ( BSTR bstrPath, VARIANT *var )
 	CCLTRY( varS.toValue(vSt) );
 
 	// Debug
-	adtValue::toString ( vSt, strVar );
+//	adtValue::toString ( vSt, strVar );
 //	dbgprintf ( L"NamespaceX::store:%s:%s\r\n", bstrPath, (LPCWSTR) strVar );
 
 	// Receive value into namespace

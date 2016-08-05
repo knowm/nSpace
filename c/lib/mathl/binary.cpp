@@ -56,7 +56,7 @@ HRESULT Binary :: onAttach ( bool bAttach )
 	return S_OK;
 	}	// onAttach
 
-HRESULT Binary :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

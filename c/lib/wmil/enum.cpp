@@ -62,7 +62,7 @@ HRESULT Enumerator :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT Enumerator :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Enumerator :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -108,7 +108,7 @@ HRESULT Enumerator :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &
 
 		// Result
 		if (hr == S_OK)
-			hr = receive ( prNext, pl, v );
+			hr = receive ( prNext, prl, v );
 		else
 			_EMT(Last,adtInt(hr));
 		}	// if

@@ -51,7 +51,7 @@ HRESULT Client :: onAttach ( bool bAttach )
 	return S_OK;
 	}	// onAttach
 
-HRESULT Client :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Client :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

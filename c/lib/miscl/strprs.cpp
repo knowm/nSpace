@@ -447,7 +447,7 @@ HRESULT StringParse :: parseString ( IUnknown *pSpecs,
 	return hr;
 	}	// parseString
 
-HRESULT StringParse :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT StringParse :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

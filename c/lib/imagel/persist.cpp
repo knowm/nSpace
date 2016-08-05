@@ -59,7 +59,7 @@ HRESULT PersistImage :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT PersistImage :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT PersistImage :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

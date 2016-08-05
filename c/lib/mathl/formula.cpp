@@ -440,7 +440,7 @@ HRESULT Formula :: post ( IList *pSym, IList **ppP )
 	return hr;
 	}	// post
 
-HRESULT Formula :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Formula :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

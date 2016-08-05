@@ -64,7 +64,7 @@ HRESULT Smooth :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT Smooth :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Smooth :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

@@ -47,7 +47,7 @@ HRESULT Create :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT Create :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Create :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

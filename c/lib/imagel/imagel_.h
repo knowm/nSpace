@@ -81,7 +81,7 @@ class cvMatRef :
 
 class At :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	At ( void );											// Constructor
@@ -121,7 +121,7 @@ class At :
 
 class Binary :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Binary ( void );										// Constructor
@@ -155,7 +155,7 @@ class Binary :
 
 class Contours :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Contours ( void );									// Constructor
@@ -192,7 +192,7 @@ class Contours :
 
 class Convert :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Convert ( void );										// Constructor
@@ -230,7 +230,7 @@ class Convert :
 
 class Create :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Create ( void );										// Constructor
@@ -273,7 +273,7 @@ class Create :
 
 class Distance :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Distance ( void );									// Constructor
@@ -303,7 +303,7 @@ class Distance :
 
 class Draw :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Draw ( void );											// Constructor
@@ -354,7 +354,7 @@ class Draw :
 
 class Flip :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Flip ( void );											// Constructor
@@ -387,7 +387,7 @@ class Flip :
 
 class FFT :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	FFT ( void );											// Constructor
@@ -427,7 +427,7 @@ class FFT :
 
 class Match :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Match ( void );										// Constructor
@@ -460,7 +460,7 @@ class Match :
 
 class Morph :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Morph ( void );										// Constructor
@@ -500,7 +500,7 @@ class Morph :
 
 class Normalize :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Normalize ( void );									// Constructor
@@ -531,7 +531,7 @@ class Normalize :
 
 class PersistImage :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	PersistImage ( void );								// Constructor
@@ -566,7 +566,7 @@ class PersistImage :
 
 class Prepare :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Prepare ( void );										// Constructor
@@ -608,7 +608,7 @@ class Prepare :
 
 class Resize :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Resize ( void );										// Constructor
@@ -643,7 +643,7 @@ class Resize :
 
 class Roi :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Roi ( void );											// Constructor
@@ -685,7 +685,7 @@ class Roi :
 
 class Smooth :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Smooth ( void );										// Constructor
@@ -717,7 +717,7 @@ class Smooth :
 
 class Stats :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Stats ( void );										// Constructor
@@ -751,7 +751,7 @@ class Stats :
 
 class Threshold :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Threshold ( void );									// Constructor

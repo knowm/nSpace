@@ -114,8 +114,7 @@ HRESULT Device :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT Device :: receive ( IReceptor *pr, const WCHAR *pl, 
-										const ADTVALUE &v )
+HRESULT Device :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

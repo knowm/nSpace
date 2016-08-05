@@ -75,7 +75,7 @@ HRESULT Connectors :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT Connectors :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Connectors :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -96,7 +96,7 @@ HRESULT Connectors :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &
 	if (_RCP(Receive))
 		{
 		IReceptor	*pRcp		= pRecep;
-		const WCHAR	*pwLoc	= pl;
+		const WCHAR	*pwLoc	= prl;
 		int			len		= strLoc.length();
 
 		// Debug
