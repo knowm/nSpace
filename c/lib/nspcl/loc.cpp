@@ -356,9 +356,9 @@ HRESULT Location :: construct ( void )
 	HRESULT		hr		= S_OK;
 
 	// Create a contained dictionary for storing items
-	if (nspcglb.pcfDct != NULL)
-		hr = nspcglb.pcfDct->CreateInstance ( NULL, IID_IDictionary, (void **) &pDctc );
-	else
+//	if (nspcglb.pcfDct != NULL)
+//		hr = nspcglb.pcfDct->CreateInstance ( NULL, IID_IDictionary, (void **) &pDctc );
+//	else
 		hr = COCREATE ( L"Adt.Dictionary", IID_IDictionary, &pDctc );
 
 	// Create run-time receptor object

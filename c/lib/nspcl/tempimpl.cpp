@@ -48,9 +48,6 @@ HRESULT TemporalImpl :: construct ( void )
 	////////////////////////////////////////////////////////////////////////
 	HRESULT	hr		= S_OK;
 
-	// Global object
-	nspcglb.AddRef();
-
 	// Create parsers used during load/save
 	CCLTRY(COCREATE(L"Io.StmPrsBin",IID_IStreamPersist,&pPrsrL));
 	CCLTRY(COCREATE(L"Io.StmPrsBin",IID_IStreamPersist,&pPrsrS));
@@ -81,9 +78,6 @@ void TemporalImpl :: destruct ( void )
 	_RELEASE(pStmHdr);
 	_RELEASE(pStmVal);
 	_RELEASE(pStmSrc);
-
-	// Global object
-	nspcglb.Release();
 	}	// destruct
 
 HRESULT TemporalImpl :: locGet ( U64 uId, HDRIDX *pHdr )

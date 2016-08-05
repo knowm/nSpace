@@ -9,6 +9,9 @@
 #include "nspcl_.h"
 #include <stdio.h>
 
+// For direct creation of ADT objects to avoid DLL unloading race conditions
+#include "../adtl/adtl_.h"
+
 // Globals
 GlobalNspc	nspcglb;
 
@@ -20,10 +23,12 @@ GlobalNspc :: GlobalNspc ( void )
 	//		-	Constructor for the object.
 	//
 	////////////////////////////////////////////////////////////////////////
-	pcfDct		= NULL;
-	pLstStVal	= NULL;
-	pLstLd		= NULL;
 	refcnt		= 0;
+	pStkAbs		= NULL;
+	pItAbs		= NULL;
+
+	// AddRef self
+	AddRef();
 	}	// GlobalNspc
 
 GlobalNspc :: ~GlobalNspc ( void )
@@ -51,19 +56,36 @@ ULONG GlobalNspc :: AddRef ( void )
 	//		Reference count
 	//
 	////////////////////////////////////////////////////////////////////////
-	HRESULT	hr		= S_OK;
+	HRESULT	hr			= S_OK;
+	Stack		*pStk		= NULL;
 
 	// Reference count
 	if (++refcnt > 1)
 		return refcnt;
 
 	// Class factories
-	CCLTRY ( cclGetFactory ( L"nSpace.Adt.Dictionary", IID_IClassFactory, 
-										  (void **) &pcfDct ) );
+//	CCLTRY ( cclGetFactory ( L"nSpace.Adt.Dictionary", IID_IClassFactory, 
+//										  (void **) &pcfDct ) );
 	
-	// Re-usable list for generating token list for 'nspcStoreValue'
-	CCLTRY ( COCREATE ( L"Adt.List", IID_IList, &pLstStVal ) );
-	CCLTRY ( COCREATE ( L"Adt.List", IID_IList, &pLstLd ) );
+	// Create stack and iterator for strings
+	CCLTRYE ( (pStk = new Stack()) != NULL, E_OUTOFMEMORY );
+	CCLOK   ( pStk->AddRef(); )
+	CCLTRY  ( pStk->construct() );
+	CCLTRY  ( pStk->iterate ( &pItAbs ) );
+
+	// Assign to internal variable
+	if (hr == S_OK)
+		{
+		pStkAbs = pStk;
+		_ADDREF(pStkAbs);
+		}	// if
+
+	// Clean up
+	_RELEASE(pStk);
+
+	// Debug
+	if (hr != S_OK)
+		lprintf ( LOG_ERR, L"Unable to initialize global objects, 0x%x" );
 
 	return refcnt;
 	}	// AddRef
@@ -82,9 +104,8 @@ ULONG GlobalNspc :: Release ( void )
 		return refcnt;
 
 	// Clean up
-	_RELEASE(pLstStVal);
-	_RELEASE(pLstLd);
-	_RELEASE(pcfDct);
+	_RELEASE(pStkAbs);
+	_RELEASE(pItAbs);
 
 	return 0;
 	}	// destruct

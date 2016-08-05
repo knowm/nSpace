@@ -68,19 +68,18 @@ HRESULT FFT :: fft ( cv::Mat *pMat, cv::Mat *pWnd, bool bRows )
 		// Compute DFT
 		cv::dft ( matCmplx, matCmplx, (bRows) ? cv::DFT_ROWS : 0 );
 
-		// Normalize by the number of samples (convention ?)
-		// This doesn't seem to do what is expected with the matCmplx object
-//		if (bRows)
-//			cv::divide ( matCmplx, cv::Scalar(matCmplx.cols), matCmplx );
-//		else
-//			cv::divide ( matCmplx, cv::Scalar(matCmplx.cols*matCmplx.rows), matCmplx );
-
 		// Separate real/imaginary results
 		cv::split ( matCmplx, matPlanes );
 
 		// Compute the magnitude of DFT
 		cv::magnitude ( matPlanes[0], matPlanes[1], matPlanes[0] );
 		matMag = matPlanes[0];
+
+		// Normalize by the number of samples (convention ?)
+		if (bRows)
+			cv::divide ( matMag, cv::Scalar(matMag.cols), matMag );
+		else
+			cv::divide ( matMag, cv::Scalar(matMag.cols*matMag.rows), matMag );
 	
 		// TODO: Log, base, etc. will be moved into own nodes.
 
@@ -179,18 +178,18 @@ HRESULT FFT :: fft ( cv::UMat *pMat, cv::UMat *pWnd, bool bRows )
 		// Compute DFT
 		cv::dft ( matCmplx, matCmplx, (bRows) ? cv::DFT_ROWS : 0 );
 
-		// Normalize by the number of samples (assumes 'by rows', convention?)
-//		if (bRows)
-//			cv::divide ( matCmplx, cv::Scalar(matCmplx.cols), matCmplx );
-//		else
-//			cv::divide ( matCmplx, cv::Scalar(matCmplx.cols*matCmplx.rows), matCmplx );
-
 		// Separate real/imaginary results
 		cv::split ( matCmplx, matPlanes );
 
 		// Compute the magnitude of DFT
 		cv::magnitude ( matPlanes[0], matPlanes[1], matPlanes[0] );
 		matMag = matPlanes[0];
+
+		// Normalize by the number of samples (convention ?)
+		if (bRows)
+			cv::divide ( matMag, cv::Scalar(matMag.cols), matMag );
+		else
+			cv::divide ( matMag, cv::Scalar(matMag.cols*matMag.rows), matMag );
 	
 		// TODO: Log, base, etc. will be moved into own nodes.
 
@@ -288,12 +287,6 @@ HRESULT FFT :: fft ( cv::cuda::GpuMat *pMat, cv::cuda::GpuMat *pWnd,
 		// Compute DFT
 		// TODO: Option for scaling/inverse/magnitude
 		cv::cuda::dft ( matCmplx, matCmplx, matCmplx.size(), (bRows) ? cv::DFT_ROWS : 0 );
-
-		// Normalize by the number of samples (assumes 'by rows', convention?)
-//		if (bRows)
-//			cv::cuda::divide ( matCmplx, cv::Scalar(matCmplx.cols), matCmplx );
-//		else
-//			cv::cuda::divide ( matCmplx, cv::Scalar(matCmplx.cols*matCmplx.rows), matCmplx );
 
 		// Separate real/imaginary results
 		cv::cuda::split ( matCmplx, matPlanes );

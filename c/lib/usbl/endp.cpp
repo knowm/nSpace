@@ -134,6 +134,11 @@ HRESULT Endpoint :: pktIo  ( BOOL bWr, DWORD uIo, DWORD uTo, DWORD *puIo )
 		// Begin a write
 		CCLTRYE ( WinUsb_WritePipe (	hIntf, iPipe, pcBfrPkt, uIo,
 												NULL, &ov ) == TRUE, GetLastError() );
+
+		// Debug
+		if (hr != S_OK && hr != ERROR_IO_PENDING)
+			dbgprintf ( L"Endpoint::pktIo:hIntf %d:iPipe %d:bWr %d:hr 0x%x\r\n", 
+							hIntf, (U32)iPipe, bWr, hr );
 		}	// if
 	else if (hr == S_OK)
 		{

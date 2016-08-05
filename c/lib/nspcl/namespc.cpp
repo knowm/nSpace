@@ -221,9 +221,6 @@ HRESULT Namespace :: construct ( void )
 	////////////////////////////////////////////////////////////////////////
 	HRESULT	hr		= S_OK;
 
-	// Global object
-	nspcglb.AddRef();
-
 	// Aggregated dictionary
 	CCLTRY ( COCREATEA ( L"Adt.Dictionary", (INamespace *) this, &punkDct ) );
 	CCLTRY(_QI(punkDct,IID_IDictionary,&pDctNs));
@@ -263,9 +260,6 @@ void Namespace :: destruct ( void )
 	_RELEASE(pDctOpts);
 	_RELEASE(pTmp);
 	_RELEASE(punkDct);
-
-	// Global object
-	nspcglb.Release();
 	}	// destruct
 
 HRESULT Namespace :: get ( const WCHAR *wPath, ADTVALUE &vGet, 

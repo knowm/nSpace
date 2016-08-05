@@ -264,9 +264,9 @@ HRESULT nspcStoreValue ( IDictionary *pRoot, const WCHAR *wPath,
 					hr							= S_OK;
 
 					// New dictionary
-					if (nspcglb.pcfDct != NULL)
-						hr = nspcglb.pcfDct->CreateInstance ( NULL, IID_IDictionary, (void **) &pDctSub );
-					else
+//					if (nspcglb.pcfDct != NULL)
+//						hr = nspcglb.pcfDct->CreateInstance ( NULL, IID_IDictionary, (void **) &pDctSub );
+//					else
 						hr = COCREATE ( L"Adt.Dictionary", IID_IDictionary, &pDctSub );
 
 					// Store parent (avoid reference count)
@@ -331,37 +331,13 @@ HRESULT nspcPathTo ( IDictionary *pAt, const WCHAR *wPath,
 	// Use a local stack to keep track of all the names in the path
 	// so that generation of the path can be done at once and lots
 	// of calls to prepend can be avoided.
-	static IList			*pStkAbs		= NULL;
-	static IIt				*pItAbs		= NULL;
-	static sysCS			csAbs;
-
-	// This is just so the static items get released on shutdown
-	static adtIUnknown	unkStkAbs,unkItAbs;
 
 	// Sharing stack, must thread protect
-	csAbs.enter();
-
-	// First time ?
-	if (pStkAbs == NULL)
-		{
-		// Create stack and iterator for strings
-		CCLTRY ( COCREATE ( L"Adt.Stack", IID_IList, &pStkAbs ) );
-		CCLTRY ( pStkAbs->iterate ( &pItAbs ) );
-
-		// Keep reference only in objects
-		unkStkAbs	= pStkAbs;
-		unkItAbs		= pItAbs;
-
-		// Remove own reference count
-		if (pItAbs != NULL)
-			pItAbs->Release();
-		if (pStkAbs != NULL)
-			pStkAbs->Release();
-		}	// if
+	nspcglb.csAbs.enter();
 
 	// Place initial path onto stack
-	CCLTRY ( pStkAbs->clear() );
-	CCLTRY ( pStkAbs->write ( adtString(wPath) ) );
+	CCLTRY ( nspcglb.pStkAbs->clear() );
+	CCLTRY ( nspcglb.pStkAbs->write ( adtString(wPath) ) );
 	CCLOK  ( len = (int)wcslen(wPath)+1; )	// +1 is for extra slash at end
 
 	// Setup
@@ -390,7 +366,7 @@ HRESULT nspcPathTo ( IDictionary *pAt, const WCHAR *wPath,
 					vL.pstr != NULL )
 				{
 				// Place on stack
-				hr = pStkAbs->write ( vL );
+				hr = nspcglb.pStkAbs->write ( vL );
 
 				// Length of string
 				len += (int)wcslen(vL.pstr);
@@ -434,18 +410,18 @@ HRESULT nspcPathTo ( IDictionary *pAt, const WCHAR *wPath,
 	CCLTRY ( nspcPathTo.allocate ( len ) );
 
 	// Pop stack and append strings
-	while (hr == S_OK && pItAbs->read ( vL ) == S_OK)
+	while (hr == S_OK && nspcglb.pItAbs->read ( vL ) == S_OK)
 		{
 		// Slash and string (string type has already been validated)
 		CCLTRY ( nspcPathTo.append ( vL.pstr ) );
 		CCLTRY ( nspcPathTo.append ( L"/" ) );
 
 		// Next string
-		pItAbs->next();
+		nspcglb.pItAbs->next();
 		}	// while
 
 	// Sharing stack, must thread protect
-	csAbs.leave();
+	nspcglb.csAbs.leave();
 
 	// Last slash in invalid
 	CCLOK ( nspcPathTo.at(nspcPathTo.length()-1) = '\0'; )

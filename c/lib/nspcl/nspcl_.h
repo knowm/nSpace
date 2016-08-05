@@ -151,10 +151,15 @@ class GlobalNspc
 //	adtString		strRdy,strRev,strRcvr,strRef;	// String references
 //	adtString		strRO,strLoc,strVal;				// String references
 
-	IClassFactory	*pcfDct;								// Class factories
-	IList				*pLstStVal,*pLstLd;				// nspcStoreValue, nspcLoadPath lists
+//	IClassFactory	*pcfDct;								// Class factories
+//	IList				*pLstStVal,*pLstLd;				// nspcStoreValue, nspcLoadPath lists
 	sysCS				cs;									// Thread safety for global objects
 	ULONG				refcnt;								// Reference count
+
+	// Re-usable stack objects for path creation
+	sysCS				csAbs;
+	IList				*pStkAbs;
+	IIt				*pItAbs;
 
 	// Utilities
 	ULONG		AddRef	( void );						// Increase reference count
