@@ -8,10 +8,6 @@
 
 #include "iol_.h"
 
-// Markers
-#define	MARKER_BEGIN		0x3141
-#define	MARKER_END			0x5926
-
 StmPrsXML :: StmPrsXML ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
