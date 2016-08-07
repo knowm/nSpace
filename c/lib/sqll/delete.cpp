@@ -111,7 +111,7 @@ void SQLDelete :: destruct ( void )
 	_RELEASE(pSQLBfr);
 	}	// destruct
 
-HRESULT SQLDelete :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT SQLDelete :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

@@ -64,7 +64,7 @@ SQLCreateDatabase :: SQLCreateDatabase ( void )
 
 #ifdef	USE_ODBC
 
-HRESULT SQLCreateDatabase :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT SQLCreateDatabase :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

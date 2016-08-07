@@ -7,23 +7,16 @@
 ////////////////////////////////////////////////////////////////////////
 
 // nSpace
-//#include "nspace.h"
-//#include <winsock2.h>
-//#include <ws2tcpip.h>
-//#include <IPHlpApi.h>
+#include "nspace.h"
 
-// Apache
-#include <httpd.h>
-#include <http_config.h>
-#include <http_protocol.h>
-#include <ap_config.h>
-
+// Globals
+extern nSpaceLink	*pLink;
 
 // Prototypes
 void	nspace_child_init			( apr_pool_t *p, server_rec *s );
 int	nspace_handler				( request_rec *r );
 bool	nspace_init					( bool );
-void	nspace_register_hooks	( apr_pool_t *p );
+void	nspace_write_req	( apr_pool_t *p );
 
 //
 // Dispatch list
@@ -37,7 +30,7 @@ module AP_MODULE_DECLARE_DATA nspace_module =
 	NULL,														// create per-server
 	NULL,														// merge per-server
 	NULL,														// table of config file commands
-	nspace_register_hooks								// Register hooks
+	nspace_write_req								// Register hooks
 	};
 
 apr_status_t nspace_child_cleanup ( void *pv )
@@ -95,28 +88,92 @@ int nspace_handler ( request_rec *r )
 	//		Request result
 	//
 	////////////////////////////////////////////////////////////////////////
+	HRESULT		hr = S_OK;
+	adtString	strUri;
 
 	// Request for this handler ?
 	if (	r->handler == NULL || strcmp ( r->handler, "nspace" ) )
 		return DECLINED;
 
-	// Responses are XML nSpace values
-	r->content_type = "text/xml";
-
-	// Response
-	ap_rputs ( "<Value  Type=\"Double\">3.141592653</Value>", r );
-
 	// Debug
-	OutputDebugStringA ( r->method );
-	OutputDebugStringA ( r->filename  );
-	OutputDebugStringA ( r->uri );
-	OutputDebugStringA ( r->args );
-	OutputDebugStringA ( r->useragent_ip );
+	OutputDebugStringA(r->method);
+	OutputDebugStringA(r->filename);
+	OutputDebugStringA(r->uri);
+	OutputDebugStringA(r->args);
+	OutputDebugStringA(r->useragent_ip);
+//	lprintf ( LOG_INFO, "", r->co
 
-	return OK;
+	// State check
+	CCLTRYE ( strncasecmp(r->uri,"/nspace/",8) == 0, E_UNEXPECTED );
+
+	// Translate URI into a namespace path
+	CCLOK ( strUri = &(r->uri[7]); )
+
+	//
+	// Method
+	//
+
+	// Get = Load
+	if (hr == S_OK && !strcasecmp(r->method,"GET"))
+		{
+		adtValue		vL;
+
+		// Responses are XML nSpace values
+		ap_set_content_type ( r, "text/xml" );
+
+		// Load value from namespace into the response stream
+		CCLTRY ( pLink->load ( strUri, r ) );
+		}	// if
+
+	// Post = Store
+	else if (hr == S_OK && !strcasecmp(r->method,"POST"))
+		{
+		IByteStream	*pStm	= NULL;
+		int			rc;
+
+		// Create memory byte stream
+		CCLTRY ( COCREATE ( L"Io.StmMemory", IID_IByteStream, &pStm ) );
+
+		// Prepare to read content
+		CCLTRYE ( (rc = ap_setup_client_block ( r, 
+						REQUEST_CHUNKED_ERROR )) == OK, S_FALSE );
+
+		// Ready to receive data
+		if (hr == S_OK && ap_should_client_block ( r ))
+			{
+			char	argsbuffer[HUGE_STRING_LEN];
+			int	len_read;
+
+			// Read data
+			while ( hr == S_OK &&
+						(len_read = ap_get_client_block ( r, argsbuffer,
+						sizeof(argsbuffer) )) > 0 )
+				{
+				// Debug
+				argsbuffer[len_read] = '\0';
+				lprintf(LOG_INFO, L"len_read %d:%S", len_read, argsbuffer);
+
+				// Write bufers to stream
+				// TODO: Create byte stream interface for 'ap_get_client_block' 
+				// usage to avoid copy/allocation
+				CCLTRY ( pStm->write ( argsbuffer, len_read, NULL ) );
+				}	// while
+
+//			lprintf ( LOG_INFO, L"Content read hr 0x%x", hr );
+			}	// if
+
+		// Parse and store value into namespace
+		CCLTRY ( pStm->seek ( STREAM_SEEK_SET, 0, NULL ) );
+		CCLTRY ( pLink->store ( strUri, pStm ) );
+
+		// Clean up
+		_RELEASE(pStm);
+		}	// else if
+
+	return (hr == S_OK) ? OK : HTTP_NOT_FOUND;
 	}	// nspace_handler
 
-void nspace_register_hooks ( apr_pool_t *p )
+void nspace_write_req ( apr_pool_t *p )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -126,7 +183,7 @@ void nspace_register_hooks ( apr_pool_t *p )
 	//	PARAMETERS
 	//		-	p is the allocation pool
 	////////////////////////////////////////////////////////////////////////
-	OutputDebugStringA("nspace_register_hooks");
+	OutputDebugStringA("nspace_write_req");
 
 	// Request handler
 	ap_hook_handler ( nspace_handler, NULL, NULL, APR_HOOK_LAST );
@@ -134,4 +191,5 @@ void nspace_register_hooks ( apr_pool_t *p )
 	// Initialization
 	ap_hook_child_init ( nspace_child_init, NULL, NULL, APR_HOOK_LAST );
 
-	}	// nspace_register_hooks
+	}	// nspace_write_req
+

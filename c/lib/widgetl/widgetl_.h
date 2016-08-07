@@ -329,7 +329,7 @@ class gdiListbox : public gdiControl
 class Bezier :
 	public CCLObject,										// Base class
 	public gdiControl,									// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Bezier ( void );										// Constructor
@@ -374,7 +374,7 @@ class Bezier :
 class Button :
 	public CCLObject,										// Base class
 	public gdiWindow,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Button ( void );										// Constructor
@@ -420,7 +420,7 @@ class Button :
 class Combobox :
 	public CCLObject,										// Base class
 	public gdiCombobox,									// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Combobox ( void );										// Constructor
@@ -479,7 +479,7 @@ class DragDropDstA;									// Helper object
 
 class DragDrop :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	DragDrop ( void );									// Constructor
@@ -708,7 +708,7 @@ class DragDropDstA :
 class Edit :
 	public CCLObject,										// Base class
 	public gdiEdit,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Edit ( void );											// Constructor
@@ -754,7 +754,7 @@ class Edit :
 
 class FileSelect :
 	public CCLObject,										// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	FileSelect ( void );									// Constructor
@@ -789,7 +789,7 @@ class FileSelect :
 class Image :
 	public CCLObject,										// Base class
 	public gdiControl,									// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Image ( void );										// Constructor
@@ -834,7 +834,7 @@ class Image :
 class Label :
 	public CCLObject,										// Base class
 	public gdiControl,									// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Label ( void );										// Constructor
@@ -874,7 +874,7 @@ class Label :
 class Listbox :
 	public CCLObject,										// Base class
 	public gdiListbox,									// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Listbox ( void );										// Constructor
@@ -927,7 +927,7 @@ class Listbox :
 class Table :
 	public CCLObject,										// Base class
 	public gdiControl,									// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Table ( void );										// Constructor
@@ -958,7 +958,7 @@ class Table :
 class Tree :
 	public CCLObject,										// Base class
 	public gdiControl,									// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Tree ( void );											// Constructor
@@ -1024,7 +1024,7 @@ class Tree :
 class View :
 	public CCLObject,										// Base class
 	public gdiControl,									// Base class
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	View ( void );											// Constructor
@@ -1077,7 +1077,7 @@ class Window :
 	public CCLObject,										// Base class
 	public gdiControl,									// Base class
 	public ITickable,										// Interface
-	public IBehaviour										// Interface
+	public Behaviour										// Interface
 	{
 	public :
 	Window ( void );										// Constructor

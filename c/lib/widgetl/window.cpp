@@ -330,7 +330,7 @@ LRESULT Window :: onMessage ( IDictionary *pCtl, UINT uMsg,
 	return ret;
 	}	// onMessage
 
-HRESULT Window :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Window :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

@@ -79,7 +79,7 @@ LRESULT Button :: onClicked ( IDictionary *pCtl )
 	}	// onClicked
 */
 
-HRESULT Button :: receive ( IReceptor *pr, const WCHAR *pl, const ADTVALUE &v )
+HRESULT Button :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

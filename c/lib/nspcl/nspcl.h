@@ -95,11 +95,11 @@ extern	adtStringSt strnRefVal;
 
 #define	DEFINE_EMT(a)														\
 			CCLTRY(pnSpc->connection ( pnLoc, L"On" #a,				\
-							L"Emitter", _pnRcp,								\
+							L"Emitter", this,									\
 							(bAttach) ? &DECLARE_LOC_NAME(pe,On ## a) : NULL ));
 #define	DEFINE_RCP(a)														\
 			CCLTRY(pnSpc->connection ( pnLoc, L## #a,					\
-							L"Receptor", _pnRcp,								\
+							L"Receptor", this,								\
 							(bAttach) ? &DECLARE_LOC_NAME(pr,a) : NULL ));
 #define	DEFINE_CON(a)														\
 			DEFINE_RCP(a)														\
