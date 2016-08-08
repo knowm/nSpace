@@ -116,7 +116,7 @@ HRESULT FFT :: fft ( cv::Mat *pMat, cv::Mat *pWnd, bool bRows )
 //		matTmp.copyTo  ( matQ[3] );
 
 		// Just keep the positive frequencies (option ?)
-		matMag	= matMag ( cv::Rect ( cx, 0, cx, matMag.rows ) );
+		matMag	= matMag ( cv::Rect ( 0, 0, cx, matMag.rows ) );
 
 		// Result is new matrix
 		matMag.copyTo ( *pMat );
@@ -226,7 +226,7 @@ HRESULT FFT :: fft ( cv::UMat *pMat, cv::UMat *pWnd, bool bRows )
 //		matTmp.copyTo  ( matQ[3] );
 
 		// Just keep the positive frequencies (option ?)
-		matMag	= matMag ( cv::Rect ( cx, 0, cx, matMag.rows ) );
+		matMag	= matMag ( cv::Rect ( 0, 0, cx, matMag.rows ) );
 
 		// Result is new matrix
 		matMag.copyTo ( *pMat );
@@ -330,7 +330,7 @@ HRESULT FFT :: fft ( cv::cuda::GpuMat *pMat, cv::cuda::GpuMat *pWnd,
 //		matTmp.copyTo  ( matQ[3] );
 
 		// Just keep the positive frequencies (option ?)
-		matMag	= matMag ( cv::Rect ( cx, 0, cx, matMag.rows ) );
+		matMag	= matMag ( cv::Rect ( 0, 0, cx, matMag.rows ) );
 
 		// Result is new matrix
 		matMag.copyTo ( *pMat );
@@ -418,11 +418,11 @@ HRESULT FFT :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		// Compute FFT/Magnitude
 //		CCLOK ( image_to_debug ( pMat, L"FFT", L"c:/temp/fft.png" ); )
 		if (hr == S_OK && pMat->isGPU())
-			hr = fft ( pMat->gpumat, pWnd->gpumat, true );
+			hr = fft ( pMat->gpumat, (pWnd != NULL) ? pWnd->gpumat : NULL, true );
 		else if (hr == S_OK && pMat->isUMat())
-			hr = fft ( pMat->umat, pWnd->umat, true );
+			hr = fft ( pMat->umat, (pWnd != NULL) ? pWnd->umat : NULL, true );
 		else
-			hr = fft ( pMat->mat, pWnd->mat, true );
+			hr = fft ( pMat->mat, (pWnd != NULL) ? pWnd->mat : NULL, true );
 
 		// Debug
 		if (hr != S_OK)
@@ -506,7 +506,7 @@ HRESULT FFT :: window ( cvMatRef *pMat )
 	if (!bWndUp) bWndUp = (pWnd == NULL	&& strWnd.length() > 0 && WCASECMP(strWnd,L"None"));
 
 	// Verify size
-	if (!bWndUp) bWndUp = (pWnd->mat->cols != cols || pWnd->mat->rows != rows);
+	if (!bWndUp) bWndUp = (pWnd != NULL && (pWnd->mat->cols != cols || pWnd->mat->rows != rows));
 
 	// New window ?
 	if (hr == S_OK && bWndUp)

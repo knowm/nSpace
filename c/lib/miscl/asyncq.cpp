@@ -175,7 +175,9 @@ HRESULT AsyncQ :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			// mulitple 'receiveStop' messages from entering at once
 			IThread *pTmp 	= pThrd;
 			pThrd 			= NULL;
-			pTmp->threadStop(10000);
+			// Timeout is tricky since output may be busy
+//			pTmp->threadStop(10000);
+			pTmp->threadStop(0);
 			pTmp->Release();
 			}	// if
 		}	// else if
