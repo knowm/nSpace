@@ -122,7 +122,7 @@ HRESULT Contours :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 				// Debug
 				lprintf ( LOG_INFO, L"Contours size %d\r\n", contours.size() );
-				for (int c = 0;c < contours.size();++c)
+				for (U32 c = 0;c < contours.size();++c)
 					lprintf ( LOG_INFO, L"%d) Size %d\r\n", c, contours[c].size() );
 				}	// try2
 			catch ( cv::Exception & )
