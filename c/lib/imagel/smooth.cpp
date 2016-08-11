@@ -118,10 +118,12 @@ HRESULT Smooth :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				}	// if
 			else
 				{
-				if (!strType.length())
-					cv::blur ( *(pMat->mat), *(pMat->mat), cv::Size(iSz,iSz) );
+				if (!WCASECMP(L"Gaussian",strType))
+					cv::GaussianBlur ( *(pMat->mat), *(pMat->mat), cv::Size(iSz,iSz), 0, 0 );
 				else if (!WCASECMP(L"Median",strType))
 					cv::medianBlur ( *(pMat->mat), *(pMat->mat), iSz );
+				else
+					cv::blur ( *(pMat->mat), *(pMat->mat), cv::Size(iSz,iSz) );
 				}	// else
 			}	// if
 

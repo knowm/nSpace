@@ -50,6 +50,8 @@ HRESULT Stats :: onAttach ( bool bAttach )
 			bEnt = vL;
 		if (pnDesc->load ( adtString(L"BoundRect"), vL ) == S_OK)
 			bBoundRct = vL;
+		if (pnDesc->load ( adtString(L"NonZero"), vL ) == S_OK)
+			bNonZero = vL;
 		}	// if
 
 	// Detach
@@ -235,6 +237,24 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			CCLTRY ( pImgUse->store ( adtString(L"Width"), adtInt(rct.width) ) );
 			CCLTRY ( pImgUse->store ( adtString(L"Height"), adtInt(rct.height) ) );
 			}	// if
+
+		// Non-zero pixels
+		if (hr == S_OK && bNonZero == true)
+			{
+			int nZ = 0;
+
+			// Perform calculation
+			if (pMat->isGPU())
+				{
+				}	// if
+			else if (pMat->isUMat())
+				nZ = cv::countNonZero ( *(pMat->umat) );
+			else
+				nZ = cv::countNonZero ( *(pMat->mat) );
+
+			// Result
+			CCLTRY ( pImgUse->store ( adtString(L"NonZero"), adtInt(nZ) ) );
+			}	 // if
 
 		// Debug
 		if (hr != S_OK)

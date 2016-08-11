@@ -681,7 +681,7 @@ HRESULT PersistTxt :: valueLoad ( ADTVALUE &v )
 
 				// Check for duplicate node names
 				if (hr == S_OK && (pNodes->load ( sName, vCheck ) == S_OK || pSubs->load ( sName, vCheck ) == S_OK))
-					dbgprintf ( L"PersistTxt::childLoad:WARNING! Duplicate node name : %s\r\n", (PCWSTR)sName );
+					lprintf ( LOG_ERR, L"Duplicate node name : %s\r\n", (PCWSTR)sName );
 
 				// Store the node name and behaviour under the node properties
 				CCLTRY ( pCtxNode->store ( adtString(STR_NSPC_NAME),		sName ) );

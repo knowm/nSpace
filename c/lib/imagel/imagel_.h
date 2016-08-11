@@ -422,6 +422,39 @@ class FFT :
 	};
 
 //
+// Class - Gradient.  Image grandient node.
+//
+
+class Gradient :
+	public CCLObject,										// Base class
+	public Behaviour										// Interface
+	{
+	public :
+	Gradient ( void );									// Constructor
+
+	// Run-time data
+	IDictionary	*pImg;									// Image dictionary
+	adtString	strType;									// Gradient type
+	adtInt		iDx,iDy;									// Order of derivatives
+	adtInt		iSzk;										// Kernel size
+
+	// CCL
+	CCL_OBJECT_BEGIN(Gradient)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_EMT(Error)
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Image)
+	BEGIN_BEHAVIOUR()
+		DEFINE_EMT(Error)
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Image)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
+//
 // Class - Match.  Template matching node.
 //
 
@@ -726,6 +759,7 @@ class Stats :
 	IDictionary	*pImg;									// Image dictionary
 	adtBool		bEnt;										// Calculate entropy ?
 	adtBool		bBoundRct;								// Calculate bounding rectangle ?
+	adtBool		bNonZero;								// Calulcate non-zero pixels ?
 
 	// CCL
 	CCL_OBJECT_BEGIN(Stats)
