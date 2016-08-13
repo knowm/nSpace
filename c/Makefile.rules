@@ -1,0 +1,44 @@
+########################################################################
+#
+#								RULES.LNX
+#
+#				Rules file for Linux makefiles
+#
+########################################################################
+
+# Operating systems
+OS := $(shell uname -s )
+# Tools
+
+# Define different targets in your environment. As of this writing the
+# supported targets are : LINUX and EMBEDDED
+# OSMAJOR	:= UNIX
+
+CC			:= g++
+CFLAGS   := -O0 
+# -pg
+#CFLAGS	:= -O0 -g -D_DEBUG
+# _FILE_OFFSET_BITS=64 is required for 64-bit file systems ('stat' did not work on CIFS mounted files).
+CFLAGS	+= -c -Wall -fPIC -I/usr/local/include \
+					-fno-rtti -fno-exceptions -D_FILE_OFFSET_BITS=64
+# $(CPU) -D__$(OSMAJOR)__
+LD			:= g++
+ifeq ($(OS),Darwin)
+LDFLAGS	:= -shared -lpthread -L/usr/local/lib -undefined dynamic_lookup
+else
+LDFLAGS	:= -shared -lpthread -L/usr/local/lib -pthread 
+# -pg
+endif
+NM			:= nm
+AR			:= ar
+ifeq ($(OS),Darwin)
+OUTLOC	:= /users/username/dev/nspace/c/bin/
+else
+OUTLOC	:= /home/jhoy/dev/nspace/c/bin/
+endif
+
+# Rules for building cpp files
+.cpp.o:
+	$(CC) $(CFLAGS) -o $*.o -c $*.cpp
+
+
