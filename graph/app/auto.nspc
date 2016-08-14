@@ -189,7 +189,7 @@
 %	!	Prepare/OnDownload						Debug/Fire
 
 	% IMAGEN: Save result
-	$	SaveImage Image.PersistImage { Location "c:/temp/debug.png" }
+%	$	SaveImage Image.PersistImage { Location "c:/temp/debug.png" }
 %		!	Prepare/OnDownload					SaveImage/Image
 %		!	Prepare/OnDownload					SaveImage/Save
 %		!	ToMag/OnImage/OnFire					SaveImage/Image

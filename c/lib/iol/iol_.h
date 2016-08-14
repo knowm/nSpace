@@ -437,13 +437,13 @@ class File :
 	// Run-time data
 	#ifdef		_WIN32
 	HANDLE		hFile;									// File handle
+	HANDLE		hevWr,hevRd;							// I/O events
+	HANDLE		hevStop;									// Stop event for read thread
 	#endif
 	IByteStream	*pStmIo;									// I/O stream
 	adtInt		iSzIo;									// I/O size
-	HANDLE		hevWr,hevRd;							// I/O events
 	adtBool		bAsync;									// Asynchronous reads ?
 	IThread		*pThrd;									// Asynchronous read thread
-	HANDLE		hevStop;									// Stop event for read thread
 	U8				*pcBfr;									// I/O buffer
 	adtInt		iSzBfr;									// Buffer size
 

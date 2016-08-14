@@ -49,7 +49,7 @@ HRESULT MemoryBlock :: clone ( IUnknown **ppUnk )
 	////////////////////////////////////////////////////////////////////////
 	HRESULT		hr			= S_OK;
 	MemoryBlock	*pDst		= NULL;
-	VOID			*pvDst	= NULL;
+	void			*pvDst	= NULL;
 
 	// Cloning a memory block creates a copy of the data.
 

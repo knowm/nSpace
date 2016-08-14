@@ -68,7 +68,7 @@ HRESULT Serial :: onAttach ( bool bAttach )
 	if (pnDesc->load ( adtString(L"StopBits"), vL ) == S_OK)
 		fStop = vL;
 
-	return S_OK;
+	return hr;
 	}	// onAttach
 
 HRESULT Serial :: onReceive ( IReceptor *pr, const ADTVALUE &v )

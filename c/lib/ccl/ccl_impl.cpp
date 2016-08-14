@@ -76,9 +76,21 @@ HRESULT cclCreateObject ( const wchar_t *pId, IUnknown *pOuter,
 	////////////////////////////////////////////////////////////////////////
 	HRESULT			hr			= S_OK;
 	IClassFactory	*pFact	= NULL;
+	WCHAR				wIdFull[255];
+	const WCHAR		*dot;
+
+	// System prefix is assumed to be nSpace but not required.  Prepend if missing.
+	if (	(dot = wcschr ( pId, '.' )) == NULL ||
+			(dot = wcschr ( dot+1, '.' )) == NULL )
+		{
+		WCSCPY ( wIdFull, cntIdFull, L"nSpace." );
+		WCSCAT ( wIdFull, cntIdFull, pId );
+		}	// if
+	else
+		WCSCPY ( wIdFull, cntIdFull, pId );
 
 	// Class factory for object
-	CCLTRY ( cclGetFactory ( pId, IID_IClassFactory, (void **) &pFact ) );
+	CCLTRY ( cclGetFactory ( wIdFull, IID_IClassFactory, (void **) &pFact ) );
    
 	// Create object from factory
 	CCLTRY(pFact->CreateInstance ( pOuter, iid, ppv ) );
@@ -155,6 +167,7 @@ HRESULT cclGetFactory ( const wchar_t *pId, REFIID iid, void **ppv )
 		CCLOK   ( strLib.toLower(); )
 
 		// Obtain factory
+//		dbgprintf ( L"cclCreateObject:Path %s\r\n", (LPCWSTR)strLib );
 		CCLTRY ( cclLoadFactoryInt ( strLib, pId, &pvLib, &pFact ) );
 
 		// Cache factory under Id

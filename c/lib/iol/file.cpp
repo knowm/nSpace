@@ -20,12 +20,14 @@ File :: File ( void )
 	//		-	Constructor for the object
 	//
 	////////////////////////////////////////////////////////////////////////
+	#ifdef		_WIN32
 	hFile		= INVALID_HANDLE_VALUE;
-	pStmIo	= NULL;
-	iSzIo		= 0;
 	hevWr		= NULL;
 	hevRd		= NULL;
 	hevStop	= NULL;
+	#endif
+	pStmIo	= NULL;
+	iSzIo		= 0;
 	bAsync	= false;
 	pcBfr		= NULL;
 	iSzBfr	= SIZE_FILE_BFR;
@@ -82,6 +84,7 @@ HRESULT File :: fileIo  ( BOOL bWr, DWORD uIo, DWORD uTo, DWORD *puIo )
 	//
 	////////////////////////////////////////////////////////////////////////
 	HRESULT		hr = S_OK;
+	#ifdef		_WIN32
 	HANDLE		hevs[2]	= { (bWr) ? hevWr : hevRd, hevStop };
 	OVERLAPPED	ov;
 	DWORD			dwRet,uXfer;
@@ -138,7 +141,10 @@ HRESULT File :: fileIo  ( BOOL bWr, DWORD uIo, DWORD uTo, DWORD *puIo )
 
 	// Debug
 //	dbgprintf ( L"File::fileIo:bWr %d:uXfer %d:hr 0x%x\r\n", bWr, uXfer, hr );
-
+	#else
+	hr = E_NOTIMPL;
+	#endif
+	
 	return hr;
 	}	// fileIo
 
@@ -170,12 +176,14 @@ HRESULT File :: onAttach ( bool bAttach )
 			iSzIo = adtInt(vL);
 
 		// I/O events
+		#ifdef		_WIN32
 		CCLTRYE ( (hevWr = CreateEvent ( NULL, FALSE, FALSE, NULL )) != NULL,
 						GetLastError() );
 		CCLTRYE ( (hevRd = CreateEvent ( NULL, FALSE, FALSE, NULL )) != NULL,
 						GetLastError() );
 		CCLTRYE ( (hevStop = CreateEvent ( NULL, TRUE, FALSE, NULL )) != NULL,
 						GetLastError() );
+		#endif
 		}	// if
 
 	// Detach
@@ -189,6 +197,7 @@ HRESULT File :: onAttach ( bool bAttach )
 			}	// if
 
 		// Clean up
+		#ifdef		_WIN32
 		if (hevWr != NULL)
 			{
 			CloseHandle ( hevWr );
@@ -204,6 +213,7 @@ HRESULT File :: onAttach ( bool bAttach )
 			CloseHandle ( hevStop );
 			hevStop = NULL;
 			}	// if
+		#endif
 		_RELEASE(pStmIo);
 		}	// else
 
@@ -236,7 +246,9 @@ HRESULT File :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		ULONG			uXfer;
 
 		// State check
+		#ifdef		_WIN32
 		CCLTRYE ( hFile != INVALID_HANDLE_VALUE,	ERROR_INVALID_STATE );
+		#endif
 		CCLTRYE ( pStmIo != NULL,						ERROR_INVALID_STATE );
 
 		// Size of transfer, size of 0 means entire stream
@@ -253,7 +265,7 @@ HRESULT File :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		while (hr == S_OK && uLeft > 0)
 			{
 			// Amount to write on next transaction
-			uXfer = (uLeft < iSzBfr) ? uLeft : iSzBfr;
+			uXfer = (uLeft < iSzBfr) ? uLeft : (ULONG)iSzBfr;
 
 			// Read from source stream
 			CCLTRY ( pStmIo->read ( pcBfr, uXfer, &uXferd ) );
@@ -281,7 +293,9 @@ HRESULT File :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		ULONG			uXfer;
 
 		// State check
+		#ifdef		_WIN32
 		CCLTRYE ( hFile != INVALID_HANDLE_VALUE,	ERROR_INVALID_STATE );
+		#endif
 		CCLTRYE ( pStmIo != NULL && iSzIo > 0,		ERROR_INVALID_STATE );
 
 		// If asynchronous reads are enabled, reads happen in thread
@@ -292,7 +306,7 @@ HRESULT File :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		while (hr == S_OK && uLeft > 0)
 			{
 			// Amount to read on next transaction
-			uXfer = (uLeft < iSzBfr) ? uLeft : iSzBfr;
+			uXfer = (uLeft < iSzBfr) ? uLeft : (ULONG)iSzBfr;
 
 			// Read from File.
 			CCLTRY ( fileIo ( FALSE, uXfer, 5000, &uXfer ) );
@@ -330,15 +344,20 @@ HRESULT File :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			pThrd->threadStop(5000);
 			_RELEASE(pThrd);
 			}	// if
+		#ifdef	_WIN32
 		hFile = INVALID_HANDLE_VALUE;
-
+		#endif
+		
 		// New resource/file handle
 		CCLTRY ( _QISAFE(unkV,IID_IResource,&pRes) );
 		CCLTRY ( pRes->getResId ( vId ) );
+		#ifdef	_WIN32
 		CCLOK  ( hFile = (HANDLE)(U64)adtLong(vId); )
+		#endif
 		_RELEASE(pRes);
 		
 		// If async reads are specified, fire up thread
+		#ifdef	_WIN32
 		if (hr == S_OK && hFile != INVALID_HANDLE_VALUE && bAsync == true)
 			{
 			// Create read thread
@@ -346,6 +365,7 @@ HRESULT File :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			CCLTRY(COCREATE(L"Sys.Thread", IID_IThread, &pThrd ));
 			CCLTRY(pThrd->threadStart ( this, 5000 ));
 			}	// if
+		#endif
 
 		}	// else if
 	else if (_RCP(Stream))
@@ -408,7 +428,9 @@ HRESULT File :: tick ( void )
 	if (hr == S_OK && iSzIo == 0)
 		{
 		dbgprintf ( L"File::tick:WARNING no transfer size specified\r\n" );
+		#ifdef 	_WIN32
 		Sleep(1000);
+		#endif
 		}	// if
 
 	// Perform transfer

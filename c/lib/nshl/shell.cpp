@@ -554,7 +554,8 @@ HRESULT Shell :: defNspc ( const WCHAR *wDef, IDictionary *pDef )
 	CCLTRY ( _QISAFE((unkV = v),IID_IDictionary,&pNodes) );
 
 	// Store names list directly in definition
-	CCLTRY ( pDctDef->store ( strnRefNames, adtIUnknown(pNames) ) );
+//	CCLTRY ( pDctDef->store ( strnRefNames, adtIUnknown(pNames) ) );
+	CCLTRY ( pDctDef->store ( adtString(L"_Names"), adtIUnknown(pNames) ) );
 
 	// Process items in order
 	CCLTRY ( pNames->iterate ( &pIt ) );
@@ -602,7 +603,8 @@ HRESULT Shell :: defNspc ( const WCHAR *wDef, IDictionary *pDef )
 
 		// Store descriptor at location
 		if (hr == S_OK && pAttr != NULL)
-			hr = pDctLoc->store ( strnRefDesc, adtIUnknown(pAttr) );
+			hr = pDctLoc->store ( adtString(L"_Descriptor"), adtIUnknown(pAttr) );
+//			hr = pDctLoc->store ( strnRefDesc, adtIUnknown(pAttr) );
 
 		// Clean up
 		pIt->next();
@@ -844,7 +846,7 @@ HRESULT Shell :: tickBegin ( void )
 		strExec = vL;
 
 	// DEBUG
-	#ifdef _DEBUG
+	#if	defined(_DEBUG) || !defined(_WIN32)
 	// Currently the source tree is laid out such that the 'graph' directory is
 	// at the same relative location to either debug or release EXE.  Use relative
 	// directory in order to support different source trees.

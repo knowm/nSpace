@@ -402,7 +402,11 @@ HRESULT Debug :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	else if (_RCP(Sleep))
 		{
 		adtInt	iMs(v);
+		#ifdef	_WIN32
 		Sleep(iMs);
+		#else
+		usleep(iMs*1000);
+		#endif
 		}	// else if
 	else
 		hr = ERROR_NO_MATCH;

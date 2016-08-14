@@ -265,7 +265,7 @@ HRESULT StringStream :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		{
 		U32		len	= sFrom.length();
 		U32		tlen	= sTerm.length();
-		U32		i,j;
+		U32		i;
 		U64		opos;
 		U8			c;
 
@@ -276,8 +276,6 @@ HRESULT StringStream :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		// still need to avoid sending out the stream with unwanted 'extra' bytes.
 		// So set the final size of the stream.
 		CCLTRY	( pStm->seek ( 0, STREAM_SEEK_CUR, &opos ) );
-		CCLOK    ( j = (bTerm == false)	? 0 :
-							(!tlen)				? 1 : tlen; )
 		if (hr == S_OK && bHex == true) len >>= 1;
 
 		// Invalid ?  This sets the ptr at the end and then additional
@@ -285,7 +283,7 @@ HRESULT StringStream :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 //		CCLTRY	( pStm->setSize ( opos + len + j ) );
 
 		// Write string.
-		for (i = 0,j = 0;i < len && hr == S_OK;++i)
+		for (i = 0;i < len && hr == S_OK;++i)
 			{
 			// Convert from string to byte
 			if (bHex == false)

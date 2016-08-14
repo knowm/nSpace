@@ -324,7 +324,6 @@ HRESULT nspcPathTo ( IDictionary *pAt, const WCHAR *wPath,
 	HRESULT		hr				= S_OK;
 	IDictionary	*pDct			= NULL;
 	int			len			= 0;
-	int			idx			= 0;
 	WCHAR			*up,*sm,*f,*t;
 	adtValue		vL;
 

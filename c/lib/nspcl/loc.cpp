@@ -470,7 +470,8 @@ HRESULT Location :: desc ( void )
 			// Obtain the behaviour
 			CCLTRY ( pDsc->load ( strnRefBehave, v ) );
 			CCLTRYE( (strB = v).length() > 0, E_UNEXPECTED );
-//			CCLOK  ( dbgprintf ( L"Location::%s:%s:%s\r\n", (LPCWSTR) strDscName, (LPCWSTR) strType, (LPCWSTR) strB ); )
+//			dbgprintf ( L"Location::%s:%s:%s\r\n", (LPCWSTR) strDscName, (LPCWSTR) strType, 
+//							(LPCWSTR) strB );
 
 			// Create the behaviour for the node
 			// Object class Id
@@ -742,10 +743,9 @@ HRESULT Location :: receive ( IReceptor *prSrc, const WCHAR *pwLoc,
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	HRESULT		hr			= S_OK;
-	bool			bBehave	= (pBehave != NULL);
-	bool			bVal		= !WCASECMP(pwLoc,L"Value");
-	const WCHAR	*pw		= NULL;
+	HRESULT		hr		= S_OK;
+	bool			bVal	= !WCASECMP(pwLoc,L"Value");
+	const WCHAR	*pw	= NULL;
 
 	// Sanity check for double referenced values.  This was a bug
 	// early on, check it in case something goes wrong.
@@ -1066,7 +1066,6 @@ HRESULT Location :: remove ( const ADTVALUE &v )
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	HRESULT	hr		= S_OK;
 	adtValue	vL;
 
 	// Access item
