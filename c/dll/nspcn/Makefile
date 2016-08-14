@@ -1,9 +1,9 @@
 include		../../Makefile.rules
 
 # Source files
-OBJS			:= nspcn.o
-LIBS			:= -lnspcl -lccl -ladtl -lsysl
-LDFLAGS		:= $(LDFLAGS) -L$(OUTLOC) # -Wl,--version-script=../../lib/ccl/ccl.version
+OBJS	:= nspcn.o
+LIBS	:= -lnspcl -ladtl -lccl -lsysl
+LDFLAGS	:= $(LDFLAGS) -L$(OUTLOC) -Wl,--version-script=../../lib/ccl/ccl.version
 
 # Library
 all							:	$(OUTLOC)libnspcn.so

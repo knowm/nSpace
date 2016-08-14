@@ -1,9 +1,9 @@
 include		../../Makefile.rules
 
 # Source files
-OBJS			:= netn.o
-LIBS			:= -lnetl -lnspcl -lccl -ladtl -lsysl
-LDFLAGS		:= $(LDFLAGS) -L$(OUTLOC) # -Wl,--versnetn-script=../../lib/ccl/ccl.version
+OBJS	:= netn.o
+LIBS	:= -lnetl -lnspcl -ladtl -lccl -lsysl
+LDFLAGS	:= $(LDFLAGS) -L$(OUTLOC) -Wl,--version-script=../../lib/ccl/ccl.version
 
 # Library
 all							:	$(OUTLOC)libnetn.so

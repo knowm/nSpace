@@ -1,12 +1,9 @@
 include		../../Makefile.rules
 
 # Source files
-OBJS			:= sysn.o
-LIBS			:= -lsysl -lnspcl -lccl -ladtl -lsysl
-ifeq ($(OS),Linux)
-#LIBS			:= $(LIBS) -luuid
-endif
-LDFLAGS			:= $(LDFLAGS) -L$(OUTLOC) # -Wl,--verssysn-script=../../lib/ccl/ccl.version
+OBJS	:= sysn.o
+LIBS	:= -lnspcl -ladtl -lccl -lsysl
+LDFLAGS	:= $(LDFLAGS) -L$(OUTLOC) -Wl,--version-script=../../lib/ccl/ccl.version
 
 # Library
 all							:	$(OUTLOC)/libsysn.so
