@@ -7,7 +7,6 @@ all:
 				$(MAKE) -C sysl
 				$(MAKE) -C iol
 				$(MAKE) -C mathl
-				$(MAKE) -C medial
 				$(MAKE) -C miscl
 				$(MAKE) -C netl
 				$(MAKE) -C nshl
@@ -18,7 +17,6 @@ clean:
 				$(MAKE) -C sysl clean
 				$(MAKE) -C iol clean
 				$(MAKE) -C mathl clean
-				$(MAKE) -C medial clean
 				$(MAKE) -C miscl clean
 				$(MAKE) -C netl clean
 				$(MAKE) -C nshl clean
