@@ -1,0 +1,9 @@
+nsh {
+	global:
+		cclCreateObject;
+		cclGetFactory;
+		StringFromCLSID;
+	local:
+		*;
+};
+
