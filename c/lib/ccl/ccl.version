@@ -1,0 +1,8 @@
+ccl {
+	global:
+		cclGetClassObject;
+	local:
+		cclobjlist;
+		*;
+};
+
