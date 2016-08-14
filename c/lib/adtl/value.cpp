@@ -497,8 +497,8 @@ HRESULT adtValue :: fromString ( const WCHAR *s, VALUETYPE type,
 			{
 			adtFloat	oFlt;
 			// Convert
-			if (s != NULL) oFlt.vflt = (float)_wtof(s);
-//			if (s != NULL) SWSCANF ( s, L"%f", &(oFlt.vflt) );
+//			if (s != NULL) oFlt.vflt = (float)_wtof(s);
+			if (s != NULL) SWSCANF ( s, L"%f", &(oFlt.vflt) );
 			adtValue::copy ( oFlt, v );
 			}	// case VTYPE_R4
 			break;
@@ -506,8 +506,8 @@ HRESULT adtValue :: fromString ( const WCHAR *s, VALUETYPE type,
 			{
 			adtDouble	oDbl;
 			// Convert
-			if (s != NULL) oDbl.vdbl = _wtof(s);
-//			if (s != NULL) SWSCANF ( s, L"%lf", &(oDbl.vdbl) );
+//			if (s != NULL) oDbl.vdbl = _wtof(s);
+			if (s != NULL) SWSCANF ( s, L"%lf", &(oDbl.vdbl) );
 			adtValue::copy ( oDbl, v );
 			}	// case VTYPE_R8
 			break;
