@@ -1,8 +1,8 @@
 include		../../Makefile.rules
 
 # Source files
-OBJS			:= miscn.o
-LIBS			:= -lmiscl -lnspcl -lccl -ladtl -lsysl
+OBJS		:= miscn.o
+LIBS		:= -lmiscl -lsysl -lnspcl -ladtl -lccl
 LDFLAGS		:= $(LDFLAGS) -L$(OUTLOC) # -Wl,--versmiscn-script=../../lib/ccl/ccl.version
 
 # Library

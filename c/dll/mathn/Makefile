@@ -1,9 +1,9 @@
 include		../../Makefile.rules
 
 # Source files
-OBJS			:= mathn.o
-LIBS			:= -lmathl -lccl -ladtl -lsysl
-LDFLAGS		:= $(LDFLAGS) -L$(OUTLOC) # -Wl,--versmathn-script=../../lib/ccl/ccl.version
+OBJS	:= mathn.o
+LIBS	:= -lmathl -lnspcl -ladtl -lccl -lsysl
+LDFLAGS	:= $(LDFLAGS) -L$(OUTLOC) -Wl,--version-script=../../lib/ccl/ccl.version
 
 # Library
 all							:	$(OUTLOC)libmathn.so

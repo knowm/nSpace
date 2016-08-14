@@ -1,9 +1,9 @@
 include		../../Makefile.rules
 
 # Source files
-OBJS			:= ion.o
-LIBS			:= -liol -lccl -ladtl -lsysl
-LDFLAGS		:= $(LDFLAGS) -L$(OUTLOC)
+OBJS	:= ion.o
+LIBS	:= -liol -lnspcl -ladtl -lsysl -lccl
+LDFLAGS	:= $(LDFLAGS) -L$(OUTLOC) -Wl,--version-script=../../lib/ccl/ccl.version
 
 # Library
 all							:	$(OUTLOC)libion.so

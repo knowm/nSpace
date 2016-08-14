@@ -1,7 +1,7 @@
-include		../../rules.unix
+include		../../Makefile.rules
 
 # Source files
-OBJS			:= cs.o dbg.o dl.o event.o log.o memory.o string.o thread.o utiluuid.o
+OBJS			:= cs.o dbg.o dl.o event.o log.o memory.o string.o thread.o
 
 # Library
 all							:	$(OUTLOC)libsysl.a

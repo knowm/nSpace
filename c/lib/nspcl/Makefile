@@ -1,7 +1,7 @@
 include		../../Makefile.rules
 
 # Source files
-OBJS		:= connlst.o conns.o glbnspc.o keypath.o \
+OBJS		:= behave.o connect.o connlst.o conns.o glbnspc.o keypath.o \
 			link.o loc.o namespc.o nspcl.o parser.o \
 			reflect.o tempimpl.o temploc.o temporal.o this.o value.o
 

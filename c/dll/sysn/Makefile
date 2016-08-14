@@ -4,7 +4,7 @@ include		../../Makefile.rules
 OBJS			:= sysn.o
 LIBS			:= -lsysl -lnspcl -lccl -ladtl -lsysl
 ifeq ($(OS),Linux)
-LIBS			:= $(LIBS) -luuid
+#LIBS			:= $(LIBS) -luuid
 endif
 LDFLAGS			:= $(LDFLAGS) -L$(OUTLOC) # -Wl,--verssysn-script=../../lib/ccl/ccl.version
 

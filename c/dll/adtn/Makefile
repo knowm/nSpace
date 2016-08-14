@@ -2,8 +2,8 @@ include		../../Makefile.rules
 
 # Source files
 OBJS			:= adtn.o
-LIBS			:= -lccl -ladtl -lsysl
-LDFLAGS		:= $(LDFLAGS) -L$(OUTLOC)
+LIBS			:= -lccl -ladtl -lsysl -lnspcl
+LDFLAGS		:= $(LDFLAGS) -L$(OUTLOC) -Wl,--version-script=../../lib/ccl/ccl.version
 
 # Library
 all							:	$(OUTLOC)libadtn.so

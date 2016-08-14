@@ -2,7 +2,7 @@ include		../../Makefile.rules
 
 # Source files
 OBJS			:= asynce.o asyncq.o clone.o compare.o create.o dctfmt.o dctprs.o debug.o \
-				decode.o demux.o dist.o strfmt.o string.o strprs.o strstm.o \
+				decode.o demux.o dist.o path.o strfmt.o string.o strprs.o strstm.o \
 				time.o timer.o toggle.o tokenit.o type.o
 
 # Library
