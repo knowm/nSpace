@@ -18,6 +18,12 @@ Behaviour :: Behaviour ( void )
 	////////////////////////////////////////////////////////////////////////
 
 	// Setup
+	pnSpc 		= NULL;
+	pnLoc			= NULL;
+	pnDesc		= NULL;
+	prl			= NULL;
+	pRxQ			= NULL;
+	pRxIt			= NULL;
 	bReceiving	= false;
 	bReceive		= false;
 	}	// Behaviour
