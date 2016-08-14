@@ -5,7 +5,7 @@ all:
 				$(MAKE) -C app
 
 clean:
-				$(MAKE) -C node clean
+				$(MAKE) -C lib clean
 				$(MAKE) -C dll clean
 				$(MAKE) -C app clean
 
