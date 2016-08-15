@@ -141,7 +141,7 @@ HRESULT Gradient :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 						matDst.copyTo ( *(pMat->mat) );
 					}	// else
 
-				}	// try2
+				}	// try
 			catch ( cv::Exception &ex )
 				{
 				lprintf ( LOG_INFO, L"gradient '%s' threw an exception:%S", 

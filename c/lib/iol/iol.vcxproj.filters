@@ -66,6 +66,9 @@
     <ClCompile Include="notifydevs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="stmstm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="iol.h">

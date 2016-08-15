@@ -25,6 +25,15 @@
 #include <setupapi.h>
 #endif
 
+// XML processing flags
+//#define	__NOSAX__
+#if	!defined(__NOSAX__)
+#define	__USESAX__
+#include <msxml2.h>
+#else
+#undef	__USESAX__
+#endif
+
 #define	WM_USER_DESTROY	(WM_USER+1)
 
 ///////////
@@ -341,27 +350,112 @@ class StmPrsBin :
 
 class StmPrsXML :
 	public CCLObject,										// Base class
+	#ifdef	__USESAX__
+	public ISAXContentHandler,							// Interface
+	#endif
 	public IStreamPersist								// Interface
 	{
 	public :
 	StmPrsXML ( void );									// Constructor
 
 	// Run-time data
+	#ifdef	__USESAX__
+	IUnknown				*punkRdr;						// SAX reader
+	adtValue				vSAXFrom;						// SAX value
+	adtString			sSAXFrom;						// SAX string
+	IList					*pSAXStk;						// Object stack
+	IIt					*pSAXStkIt;						// Iterator
+	VALUETYPE			tSAX;								// Type
+	adtString			strResv;							// Reserved string
+	#endif
+	#ifdef				_WIN32
+	IHaveValue			*pStmStm;						// Stream on byte stream
+	#endif
 
 	// 'IStreamPersist' members
 	STDMETHOD(load)	( IByteStream *, ADTVALUE & );
 	STDMETHOD(save)	( IByteStream *, const ADTVALUE & );
 
+	#ifdef	__USESAX__
+	// 'ISAXContentHandler' members
+	STDMETHOD(putDocumentLocator)		( ISAXLocator * );
+	STDMETHOD(startDocument)			( void );
+	STDMETHOD(endDocument)				( void );
+	STDMETHOD(startPrefixMapping)		( const wchar_t *, int, const wchar_t *, int );
+	STDMETHOD(endPrefixMapping)		( const wchar_t *, int );
+	STDMETHOD(startElement)				( const wchar_t *, int, const wchar_t *, int,
+													const wchar_t *, int, ISAXAttributes * );
+	STDMETHOD(endElement)				( const wchar_t *, int, const wchar_t *, int,
+													const wchar_t *, int );
+	STDMETHOD(characters)				( const wchar_t *, int );
+	STDMETHOD(ignorableWhitespace)	( const wchar_t *, int );
+	STDMETHOD(processingInstruction)	( const wchar_t *, int, const wchar_t *, int );
+	STDMETHOD(skippedEntity)			( const wchar_t *, int );
+	#endif
+
 	// CCL
 	CCL_OBJECT_BEGIN(StmPrsXML)
 		CCL_INTF(IStreamPersist)
+		#ifdef	__USESAX__
+//		CCL_INTF(ISAXContentHandler)
+		#endif
 	CCL_OBJECT_END()
+	virtual HRESULT	construct	( void );		// Construct object
+	virtual void		destruct		( void );		// Destruct object
 
 	private :
 
 	// Internal utilities
 	HRESULT	emit		( IByteStream *, const WCHAR *, bool = false );
 	HRESULT	writeAll	( IByteStream *, const void *, U32 );
+	};
+
+//
+// Class - StmOnByteStm.  Lays an 'IStream' interface on top
+//		of our 'IByteStream'.  Useful for APIs that require 'IStream'.
+//
+
+class StmOnByteStm :
+	public CCLObject,										// Base class
+	public IStream,										// Interface
+	public IHaveValue										// Interface
+	{
+	public :
+	StmOnByteStm ( void );								// Constructor
+
+	// 'IStream' members
+	STDMETHOD(Clone)			( IStream ** );
+	STDMETHOD(Commit)			( DWORD );
+	STDMETHOD(CopyTo)			( IStream *, ULARGE_INTEGER,
+										ULARGE_INTEGER *, ULARGE_INTEGER * );
+	STDMETHOD(LockRegion)	( ULARGE_INTEGER, ULARGE_INTEGER, DWORD );
+	STDMETHOD(Revert)			( void );
+	STDMETHOD(Seek)			( LARGE_INTEGER, DWORD, ULARGE_INTEGER * );
+	STDMETHOD(SetSize)		( ULARGE_INTEGER );
+	STDMETHOD(Stat)			( STATSTG *, DWORD );
+	STDMETHOD(UnlockRegion)	( ULARGE_INTEGER, ULARGE_INTEGER, DWORD );
+
+	// 'ISequentialStream' members
+	STDMETHOD(Read)	( void *, ULONG, ULONG * );
+	STDMETHOD(Write)	( void const *, ULONG, ULONG * );
+
+	// 'IHaveValue' members
+	STDMETHOD(getValue)	( ADTVALUE & );
+	STDMETHOD(setValue)	( const ADTVALUE & );
+
+	// CCL
+	CCL_OBJECT_BEGIN(StmOnByteStm)
+		CCL_INTF(IHaveValue)
+		CCL_INTF(IStream)
+		CCL_INTF(ISequentialStream)
+	CCL_OBJECT_END()
+	virtual void		destruct	( void );			// Destruct object
+
+	private :
+
+	// Run-time data
+	IByteStream		*pStm;								// Current stream
+
 	};
 
 /////////

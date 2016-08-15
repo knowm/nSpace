@@ -28,6 +28,7 @@ CCL_OBJLIST_BEGIN()
 	#ifdef	_WIN32
 	CCL_OBJLIST_ENTRY	(EnumDevices)
 	CCL_OBJLIST_ENTRY	(NotifyDevices)
+	CCL_OBJLIST_ENTRY	(StmOnByteStm)
 	#endif
 	CCL_OBJLIST_ENTRY	(File)
 	CCL_OBJLIST_ENTRY	(Resource)
