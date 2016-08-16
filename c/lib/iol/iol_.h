@@ -397,7 +397,7 @@ class StmPrsXML :
 	CCL_OBJECT_BEGIN(StmPrsXML)
 		CCL_INTF(IStreamPersist)
 		#ifdef	__USESAX__
-//		CCL_INTF(ISAXContentHandler)
+		CCL_INTF(ISAXContentHandler)
 		#endif
 	CCL_OBJECT_END()
 	virtual HRESULT	construct	( void );		// Construct object

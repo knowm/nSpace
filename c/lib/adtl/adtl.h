@@ -373,8 +373,8 @@ class adtVariant : public ::tagVARIANT
 	adtVariant ( IUnknown * );							// Constructor
 	adtVariant ( int );									// Constructor
 	adtVariant ( long );									// Constructor
-	adtVariant ( WCHAR * );							// Constructor
-	adtVariant ( const WCHAR * );					// Constructor
+	adtVariant ( WCHAR * );								// Constructor
+	adtVariant ( const WCHAR * );						// Constructor
 	adtVariant ( const ADTVALUE & );					// Constructor
 	adtVariant ( bool );									// Constructor
 	adtVariant ( const VARIANT * );					// Constructor

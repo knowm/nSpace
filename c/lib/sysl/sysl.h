@@ -84,6 +84,7 @@ typedef U32				LPARAM;
 #if	defined(_WIN32)
 // Case-insensitive wide string compare
 #define	WCSCPY(a,b,c)		wcscpy_s ( a, b, c )
+#define	WCSNCPY(a,b,c,d)	wcsncpy_s( a, b, c, d )
 #define	WCSCAT(a,b,c)		wcscat_s ( a, b, c )
 #define	WCASECMP				_wcsicmp
 #define	WCASENCMP			_wcsnicmp
@@ -99,6 +100,7 @@ typedef U32				LPARAM;
 #if defined(__APPLE__) || defined(__unix__)
 
 #define	WCSCPY(a,b,c)		wcscpy ( a, c )
+#define	WCSNCPY(a,b,c,d)	wcsncpy ( a, c, d )
 #define	WCSCAT(a,b,c)		wcscat ( a, c )
 #define	WCASECMP				wcscasecmp
 #define	WCASENCMP			wcsncasecmp

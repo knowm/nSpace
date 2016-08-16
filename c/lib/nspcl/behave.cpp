@@ -85,6 +85,8 @@ HRESULT Behaviour :: attach ( IDictionary *_pnLoc, bool bAttach )
 		// Remove all connections
 		if (pnSpc != NULL && pnLoc != NULL)
 			pnSpc->connection ( pnLoc, L"", L"", this, NULL );
+		_RELEASE(pRxIt);
+		_RELEASE(pRxQ);
 		}	// else
 
 	// Thread safety

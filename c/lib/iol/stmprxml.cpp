@@ -74,6 +74,7 @@ void StmPrsXML :: destruct ( void )
 	_RELEASE(pSAXStkIt);
 	_RELEASE(pSAXStk);
 	_RELEASE(punkRdr);
+	_RELEASE(pStmStm);
 	#endif
 	}	// destruct
 
@@ -155,17 +156,23 @@ HRESULT StmPrsXML :: load ( IByteStream *pStm, ADTVALUE &v )
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	HRESULT		hr	= S_OK;
+	HRESULT			hr		= S_OK;
+	#ifdef	__USESAX__
+	ISAXXMLReader	*pRdr	= (ISAXXMLReader *) punkRdr;
+	VARIANT			var;
+
+	// Variant version of IStream object
+	VariantInit ( &var );
+	var.vt = VT_UNKNOWN;
+	var.punkVal	= pStmStm;
+	_ADDREF(var.punkVal);
 
 	// 'IStream' interface in front of the 'IByteStream' for the XML object
 	CCLTRY ( pStmStm->setValue ( adtIUnknown(pStm) ) );
 
-	#ifdef	__USESAX__
-	ISAXXMLReader	*pRdr	= (ISAXXMLReader *) punkRdr;
-
 	// Parse document
 	CCLTRY(pRdr->putContentHandler(this));
-	CCLTRY(pRdr->parse ( adtVariant(pStmStm) ));
+	CCLTRY(pRdr->parse(var));
 	CCLTRY(pRdr->putContentHandler(NULL));
 
 	// Result
@@ -173,10 +180,11 @@ HRESULT StmPrsXML :: load ( IByteStream *pStm, ADTVALUE &v )
 
 	// Clean up
 	adtValue::clear(vSAXFrom);
-	#endif
+	VariantClear ( &var );
 
-	// Clean up
+	#else
 	hr = E_NOTIMPL;
+	#endif
 
 	return hr;
 	}	// load
@@ -666,6 +674,7 @@ HRESULT StmPrsXML ::
 	////////////////////////////////////////////////////////////////////////
 	HRESULT		hr = S_OK;
 	adtString	sVal;
+	size_t		lens,lena;
 
 	// Inside a value ?  The reader passes whitespace as well as valid
 	// 'in node' text, so ignore non-value characters
@@ -676,11 +685,13 @@ HRESULT StmPrsXML ::
 	// same text line (to handle special characters).  Must simply append
 	// until the whole string is read before conversion to a value can
 	// take place.
+	lens = sSAXFrom.length();
+	lena = lens + cchChars;
 
 	// Generate new string
-	CCLTRY( sVal.allocate ( sSAXFrom.length() + cchChars ) );
-	CCLOK ( WCSCPY ( &sVal.at(), sSAXFrom.length() + cchChars, sSAXFrom ); )
-	CCLOK ( WCSCAT ( &sVal.at(), cchChars, pwchChars ); )
+	CCLTRY( sVal.allocate ( (U32)(lens+lena) ) );
+	CCLOK ( WCSCPY ( &sVal.at(), lens + lena + 1, sSAXFrom ); )
+	CCLOK ( WCSNCPY ( &sVal.at(lens), lena + 1, pwchChars, cchChars ); )
 	CCLTRY( adtValue::copy ( sVal, sSAXFrom ) );
 
 	return (hr == S_OK) ? S_OK : E_FAIL;
