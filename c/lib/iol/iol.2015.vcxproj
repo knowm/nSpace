@@ -35,6 +35,7 @@
     <ClCompile Include="stmprxml.cpp" />
     <ClCompile Include="stmsrc.cpp" />
     <ClCompile Include="stmsrcfs.cpp" />
+    <ClCompile Include="stmstm.cpp" />
     <ClCompile Include="stream.cpp" />
   </ItemGroup>
   <ItemGroup>
