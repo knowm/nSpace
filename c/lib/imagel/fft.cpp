@@ -267,10 +267,21 @@ HRESULT FFT :: fft ( cv::cuda::GpuMat *pMat, cv::cuda::GpuMat *pWnd,
 	// Open CV uses exceptions
 	try
 		{
+		// Timing debug
+//		LARGE_INTEGER	lCnt,lRst,lFreq;
+//		double			dt;
+//		QueryPerformanceCounter ( &lRst );
+//		QueryPerformanceFrequency ( &lFreq );
+
 		// Apply window function
 		if (	pWnd != NULL && pWnd->type() == pMat->type() &&
 				pWnd->cols == pMat->cols && pWnd->rows == pMat->rows)
 			cv::cuda::multiply ( *pMat, *pWnd, *pMat );
+
+		// Debug
+//		QueryPerformanceCounter ( &lCnt );
+//		dt = ((lCnt.QuadPart-lRst.QuadPart) * 1.0) / lFreq.QuadPart;
+//		lprintf ( LOG_DBG, L"fft (GPU) : %g", dt );
 
 		// Create a windowed version of the image
 		m = cv::getOptimalDFTSize ( pMat->rows );
@@ -278,15 +289,29 @@ HRESULT FFT :: fft ( cv::cuda::GpuMat *pMat, cv::cuda::GpuMat *pWnd,
 		cv::cuda::copyMakeBorder ( (*pMat), matPad, 0, m - pMat->rows, 0, n - pMat->cols, 
 											cv::BORDER_CONSTANT, cv::Scalar::all(0) );
 
+		// Debug
+//		QueryPerformanceCounter ( &lCnt );
+//		dt = ((lCnt.QuadPart-lRst.QuadPart) * 1.0) / lFreq.QuadPart;
+//		lprintf ( LOG_DBG, L"fft (GPU) : %g", dt );
+
 		// Produce a real and (zeroed) imaginary pair
 		Convert::convertTo ( &matPad, &matPlanes[0], CV_32F );
 		matPlanes[1] = cv::cuda::GpuMat ( matPad.size(), CV_32F );
 		matPlanes[1].setTo ( cv::Scalar(0) );
 		cv::cuda::merge ( matPlanes, 2, matCmplx );
 
+		// Debug
+//		QueryPerformanceCounter ( &lCnt );
+//		dt = ((lCnt.QuadPart-lRst.QuadPart) * 1.0) / lFreq.QuadPart;
+//		lprintf ( LOG_DBG, L"fft (GPU) : %g", dt );
+
 		// Compute DFT
-		// TODO: Option for scaling/inverse/magnitude
 		cv::cuda::dft ( matCmplx, matCmplx, matCmplx.size(), (bRows) ? cv::DFT_ROWS : 0 );
+
+		// Debug
+//		QueryPerformanceCounter ( &lCnt );
+//		dt = ((lCnt.QuadPart-lRst.QuadPart) * 1.0) / lFreq.QuadPart;
+//		lprintf ( LOG_DBG, L"fft (GPU) : %g", dt );
 
 		// Separate real/imaginary results
 		cv::cuda::split ( matCmplx, matPlanes );
@@ -477,7 +502,7 @@ HRESULT FFT :: window ( cvMatRef *pMat )
 	////////////////////////////////////////////////////////////////////////
 	HRESULT	hr			= S_OK;
 	bool		bWndUp	= false;
-	int		rows,cols;
+	int		rows,cols,wrows,wcols;
 
 	//
 	// Windowing.  Only generate a single row window function as
@@ -501,12 +526,30 @@ HRESULT FFT :: window ( cvMatRef *pMat )
 		rows = pMat->mat->rows;
 		cols = pMat->mat->cols;
 		}	// if
+	if (pWnd != NULL)
+		{
+		if (pWnd->isGPU())
+			{
+			wrows = pWnd->gpumat->rows;
+			wcols = pWnd->gpumat->cols;
+			}	// if
+		else if (pWnd->isUMat())
+			{
+			wrows = pWnd->umat->rows;
+			wcols = pWnd->umat->cols;
+			}	// else if
+		else
+			{
+			wrows = pWnd->mat->rows;
+			wcols = pWnd->mat->cols;
+			}	// else
+		}	// if
 
 	// No window exists but one is specified
 	if (!bWndUp) bWndUp = (pWnd == NULL	&& strWnd.length() > 0 && WCASECMP(strWnd,L"None"));
 
 	// Verify size
-	if (!bWndUp) bWndUp = (pWnd != NULL && (pWnd->mat->cols != cols || pWnd->mat->rows != rows));
+	if (!bWndUp) bWndUp = (pWnd != NULL && (wcols != cols || wrows != rows));
 
 	// New window ?
 	if (hr == S_OK && bWndUp)

@@ -111,8 +111,8 @@
 	%%%%%%%%%%%%%%%%%%%%%%%
 
 	% MISCN: Create a dictionary for the image
-%	$	CreateImgDct Misc.Create { Id Adt.Dictionary }
-%		!	Initialize/OnFire						CreateImgDct/Fire
+	$	CreateImgDct Misc.Create { Id Adt.Dictionary }
+		!	Initialize/OnFire						CreateImgDct/Fire
 
 	% MISCN: Image location
 %	$	ValueImgLoc Misc.Dist { Value "c:/temp/template.png" }
