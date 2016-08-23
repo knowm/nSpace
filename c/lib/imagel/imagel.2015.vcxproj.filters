@@ -78,6 +78,9 @@
     <ClCompile Include="smooth.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="gradient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imagel.h">
