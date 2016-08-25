@@ -124,7 +124,7 @@ HRESULT Contours :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				lprintf ( LOG_INFO, L"Contours size %d\r\n", contours.size() );
 				for (U32 c = 0;c < contours.size();++c)
 					lprintf ( LOG_INFO, L"%d) Size %d\r\n", c, contours[c].size() );
-				}	// try2
+				}	// try
 			catch ( cv::Exception & )
 				{
 				lprintf ( LOG_INFO, L"findContours threw an exception\r\n" );
