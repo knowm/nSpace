@@ -104,8 +104,26 @@ HRESULT Gradient :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				// Execute 
 				if (pMat->isGPU())
 					{
+					cv::Mat		matNoGpu,matDst;
+
 					// TODO: See 'Morph' for filter creation logic.
-					hr = E_NOTIMPL;
+					pMat->gpumat->download ( matNoGpu );
+
+					// Perform requested type
+					if (!WCASECMP(strType,L"Laplacian"))
+						cv::Laplacian ( matNoGpu, matDst, CV_16SC1, iSzk );
+					else if (!WCASECMP(strType,L"Sobel"))
+						cv::Sobel ( matNoGpu, matDst, CV_16SC1, iDx, iDy, iSzk );
+					else if (!WCASECMP(strType,L"Scharr"))
+						cv::Sobel ( matNoGpu, matDst, CV_16SC1, iDx, iDy, CV_SCHARR );
+					else if (!WCASECMP(strType,L"Canny"))
+						cv::Canny ( matNoGpu, matDst, 100, 200 ); 
+					else
+						hr = E_NOTIMPL;
+
+					// Upload changes back to GPU
+					if (matDst.rows > 0 && matDst.cols > 0)
+						pMat->gpumat->upload ( matDst );
 					}	// if
 				else if (pMat->isUMat())
 					{
@@ -116,6 +134,8 @@ HRESULT Gradient :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 						cv::Sobel ( *(pMat->umat), *(pMat->umat), CV_16SC1, iDx, iDy, iSzk );
 					else if (!WCASECMP(strType,L"Scharr"))
 						cv::Sobel ( *(pMat->umat), *(pMat->umat), CV_16SC1, iDx, iDy, -1 );
+					else if (!WCASECMP(strType,L"Canny"))
+						cv::Canny ( *(pMat->umat), *(pMat->umat), 100, 200 ); 
 					else
 						hr = E_NOTIMPL;
 					}	// else if

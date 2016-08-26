@@ -166,12 +166,22 @@
 	% Download image back into buffer
 %	!	Prepare/OnUpload							Prepare/Download
 
+	% MISCN: Clone image (conversion destructive)
+%	$	CloneImage Misc.Clone {}
+%		!	LoadImage/OnLoad						CloneImage/Value
+
 	% Subgraph: Perform OCT conversion
 %	#	ToMag											Abbott/Lib/Oct/RawToMag/ {}
-%		!	LoadImage/OnLoad						ToMag/Image/Fire
-%		!	LoadImage/OnLoad						ToMag/Convert/Fire
+%		!	CloneImage/OnFire						ToMag/Image/Fire
+%		!	CloneImage/OnFire						ToMag/Convert/Fire
 %		!	ValueMin/OnFire						ToMag/Minimum/Fire
 %		!	ValueMax/OnFire						ToMag/Maximum/Fire
+
+	% Multiple times
+%	!	LoadImage/OnLoad							CloneImage/Fire
+%	!	LoadImage/OnLoad							CloneImage/Fire
+%	!	LoadImage/OnLoad							CloneImage/Fire
+%	!	LoadImage/OnLoad							CloneImage/Fire
 
 	%% GPU testing
 

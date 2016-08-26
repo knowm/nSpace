@@ -12,7 +12,7 @@
 
 // Globals
 
-FFT :: FFT ( void )
+FFT :: FFT ( void ) : umatPlanes(2)
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -42,8 +42,7 @@ HRESULT FFT :: fft ( cv::Mat *pMat, cv::Mat *pWnd, bool bRows )
 	//
 	////////////////////////////////////////////////////////////////////////
 	HRESULT	hr	= S_OK;
-	cv::Mat	matPad,matDft,matPlanes[2],matCmplx,matQ[4];
-	cv::Mat	matTmp,matMag,matReal;
+	cv::Mat	matPad,matDft,matPlanes[2],matCmplx,matMag;
 	int		m,n,cx,cy;
 
 	// Open CV uses exceptions
@@ -100,21 +99,6 @@ HRESULT FFT :: fft ( cv::Mat *pMat, cv::Mat *pWnd, bool bRows )
 		cx = matMag.cols/2;
 		cy = matMag.rows/2;
 
-		// ROIs for quadrants
-//		matQ[0] = matMag ( cv::Rect ( 0, 0, cx, cy ) );
-//		matQ[1] = matMag ( cv::Rect ( cx, 0, cx, cy ) );
-//		matQ[2] = matMag ( cv::Rect ( 0, cy, cx, cy ) );
-//		matQ[3] = matMag ( cv::Rect ( cx, cy, cx, cy ) );
-
-		// Swap quadrants
-//		matQ[0].copyTo ( matTmp );
-//		matQ[1].copyTo ( matQ[0] );
-//		matTmp.copyTo  ( matQ[1] );
-
-//		matQ[2].copyTo ( matTmp );
-//		matQ[3].copyTo ( matQ[2] );
-//		matTmp.copyTo  ( matQ[3] );
-
 		// Just keep the positive frequencies (option ?)
 		matMag	= matMag ( cv::Rect ( 0, 0, cx, matMag.rows ) );
 
@@ -149,10 +133,6 @@ HRESULT FFT :: fft ( cv::UMat *pMat, cv::UMat *pWnd, bool bRows )
 	//
 	////////////////////////////////////////////////////////////////////////
 	HRESULT	hr	= S_OK;
-	cv::UMat	matPad,matDft,matCmplx,matQ[4];
-	cv::UMat	matTmp,matMag,matReal;
-	std::vector<cv::UMat>	
-				matPlanes(2);
 	int		m,n,cx,cy;
 
 	// Open CV uses exceptions
@@ -166,70 +146,55 @@ HRESULT FFT :: fft ( cv::UMat *pMat, cv::UMat *pWnd, bool bRows )
 		// Create a windowed version of the image
 		m = cv::getOptimalDFTSize ( pMat->rows );
 		n = cv::getOptimalDFTSize ( pMat->cols );
-		cv::copyMakeBorder ( (*pMat), matPad, 0, m - pMat->rows, 0, n - pMat->cols, 
+		cv::copyMakeBorder ( (*pMat), umatPad, 0, m - pMat->rows, 0, n - pMat->cols, 
 									cv::BORDER_CONSTANT, cv::Scalar::all(0) );
 
 		// Produce a real and (zeroed) imaginary pair
-		matPlanes[0] = matPad;
-		matPlanes[1] = cv::UMat ( matPad.size(), CV_32F );
-		matPlanes[1].setTo ( cv::Scalar(0) );
-		cv::merge ( matPlanes, matCmplx );
+		umatPlanes[0] = umatPad;
+		umatPlanes[1] = cv::UMat ( umatPad.size(), CV_32F );
+		umatPlanes[1].setTo ( cv::Scalar(0) );
+		cv::merge ( umatPlanes, umatCmplx );
 
 		// Compute DFT
-		cv::dft ( matCmplx, matCmplx, (bRows) ? cv::DFT_ROWS : 0 );
+		cv::dft ( umatCmplx, umatCmplx, (bRows) ? cv::DFT_ROWS : 0 );
 
 		// Separate real/imaginary results
-		cv::split ( matCmplx, matPlanes );
+		cv::split ( umatCmplx, umatPlanes );
 
 		// Compute the magnitude of DFT
-		cv::magnitude ( matPlanes[0], matPlanes[1], matPlanes[0] );
-		matMag = matPlanes[0];
+		cv::magnitude ( umatPlanes[0], umatPlanes[1], umatPlanes[0] );
+		umatMag = umatPlanes[0];
 
 		// Normalize by the number of samples (convention ?)
 		if (bRows)
-			cv::divide ( matMag, cv::Scalar(matMag.cols), matMag );
+			cv::divide ( umatMag, cv::Scalar(umatMag.cols), umatMag );
 		else
-			cv::divide ( matMag, cv::Scalar(matMag.cols*matMag.rows), matMag );
+			cv::divide ( umatMag, cv::Scalar(umatMag.cols*umatMag.rows), umatMag );
 	
 		// TODO: Log, base, etc. will be moved into own nodes.
 
 		// Ensure no log of zeroes
-		cv::add ( matMag, cv::Scalar::all(1e-20), matMag );
+		cv::add ( umatMag, cv::Scalar::all(1e-20), umatMag );
 
 		// Log scale
-		cv::log ( matMag, matMag );
+		cv::log ( umatMag, umatMag );
 
 		// Need to take 20*log10(x)
 		// Open CV log is natural log so scale for log10 (2.303)
-		cv::multiply ( matMag, cv::Scalar::all(20.0/2.303), matMag );
+		cv::multiply ( umatMag, cv::Scalar::all(20.0/2.303), umatMag );
 
 		// Crop the spectrum if it has an odd number of rows or columns
-		matMag = matMag ( cv::Rect ( 0, 0, matMag.cols & -2, matMag.rows & -2 ) );
+		umatMag = umatMag ( cv::Rect ( 0, 0, umatMag.cols & -2, umatMag.rows & -2 ) );
 
 		// Rearrange the quadrants of Fourier image so that the origin is at the image center
-		cx = matMag.cols/2;
-		cy = matMag.rows/2;
-
-		// ROIs for quadrants
-//		matQ[0] = matMag ( cv::Rect ( 0, 0, cx, cy ) );
-//		matQ[1] = matMag ( cv::Rect ( cx, 0, cx, cy ) );
-//		matQ[2] = matMag ( cv::Rect ( 0, cy, cx, cy ) );
-//		matQ[3] = matMag ( cv::Rect ( cx, cy, cx, cy ) );
-
-		// Swap quadrants
-//		matQ[0].copyTo ( matTmp );
-//		matQ[1].copyTo ( matQ[0] );					// CRASH! On Intel Iris
-//		matTmp.copyTo  ( matQ[1] );
-
-//		matQ[2].copyTo ( matTmp );
-//		matQ[3].copyTo ( matQ[2] );
-//		matTmp.copyTo  ( matQ[3] );
+		cx = umatMag.cols/2;
+		cy = umatMag.rows/2;
 
 		// Just keep the positive frequencies (option ?)
-		matMag	= matMag ( cv::Rect ( 0, 0, cx, matMag.rows ) );
+		umatMag	= umatMag ( cv::Rect ( 0, 0, cx, umatMag.rows ) );
 
 		// Result is new matrix
-		matMag.copyTo ( *pMat );
+		umatMag.copyTo ( *pMat );
 		}	// try
 	catch ( cv::Exception &ex )
 		{
@@ -261,17 +226,16 @@ HRESULT FFT :: fft ( cv::cuda::GpuMat *pMat, cv::cuda::GpuMat *pWnd,
 	//
 	////////////////////////////////////////////////////////////////////////
 	HRESULT				hr	= S_OK;
-	cv::cuda::GpuMat	matPad,matDft,matPlanes[2],matCmplx,matQ[4];
-	cv::cuda::GpuMat	matTmp,matMag,matReal;
 	int					m,n,cx,cy;
+
 	// Open CV uses exceptions
 	try
 		{
 		// Timing debug
-//		LARGE_INTEGER	lCnt,lRst,lFreq;
-//		double			dt;
-//		QueryPerformanceCounter ( &lRst );
-//		QueryPerformanceFrequency ( &lFreq );
+		LARGE_INTEGER	lCnt,lRst,lFreq;
+		double			dt;
+		QueryPerformanceCounter ( &lRst );
+		QueryPerformanceFrequency ( &lFreq );
 
 		// Apply window function
 		if (	pWnd != NULL && pWnd->type() == pMat->type() &&
@@ -286,7 +250,7 @@ HRESULT FFT :: fft ( cv::cuda::GpuMat *pMat, cv::cuda::GpuMat *pWnd,
 		// Create a windowed version of the image
 		m = cv::getOptimalDFTSize ( pMat->rows );
 		n = cv::getOptimalDFTSize ( pMat->cols );
-		cv::cuda::copyMakeBorder ( (*pMat), matPad, 0, m - pMat->rows, 0, n - pMat->cols, 
+		cv::cuda::copyMakeBorder ( (*pMat), gpuPad, 0, m - pMat->rows, 0, n - pMat->cols, 
 											cv::BORDER_CONSTANT, cv::Scalar::all(0) );
 
 		// Debug
@@ -295,10 +259,10 @@ HRESULT FFT :: fft ( cv::cuda::GpuMat *pMat, cv::cuda::GpuMat *pWnd,
 //		lprintf ( LOG_DBG, L"fft (GPU) : %g", dt );
 
 		// Produce a real and (zeroed) imaginary pair
-		Convert::convertTo ( &matPad, &matPlanes[0], CV_32F );
-		matPlanes[1] = cv::cuda::GpuMat ( matPad.size(), CV_32F );
-		matPlanes[1].setTo ( cv::Scalar(0) );
-		cv::cuda::merge ( matPlanes, 2, matCmplx );
+		Convert::convertTo ( &gpuPad, &gpuPlanes[0], CV_32F );
+		gpuPlanes[1] = cv::cuda::GpuMat ( gpuPad.size(), CV_32F );
+		gpuPlanes[1].setTo ( cv::Scalar(0) );
+		cv::cuda::merge ( gpuPlanes, 2, gpuCmplx );
 
 		// Debug
 //		QueryPerformanceCounter ( &lCnt );
@@ -306,59 +270,44 @@ HRESULT FFT :: fft ( cv::cuda::GpuMat *pMat, cv::cuda::GpuMat *pWnd,
 //		lprintf ( LOG_DBG, L"fft (GPU) : %g", dt );
 
 		// Compute DFT
-		cv::cuda::dft ( matCmplx, matCmplx, matCmplx.size(), (bRows) ? cv::DFT_ROWS : 0 );
+		cv::cuda::dft ( gpuCmplx, gpuCmplx, gpuCmplx.size(), (bRows) ? cv::DFT_ROWS : 0 );
 
 		// Debug
-//		QueryPerformanceCounter ( &lCnt );
-//		dt = ((lCnt.QuadPart-lRst.QuadPart) * 1.0) / lFreq.QuadPart;
-//		lprintf ( LOG_DBG, L"fft (GPU) : %g", dt );
+		QueryPerformanceCounter ( &lCnt );
+		dt = ((lCnt.QuadPart-lRst.QuadPart) * 1.0) / lFreq.QuadPart;
+		lprintf ( LOG_DBG, L"fft (GPU) : %g", dt );
 
 		// Separate real/imaginary results
-		cv::cuda::split ( matCmplx, matPlanes );
+		cv::cuda::split ( gpuCmplx, gpuPlanes );
 
 		// Compute the magnitude of DFT
-		cv::cuda::magnitude ( matPlanes[0], matPlanes[1], matPlanes[0] );
-		matMag = matPlanes[0];
+		cv::cuda::magnitude ( gpuPlanes[0], gpuPlanes[1], gpuPlanes[0] );
+		gpuMag = gpuPlanes[0];
 
 		// TODO: Log, base, etc. will be moved into own nodes.
 
 		// Ensure no log of zeroes
-		cv::cuda::add ( matMag, cv::Scalar::all(1e-20), matMag );
+		cv::cuda::add ( gpuMag, cv::Scalar::all(1e-20), gpuMag );
 
 		// Log scale
-		cv::cuda::log ( matMag, matMag );
+		cv::cuda::log ( gpuMag, gpuMag );
 
 		// Need to take 20*log10(x)
 		// Open CV log is natural log so scale for log10 (2.303)
-		cv::cuda::multiply ( matMag, cv::Scalar::all(20.0/2.303), matMag );
+		cv::cuda::multiply ( gpuMag, cv::Scalar::all(20.0/2.303), gpuMag );
 
 		// Crop the spectrum if it has an odd number of rows or columns
-		matMag = matMag ( cv::Rect ( 0, 0, matMag.cols & -2, matMag.rows & -2 ) );
+		gpuMag = gpuMag ( cv::Rect ( 0, 0, gpuMag.cols & -2, gpuMag.rows & -2 ) );
 
 		// Rearrange the quadrants of Fourier image so that the origin is at the image center
-		cx = matMag.cols/2;
-		cy = matMag.rows/2;
-
-		// ROIs for quadrants
-//		matQ[0] = matMag ( cv::Rect ( 0, 0, cx, cy ) );
-//		matQ[1] = matMag ( cv::Rect ( cx, 0, cx, cy ) );
-//		matQ[2] = matMag ( cv::Rect ( 0, cy, cx, cy ) );
-//		matQ[3] = matMag ( cv::Rect ( cx, cy, cx, cy ) );
-
-		// Swap quadrants
-//		matQ[0].copyTo ( matTmp );
-//		matQ[1].copyTo ( matQ[0] );
-//		matTmp.copyTo  ( matQ[1] );
-
-//		matQ[2].copyTo ( matTmp );
-//		matQ[3].copyTo ( matQ[2] );
-//		matTmp.copyTo  ( matQ[3] );
+		cx = gpuMag.cols/2;
+		cy = gpuMag.rows/2;
 
 		// Just keep the positive frequencies (option ?)
-		matMag	= matMag ( cv::Rect ( 0, 0, cx, matMag.rows ) );
+		gpuMag	= gpuMag ( cv::Rect ( 0, 0, cx, gpuMag.rows ) );
 
 		// Result is new matrix
-		matMag.copyTo ( *pMat );
+		gpuMag.copyTo ( *pMat );
 		}	// try
 	catch ( cv::Exception &ex )
 		{

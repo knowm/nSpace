@@ -414,6 +414,16 @@ class FFT :
 		DEFINE_RCP(Window)
 	END_BEHAVIOUR_NOTIFY()
 
+	private :
+
+	// NOTE: Keep a single copy of GPU bound matrices to use
+	// for FFTs.  If created on the stack every time it seems to 
+	// re-initialize things every time so every FFT is as slow as
+	// the first one.
+	cv::cuda::GpuMat			gpuPad,gpuPlanes[2],gpuCmplx,gpuMag;
+	cv::UMat						umatPad,umatCmplx,umatMag;
+	std::vector<cv::UMat>	umatPlanes;
+
 	// Internal utilities
 	HRESULT fft		(	cv::cuda::GpuMat *, 	cv::cuda::GpuMat *, bool );
 	HRESULT fft		(	cv::UMat *, cv::UMat *, bool );

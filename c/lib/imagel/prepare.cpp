@@ -110,7 +110,6 @@ HRESULT Prepare :: gpuInit ( void )
 		}	// if
 	else
 		{
-/*
 		// Debug
 		lprintf ( LOG_INFO, L"No Cuda enabled devices\r\n" );
 		bUMat = false;
@@ -126,11 +125,11 @@ HRESULT Prepare :: gpuInit ( void )
 		dbgprintf ( L"Name : %S : %S : %d.%d\r\n", dev.name().c_str(), dev.vendorName().c_str(),
 						dev.deviceVersionMajor(), dev.deviceVersionMinor() );
 		dbgprintf ( L"%S\r\n", dev.name().c_str() );
-		if (strstr ( dev.name().c_str(), "Iris" ) != NULL)
-			bUMat = false;
+//		if (strstr ( dev.name().c_str(), "Iris" ) != NULL)
+//			bUMat = false;
 
 		// Do not really have a good OpenCL source to test with, disable for now
-		bUMat = false;
+//		bUMat = false;
 
 		// Debug
 		lprintf ( LOG_INFO, L"OpenCL %s\r\n", (bUMat) ? L"enabled" : L"disabled" );
@@ -144,7 +143,7 @@ HRESULT Prepare :: gpuInit ( void )
 			cv::Mat	mat(10,10,CV_8UC1);
 			mat.copyTo ( umat );
 			}	// if
-*/
+
 		}	// else
 
 	// GPU initialized
@@ -267,21 +266,26 @@ HRESULT Prepare :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		{
 		IDictionary	*pImgUse = NULL;
 		cvMatRef		*pMat		= NULL;
-		cv::Mat		mat;
 
 		// Obtain image refence
 		CCLTRY ( extract ( pImg, v, &pImgUse, &pMat ) );
 
-		// Download into local matri if GPU is enabled
-		if (pMat->isGPU())
-			pMat->gpumat->download(mat);
-		else if (pMat->isUMat())
-			mat = pMat->umat->getMat(cv::ACCESS_READ);
-		else
-			mat = *(pMat->mat);
+		// Process image
+		if (hr == S_OK)
+			{
+			cv::Mat		mat;
 
-		// Store resulting image in dictionary
-		CCLTRY ( image_from_mat ( &mat, pImgUse ) );
+			// Download into local matri if GPU is enabled
+			if (pMat->isGPU())
+				pMat->gpumat->download(mat);
+			else if (pMat->isUMat())
+				mat = pMat->umat->getMat(cv::ACCESS_READ);
+			else
+				mat = *(pMat->mat);
+
+			// Store resulting image in dictionary
+			CCLTRY ( image_from_mat ( &mat, pImgUse ) );
+			}	// if
 
 		// Ensure any matrix object is removed
 		if (pImgUse != NULL)
