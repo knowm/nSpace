@@ -329,6 +329,7 @@ typedef struct
 #define	_RELEASESTR(a)		{ sysStringRelease ( (a) ); (a) = NULL; }
 #define	_FREEBSTR(a)		if ((a) != NULL) { SysFreeString ( (a) ); (a) = NULL; }
 #define	_FREETASKMEM(a)	{ CoTaskMemFree ( (a) ); (a) = NULL; }
+#define	_DELETE(a)			if ((a) != NULL) { delete (a); (a) = NULL; }
 
 // Not defined on all platforms
 #ifndef	FALSE

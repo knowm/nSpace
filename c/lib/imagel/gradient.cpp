@@ -19,11 +19,15 @@ Gradient :: Gradient ( void )
 	//		-	Constructor for the object
 	//
 	////////////////////////////////////////////////////////////////////////
-	pImg	= NULL;
-	strType	= L"Laplacian";
-	iDx		= 1;
-	iDy		= 1;
-	iSzk		= 3;
+	pImg			= NULL;
+	strType		= L"Laplacian";
+	iDx			= 1;
+	iDy			= 1;
+	iSzk			= 3;
+	pgpuCanny	= NULL;
+	pgpuSobel	= NULL;
+	pgpuScharr	= NULL;
+	pgpuLaplace	= NULL;
 	}	// Gradient
 
 HRESULT Gradient :: onAttach ( bool bAttach )
@@ -64,6 +68,10 @@ HRESULT Gradient :: onAttach ( bool bAttach )
 		{
 		// Shutdown
 		_RELEASE(pImg);
+		_DELETE(pgpuCanny);
+		_DELETE(pgpuSobel);
+		_DELETE(pgpuScharr);
+		_DELETE(pgpuLaplace);
 		}	// else
 
 	return hr;
@@ -104,26 +112,40 @@ HRESULT Gradient :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				// Execute 
 				if (pMat->isGPU())
 					{
-					cv::Mat		matNoGpu,matDst;
-
-					// TODO: See 'Morph' for filter creation logic.
-					pMat->gpumat->download ( matNoGpu );
-
 					// Perform requested type
 					if (!WCASECMP(strType,L"Laplacian"))
-						cv::Laplacian ( matNoGpu, matDst, CV_16SC1, iSzk );
+						{
+						if (pgpuLaplace == NULL)
+							pgpuLaplace = cv::cuda::createLaplacianFilter ( pMat->gpumat->type(),
+												CV_16SC1, iSzk );
+						if (pgpuLaplace != NULL)
+							pgpuLaplace->apply ( *(pMat->gpumat), *(pMat->gpumat) );
+						}	// if
 					else if (!WCASECMP(strType,L"Sobel"))
-						cv::Sobel ( matNoGpu, matDst, CV_16SC1, iDx, iDy, iSzk );
+						{
+						if (pgpuSobel == NULL)
+							pgpuSobel = cv::cuda::createSobelFilter ( pMat->gpumat->type(),
+												CV_16SC1, iDx, iDy, iSzk );
+						if (pgpuSobel != NULL)
+							pgpuSobel->apply ( *(pMat->gpumat), *(pMat->gpumat) );
+						}	// if
 					else if (!WCASECMP(strType,L"Scharr"))
-						cv::Sobel ( matNoGpu, matDst, CV_16SC1, iDx, iDy, CV_SCHARR );
+						{
+						if (pgpuScharr == NULL)
+							pgpuScharr = cv::cuda::createScharrFilter ( pMat->gpumat->type(),
+												CV_16SC1, iDx, iDy, iSzk );
+						if (pgpuScharr != NULL)
+							pgpuScharr->apply ( *(pMat->gpumat), *(pMat->gpumat) );
+						}	// if
 					else if (!WCASECMP(strType,L"Canny"))
-						cv::Canny ( matNoGpu, matDst, 100, 200 ); 
+						{
+						if (pgpuCanny == NULL)
+							pgpuCanny = cv::cuda::createCannyEdgeDetector ( 100, 200 );
+						if (pgpuCanny != NULL)
+							pgpuCanny->detect ( *(pMat->gpumat), *(pMat->gpumat) );
+						}	// if
 					else
 						hr = E_NOTIMPL;
-
-					// Upload changes back to GPU
-					if (matDst.rows > 0 && matDst.cols > 0)
-						pMat->gpumat->upload ( matDst );
 					}	// if
 				else if (pMat->isUMat())
 					{

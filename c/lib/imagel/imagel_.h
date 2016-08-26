@@ -462,6 +462,15 @@ class Gradient :
 		DEFINE_CON(Fire)
 		DEFINE_RCP(Image)
 	END_BEHAVIOUR_NOTIFY()
+
+	private :
+
+	// Run-time data
+	cv::cuda::CannyEdgeDetector	*pgpuCanny;
+	cv::cuda::Filter					*pgpuSobel;
+	cv::cuda::Filter					*pgpuScharr;
+	cv::cuda::Filter					*pgpuLaplace;
+
 	};
 
 //
