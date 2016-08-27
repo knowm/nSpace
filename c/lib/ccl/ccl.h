@@ -33,6 +33,7 @@
 													{ return CCLObject::Release(); }									\
 												STDMETHOD(InnerQueryInterface)( REFIID iid, void **ppv )		\
 													{ return _InnerQueryInterface(_getIntfs(),iid,ppv ); }	\
+												private :																	\
 												typedef a _intf_class;													\
 												/** \brief Returns ptr to the supported interfaces table */	\
 												const static CCLINTF *_getIntfs() {									\
@@ -44,7 +45,8 @@
 #define	CCL_INTF(a)						{ &IID_##a, ((UINT_PTR)(static_cast<a*>((_intf_class *)8))-8), 1 },
 #define	CCL_INTF_FROM(a,b)			{ &IID_##a, ((UINT_PTR)(static_cast<a*>(static_cast<b *>((_intf_class *)8)))-8), 1 },
 #define	CCL_INTF_AGG(a,b)				{ &IID_##a, ((UINT_PTR)(&((static_cast<_intf_class *>((void *)8))->b)) - 8), 2 },
-#define	CCL_OBJECT_END()				{ NULL, 0 } }; return _intfs; }
+#define	CCL_OBJECT_END()				{ NULL, 0 } }; return _intfs; }										\
+												public :
 
 // Helper macros
 #define	CCLTRY(a)						if (hr == S_OK) hr = a

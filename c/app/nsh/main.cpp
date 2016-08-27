@@ -6,6 +6,20 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
+/*! 
+*	\mainpage nSpace
+*
+*	\section intro_sec Introduction
+*		nSpace is an architecture that allows for rapid, real-time,
+*		data flow based programming without worrying about the details
+*		of implementation.  It is indepdent of language, operating system,
+*		and computing environment.
+*
+*	\section install_sec Installation
+*	\subsection step1 Step 1: Step
+*		TODO
+*/
+ 
 #include "nsh.h"
 #include "../../lib/nshl/nshl_.h"
 #include <stdio.h>

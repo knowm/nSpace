@@ -37,17 +37,6 @@ class AsyncEmit :
 	public :
 	AsyncEmit ( void );									// Constructor
 
-	// Run-time data
-	IThread		*pThrd;									// Thread
-	adtValue		vVal,vEmit;								// Emission value
-	bool			bEmit;									// Emitting ?
-
-	// 'ITickable' members
-	STDMETHOD(tick)		( void );
-	STDMETHOD(tickAbort)	( void ) { return S_OK; }
-	STDMETHOD(tickBegin)	( void ) { return S_OK; }
-	STDMETHOD(tickEnd)	( void ) { return S_OK; }
-
 	// CCL
 	CCL_OBJECT_BEGIN(AsyncEmit)
 		CCL_INTF(IBehaviour)
@@ -66,6 +55,20 @@ class AsyncEmit :
 		DEFINE_CON(Fire)
 		DEFINE_RCP(Value)
 	END_BEHAVIOUR_NOTIFY()
+
+	private :
+
+	// Run-time data
+	IThread		*pThrd;									// Thread
+	adtValue		vVal,vEmit;								// Emission value
+	bool			bEmit;									// Emitting ?
+
+	// 'ITickable' members
+	STDMETHOD(tick)		( void );
+	STDMETHOD(tickAbort)	( void ) { return S_OK; }
+	STDMETHOD(tickBegin)	( void ) { return S_OK; }
+	STDMETHOD(tickEnd)	( void ) { return S_OK; }
+
 	};
 
 //
@@ -81,41 +84,21 @@ class AsyncQ :
 	public :
 	AsyncQ ( void );										// Constructor
 
-	// Run-time data
-	IThread		*pThrd;									// AsyncQ thread
-	bool			bRun;										// AsyncQ thread run ?
-	IList			*pQw;										// Work queue
-	IIt			*pQwIt;									// Work queue iterators
-	IDictionary	*pQs;										// Queues by Id
-	IDictionary	*pQvs;									// Latest queue values by Id
-	adtInt		iMaxSz;									// Maximum queue sizes
-	adtBool		bBlock;									// Block on full queue ?
-	sysCS			csWork;									// Work protection
-	sysEvent		evWork;									// Work event
-	adtValue		vQId;										// Queue Id
-	adtValue		vIdE,vQE;								// Internal
-	adtValue		vQ;										// Queue variable
-	adtIUnknown	unkV;										// Internal
-
-	// 'ITickable' members
-	STDMETHOD(tick)		( void );
-	STDMETHOD(tickAbort)	( void );
-	STDMETHOD(tickBegin)	( void ) { return S_OK; }
-	STDMETHOD(tickEnd)	( void ) { return S_OK; }
-
 	// CCL
+	public :
 	CCL_OBJECT_BEGIN(AsyncQ)
 		CCL_INTF(IBehaviour)
 		CCL_INTF(ITickable)
 	CCL_OBJECT_END()
 	virtual void		destruct		( void );		// Destruct object
 
-
 	//! \name Connections 
 	//@{
-	//! \brief Queue the specified value for asynchronous emission.
+	//! \brief Place the specified value in current queue and emit out a different thread.
 	DECLARE_CON(Fire)
+	//! \brief Specify the Id of the active queue
 	DECLARE_CON(Id)
+	//! \brief Proceed to the next value into the queue if it exists
 	DECLARE_RCP(Next)
 	//! \brief Re-emit the current value in the front of the queue.
 	DECLARE_RCP(Retry)
@@ -138,6 +121,28 @@ class AsyncQ :
 	END_BEHAVIOUR_NOTIFY()
 
 	private :
+
+	// Run-time data
+	IThread		*pThrd;									// AsyncQ thread
+	bool			bRun;										// AsyncQ thread run ?
+	IList			*pQw;										// Work queue
+	IIt			*pQwIt;									// Work queue iterators
+	IDictionary	*pQs;										// Queues by Id
+	IDictionary	*pQvs;									// Latest queue values by Id
+	adtInt		iMaxSz;									// Maximum queue sizes
+	adtBool		bBlock;									// Block on full queue ?
+	sysCS			csWork;									// Work protection
+	sysEvent		evWork;									// Work event
+	adtValue		vQId;										// Queue Id
+	adtValue		vIdE, vQE;								// Internal
+	adtValue		vQ;										// Queue variable
+	adtIUnknown	unkV;										// Internal
+
+	// 'ITickable' members
+	STDMETHOD(tick)		( void );
+	STDMETHOD(tickAbort)	( void );
+	STDMETHOD(tickBegin)	( void );
+	STDMETHOD(tickEnd)	( void );
 
 	// Internal utilities
 	HRESULT getQ ( const adtValue &, IList ** );
@@ -232,11 +237,6 @@ class Clone :
 	public :
 	Clone ( void );										// Constructor
 
-	// Run-time data
-	adtValue		vClone;									// Value to clone
-	adtValue		vRes;										// Result value
-	adtIUnknown	unkV;										// Run-time variable
-
 	// CCL
 	CCL_OBJECT_BEGIN(Clone)
 		CCL_INTF(IBehaviour)
@@ -259,6 +259,11 @@ class Clone :
 
 	private :
 
+	// Run-time data
+	adtValue		vClone;									// Value to clone
+	adtValue		vRes;										// Result value
+	adtIUnknown	unkV;										// Run-time variable
+
 	};
 
 //
@@ -272,11 +277,6 @@ class Compare :
 	{
 	public :
 	Compare ( void );										// Constructor
-
-	// Run-time data
-
-	//! 'Left' and 'Right' values
-	adtValue			vLeft,vRight;						
 
 	// CCL
 	CCL_OBJECT_BEGIN(Compare)
@@ -317,6 +317,11 @@ class Compare :
 
 	private :
 
+	// Run-time data
+
+	//! 'Left' and 'Right' values
+	adtValue			vLeft,vRight;						
+
 	};
 
 //
@@ -330,11 +335,6 @@ class Create :
 	{
 	public :
 	Create ( void );										// Constructor
-
-	// Run-time data
-	adtString	strId;									// Parameters
-	adtIUnknown	unkV;										// Internal
-	adtString	strV;										// Internal
 
 	// CCL
 	CCL_OBJECT_BEGIN(Create)
@@ -358,6 +358,11 @@ class Create :
 
 	private :
 
+	// Run-time data
+	adtString	strId;									// Parameters
+	adtIUnknown	unkV;										// Internal
+	adtString	strV;										// Internal
+
 	};
 
 //
@@ -371,14 +376,6 @@ class Decode :
 	{
 	public :
 	Decode ( void );										// Constructor
-
-	// Run-time data
-	IDictionary		*pMap;								// Decode dictionary
-	adtValue			Select;								// Active selection
-	adtValue			Value;								// Active value
-	adtIUnknown		unkV;									// Internal
-	adtString		strV;									// Internal
-	adtValue			vV;									// Internal
 
 	// CCL
 	CCL_OBJECT_BEGIN(Decode)
@@ -404,6 +401,17 @@ class Decode :
 		DEFINE_RCP(Value)
 		DEFINE_EMT(Default)
 	END_BEHAVIOUR_NOTIFY()
+
+	private :
+
+	// Run-time data
+	IDictionary		*pMap;								// Decode dictionary
+	adtValue			Select;								// Active selection
+	adtValue			Value;								// Active value
+	adtIUnknown		unkV;									// Internal
+	adtString		strV;									// Internal
+	adtValue			vV;									// Internal
+
 	};
 
 //
@@ -417,12 +425,6 @@ class Debug :
 	{
 	public :
 	Debug ( void );										// Constructor
-
-	// Run-time data
-	adtString	strMsg;									// Parameters
-	adtString	strPath;									// Namespace path to this node
-	adtLong		lRst,lFreq;								// Reset time
-	IDictionary	*pDctLog;								// Logging dictionary
 
 	// CCL
 	CCL_OBJECT_BEGIN(Debug)
@@ -454,6 +456,12 @@ class Debug :
 
 	private :
 
+	// Run-time data
+	adtString	strMsg;									// Parameters
+	adtString	strPath;									// Namespace path to this node
+	adtLong		lRst,lFreq;								// Reset time
+	IDictionary	*pDctLog;								// Logging dictionary
+
 	// Internal utilities
 	void appendDbg ( const WCHAR * );
 
@@ -473,15 +481,6 @@ class Demux :
 	{
 	public :
 	Demux ( void );										// Constructor
-
-	// Run-time data
-	IContainer		*pDemux;								// Demultiplexer container
-	IDictionary		*pDct;								// Dictionary with value
-	IDictionary		*pMap;								// Value map
-	adtValue			Key;									// Key of value to select
-	adtValue			Value;								// Default value
-	adtIUnknown		unkV;									// Internal
-	adtString		strV;									// Internal
 
 	// CCL
 	CCL_OBJECT_BEGIN(Demux)
@@ -505,6 +504,18 @@ class Demux :
 		DEFINE_RCP(Key)
 		DEFINE_CON(Default)
 	END_BEHAVIOUR_NOTIFY()
+
+	private :
+
+	// Run-time data
+	IContainer		*pDemux;								// Demultiplexer container
+	IDictionary		*pDct;								// Dictionary with value
+	IDictionary		*pMap;								// Value map
+	adtValue			Key;									// Key of value to select
+	adtValue			Value;								// Default value
+	adtIUnknown		unkV;									// Internal
+	adtString		strV;									// Internal
+
 	};
 
 //
@@ -519,24 +530,25 @@ class DictFormat :
 	public :
 	DictFormat ( void );									// Constructor
 
-	// Run-time data
-	IByteStream		*pStm;								// Output stream
-	IDictionary		*pDct;								// Dictionary
-	IContainer		*pFmt;								// Format
-	adtString		strkSize,strkName,strkVal;		// String keys
-	adtString		strkMap,strkType,strkSub;		// String keys
-
 	// CCL
 	CCL_OBJECT_BEGIN(DictFormat)
 		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 
 	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Specifes the dictionary to use for value lookups.
 	DECLARE_RCP(Dictionary)
+	//!	\brief Emits error code on failure
 	DECLARE_EMT(Error)
+	//!	\brief Emits formatted byte stream.
 	DECLARE_CON(Fire)
+	//!	\brief Specify the specification for the format.
 	DECLARE_RCP(Format)
+	//!	\brief Specify the stream to receive formatted bytes.
 	DECLARE_RCP(Stream)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_RCP(Dictionary)
 		DEFINE_EMT(Error)
@@ -546,6 +558,13 @@ class DictFormat :
 	END_BEHAVIOUR_NOTIFY()
 
 	private :
+
+	// Run-time data
+	IByteStream		*pStm;								// Output stream
+	IDictionary		*pDct;								// Dictionary
+	IContainer		*pFmt;								// Format
+	adtString		strkSize,strkName,strkVal;		// String keys
+	adtString		strkMap,strkType,strkSub;		// String keys
 
 	// Internal utilities
 	HRESULT format ( IContainer * );
@@ -563,23 +582,25 @@ class DictParse :
 	public :
 	DictParse ( void );									// Constructor
 
-	// Run-time data
-	IDictionary		*pDict;								// Active dictionary
-	IContainer		*pFmt;								// Active format
-	IByteStream		*pStm;								// Input stream
-//	adtString		strParse;							// Input string
-
 	// CCL
 	CCL_OBJECT_BEGIN(DictParse)
 		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 
 	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Peform parsing
 	DECLARE_CON(Fire)
+	//!	\brief Specifies the dictionary that will receive the parsed values
 	DECLARE_RCP(Dictionary)
+	//!	\brief Specify the specification for the format.
 	DECLARE_RCP(Format)
+	//!	\brief Specify the stream that contains the bytes to parse.
 	DECLARE_RCP(Stream)
+	//!	\brief Emits error code on failure
 	DECLARE_EMT(Error)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_CON(Fire)
 		DEFINE_RCP(Dictionary)
@@ -589,6 +610,12 @@ class DictParse :
 	END_BEHAVIOUR_NOTIFY()
 
 	private :
+
+	// Run-time data
+	IDictionary		*pDict;								// Active dictionary
+	IContainer		*pFmt;								// Active format
+	IByteStream		*pStm;								// Input stream
+//	adtString		strParse;							// Input string
 
 	// Internal utilities
 	HRESULT parse ( IContainer * );
@@ -606,17 +633,18 @@ class Dist :
 	public :
 	Dist ( void );											// Constructor
 
-	// Run-time data
-	adtValue		vE;										// Value to emit
-
 	// CCL
 	CCL_OBJECT_BEGIN(Dist)
 		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 
-	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Receive and emit value
 	DECLARE_CON(Fire)
+	//!	\brief Specify a default value to emit instead of received value
 	DECLARE_RCP(Value)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_CON(Fire)
 		DEFINE_RCP(Value)
@@ -624,10 +652,14 @@ class Dist :
 
 	private :
 
+	// Run-time data
+	adtValue		vE;										// Value to emit
+
 	};
 
 //
 // Class - Path.  A node to handle paths.
+//!	\brief A node that handles the manipulation of paths.
 //
 
 class Path :
@@ -637,22 +669,19 @@ class Path :
 	public :
 	Path ( void );											// Constructor
 
-	// Run-time data
-	adtString	strPath;									// Current path
-	bool			bAbs;										// Path is 'absolute'
-	bool			bLoc;										// Path is 'location'
-	IList			*pNames;									// Name list
-	IIt			*pNamesIt;								// Name iterator
-
 	// CCL
 	CCL_OBJECT_BEGIN(Path)
 		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
-	virtual void		destruct		( void );		// Destruct object
 
 	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Move 'up' one level in the current path
 	DECLARE_RCP(Up)
+	//!	\brief Specify the active path
 	DECLARE_CON(Path)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_RCP(Up)
 		DEFINE_CON(Path)
@@ -660,6 +689,14 @@ class Path :
 
 	private :
 
+	// Run-time data
+	adtString	strPath;									// Current path
+	bool			bAbs;										// Path is 'absolute'
+	bool			bLoc;										// Path is 'location'
+	IList			*pNames;									// Name list
+	IIt			*pNamesIt;								// Name iterator
+
+	virtual void		destruct		( void );		// Destruct object
 	};
 
 //
@@ -674,21 +711,20 @@ class StringFormat :
 	public :
 	StringFormat ( void );								// Constructor
 
-	// Run-time data
-	IContainer		*pFmt;								// Format specification
-	IDictionary		*pDctSrc;							// Source dictionary
-	IMemoryMapped	*pBfr;								// String buffer
-	WCHAR				*pwBfr;								// String buffer
-
 	// CCL
 	CCL_OBJECT_BEGIN(StringFormat)
 		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 
-	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Format string from dictionary and emit result
 	DECLARE_CON(Fire)
+	//!	\brief Specify dictionary that contains the values to format
 	DECLARE_RCP(Dictionary)
+	//!	\brief Specify the specification for the format.
 	DECLARE_RCP(Format)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_CON(Fire)
 		DEFINE_RCP(Dictionary)
@@ -696,6 +732,12 @@ class StringFormat :
 	END_BEHAVIOUR_NOTIFY()
 
 	private :
+
+	// Run-time data
+	IContainer		*pFmt;								// Format specification
+	IDictionary		*pDctSrc;							// Source dictionary
+	IMemoryMapped	*pBfr;								// String buffer
+	WCHAR				*pwBfr;								// String buffer
 
 	// Internal utilities
 	HRESULT formatString	( IUnknown *, WCHAR *, U32 * );
@@ -714,36 +756,46 @@ class StringOp :
 	public :
 	StringOp ( void );									// Constructor
 
-	// Run-time data
-	adtString		strSrc,strDst,strType;			// Parameters
-	adtInt			iFrom,iTo;							// Parameters
-	adtString		strRes;								// Result
-	bool				bTo;									// 'To' is specified
-	IDictionary		*pMap;								// String map
-
 	// CCL
 	CCL_OBJECT_BEGIN(StringOp)
 		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 	virtual void		destruct		( void );		// Destruct object
 
-	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Specify string to use as destination
 	DECLARE_RCP(Destination)
+	//!	\brief Specifies index from which cetain functions begin.
 	DECLARE_RCP(From)
+	//!	\brief Find the index of the first occurence of source string in destination.
 	DECLARE_RCP(IndexOf)
+	//!	\brief Determine if the character at the from index in source string is of the specified type (e.g. "Digit").
 	DECLARE_RCP(IsType)
+	//!	\brief Find the last index of the first occurence of source string in destination.
 	DECLARE_RCP(LastIndexOf)
+	//!	\brief Compute the length of the source string
 	DECLARE_RCP(Length)
+	//!	\brief Replace source string with destination in the received string.
 	DECLARE_RCP(Replace)
+	//!	\brief Specify string to use as source
 	DECLARE_RCP(Source)
+	//!	\brief Create a substring from the source string using the from and to indices
 	DECLARE_RCP(Substring)
+	//!	\brief Strip the trailing characters specified in the source string from the destination
 	DECLARE_RCP(Trailing)
+	//!	\brief Specifies index to which certain functions end.
 	DECLARE_RCP(To)
 
+	//!	\brief Emit the source string from which a search failed.
 	DECLARE_EMT(NotFound)
+	//!	\brief Emit a resulting string
 	DECLARE_EMT(Fire)
+	//!	\brief Emits if character is of the specified type
 	DECLARE_EMT(True)
+	//!	\brief Emits if character is not of the specified type
 	DECLARE_EMT(False)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_RCP(Destination)
 		DEFINE_RCP(From)
@@ -762,6 +814,16 @@ class StringOp :
 		DEFINE_EMT(True)
 		DEFINE_EMT(False)
 	END_BEHAVIOUR_NOTIFY()
+
+	private :
+
+	// Run-time data
+	adtString		strSrc,strDst,strType;			// Parameters
+	adtInt			iFrom,iTo;							// Parameters
+	adtString		strRes;								// Result
+	bool				bTo;									// 'To' is specified
+	IDictionary		*pMap;								// String map
+
 	};
 
 //
@@ -776,22 +838,24 @@ class StringParse :
 	public :
 	StringParse ( void );								// Constructor
 
-	// Run-time data
-	adtString	strParse;								// String to parse
-	IContainer	*pFmt;									// Format of string
-	IDictionary	*pDctRs;									// Output dictionary
-
 	// CCL
 	CCL_OBJECT_BEGIN(StringParse)
 		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 
-	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Parse string into dictionary using the format specification
 	DECLARE_CON(Fire)
+	//!	\brief Specifies the dictionary that will receive the parsed values.
 	DECLARE_RCP(Dictionary)
+	//!	\brief Specify the specification for the format.
 	DECLARE_RCP(Format)
+	//!	\brief Specifies the string to parse.
 	DECLARE_RCP(String)
+	//!	\brief Emits the position of the string at which parsing ended.
 	DECLARE_EMT(Position)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_CON(Fire)
 		DEFINE_RCP(Dictionary)
@@ -801,6 +865,11 @@ class StringParse :
 	END_BEHAVIOUR_NOTIFY()
 
 	private :
+
+	// Run-time data
+	adtString	strParse;								// String to parse
+	IContainer	*pFmt;									// Format of string
+	IDictionary	*pDctRs;									// Output dictionary
 
 	// Internal utilities
 	HRESULT parseString	( IUnknown *, WCHAR *, U32 * );
@@ -833,16 +902,27 @@ class StringStream :
 	CCL_OBJECT_END()
 	virtual void		destruct		( void );		// Destruct object
 
-	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Signal an end to the binary data and emit remaining string
 	DECLARE_CON(End)
+	//!	\brief Initiate extraction of string from the stream
 	DECLARE_RCP(From)
+	//!	\brief An optional prefix to match
 	DECLARE_RCP(Prefix)
+	//!	\brief Reset the internal state of the extraction logic
 	DECLARE_RCP(Reset)
+	//!	\brief Specify the byte stream
 	DECLARE_RCP(Stream)
+	//!	\brief Specify the string to put into a byte stream
 	DECLARE_RCP(String)
+	//!	\brief An optional termination that ends string extraction
 	DECLARE_RCP(Terminate)
+	//!	\brief Initiate placement of string into stream
 	DECLARE_RCP(To)
-	DECLARE_CON(Fire)
+	//!	\brief Emits extracted strings
+	DECLARE_EMT(Fire)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_CON(End)
 		DEFINE_RCP(From)
@@ -852,7 +932,7 @@ class StringStream :
 		DEFINE_RCP(String)
 		DEFINE_RCP(Terminate)
 		DEFINE_RCP(To)
-		DEFINE_CON(Fire)
+		DEFINE_EMT(Fire)
 	END_BEHAVIOUR_NOTIFY()
 
 	private :
@@ -873,26 +953,36 @@ class TimeOp :
 	public :
 	TimeOp ( void );										// Constructor
 
-	// Run-time data
-	adtBool		bLocal;									// Run-time data
-
 	// CCL
 	CCL_OBJECT_BEGIN(TimeOp)
 		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 
-	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Break apart the current time into its components (month, year, etc)
 	DECLARE_CON(Break)
+	//!	\brief Emit the current date/time.
 	DECLARE_CON(Now)
+	//!	\brief The day portion of the time.
 	DECLARE_EMT(Day)
+	//!	\brief The month portion of the time.
 	DECLARE_EMT(Month)
+	//!	\brief The year portion of the time.
 	DECLARE_EMT(Year)
+	//!	\brief The hour portion of the time.
 	DECLARE_EMT(Hour)
+	//!	\brief The minute portion of the time.
 	DECLARE_EMT(Minute)
+	//!	\brief The second portion of the time.
 	DECLARE_EMT(Second)
+	//!	\brief The millisecond portion of the time.
 	DECLARE_EMT(Millisecond)
+	//!	\brief The date (calendar) portion of the time.
 	DECLARE_EMT(Date)
+	//!	\brief The time (without calendar) portion of the time.
 	DECLARE_EMT(Time)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_CON(Break)
 		DEFINE_CON(Now)
@@ -909,6 +999,9 @@ class TimeOp :
 
 	private :
 
+	// Run-time data
+	adtBool		bLocal;									// Run-time data
+
 	};
 
 //
@@ -923,6 +1016,39 @@ class Timer :
 	{
 	public :
 	Timer ( void );										// Constructor
+
+	// CCL
+	CCL_OBJECT_BEGIN(Timer)
+		CCL_INTF(IBehaviour)
+		CCL_INTF(ITickable)
+	CCL_OBJECT_END()
+	virtual void		destruct		( void );		// Destruct object
+
+	//! \name Connections 
+	//@{
+	//!	\brief Fire timer immediately
+	DECLARE_CON(Fire)
+	//!	\brief Arm timer for firing
+	DECLARE_RCP(Arm)
+	//!	\brief Disarm (disable) timer
+	DECLARE_RCP(Disarm)
+	//!	\brief Specify the rate of the timer in milliseconds
+	DECLARE_RCP(Rate)
+	//!	\brief Start asynchronous timer
+	DECLARE_RCP(Start)
+	//!	\brief Stop asynchronous timer
+	DECLARE_RCP(Stop)
+	//@}
+	BEGIN_BEHAVIOUR()
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Arm)
+		DEFINE_RCP(Disarm)
+		DEFINE_RCP(Rate)
+		DEFINE_RCP(Start)
+		DEFINE_RCP(Stop)
+	END_BEHAVIOUR_NOTIFY()
+
+	private :
 
 	// Run-time data
 	IThread				*pThread;						// Timer thread
@@ -946,30 +1072,6 @@ class Timer :
 	STDMETHOD(tickBegin)	( void );
 	STDMETHOD(tickEnd)	( void ) { return S_OK; }
 
-	// CCL
-	CCL_OBJECT_BEGIN(Timer)
-		CCL_INTF(IBehaviour)
-		CCL_INTF(ITickable)
-	CCL_OBJECT_END()
-	virtual void		destruct		( void );		// Destruct object
-
-	// Connections
-	DECLARE_CON(Fire)
-	DECLARE_RCP(Arm)
-	DECLARE_RCP(Disarm)
-	DECLARE_RCP(Rate)
-	DECLARE_RCP(Start)
-	DECLARE_RCP(Stop)
-	BEGIN_BEHAVIOUR()
-		DEFINE_CON(Fire)
-		DEFINE_RCP(Arm)
-		DEFINE_RCP(Disarm)
-		DEFINE_RCP(Rate)
-		DEFINE_RCP(Start)
-		DEFINE_RCP(Stop)
-	END_BEHAVIOUR_NOTIFY()
-
-	private :
 
 	// Internal utilities
 	U32		tickCount 	( void );
@@ -989,21 +1091,24 @@ class Toggle :
 	public :
 	Toggle ( void );										// Constructor
 
-	// Run-time data
-	adtBool		bVal;										// Value
-	adtBool		bValE;									// Value during emission
-
 	// CCL
 	CCL_OBJECT_BEGIN(Toggle)
 		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 
-	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Fire value in a way that reflects the state of the node
 	DECLARE_CON(Fire)
+	//!	\brief Set current state to false
 	DECLARE_CON(False)
+	//!	\brief Invert the current toggle state
 	DECLARE_RCP(Not)
+	//!	\brief Set current state to true
 	DECLARE_CON(True)
+	//!	\brief Set the true/false state directly via value
 	DECLARE_RCP(Value)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_CON(Fire)
 		DEFINE_CON(False)
@@ -1011,6 +1116,13 @@ class Toggle :
 		DEFINE_CON(True)
 		DEFINE_RCP(Value)
 	END_BEHAVIOUR_NOTIFY()
+
+	private :
+
+	// Run-time data
+	adtBool		bVal;										// Value
+	adtBool		bValE;									// Value during emission
+
 
 	};
 
@@ -1026,23 +1138,28 @@ class TokenIt :
 	public :
 	TokenIt ( void );										// Constructor
 
-	// Run-time data
-	adtString	strOrg,strCpy,strDelim;				// Parameters
-	WCHAR			*ptokLast;								// Last token
-
 	// CCL
 	CCL_OBJECT_BEGIN(TokenIt)
 		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 
-	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Emit a new list of parsed tokens
 	DECLARE_CON(List)
+	//!	\brief Emit the number of parser tokens
 	DECLARE_CON(Count)
+	//!	\brief Emit the next token
 	DECLARE_CON(Next)
+	//!	\brief Specify the set of delimiters between the tokens
 	DECLARE_RCP(Delimiter)
+	//!	\brief Reset iteration of tokens
 	DECLARE_RCP(Reset)
+	//!	\brief Specify the string from which to extract tokens
 	DECLARE_RCP(String)
+	//!	\brief Signal indcating the end of the tokens has been reached.
 	DECLARE_EMT(End)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_CON(List)
 		DEFINE_CON(Count)
@@ -1054,6 +1171,11 @@ class TokenIt :
 	END_BEHAVIOUR_NOTIFY()
 
 	private :
+
+	// Run-time data
+	adtString	strOrg,strCpy,strDelim;				// Parameters
+	WCHAR			*ptokLast;								// Last token
+
 
 	// Internal utilities
 	WCHAR	*iwcstok ( WCHAR *, const WCHAR *);
@@ -1081,15 +1203,25 @@ class Type :
 		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 
-	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Determine if the value is of the current type
 	DECLARE_CON(Fire)
+	//!	\brief Specify a string version of the desired type (e.g. "Integer", "Float", etc)
 	DECLARE_CON(Type)
+	//!	\brief Convert the value to the current type
 	DECLARE_RCP(Convert)
+	//!	\brief Emit the type of the value
 	DECLARE_RCP(Query)
+	//!	\brief Specify a value for use.
 	DECLARE_RCP(Value)
+	//!	\brief Emits a signal if the type matches
 	DECLARE_EMT(Equal)
+	//!	\brief Emits a value when cloning is unsuccessful.
 	DECLARE_EMT(Error)
+	//!	\brief Emits a signal if the type does not match
 	DECLARE_EMT(NotEqual)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_CON(Fire)
 		DEFINE_CON(Type)

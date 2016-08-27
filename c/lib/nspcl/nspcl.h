@@ -86,6 +86,7 @@ extern	adtStringSt strnRefVal;
 
 // Define the behaviour logic, connections, etc
 #define	BEGIN_BEHAVIOUR()													\
+	private :																	\
 	STDMETHOD(attach)		( IDictionary *_pnLoc, bool bAttach )	\
 			{																		\
 			/* Default logic first */										\

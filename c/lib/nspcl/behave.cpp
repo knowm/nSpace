@@ -99,17 +99,9 @@ HRESULT Behaviour :: onAttach ( bool bAttach )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
-	//	FROM	Behaviour
-	//
-	//	PURPOSE
-	//		-	Called when behaviour wants to be notified of attachment.
-	//
-	//	PARAMETERS
-	//		-	pnLoc is the location
-	//		-	bAttach is true to attach, false to detach
-	//
-	//	RETURN Behaviour
-	//		S_OK if successful
+	//! \brief Called when a behaviour is attached/detached to a location.
+	//! \param bAttach is true on attachment, false on detachment
+	//! \return S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
 	return S_OK;
@@ -119,15 +111,10 @@ HRESULT Behaviour :: onReceive (	IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
-	//	PURPOSE
-	//		-	A location has received a value on the specified receptor.
-	//
-	//	PARAMETERS
-	//		-	pr is the receptor
-	//		-	v is the Behaviour
-	//
-	//	RETURN Behaviour
-	//		S_OK if successful
+	//! \brief A location has received a value on the specified receptor.
+	//! \param pr is a ptr. to the receptor that received the value
+	//! \param v is the received value
+	//! \return S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
 	return S_OK;

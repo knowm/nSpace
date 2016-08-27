@@ -78,14 +78,9 @@ HRESULT AsyncQ :: onAttach ( bool bAttach )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
-	//	PURPOSE
-	//		-	Called when this behaviour is assigned to a node
-	//
-	//	PARAMETERS
-	//		-	bAttach is true for attachment, false for detachment.
-	//
-	//	RETURN VALUE
-	//		S_OK if successful
+	//! \brief Called when a behaviour is attached/detached to a location.
+	//! \param bAttach is true on attachment, false on detachment
+	//! \return S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
 	HRESULT	hr = S_OK;
@@ -138,15 +133,10 @@ HRESULT AsyncQ :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
-	//	PURPOSE
-	//		-	The node has received a value on the specified receptor.
-	//
-	//	PARAMETERS
-	//		-	pr is the receptor
-	//		-	v is the value
-	//
-	//	RETURN VALUE
-	//		S_OK if successful
+	//! \brief A location has received a value on the specified receptor.
+	//! \param pr is a ptr. to the receptor that received the value
+	//! \param v is the received value
+	//! \return S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
 	HRESULT	hr = S_OK;
@@ -305,14 +295,8 @@ HRESULT AsyncQ :: tick ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
-	//	OVERLOAD
-	//	FROM		ITickable
-	//
-	//	PURPOSE
-	//		-	Perform one 'tick's worth of work.
-	//
-	//	RETURN VALUE
-	//		S_OK if successful
+	//! \brief Perform one 'tick's worth of work.
+	//! \return S_OK if ticking should continue
 	//
 	////////////////////////////////////////////////////////////////////////
 	HRESULT	hr		= S_OK;
@@ -360,14 +344,8 @@ HRESULT AsyncQ :: tickAbort ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
-	//	OVERLOAD
-	//	FROM		ITickable
-	//
-	//	PURPOSE
-	//		-	Notifies the object that 'ticking' should abort.
-	//
-	//	RETURN VALUE
-	//		S_OK if successful
+	//! \brief Notifies the object that 'ticking' should stop.
+	//! \return S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
 	bRun = false;
@@ -375,6 +353,27 @@ HRESULT AsyncQ :: tickAbort ( void )
 	return S_OK;
 	}	// tickAbort
 
+HRESULT AsyncQ:: tickBegin ( void )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//! \brief Notifies the object that it should prepare to 'tick'.
+	//! \return S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	return S_OK;
+	}	// tickBegin
+
+HRESULT AsyncQ:: tickEnd ( void )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//! \brief Notifies the object that 'ticking' has stopped.
+	//! \return S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	return S_OK;
+}	// tickEnd
 
 /*
 AsyncQ :: AsyncQ ( void )

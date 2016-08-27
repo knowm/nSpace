@@ -11,12 +11,11 @@
 #include	<sys/time.h>
 #endif
 
-sysEvent :: sysEvent ( void )
+sysEvent :: sysEvent ()
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
-	//	PURPOSE
-	//		-	Constructor for the object.
+	//! \brief Constructor for the object
 	//
 	////////////////////////////////////////////////////////////////////////
 	#ifdef	_WIN32
@@ -28,12 +27,11 @@ sysEvent :: sysEvent ( void )
 	#endif
 	}	// sysEvent
 
-sysEvent :: ~sysEvent ( void )
+sysEvent :: ~sysEvent ()
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
-	//	PURPOSE
-	//		-	Destructor for the object.
+	//! \brief Destructor for the object
 	//
 	////////////////////////////////////////////////////////////////////////
 	#ifdef	_WIN32
@@ -48,15 +46,10 @@ bool sysEvent :: init ( BOOL bManRst )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
-	//	PURPOSE
-	//		-	Initializes event
-	//
-	//	PARAMETERS
-	//		-	bManRst is false if the event should auto-reset (default), 
-	//			true for manual reset.
-	//
-	//	RETURN VALUE
-	//		TRUE if successful
+	//! \brief Initialize the event for use
+	//! \param bManRst is true for a manually reset, false for automatic 
+	//				reset (default)
+	//! \return true if successful
 	//
 	////////////////////////////////////////////////////////////////////////
 	#ifdef	_WIN32
@@ -71,15 +64,12 @@ bool sysEvent :: init ( BOOL bManRst )
 	#endif
 	}	// init
 
-bool sysEvent :: reset ( void )
+bool sysEvent :: reset ()
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
-	//	PURPOSE
-	//		-	Reset the events 'signal' state.
-	//
-	//	RETURN VALUE
-	//		TRUE if successful
+	//! \brief Resets the event signaled state.
+	//! \return true if successful
 	//
 	////////////////////////////////////////////////////////////////////////
 	#ifdef	_WIN32
@@ -92,15 +82,12 @@ bool sysEvent :: reset ( void )
 	return 1;
 	}	// reset
 
-bool sysEvent :: signal ( void )
+bool sysEvent :: signal ()
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
-	//	PURPOSE
-	//		-	Signal event.
-	//
-	//	RETURN VALUE
-	//		TRUE if successful
+	//! \brief Signal the event
+	//! \return true if successful
 	//
 	////////////////////////////////////////////////////////////////////////
 	#ifdef	_WIN32
@@ -115,14 +102,9 @@ bool sysEvent :: wait ( U32 to )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
-	//	PURPOSE
-	//		-	Wait until event signaled or timeout.
-	//
-	//	PARAMETERS
-	//		-	to is the timeout value (ms, -1 = no timeout)
-	//
-	//	RETURN VALUE
-	//		TRUE if signaled
+	//! \brief Wait until event signaled or times out.
+	//! \param to is the timeout value (in ms, -1 = no timeout)
+	//! \return true if signaled, false on timeout
 	//
 	////////////////////////////////////////////////////////////////////////
 	#ifdef	_WIN32
