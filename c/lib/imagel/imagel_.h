@@ -198,8 +198,8 @@ class Convert :
 	Convert ( void );										// Constructor
 
 	// Run-time data
-	IDictionary	*pImg;									// Source image
-	adtString	strTo;									// Convert 'to' format
+	IDictionary			*pImg;							// Source image
+	adtString			strTo;							// Convert 'to' format
 
 	// Utilities
 	static

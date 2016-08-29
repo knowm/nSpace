@@ -88,6 +88,13 @@ HRESULT Prepare :: gpuInit ( void )
 	if (bGPUInit)
 		return S_OK;
 
+	// Debug
+	bCuda = false;
+	bUMat = false;
+	bGPUInit = true;
+	if (true)
+		return S_OK;
+
 	// Any CUDA-enabled devices ?
 	bCuda = false;
 	if ((ret = cv::cuda::getCudaEnabledDeviceCount()) > 0)
