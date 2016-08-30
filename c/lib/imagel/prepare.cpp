@@ -89,11 +89,11 @@ HRESULT Prepare :: gpuInit ( void )
 		return S_OK;
 
 	// Debug
-	bCuda = false;
-	bUMat = false;
-	bGPUInit = true;
-	if (true)
-		return S_OK;
+//	bCuda = false;
+//	bUMat = false;
+//	bGPUInit = true;
+//	if (true)
+//		return S_OK;
 
 	// Any CUDA-enabled devices ?
 	bCuda = false;

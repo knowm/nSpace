@@ -232,10 +232,10 @@ HRESULT FFT :: fft ( cv::cuda::GpuMat *pMat, cv::cuda::GpuMat *pWnd,
 	try
 		{
 		// Timing debug
-		LARGE_INTEGER	lCnt,lRst,lFreq;
-		double			dt;
-		QueryPerformanceCounter ( &lRst );
-		QueryPerformanceFrequency ( &lFreq );
+//		LARGE_INTEGER	lCnt,lRst,lFreq;
+//		double			dt;
+//		QueryPerformanceCounter ( &lRst );
+//		QueryPerformanceFrequency ( &lFreq );
 
 		// Apply window function
 		if (	pWnd != NULL && pWnd->type() == pMat->type() &&
@@ -273,9 +273,9 @@ HRESULT FFT :: fft ( cv::cuda::GpuMat *pMat, cv::cuda::GpuMat *pWnd,
 		cv::cuda::dft ( gpuCmplx, gpuCmplx, gpuCmplx.size(), (bRows) ? cv::DFT_ROWS : 0 );
 
 		// Debug
-		QueryPerformanceCounter ( &lCnt );
-		dt = ((lCnt.QuadPart-lRst.QuadPart) * 1.0) / lFreq.QuadPart;
-		lprintf ( LOG_DBG, L"fft (GPU) : %g", dt );
+//		QueryPerformanceCounter ( &lCnt );
+//		dt = ((lCnt.QuadPart-lRst.QuadPart) * 1.0) / lFreq.QuadPart;
+//		lprintf ( LOG_DBG, L"fft (GPU) : %g", dt );
 
 		// Separate real/imaginary results
 		cv::cuda::split ( gpuCmplx, gpuPlanes );
@@ -284,7 +284,11 @@ HRESULT FFT :: fft ( cv::cuda::GpuMat *pMat, cv::cuda::GpuMat *pWnd,
 		cv::cuda::magnitude ( gpuPlanes[0], gpuPlanes[1], gpuPlanes[0] );
 		gpuMag = gpuPlanes[0];
 
-		// TODO: Log, base, etc. will be moved into own nodes.
+		// Normalize by the number of samples (convention ?)
+		if (bRows)
+			cv::cuda::divide ( gpuMag, cv::Scalar(gpuMag.cols), gpuMag );
+		else
+			cv::cuda::divide ( gpuMag, cv::Scalar(gpuMag.cols*gpuMag.rows), gpuMag );
 
 		// Ensure no log of zeroes
 		cv::cuda::add ( gpuMag, cv::Scalar::all(1e-20), gpuMag );

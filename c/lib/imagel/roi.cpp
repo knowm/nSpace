@@ -99,22 +99,6 @@ HRESULT Roi :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		// Obtain image refence
 		CCLTRY ( Prepare::extract ( pSrc, v, &pSrcUse, &pMatSrc ) );
 
-		// Adjust Roi.  Could error out but be flexible.
-		// Set limits so there is at least one pixel in each direction.
-		if (hr == S_OK)
-			{
-			// Width
-			if			(iL < 0)									iL = 0;
-			else if	((int)iL >= pMatSrc->mat->cols)	iL = pMatSrc->mat->cols-1;
-			if			(iR <= 0)								iR = 1;
-			else if	((int)iR >= pMatSrc->mat->cols)	iR = pMatSrc->mat->cols;
-			// Height
-			if			(iT < 0)									iT = 0;
-			else if	((int)iT >= pMatSrc->mat->rows)	iT = pMatSrc->mat->rows-1;
-			if			(iB <= 0)								iB = 1;
-			else if	((int)iB >= pMatSrc->mat->rows)	iB = pMatSrc->mat->rows;
-			}	// if
-
 		// Open CV uses exceptions
 		try
 			{
@@ -122,6 +106,22 @@ HRESULT Roi :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			CCLTRYE( (pMatDst = new cvMatRef()) != NULL, E_OUTOFMEMORY );
 			if (hr == S_OK && pMatSrc->isGPU())
 				{
+				// Adjust Roi.  Could error out but be flexible.
+				// Set limits so there is at least one pixel in each direction.
+				if (hr == S_OK)
+					{
+					// Width
+					if			(iL < 0)										iL = 0;
+					else if	((int)iL >= pMatSrc->gpumat->cols)	iL = pMatSrc->gpumat->cols-1;
+					if			(iR <= 0)									iR = 1;
+					else if	((int)iR >= pMatSrc->gpumat->cols)	iR = pMatSrc->gpumat->cols;
+					// Height
+					if			(iT < 0)										iT = 0;
+					else if	((int)iT >= pMatSrc->gpumat->rows)	iT = pMatSrc->gpumat->rows-1;
+					if			(iB <= 0)									iB = 1;
+					else if	((int)iB >= pMatSrc->gpumat->rows)	iB = pMatSrc->gpumat->rows;
+					}	// if
+
 				CCLTRYE((pMatDst->gpumat = new cv::cuda::GpuMat ( *(pMatSrc->gpumat), cv::Rect(iL,iT,(iR-iL),(iB-iT)) ))
 								!= NULL, E_OUTOFMEMORY);
 
@@ -131,6 +131,22 @@ HRESULT Roi :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				}	// if
 			else if (hr == S_OK && pMatSrc->isUMat())
 				{
+				// Adjust Roi.  Could error out but be flexible.
+				// Set limits so there is at least one pixel in each direction.
+				if (hr == S_OK)
+					{
+					// Width
+					if			(iL < 0)									iL = 0;
+					else if	((int)iL >= pMatSrc->umat->cols)	iL = pMatSrc->umat->cols-1;
+					if			(iR <= 0)								iR = 1;
+					else if	((int)iR >= pMatSrc->umat->cols)	iR = pMatSrc->umat->cols;
+					// Height
+					if			(iT < 0)									iT = 0;
+					else if	((int)iT >= pMatSrc->umat->rows)	iT = pMatSrc->umat->rows-1;
+					if			(iB <= 0)								iB = 1;
+					else if	((int)iB >= pMatSrc->umat->rows)	iB = pMatSrc->umat->rows;
+					}	// if
+
 				CCLTRYE((pMatDst->umat = new cv::UMat ( *(pMatSrc->umat), cv::Rect(iL,iT,(iR-iL),(iB-iT)) ))
 								!= NULL, E_OUTOFMEMORY);
 
@@ -140,6 +156,22 @@ HRESULT Roi :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				}	// else if
 			else
 				{
+				// Adjust Roi.  Could error out but be flexible.
+				// Set limits so there is at least one pixel in each direction.
+				if (hr == S_OK)
+					{
+					// Width
+					if			(iL < 0)									iL = 0;
+					else if	((int)iL >= pMatSrc->mat->cols)	iL = pMatSrc->mat->cols-1;
+					if			(iR <= 0)								iR = 1;
+					else if	((int)iR >= pMatSrc->mat->cols)	iR = pMatSrc->mat->cols;
+					// Height
+					if			(iT < 0)									iT = 0;
+					else if	((int)iT >= pMatSrc->mat->rows)	iT = pMatSrc->mat->rows-1;
+					if			(iB <= 0)								iB = 1;
+					else if	((int)iB >= pMatSrc->mat->rows)	iB = pMatSrc->mat->rows;
+					}	// if
+
 				CCLTRYE((pMatDst->mat = new cv::Mat ( *(pMatSrc->mat), cv::Rect(iL,iT,(iR-iL),(iB-iT)) ))
 							!= NULL, E_OUTOFMEMORY);
 

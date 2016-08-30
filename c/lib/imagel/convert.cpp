@@ -43,14 +43,7 @@ HRESULT Convert :: convertTo (	cvMatRef *pMatSrc, cvMatRef *pMatDst,
 
 	// Special cases
 	if (pMatSrc->isGPU() && pMatDst->isGPU())
-		{
-		cv::cuda::GpuMat	gpuCnv;
-
-		// Direct on-board conversion, cannot use the 
-		// same source and destination => black screen.
-		pMatSrc->gpumat->convertTo ( gpuCnv, fmt );
-		gpuCnv.copyTo ( *(pMatDst->gpumat) );
-		}	// if
+		hr = convertTo ( pMatSrc->gpumat, pMatDst->gpumat, fmt );
 	else if (pMatSrc->isUMat() && pMatDst->isUMat())
 		{
 		// Direct in-memory conversion
@@ -104,20 +97,13 @@ HRESULT Convert :: convertTo (	cv::cuda::GpuMat *pMatSrc,
 	HRESULT				hr = S_OK;
 	cv::cuda::GpuMat	gpuCnv;
 
+	// Cannot convert into the same array, use intermediate array
+
 	// Convert to temporary location
 	pMatSrc->convertTo ( gpuCnv, fmt );
 
 	// Copy to destination
 	gpuCnv.copyTo ( *pMatDst );
-
-	// Copy to CPU
-//	pMatSrc->download ( matCnv );
-
-	// Convert 'to' specified format.
-//	matCnv.convertTo ( matCnv, fmt );
-
-	// Copy back
-//	pMatDst->upload ( matCnv );
 
 	return hr;
 	}	// convertTo
