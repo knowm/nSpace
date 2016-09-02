@@ -133,6 +133,10 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			else
 				cv::meanStdDev ( *(pMat->mat), mean, stddev );
 
+			// Debug
+//			if (mean[0] > 1000 || mean[0] < -1000)
+//				dbgprintf ( L"Hi\r\n" );
+
 			// Result
 			CCLTRY ( pImgUse->store ( adtString(L"Mean"), adtDouble(mean[0]) ) );
 			CCLTRY ( pImgUse->store ( adtString(L"StdDev"), adtDouble(stddev[0]) ) );
@@ -245,8 +249,7 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 			// Perform calculation
 			if (pMat->isGPU())
-				{
-				}	// if
+				nZ = cv::cuda::countNonZero ( *(pMat->gpumat) );
 			else if (pMat->isUMat())
 				nZ = cv::countNonZero ( *(pMat->umat) );
 			else

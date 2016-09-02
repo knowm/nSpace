@@ -139,10 +139,30 @@ HRESULT Gradient :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 						}	// if
 					else if (!WCASECMP(strType,L"Canny"))
 						{
+						// TODO: Current calling any function on 'pgpuCanny' crashes.
+						// For now perform CPU based edge detection.
+						cv::Mat	cpuMat,cpuEdges;
+
+						// Download into CPU memory
+						pMat->gpumat->download ( cpuMat );
+
+						// Perform detection
+						cv::Canny ( cpuMat, cpuEdges, 100, 200 ); 
+
+						// Result
+						pMat->gpumat->upload ( cpuEdges );
+
+						/*
 						if (pgpuCanny == NULL)
 							pgpuCanny = cv::cuda::createCannyEdgeDetector ( 100, 200 );
 						if (pgpuCanny != NULL)
-							pgpuCanny->detect ( *(pMat->gpumat), *(pMat->gpumat) );
+							{
+							// Crash! Open CV 3.1
+							pgpuCanny->clear();
+//							pgpuCanny->detect ( *(pMat->gpumat), *(pMat->gpumat) );
+							pgpuCanny->detect ( *(pMat->gpumat), edges );
+							}	// if
+						*/
 						}	// if
 					else
 						hr = E_NOTIMPL;

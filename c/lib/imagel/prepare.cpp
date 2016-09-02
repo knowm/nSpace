@@ -88,12 +88,13 @@ HRESULT Prepare :: gpuInit ( void )
 	if (bGPUInit)
 		return S_OK;
 
+	// NOTE: Running from the debugger is very slow to start cuda/open CL.
 	// Debug
-//	bCuda = false;
-//	bUMat = false;
-//	bGPUInit = true;
-//	if (true)
-//		return S_OK;
+	bCuda = false;
+	bUMat = false;
+	bGPUInit = true;
+	if (true)
+		return S_OK;
 
 	// Any CUDA-enabled devices ?
 	bCuda = false;

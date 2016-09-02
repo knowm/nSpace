@@ -56,16 +56,19 @@ HRESULT Create :: create ( IDictionary *pDct, U32 w, U32 h, U32 f,
 		{
 		CCLTRYE ( (pMat->gpumat = new cv::cuda::GpuMat ( h, w, f )) != NULL,
 						E_OUTOFMEMORY );
+		CCLOK ( pMat->gpumat->setTo ( cv::Scalar(0) ); )
 		}	// if
 	else if (!bCpu && bUMat)
 		{
 		CCLTRYE ( (pMat->umat = new cv::UMat ( h, w, f )) != NULL,
 						E_OUTOFMEMORY );
+		CCLOK ( pMat->umat->setTo ( cv::Scalar(0) ); )
 		}	// else if
 	else
 		{
 		CCLTRYE ( (pMat->mat = new cv::Mat ( h, w, f )) != NULL,
 						E_OUTOFMEMORY );
+		CCLOK ( pMat->mat->setTo ( cv::Scalar(0) ); )
 		}	// else
 
 	// Store image in image dictionary
