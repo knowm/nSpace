@@ -25,6 +25,7 @@ Create :: Create ( void )
 	strFmt	= L"U8X2";
 	iW			= 128;
 	iH			= 128;
+	bCPU		= false;
 	}	// Create
 
 HRESULT Create :: create ( IDictionary *pDct, U32 w, U32 h, U32 f,
@@ -115,6 +116,8 @@ HRESULT Create :: onAttach ( bool bAttach )
 			iW = vL;
 		if (pnDesc->load ( adtString(L"Height"), vL ) == S_OK)
 			iH = vL;
+		if (pnDesc->load ( adtString(L"CPU"), vL ) == S_OK)
+			bCPU = vL;
 		}	// if
 
 	// Detach
@@ -171,7 +174,7 @@ HRESULT Create :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				hr = E_NOTIMPL;
 
 			// Create a matrix based on the GPU mode
-			CCLTRY ( create ( pImgUse, iW, iH, cvFmt, NULL ) );
+			CCLTRY ( create ( pImgUse, iW, iH, cvFmt, NULL, bCPU ) );
 			}	// if
 
 		// Result

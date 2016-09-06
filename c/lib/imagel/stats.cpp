@@ -126,6 +126,7 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			cv::Scalar mean	= 0;
 			cv::Scalar stddev = 0;
 
+			// Perform calculation
 			if (pMat->isGPU())
 				cv::cuda::meanStdDev ( *(pMat->gpumat), mean, stddev );
 			else if (pMat->isUMat())

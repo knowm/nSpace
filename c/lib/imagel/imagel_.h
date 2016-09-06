@@ -239,6 +239,7 @@ class Create :
 	IDictionary	*pImg;									// Image dictionary
 	adtString	strFmt;									// Format
 	adtInt		iW,iH;									// Size
+	adtBool		bCPU;										// Force CPU bound image
 
 	// Utilities
 	static

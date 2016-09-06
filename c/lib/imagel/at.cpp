@@ -97,60 +97,16 @@ HRESULT At :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				// GPU
 				if (pMat->isGPU())
 					{
-					const uchar *ptrcRow = NULL;
-					uchar			*ptrRow	= NULL;
-
-					// Access row ptr.
-					if (_RCP(Load))
-						ptrcRow = pMat->gpumat->ptr(iY);
-					else
-						ptrRow = pMat->gpumat->ptr(iY);
-
-					// Access array
-					switch (CV_MAT_DEPTH(pMat->gpumat->type()))
+					// Anything can be done ?
+					static bool bFirst = true;
+					if (bFirst)
 						{
-						// 8-bit
-						case CV_8U :
-							if (_RCP(Load))
-								hr = adtValue::copy ( adtInt(ptrcRow[iX]), vL );
-							else
-								*ptrRow = (U8) adtInt(vAt);
-							break;
-						case CV_8S :
-							if (_RCP(Load))
-								hr = adtValue::copy ( adtInt((S8)ptrcRow[iX]), vL );
-							else
-								*ptrRow = ((S8) adtInt(vAt));
-							break;
+						lprintf ( LOG_ERR, L"Per pixel access for GPU images not available" );
+						bFirst = false;
+						}	// if
 
-						// 16-bit
-						case CV_16U :
-							if (_RCP(Load))
-								hr = adtValue::copy ( adtInt(((U16 *)ptrcRow)[iX]), vL );
-							else
-								((U16 *)ptrRow)[iX] = (U16) adtInt(vAt);
-							break;
-						case CV_16S :
-							if (_RCP(Load))
-								hr = adtValue::copy ( adtInt(((S16 *)ptrcRow)[iX]), vL );
-							else
-								((S16 *)ptrRow)[iX] = (S16) adtInt(vAt);
-							break;
-
-						// 32-bit
-						case CV_32S :
-							if (_RCP(Load))
-								hr = adtValue::copy ( adtInt(((S32 *)ptrcRow)[iX]), vL );
-							else
-								((S32 *)ptrRow)[iX] = (S32) adtInt(vAt);
-							break;
-						case CV_32F :
-							if (_RCP(Load))
-								hr = adtValue::copy ( adtFloat(((float *)ptrcRow)[iX]), vL );
-							else
-								((float *)ptrRow)[iX] = (float) adtFloat(vAt);
-							break;
-						}	// switch
+					// Unsupported since image is in GPU memory
+					hr = E_NOTIMPL;
 					}	// if
 
 				// UMAT
