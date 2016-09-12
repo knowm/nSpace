@@ -626,6 +626,7 @@ class Prepare :
 
 	// Run-time data
 	IDictionary	*pImg;									// Image dictionary
+	adtBool		bCPU;										// Force CPU bound image
 
 	// Utilities
 	static

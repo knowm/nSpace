@@ -103,6 +103,7 @@ HRESULT Roi :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		try
 			{
 			// Create a new region of interest
+			// WARNING: Generation of GPU based ROIs slow ??
 			CCLTRYE( (pMatDst = new cvMatRef()) != NULL, E_OUTOFMEMORY );
 			if (hr == S_OK && pMatSrc->isGPU())
 				{
@@ -122,6 +123,7 @@ HRESULT Roi :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					else if	((int)iB >= pMatSrc->gpumat->rows)	iB = pMatSrc->gpumat->rows;
 					}	// if
 
+				// Create ROI
 				CCLTRYE((pMatDst->gpumat = new cv::cuda::GpuMat ( *(pMatSrc->gpumat), cv::Rect(iL,iT,(iR-iL),(iB-iT)) ))
 								!= NULL, E_OUTOFMEMORY);
 
@@ -147,6 +149,7 @@ HRESULT Roi :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					else if	((int)iB >= pMatSrc->umat->rows)	iB = pMatSrc->umat->rows;
 					}	// if
 
+				// Create ROI
 				CCLTRYE((pMatDst->umat = new cv::UMat ( *(pMatSrc->umat), cv::Rect(iL,iT,(iR-iL),(iB-iT)) ))
 								!= NULL, E_OUTOFMEMORY);
 
@@ -172,6 +175,7 @@ HRESULT Roi :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					else if	((int)iB >= pMatSrc->mat->rows)	iB = pMatSrc->mat->rows;
 					}	// if
 
+				// Create ROI
 				CCLTRYE((pMatDst->mat = new cv::Mat ( *(pMatSrc->mat), cv::Rect(iL,iT,(iR-iL),(iB-iT)) ))
 							!= NULL, E_OUTOFMEMORY);
 

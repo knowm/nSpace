@@ -23,6 +23,7 @@ Prepare :: Prepare ( void )
 	//
 	////////////////////////////////////////////////////////////////////////
 	pImg		= NULL;
+	bCPU		= false;
 	}	// Prepare
 
 HRESULT Prepare :: extract (	IDictionary *pDct, const ADTVALUE &vAlt,
@@ -90,11 +91,11 @@ HRESULT Prepare :: gpuInit ( void )
 
 	// NOTE: Running from the debugger is very slow to start cuda/open CL.
 	// Debug
-	bCuda = false;
-	bUMat = false;
-	bGPUInit = true;
-	if (true)
-		return S_OK;
+//	bCuda = false;
+//	bUMat = false;
+//	bGPUInit = true;
+//	if (true)
+//		return S_OK;
 
 	// Any CUDA-enabled devices ?
 	bCuda = false;
@@ -182,8 +183,8 @@ HRESULT Prepare :: onAttach ( bool bAttach )
 		adtValue		vL;
 
 		// Defaults
-//		if (pnDesc->load ( adtString(L"ZeroDC"), vL ) == S_OK)
-//			bZeroDC = adtBool(vL);
+		if (pnDesc->load ( adtString(L"CPU"), vL ) == S_OK)
+			bCPU = vL;
 		}	// if
 
 	// Detach
@@ -232,7 +233,7 @@ HRESULT Prepare :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		CCLTRY ( image_to_mat ( pImgUse, &mat ) );
 
 		// Create a blank matrix type
-		CCLTRY ( Create::create ( pImgUse, mat->cols, mat->rows, mat->type(), &pMat ) );
+		CCLTRY ( Create::create ( pImgUse, mat->cols, mat->rows, mat->type(), &pMat, bCPU ) );
 
 		// GPU
 		if (hr == S_OK && pMat->isGPU())
