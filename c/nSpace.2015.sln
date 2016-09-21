@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{4560AF12-FA84-49FA-94E4-19CB5A898DF0}"
 EndProject
@@ -514,11 +514,9 @@ Global
 		{18CB1363-F002-4B15-8F7F-F00E280DD92E}.Debug|Win32.ActiveCfg = Debug|Win32
 		{18CB1363-F002-4B15-8F7F-F00E280DD92E}.Debug|Win32.Build.0 = Debug|Win32
 		{18CB1363-F002-4B15-8F7F-F00E280DD92E}.Debug|x64.ActiveCfg = Debug|x64
-		{18CB1363-F002-4B15-8F7F-F00E280DD92E}.Debug|x64.Build.0 = Debug|x64
 		{18CB1363-F002-4B15-8F7F-F00E280DD92E}.Release|Win32.ActiveCfg = Release|Win32
 		{18CB1363-F002-4B15-8F7F-F00E280DD92E}.Release|Win32.Build.0 = Release|Win32
 		{18CB1363-F002-4B15-8F7F-F00E280DD92E}.Release|x64.ActiveCfg = Release|x64
-		{18CB1363-F002-4B15-8F7F-F00E280DD92E}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -93,6 +93,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;IMAGEN2015_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -109,6 +110,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;IMAGEN2015_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -128,6 +130,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;IMAGEN2015_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -148,6 +151,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;IMAGEN2015_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -156,7 +160,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <RegisterOutput>true</RegisterOutput>
       <ModuleDefinitionFile>..\dll.def</ModuleDefinitionFile>
-      <AdditionalDependencies>opencv_core$(SDK_OPENCV_VER)d.lib;opencv_imgproc$(SDK_OPENCV_VER)d.lib;opencv_highgui$(SDK_OPENCV_VER)d.lib;opencv_imgcodecs$(SDK_OPENCV_VER)d.lib;opencv_cudaarithm$(SDK_OPENCV_VER)d.lib;opencv_cudaimgproc$(SDK_OPENCV_VER)d.lib;opencv_cudawarping$(SDK_OPENCV_VER)d.lib;opencv_cudafilters$(SDK_OPENCV_VER)d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_core$(SDK_OPENCV_VER).lib;opencv_imgproc$(SDK_OPENCV_VER).lib;opencv_highgui$(SDK_OPENCV_VER).lib;opencv_imgcodecs$(SDK_OPENCV_VER).lib;opencv_cudaarithm$(SDK_OPENCV_VER).lib;opencv_cudaimgproc$(SDK_OPENCV_VER).lib;opencv_cudawarping$(SDK_OPENCV_VER).lib;opencv_cudafilters$(SDK_OPENCV_VER).lib;;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
