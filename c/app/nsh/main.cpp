@@ -68,6 +68,13 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 	//		0 on failure
 	//
 	////////////////////////////////////////////////////////////////////////
+
+	// NOTE: This is mostly to turn off 'premature' calls to the debug
+	// dump calls that other 3rd parties might make (like MFC).  Dumping
+	// memory leak when 'they' unload is pointless if the rest of the system
+	// is still running.
+	_CrtSetDbgFlag(0);
+
 #else
 int main ( int argc, char *argv[] )
 	{
