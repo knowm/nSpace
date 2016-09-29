@@ -136,6 +136,7 @@ HRESULT GnuPlotSrvr :: plot ( IDictionary *pReq )
 	adtString		strV;
 	float				fV;
 	adtInt			iRows,iCols;
+	adtBool			bX2(false);
 
 	// Thread safety in case of multiple plot clients
 	dbgprintf ( L"GnuPlotSrvr::plot { %p\r\n", this );
@@ -160,6 +161,10 @@ HRESULT GnuPlotSrvr :: plot ( IDictionary *pReq )
 	if (hr == S_OK && pReq->load ( adtString(L"3D"), vL ) == S_OK &&
 			adtBool(vL) == true )
 		b3D = true;
+
+	// Two X-axis ?
+	if (hr == S_OK && pReq->load ( adtString(L"TwoX"), vL ) == S_OK )
+		bX2 = vL;
 
 	// Optional labels
 	for (U32 i = 0;hr == S_OK && i < 4;++i)
@@ -193,6 +198,9 @@ HRESULT GnuPlotSrvr :: plot ( IDictionary *pReq )
 
 	// Need at least one X and one Y
 	CCLTRYE ( iRows > 1, E_INVALIDARG );
+
+	// If dual X-axis, must be at least four rows (X0,Y0,X1,Y1,...)
+	CCLTRYE ( !bX2 || iRows >= 4, E_INVALIDARG );
 
 	// For 3D exactly 3D vectors are required
 	CCLTRYE ( !b3D || iRows == 3, E_INVALIDARG );
@@ -525,6 +533,10 @@ HRESULT GnuPlotSrvr :: plot ( IDictionary *pReq )
 //					}	// else
 				CCLTRY ( strCmdBfr.append ( L"\"" ) );
 
+				// If two axis present, skip row 3 where second X row lives
+				if (bX2 && i == 1)
+					++i;
+
 				// Separator
 				if (hr == S_OK && i+1 < iRows)
 					hr = strCmdBfr.append ( L", " );
@@ -566,17 +578,25 @@ HRESULT GnuPlotSrvr :: plot ( IDictionary *pReq )
 			{
 			for (U32 v = 1;hr == S_OK && v < iRows && v < MAX_VECTS;++v)
 				{
+				// X-axis ptr.  If two x-axis are specified then second
+				// X-axis is in the 3rd row (X0,Y0,X1,Y1,Y2,Y3,...)
+				float		*pfBlkX = (!bX2 || v == 1) ? &pfBlk[0] : &pfBlk[2*iCols];
+
 				// Send vector X (Y)
 				for (U32 c = 0;hr == S_OK && c < iCols;++c)
 					{
 					// X value
-					fV = pfBlk[c];
+					fV = pfBlkX[c];
 					hr = pTick->write ( &fV, sizeof(float) );
 
 					// Y value
 					fV = pfBlk[v*iCols+c];
 					hr = pTick->write ( &fV, sizeof(float) );
 					}	// for
+
+				// If two axis present, skip row 3 where second X row lives
+				if (bX2 && v == 1)
+					++v;
 				}	// for
 			}	// if
 

@@ -44,6 +44,7 @@ Image :: Image ( void )
 	iPlotH		= 600;
 	pData			= NULL;
 	pReq			= NULL;
+	bX2			= false;
 	}	// Image
 
 HRESULT Image :: construct ( void )
@@ -120,6 +121,8 @@ HRESULT Image :: onAttach ( bool bAttach )
 			adtValue::toString ( vL, strLblY0 );
 		if (pnDesc->load ( adtString(L"LabelY1"), vL ) == S_OK)
 			adtValue::toString ( vL, strLblY1 );
+		if (pnDesc->load ( adtString(L"X2"), vL ) == S_OK)
+			bX2 = vL;
 
 		// Single GnuPlot server
 		if (hr == S_OK && uGnuCnt == 0)
@@ -282,6 +285,9 @@ HRESULT Image :: update ( void )
 		hr = pReq->store ( adtString ( L"LabelY1" ), strLblY1 );
 	else
 		pReq->remove ( adtString(L"LabelY1") );
+
+	// Dual X-axis
+	CCLTRY ( pReq->store ( adtString ( L"TwoX" ), bX2 ) );
 
 	// Send request to GNU server.  In order to support multiple
 	// synchronized clients, the server stores the result directly

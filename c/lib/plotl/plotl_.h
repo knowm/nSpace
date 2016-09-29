@@ -145,6 +145,7 @@ class Image :
 	IDictionary		*pReq;								// Plot request
 	adtString		strLblX0,strLblX1;				// X-axis labels
 	adtString		strLblY0,strLblY1;				// Y-axis labels
+	adtBool			bX2;									// Two X-axis
 
 	// CCL
 	CCL_OBJECT_BEGIN(Image)

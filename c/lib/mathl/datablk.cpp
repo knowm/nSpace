@@ -135,72 +135,76 @@ HRESULT DataBlock :: addRow ( IDictionary *pDctDst,
 	CCLOK  ( pfDst = (float *)pvBitsDst; )
 	CCLOK  ( pfDst += (iDstH-1)*iDstW; )
 
-	// Add more formats as necessary
-	if (!WCASECMP(strFmt,L"U16x2"))
+	// Add data
+	if (hr == S_OK)
 		{
-		// Source bits
-		U16	*piSrc = ((U16 *) pvBitsSrc) + (iRow*iSrcW);
-
-		// Copy into new row
-		for (U32 c = 0;c < iSrcW;++c)
-			pfDst[c] = piSrc[c];
-		}	// if
-	else if (!WCASECMP(strFmt,L"S16x2"))
-		{
-		// Source bits
-		S16	*piSrc = ((S16 *) pvBitsSrc) + (iRow*iSrcW);
-
-		// Copy into new row
-		for (U32 c = 0;c < iSrcW;++c)
-			pfDst[c] = piSrc[c];
-		}	// if
-	else if (!WCASECMP(strFmt,L"U8x2"))
-		{
-		// Source bits
-		U8	*pcSrc = ((U8 *) pvBitsSrc) + (iRow*iSrcW);
-
-		// Copy into new row
-		for (U32 c = 0;c < iSrcW;++c)
-			pfDst[c] = pcSrc[c];
-		}	// if
-	else if (!WCASECMP(strFmt,L"F32x2"))
-		{
-		// Source bits
-		float *pfBits = ((float *)pvBitsSrc) + (iRow*iSrcW);
-
-		// Copy row
-		memcpy ( pfDst, pfBits, iSrcW*sizeof(float) );
-		}	// else if
-		
-	// No format specified
-	else if (strFmt.length() == 0)
-		{
-		IIt	*pIt	= NULL;
-		U32	c		= 0;
-
-		// Iterate and add values from list into vector
-		if (hr == S_OK)
+		// Add more formats as necessary
+		if (!WCASECMP(strFmt,L"U16x2"))
 			{
-			if (iRow == 0) hr = pDctSrc->keys ( &pIt );
-			else				hr = pDctSrc->iterate ( &pIt );
+			// Source bits
+			U16	*piSrc = ((U16 *) pvBitsSrc) + (iRow*iSrcW);
+
+			// Copy into new row
+			for (U32 c = 0;c < iSrcW;++c)
+				pfDst[c] = piSrc[c];
 			}	// if
-//		CCLTRY ( pDctSrc->iterate ( &pIt ) );
-		while (hr == S_OK && pIt->read ( vL ) == S_OK && c < iSrcW)
+		else if (!WCASECMP(strFmt,L"S16x2"))
 			{
-			// Add to array
-			pfDst[c++] = adtFloat(vL);
+			// Source bits
+			S16	*piSrc = ((S16 *) pvBitsSrc) + (iRow*iSrcW);
+
+			// Copy into new row
+			for (U32 c = 0;c < iSrcW;++c)
+				pfDst[c] = piSrc[c];
+			}	// if
+		else if (!WCASECMP(strFmt,L"U8x2"))
+			{
+			// Source bits
+			U8	*pcSrc = ((U8 *) pvBitsSrc) + (iRow*iSrcW);
+
+			// Copy into new row
+			for (U32 c = 0;c < iSrcW;++c)
+				pfDst[c] = pcSrc[c];
+			}	// if
+		else if (!WCASECMP(strFmt,L"F32x2"))
+			{
+			// Source bits
+			float *pfBits = ((float *)pvBitsSrc) + (iRow*iSrcW);
+
+			// Copy row
+			memcpy ( pfDst, pfBits, iSrcW*sizeof(float) );
+			}	// else if
+		
+		// No format specified
+		else if (strFmt.length() == 0)
+			{
+			IIt	*pIt	= NULL;
+			U32	c		= 0;
+
+			// Iterate and add values from list into vector
+			if (hr == S_OK)
+				{
+				if (iRow == 0) hr = pDctSrc->keys ( &pIt );
+				else				hr = pDctSrc->iterate ( &pIt );
+				}	// if
+	//		CCLTRY ( pDctSrc->iterate ( &pIt ) );
+			while (hr == S_OK && pIt->read ( vL ) == S_OK && c < iSrcW)
+				{
+				// Add to array
+				pfDst[c++] = adtFloat(vL);
+
+				// Clean up
+				pIt->next();
+				}	// while
 
 			// Clean up
-			pIt->next();
-			}	// while
+			_RELEASE(pIt);
+			}	// else if
 
-		// Clean up
-		_RELEASE(pIt);
-		}	// else if
-
-	// Unknown
-	else
-		hr = E_INVALIDARG;
+		// Unknown
+		else
+			hr = E_INVALIDARG;
+		}	// if
 
 	// Clean up
 	_UNLOCK(pBitsDst,pvBitsDst);
