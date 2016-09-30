@@ -73,7 +73,9 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 	// dump calls that other 3rd parties might make (like MFC).  Dumping
 	// memory leak when 'they' unload is pointless if the rest of the system
 	// is still running.
+	#ifdef	_DEBUG
 	_CrtSetDbgFlag(0);
+	#endif
 
 #else
 int main ( int argc, char *argv[] )

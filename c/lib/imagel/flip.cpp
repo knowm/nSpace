@@ -150,7 +150,14 @@ HRESULT Flip :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				cv::transpose ( matTrans, *(pMat->umat) );
 				}	// else if
 			else
-				cv::transpose ( *(pMat->mat), *(pMat->mat) );
+				{
+				cv::Mat	matT;
+
+				// NOTE: Mat does not like source and destination to be the same
+				// Example: Rotating something WidthX2700 gave 2800xWidth, size not the same
+				pMat->mat->copyTo ( matT );
+				cv::transpose ( matT, *(pMat->mat) );
+				}	// else
 			}	// if
 //		CCLOK ( image_to_debug ( pMat, L"Transpose", L"c:/temp/trans2.png" ); )
 

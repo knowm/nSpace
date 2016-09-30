@@ -89,13 +89,18 @@ HRESULT Prepare :: gpuInit ( void )
 	if (bGPUInit)
 		return S_OK;
 
+	// In general, the in debugger mode or using the debugger is very
+	// slow with acceleration enabled.  Since performance is not an issue
+	// when debugging default to CPU only.  The only time to enable
+	// this in debug mode is if this specifically is being debugged.
 	// NOTE: Running from the debugger is very slow to start cuda/open CL.
-	// Debug
-//	bCuda = false;
-//	bUMat = false;
-//	bGPUInit = true;
-//	if (true)
-//		return S_OK;
+	#ifdef	_DEBUG
+	bCuda = false;
+	bUMat = false;
+	bGPUInit = true;
+	if (true)
+		return S_OK;
+	#endif
 
 	// Any CUDA-enabled devices ?
 	bCuda = false;
