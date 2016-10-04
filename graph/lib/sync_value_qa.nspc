@@ -9,10 +9,9 @@
 @
 
 	% Context
+	$	Maximum			Misc.Dist {}			% Maximum queue size (0 = no limit)
 
 	% Actions
-	$	Start					Misc.Dist {}		% Start queue
-	$	Stop					Misc.Dist {}		% Stop queue
 	$	Value					Misc.Dist {}		% Add a value to the queue
 	$	Retry					Misc.Dist {}		% Re-emit latest value
 	$	Next					Misc.Dist {}		% Return the next value
@@ -22,10 +21,10 @@
 	% Notifications
 	$	OnValue			Misc.Dist {}			% A value is available
 	$	OnEmpty			Misc.Dist {}			% Value queue empty
+	$	OnFull			Misc.Dist {}			% Value queue full (if max)
 
 	% Subgraph: Synchronous value queue
 	#	Q												Lib/Sync_Value_Q/ {}
-		!	Reset/OnFire							Q/Reset/Fire
 
 	% DEBUG
 %	$	Debug Misc.Debug {}
@@ -38,23 +37,19 @@
 	%% Turn the synchronous queue into an asynchronous queue by emitting
 	%% values on its own thread.
 
-	% Clear queue
-	!	Start/OnFire								Q/Reset/Fire
-
-	% MISCN: Async queue.  Using to emit one value at a time from the contained queue logic.
-	$	AsyncQ Misc.AsyncQ {}
-		!	Start/OnFire							AsyncQ/Start
-		!	Stop/OnFire								AsyncQ/Stop
+	% MISCN: Asynchronous emission for values
+	$	AsyncEmit Misc.AsyncEmit {}
 
 	% Emit values from queue asynchronously
-	!	Q/OnValue/OnFire							AsyncQ/Fire
-	!	AsyncQ/OnFire								OnValue/Fire
+	!	Q/OnValue/OnFire							AsyncEmit/Fire
+	!	AsyncEmit/OnFire							OnValue/Fire
 
 	% Sync queue signals
+	!	Maximum/OnFire								Q/Maximum/Fire
+	!	Reset/OnFire								Q/Reset/Fire
 	!	Value/OnFire								Q/Value/Fire
 	!	Next/OnFire									Q/Next/Fire
 	!	Retry/OnFire								Q/Retry/Fire
 	!	Q/OnEmpty/OnFire							OnEmpty/Fire
+	!	Q/OnFull/OnFire							OnFull/Fire
 
-	% Auto shutdown
-	!	Uninitialize/OnFire						Stop/Fire

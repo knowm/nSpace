@@ -18,7 +18,8 @@ AsyncEmit :: AsyncEmit ( void )
 	//
 	////////////////////////////////////////////////////////////////////////
 	pThrd		= NULL;
-	bEmit		= false;
+	bRun		= false;
+	evEmit.init();
 	}	// AsyncEmit
 
 void AsyncEmit :: destruct ( void )
@@ -54,6 +55,8 @@ HRESULT AsyncEmit :: onAttach ( bool bAttach )
 	// Attach
 	if (bAttach)
 		{
+		adtValue vL;
+
 		// Default states
 		pnDesc->load ( adtString(L"Value"), vVal );
 		}	// if
@@ -62,7 +65,12 @@ HRESULT AsyncEmit :: onAttach ( bool bAttach )
 	else if (!bAttach)
 		{
 		// Shutdown thread
-		_RELEASE(pThrd);
+		if (pThrd != NULL)
+			{
+			bRun = false;
+			pThrd->threadStop(5000);
+			_RELEASE(pThrd);
+			}	// if
 		}	// else if
 
 	return hr;
@@ -88,25 +96,27 @@ HRESULT AsyncEmit :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	// Emit
 	if (_RCP(Fire))
 		{
-		// Already emitting?
-		CCLTRYE ( bEmit == false, E_UNEXPECTED );
+		// Value slot available ?
+		CCLTRYE ( adtValue::empty(vEmit) == true, ERROR_INVALID_STATE );
+
+		// Create thread if necessary
+		if (hr == S_OK && pThrd == NULL)
+			{
+			CCLTRY(COCREATE(L"Sys.Thread", IID_IThread, &pThrd ));
+			CCLOK (bRun = true;)
+			CCLTRY(pThrd->threadStart ( this, 5000 ));
+			}	// if
 
 		// Copy value to emit
 		CCLTRY ( adtValue::copy ( adtValue::empty(vVal) ? v : vVal, vEmit ) );
 
-		// Start emission
-		if (hr == S_OK)
-			{
-			_RELEASE(pThrd);
-			CCLTRY(COCREATE(L"Sys.Thread", IID_IThread, &pThrd ));
-			CCLOK (bEmit = true;)
-			CCLTRY(pThrd->threadStart ( this, 5000 ));
-			}	// if
+		// Emission value available
+		CCLOK ( evEmit.signal(); )
 		}	// if
 
 	// State
 	else if (_RCP(Value))
-		adtValue::copy ( v, vEmit );
+		adtValue::copy ( v, vVal );
 	else
 		hr = ERROR_NO_MATCH;
 
@@ -127,14 +137,28 @@ HRESULT AsyncEmit :: tick ( void )
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	// Debug
-//	Sleep(2000);
+	HRESULT		hr = S_OK;
+	adtValue		vEmitNow;
+
+	// Wait for value to emit
+	CCLTRYE ( evEmit.wait(-1), ERROR_TIMEOUT );
+
+	// Still running ?
+	CCLTRYE ( bRun == true, S_FALSE );
 
 	// Emit value
-	_EMT(Fire,vEmit);
-	bEmit			= false;
+	if (hr == S_OK)
+		{
+		// Make local copy so value can be readied immediately
+		CCLTRY ( adtValue::copy ( vEmit, vEmitNow ) );
 
-	// Asynchronous emitter is a single shot event
-	return S_FALSE;
+		// Clear value to signal slot available
+		CCLOK ( adtValue::clear ( vEmit ); )
+
+		// Emit
+		_EMT(Fire,vEmitNow);
+		}	// if
+
+	return hr;
 	}	// tick
 

@@ -25,6 +25,8 @@ AsyncQ :: AsyncQ ( void )
 	pQvs		= NULL;
 	iMaxSz	= 0;
 	bBlock	= false;
+	uIn		= 0;
+	uOut		= 0;
 
 	// Default Id in case node is being used in single queue mode
 	adtValue::copy ( adtInt(0), vQId );
@@ -191,6 +193,7 @@ HRESULT AsyncQ :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				// Add value to queue
 //				dbgprintf ( L"AsyncQ::receive:Size %d\r\n", sz );
 				CCLTRY ( pQ->write ( v ) );
+				CCLOK ( uIn++; )
 
 				// If there is no active value, signal thread to emit it.
 				if (hr == S_OK && pQvs->load ( vQId, vQ ) != S_OK)
@@ -205,8 +208,8 @@ HRESULT AsyncQ :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				}	// if
 
 			// TODO: Implement blocking option ?
-//			else
-//				dbgprintf ( L"AsyncQ::receive:WARNING Queue full\r\n" );
+			else
+				dbgprintf ( L"AsyncQ::receive:WARNING Queue full\r\n" );
 
 			// Clean up
 			_RELEASE(pQ);
@@ -322,14 +325,21 @@ HRESULT AsyncQ :: tick ( void )
 		// Emit current value if valid
 		if (bEmit)
 			{
+			// Debug
+			++uOut;
+//			lprintf ( LOG_DBG, L"%d/%d", uIn, uOut );
+
 			// Emit current Id and value
 //			dbgprintf ( L"AsyncQ::tick:emit\r\n" );
 			_EMT(Id,vIdE);
 			_EMT(Fire,vQE);
 			}	// if
 
+		// Still running ?
+		CCLTRYE ( bRun == true, S_FALSE );
+
 		// Clean up
-		pQwIt->next();
+		CCLOK ( pQwIt->next(); )
 		}	// while
 
 	// Wait for additional work

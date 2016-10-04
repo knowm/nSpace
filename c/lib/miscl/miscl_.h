@@ -50,10 +50,13 @@ class AsyncEmit :
 	DECLARE_CON(Fire)
 	//!	\brief Specifies a value for subsequent emissions.
 	DECLARE_RCP(Value)
+	//!	\brief Emits error if cannot emit, such as if the node is already emitting a value.
+	DECLARE_EMT(Error)
 	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_CON(Fire)
 		DEFINE_RCP(Value)
+		DEFINE_EMT(Error)
 	END_BEHAVIOUR_NOTIFY()
 
 	private :
@@ -61,11 +64,12 @@ class AsyncEmit :
 	// Run-time data
 	IThread		*pThrd;									// Thread
 	adtValue		vVal,vEmit;								// Emission value
-	bool			bEmit;									// Emitting ?
+	bool			bRun;										// Running
+	sysEvent		evEmit;									// Emit event
 
 	// 'ITickable' members
 	STDMETHOD(tick)		( void );
-	STDMETHOD(tickAbort)	( void ) { return S_OK; }
+	STDMETHOD(tickAbort)	( void ) { bRun = false; evEmit.signal(); return S_OK; }
 	STDMETHOD(tickBegin)	( void ) { return S_OK; }
 	STDMETHOD(tickEnd)	( void ) { return S_OK; }
 
@@ -137,6 +141,7 @@ class AsyncQ :
 	adtValue		vIdE, vQE;								// Internal
 	adtValue		vQ;										// Queue variable
 	adtIUnknown	unkV;										// Internal
+	U32			uIn,uOut;								// Debug
 
 	// 'ITickable' members
 	STDMETHOD(tick)		( void );

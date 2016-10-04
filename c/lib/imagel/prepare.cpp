@@ -89,18 +89,18 @@ HRESULT Prepare :: gpuInit ( void )
 	if (bGPUInit)
 		return S_OK;
 
-	// In general, the in debugger mode or using the debugger is very
-	// slow with acceleration enabled.  Since performance is not an issue
+	// In general, for debug the  slow with acceleration enabled.  
+	// Since performance is not an issue
 	// when debugging default to CPU only.  The only time to enable
 	// this in debug mode is if this specifically is being debugged.
 	// NOTE: Running from the debugger is very slow to start cuda/open CL.
-	#ifdef	_DEBUG
+//	#ifdef	_DEBUG
 	bCuda = false;
 	bUMat = false;
 	bGPUInit = true;
 	if (true)
 		return S_OK;
-	#endif
+//	#endif
 
 	// Any CUDA-enabled devices ?
 	bCuda = false;
@@ -132,18 +132,11 @@ HRESULT Prepare :: gpuInit ( void )
 		if (cv::ocl::haveOpenCL())
 			bUMat = true;
 
-		// At the moment there are certain graphics cards that have brain dead
-		// performance so do not use OpenCL in those cases.
+		// Debug information
 		cv::ocl::Device	
 		dev = cv::ocl::Device::getDefault();
-		dbgprintf ( L"Name : %S : %S : %d.%d\r\n", dev.name().c_str(), dev.vendorName().c_str(),
-						dev.deviceVersionMajor(), dev.deviceVersionMinor() );
-		dbgprintf ( L"%S\r\n", dev.name().c_str() );
-//		if (strstr ( dev.name().c_str(), "Iris" ) != NULL)
-//			bUMat = false;
-
-		// Do not really have a good OpenCL source to test with, disable for now
-//		bUMat = false;
+		lprintf ( LOG_DBG, L"Name : %S : %S : %d.%d : %S\r\n", dev.name().c_str(), dev.vendorName().c_str(),
+						dev.deviceVersionMajor(), dev.deviceVersionMinor(), dev.name().c_str() );
 
 		// Debug
 		lprintf ( LOG_INFO, L"OpenCL %s\r\n", (bUMat) ? L"enabled" : L"disabled" );

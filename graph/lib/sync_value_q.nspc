@@ -10,6 +10,7 @@
 @
 
 	% Context
+	$	Maximum			Misc.Dist {}			% Maximum queue size (0 = no limit)
 
 	% Actions
 	$	Initialize		Misc.Dist {}			% Initialize graph
@@ -21,6 +22,7 @@
 	% Notifications
 	$	OnValue			Misc.Dist {}			% A value is available
 	$	OnEmpty			Misc.Dist {}			% Value queue empty
+	$	OnFull			Misc.Dist {}			% Value queue full (if max)
 
 	%%%%%%%%
 	% Queue
@@ -33,7 +35,34 @@
 	% WRITE: Write values to queue on arrival
 	$	WriteValueQ Adt.Write {}
 		!	CreateValueQ/OnFire					WriteValueQ/List
-		!	Value/OnFire							WriteValueQ/Fire
+		!	Value/OnFire							WriteValueQ/Value
+
+	% MISCN: Maximum specified ?
+	$	IsMax Misc.Compare { Left 0:int Right 0:int }
+		!	Maximum/OnFire							IsMax/Right
+		!	Value/OnFire							IsMax/Fire
+
+	% ADTN: Obtain number of items in queue
+	$	CountValueQ Adt.Stat {}
+		!	CreateValueQ/OnFire					CountValueQ/Container
+		!	IsMax/OnNotEqual						CountValueQ/Fire
+
+	% MISCN: Room ?
+	$	IsMore Misc.Compare { Left 0:int }
+		!	Maximum/OnFire							IsMore/Left
+		!	CountValueQ/OnCount					IsMore/Fire
+
+	% Write value to queue
+	!	IsMax/OnEqual								WriteValueQ/Fire
+	!	IsMore/OnGreater							WriteValueQ/Fire
+
+	% Full signal
+	!	IsMore/OnEqual								OnFull/Fire
+	!	IsMore/OnLess								OnFull/Fire
+
+	%%%%%%%%%%
+	% Extract
+	%%%%%%%%%%
 
 	% ADTN: Iterator for value queue
 	$	ValueQIt Adt.Iterate {}
