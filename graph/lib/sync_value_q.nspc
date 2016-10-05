@@ -11,6 +11,7 @@
 
 	% Context
 	$	Maximum			Misc.Dist {}			% Maximum queue size (0 = no limit)
+	$	Clone				Misc.Dist {}			% Signaled to clone values as they are queued
 
 	% Actions
 	$	Initialize		Misc.Dist {}			% Initialize graph
@@ -35,7 +36,27 @@
 	% WRITE: Write values to queue on arrival
 	$	WriteValueQ Adt.Write {}
 		!	CreateValueQ/OnFire					WriteValueQ/List
-		!	Value/OnFire							WriteValueQ/Value
+
+	% MISCN: Clone value and queue it
+	$	CloneValue Misc.Clone {}
+
+	% MISCN: Value to queue
+	$	ValueQ Misc.Dist {}
+		!	Value/OnFire							ValueQ/Value
+
+	%% Queue
+
+	% MISCN: True if values should be cloned on the way into the queue
+	$	CloneBool Misc.Toggle { Default false:bool }
+		!	ValueQ/OnFire							CloneBool/Fire
+		!	Clone/OnFire							CloneBool/True
+
+	% Queue value
+	!	CloneBool/OnTrue							CloneValue/Fire
+	!	CloneValue/OnFire							WriteValueQ/Fire
+	!	CloneBool/OnFalse							WriteValueQ/Fire
+
+	%% Count
 
 	% MISCN: Maximum specified ?
 	$	IsMax Misc.Compare { Left 0:int Right 0:int }
@@ -53,8 +74,8 @@
 		!	CountValueQ/OnCount					IsMore/Fire
 
 	% Write value to queue
-	!	IsMax/OnEqual								WriteValueQ/Fire
-	!	IsMore/OnGreater							WriteValueQ/Fire
+	!	IsMax/OnEqual								ValueQ/Fire
+	!	IsMore/OnGreater							ValueQ/Fire
 
 	% Full signal
 	!	IsMore/OnEqual								OnFull/Fire
