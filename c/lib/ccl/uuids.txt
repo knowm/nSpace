@@ -210,7 +210,7 @@
 2534d0d7-8628-11d2-868c-006008addfed				//	CLSID_NotifyDevices (iol)
 2534d0d8-8628-11d2-868c-006008addfed				// CLSID_Gradient (imagel)
 2534d0d9-8628-11d2-868c-006008addfed				// CLSID_SysStmOnByteStm (iol)
-2534d0da-8628-11d2-868c-006008addfed				// 
+2534d0da-8628-11d2-868c-006008addfed				// CLSID_Features (imagel)
 2534d0db-8628-11d2-868c-006008addfed				// 
 2534d0dc-8628-11d2-868c-006008addfed				//	
 2534d0dd-8628-11d2-868c-006008addfed				//	

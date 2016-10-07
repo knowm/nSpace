@@ -360,7 +360,7 @@ HRESULT DataBlock :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		CCLTRYE ( pBlk != NULL, ERROR_INVALID_STATE );
 		CCLTRYE ( pSrc != NULL, ERROR_INVALID_STATE );
 
-		// Add the specified row index
+		// Add the specified row indexb
 		CCLTRY ( addRow ( pBlk, pSrc, iY ) );
 
 		// Result

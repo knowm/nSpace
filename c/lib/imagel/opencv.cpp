@@ -273,6 +273,7 @@ HRESULT image_from_mat ( Mat *pM, IDictionary *pImg )
 	//				hr = pImg->store ( strRefFormat, adtString(L"U8x2") );
 	//			break;
 			default :
+				lprintf ( LOG_WARN, L"Unsupported channels %d", pM->channels() );
 				hr = E_NOTIMPL;
 			}	// switch
 		}	// if

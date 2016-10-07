@@ -27,6 +27,7 @@
     <ClCompile Include="cvmatref.cpp" />
     <ClCompile Include="distance.cpp" />
     <ClCompile Include="draw.cpp" />
+    <ClCompile Include="features.cpp" />
     <ClCompile Include="fft.cpp" />
     <ClCompile Include="flip.cpp" />
     <ClCompile Include="gradient.cpp" />

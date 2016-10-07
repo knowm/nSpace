@@ -350,6 +350,37 @@ class Draw :
 	};
 
 //
+// Class - Features.  Feature extraction node.
+//
+
+class Features :
+	public CCLObject,										// Base class
+	public Behaviour										// Interface
+	{
+	public :
+	Features ( void );									// Constructor
+
+	// Run-time data
+	IDictionary	*pImg;									// Image dictionary
+	adtString	strType;									// Feature type
+
+	// CCL
+	CCL_OBJECT_BEGIN(Features)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_EMT(Error)
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Image)
+	BEGIN_BEHAVIOUR()
+		DEFINE_EMT(Error)
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Image)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
+//
 // Class - Flip.  Image flip node.
 //
 
