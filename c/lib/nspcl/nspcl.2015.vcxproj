@@ -45,6 +45,7 @@
     <ProjectGuid>{422E909B-A304-47A3-A2E6-8959FF5BC156}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>nspcl</RootNamespace>
+    <ProjectName>nspcl</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

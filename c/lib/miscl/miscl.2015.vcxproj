@@ -49,6 +49,7 @@
     <ProjectGuid>{789616AD-B765-4211-9ACC-0CA60DEB4BD2}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>miscl</RootNamespace>
+    <ProjectName>miscl</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

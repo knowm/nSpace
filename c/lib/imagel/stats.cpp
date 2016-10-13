@@ -22,6 +22,7 @@ Stats :: Stats ( void )
 	pImg			= NULL;
 	bEnt			= false;
 	bBoundRct	= false;
+	bSum			= false;
 	}	// Stats
 
 HRESULT Stats :: onAttach ( bool bAttach )
@@ -52,6 +53,8 @@ HRESULT Stats :: onAttach ( bool bAttach )
 			bBoundRct = vL;
 		if (pnDesc->load ( adtString(L"NonZero"), vL ) == S_OK)
 			bNonZero = vL;
+		if (pnDesc->load ( adtString(L"Sum"), vL ) == S_OK)
+			bSum = vL;
 		}	// if
 
 	// Detach
@@ -90,66 +93,60 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		// Obtain image refence
 		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
 
-		// Limits
-		if (hr == S_OK)
+		// OpenCV throws exceptions
+		try
 			{
-			cv::Point	ptMin,ptMax;
-			double		dMin,dMax;
-
-			try
+			// Limits
+			if (hr == S_OK)
 				{
-				// Values and locations of min and max
+				cv::Point	ptMin,ptMax;
+				double		dMin,dMax;
+
+					// Values and locations of min and max
+					if (pMat->isGPU())
+						cv::cuda::minMaxLoc ( *(pMat->gpumat), &dMin, &dMax, &ptMin, &ptMax );
+					else if (pMat->isUMat())
+						cv::minMaxLoc ( *(pMat->umat), &dMin, &dMax, &ptMin, &ptMax );
+					else
+						cv::minMaxLoc ( *(pMat->mat), &dMin, &dMax, &ptMin, &ptMax );
+
+					// Result
+					CCLTRY ( pImgUse->store ( adtString(L"Min"), adtDouble(dMin) ) );
+					CCLTRY ( pImgUse->store ( adtString(L"MinX"), adtInt(ptMin.x) ) );
+					CCLTRY ( pImgUse->store ( adtString(L"MinY"), adtInt(ptMin.y) ) );
+					CCLTRY ( pImgUse->store ( adtString(L"Max"), adtDouble(dMax) ) );
+					CCLTRY ( pImgUse->store ( adtString(L"MaxX"), adtInt(ptMax.x) ) );
+					CCLTRY ( pImgUse->store ( adtString(L"MaxY"), adtInt(ptMax.y) ) );
+				}	// if
+
+			// Mean, standard deviation
+			if (hr == S_OK)
+				{
+				cv::Scalar mean	= 0;
+				cv::Scalar stddev = 0;
+
+				// Perform calculation
 				if (pMat->isGPU())
-					cv::cuda::minMaxLoc ( *(pMat->gpumat), &dMin, &dMax, &ptMin, &ptMax );
+					cv::cuda::meanStdDev ( *(pMat->gpumat), mean, stddev );
 				else if (pMat->isUMat())
-					cv::minMaxLoc ( *(pMat->umat), &dMin, &dMax, &ptMin, &ptMax );
+					cv::meanStdDev ( *(pMat->umat), mean, stddev );
 				else
-					cv::minMaxLoc ( *(pMat->mat), &dMin, &dMax, &ptMin, &ptMax );
+					cv::meanStdDev ( *(pMat->mat), mean, stddev );
+
+				// Debug
+	//			if (mean[0] > 1000 || mean[0] < -1000)
+	//				dbgprintf ( L"Hi\r\n" );
 
 				// Result
-				CCLTRY ( pImgUse->store ( adtString(L"Min"), adtDouble(dMin) ) );
-				CCLTRY ( pImgUse->store ( adtString(L"MinX"), adtInt(ptMin.x) ) );
-				CCLTRY ( pImgUse->store ( adtString(L"MinY"), adtInt(ptMin.y) ) );
-				CCLTRY ( pImgUse->store ( adtString(L"Max"), adtDouble(dMax) ) );
-				CCLTRY ( pImgUse->store ( adtString(L"MaxX"), adtInt(ptMax.x) ) );
-				CCLTRY ( pImgUse->store ( adtString(L"MaxY"), adtInt(ptMax.y) ) );
-				}	// try
-			catch ( cv::Exception &e )
+				CCLTRY ( pImgUse->store ( adtString(L"Mean"), adtDouble(mean[0]) ) );
+				CCLTRY ( pImgUse->store ( adtString(L"StdDev"), adtDouble(stddev[0]) ) );
+				}	// if
+
+			// Entropy calculation
+			if (hr == S_OK && bEnt == true && pMat->mat->channels() == 1)
 				{
-				lprintf ( LOG_INFO, L"minMaxLoc:%S\r\n", e.err.c_str() );
-				}	// catch
-			}	// if
+				cv::Mat				matHst,matLog;
 
-		// Mean, standard deviation
-		if (hr == S_OK)
-			{
-			cv::Scalar mean	= 0;
-			cv::Scalar stddev = 0;
-
-			// Perform calculation
-			if (pMat->isGPU())
-				cv::cuda::meanStdDev ( *(pMat->gpumat), mean, stddev );
-			else if (pMat->isUMat())
-				cv::meanStdDev ( *(pMat->umat), mean, stddev );
-			else
-				cv::meanStdDev ( *(pMat->mat), mean, stddev );
-
-			// Debug
-//			if (mean[0] > 1000 || mean[0] < -1000)
-//				dbgprintf ( L"Hi\r\n" );
-
-			// Result
-			CCLTRY ( pImgUse->store ( adtString(L"Mean"), adtDouble(mean[0]) ) );
-			CCLTRY ( pImgUse->store ( adtString(L"StdDev"), adtDouble(stddev[0]) ) );
-			}	// if
-
-		// Entropy calculation
-		if (hr == S_OK && bEnt == true && pMat->mat->channels() == 1)
-			{
-			cv::Mat				matHst,matLog;
-
-			try
-				{
 				// Default to 0-256 graylevels.  Future expansion can have additional options.
 				float				range[]		= { 0, 256 };
 				const float *	histRange	= { range };
@@ -208,57 +205,76 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 				// Result
 				CCLTRY ( pImgUse->store ( adtString(L"Entropy"), adtDouble(ent) ) );
-				}	// try
-			catch ( cv::Exception &e )
-				{
-				lprintf ( LOG_INFO, L"entropy:%S\r\n", e.err.c_str() );
-				}	// catch
-			}	// if
-
-		// Bounding rectangle
-		if (hr == S_OK && bBoundRct == true)
-			{
-			cv::Rect rct;
-
-			// Calculate bounding rectangle, assumes array of points
-			if (pMat->isGPU())
-				{
-				cv::Mat		matNoGpu;
-
-				// Currently no GPU based version ?
-				pMat->gpumat->download ( matNoGpu );
-
-				// Execute
-				rct = cv::boundingRect ( matNoGpu );
 				}	// if
-			else if (pMat->isUMat())
-				rct = cv::boundingRect ( *(pMat->umat) );
-			else
-				rct = cv::boundingRect ( *(pMat->mat) );
 
-			// Result
-			CCLTRY ( pImgUse->store ( adtString(L"Left"), adtInt(rct.x) ) );
-			CCLTRY ( pImgUse->store ( adtString(L"Top"), adtInt(rct.y) ) );
-			CCLTRY ( pImgUse->store ( adtString(L"Width"), adtInt(rct.width) ) );
-			CCLTRY ( pImgUse->store ( adtString(L"Height"), adtInt(rct.height) ) );
-			}	// if
+			// Bounding rectangle
+			if (hr == S_OK && bBoundRct == true)
+				{
+				cv::Rect rct;
 
-		// Non-zero pixels
-		if (hr == S_OK && bNonZero == true)
+				// Calculate bounding rectangle, assumes array of points
+				if (pMat->isGPU())
+					{
+					cv::Mat		matNoGpu;
+
+					// Currently no GPU based version ?
+					pMat->gpumat->download ( matNoGpu );
+
+					// Execute
+					rct = cv::boundingRect ( matNoGpu );
+					}	// if
+				else if (pMat->isUMat())
+					rct = cv::boundingRect ( *(pMat->umat) );
+				else
+					rct = cv::boundingRect ( *(pMat->mat) );
+
+				// Result
+				CCLTRY ( pImgUse->store ( adtString(L"Left"), adtInt(rct.x) ) );
+				CCLTRY ( pImgUse->store ( adtString(L"Top"), adtInt(rct.y) ) );
+				CCLTRY ( pImgUse->store ( adtString(L"Width"), adtInt(rct.width) ) );
+				CCLTRY ( pImgUse->store ( adtString(L"Height"), adtInt(rct.height) ) );
+				}	// if
+
+			// Pixel sum
+			if (hr == S_OK && bSum == true)
+				{
+				cv::Scalar	sum = 0;
+
+				// Calculate total sum of pixels
+				if (pMat->isGPU())
+					cv::cuda::sum(*(pMat->gpumat));
+				else if (pMat->isUMat())
+					sum = cv::sum(*(pMat->umat));
+				else
+					sum = cv::sum(*(pMat->mat));
+
+				// Result
+				CCLTRY ( pImgUse->store ( adtString(L"Sum"), adtDouble(sum[0]) ) );
+				}	// if
+
+			// Non-zero pixels
+			if (hr == S_OK && bNonZero == true)
+				{
+				int nZ = 0;
+
+				// Perform calculation
+				if (pMat->isGPU())
+					nZ = cv::cuda::countNonZero ( *(pMat->gpumat) );
+				else if (pMat->isUMat())
+					nZ = cv::countNonZero ( *(pMat->umat) );
+				else
+					nZ = cv::countNonZero ( *(pMat->mat) );
+
+				// Result
+				CCLTRY ( pImgUse->store ( adtString(L"NonZero"), adtInt(nZ) ) );
+				}	 // if
+
+			}	// try
+		catch ( cv::Exception &e )
 			{
-			int nZ = 0;
-
-			// Perform calculation
-			if (pMat->isGPU())
-				nZ = cv::cuda::countNonZero ( *(pMat->gpumat) );
-			else if (pMat->isUMat())
-				nZ = cv::countNonZero ( *(pMat->umat) );
-			else
-				nZ = cv::countNonZero ( *(pMat->mat) );
-
-			// Result
-			CCLTRY ( pImgUse->store ( adtString(L"NonZero"), adtInt(nZ) ) );
-			}	 // if
+			lprintf ( LOG_INFO, L"%S\r\n", e.err.c_str() );
+			hr = E_UNEXPECTED;
+			}	// catch
 
 		// Debug
 		if (hr != S_OK)
@@ -296,7 +312,17 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		if (hr == S_OK)
 			{
 			if (pMat->isGPU())
-				cv::cuda::calcHist ( *(pMat->gpumat), *(pMatHst->gpumat) );
+				{
+				// Calculate histogram.  Currently defaults to grayscale.
+				cv::cuda::GpuMat	matHst;
+
+				// Histogram
+				cv::cuda::calcHist ( *(pMat->gpumat), matHst );
+
+				// Copy to result
+				matHst.copyTo(*(pMatHst->gpumat));
+				}	// if
+
 			else if (pMat->isUMat())
 				{
 				cv::Mat	matHst,matLog;
@@ -314,11 +340,16 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			else
 				{
 				// Calculate histogram.  Currently defaults to grayscale.
-				cv::calcHist ( pMat->mat, 1, 0, cv::Mat(), *(pMatHst->mat), 1, 
+				cv::Mat matHst;
+
+				// Calculate histogram to new matrix
+				cv::calcHist ( pMat->mat, 1, 0, cv::Mat(), matHst, 1, 
 									&histSize, &histRange );
+
+				// Copy to result
+				matHst.copyTo(*(pMatHst->mat));
 				}	// else
 			}	// if
-
 
 		// Debug
 		if (hr != S_OK)

@@ -37,6 +37,7 @@
     <ProjectGuid>{47939C76-2E04-4023-ADAA-911E6240104B}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>mathl</RootNamespace>
+    <ProjectName>mathl</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

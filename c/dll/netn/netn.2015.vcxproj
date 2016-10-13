@@ -22,6 +22,7 @@
     <ProjectGuid>{8B820B2B-829F-4C6D-8D16-FD867FA067EF}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>netn</RootNamespace>
+    <ProjectName>netn</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

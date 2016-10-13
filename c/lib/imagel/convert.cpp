@@ -200,6 +200,84 @@ HRESULT Convert :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		_RELEASE(pImgUse);
 		}	// else if
 
+	// Color space conversion
+	else if (_RCP(Color))
+		{
+		IDictionary	*pImgUse = NULL;
+		cvMatRef		*pMat		= NULL;
+		bool			bFromG	= false;
+		bool			bToG		= false;
+		S32			spc		= -1;
+		adtString	strFmt;
+		adtValue		vL;
+
+		// Obtain image refence
+		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
+
+		try
+			{
+			// Load the existing format
+			CCLTRY ( pImgUse->load ( adtString(L"Format"), vL ) );
+			CCLTRY ( adtValue::toString ( vL, strFmt ) );
+
+			// From/To grayscale
+			CCLOK ( bFromG =	(	!WCASECMP(strFmt,L"U8x2")	||
+										!WCASECMP(strFmt,L"S8x2") ); )
+			CCLOK ( bToG	=	(	!WCASECMP(strTo,L"U8x2")	||
+										!WCASECMP(strTo,L"S8x2") ); )
+
+			// Conversion type.  Add as needed.
+
+			// From grayscale
+			if (bFromG)
+				{
+				if (!WCASECMP(strTo,L"R8G8B8"))
+					spc = CV_GRAY2RGB;
+				}	//if
+
+			// From color
+			else if (!WCASECMP(strFmt,L"R8G8B8") )
+				{
+				if (bToG)
+					spc = CV_RGB2GRAY;
+				}	// if
+
+			// Valid conversion ?
+			CCLTRYE ( (spc != -1), E_NOTIMPL );
+
+			// Perform color space conversion
+			if (hr == S_OK)
+				{
+				if (pMat->isGPU())
+					cv::cuda::cvtColor ( *(pMat->gpumat), *(pMat->gpumat), spc );
+				else if (pMat->isUMat())
+					cv::cvtColor( *(pMat->umat), *(pMat->umat), spc );
+				else 
+					cv::cvtColor( *(pMat->mat), *(pMat->mat), spc );
+				}	// if
+
+			// Debug
+			if (hr != S_OK)
+				lprintf ( LOG_WARN, L"Unable to convert from '%s' to '%s' 0x%x",
+								(LPCWSTR) strFmt, (LPCWSTR) strTo, hr );
+			}	// try
+		catch ( cv::Exception &ex )
+			{
+			lprintf ( LOG_WARN, L"%S\r\n", ex.err.c_str() );
+			hr = E_UNEXPECTED;
+			}	// catch
+
+		// Result
+		if (hr == S_OK)
+			_EMT(Fire,adtIUnknown(pImgUse));
+		else
+			_EMT(Error,adtInt(hr));
+
+		// Clean up
+		_RELEASE(pMat);
+		_RELEASE(pImgUse);
+		}	// else if
+
 	// State
 	else if (_RCP(Image))
 		{

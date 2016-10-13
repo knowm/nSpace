@@ -22,6 +22,7 @@
     <ProjectGuid>{7435F9F4-3EFE-42AA-9436-0E4D5229CD8D}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>mathn</RootNamespace>
+    <ProjectName>mathn</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

@@ -26,6 +26,7 @@ Create :: Create ( void )
 	iW			= 128;
 	iH			= 128;
 	bCPU		= false;
+	strType	= L"";
 	}	// Create
 
 HRESULT Create :: create ( IDictionary *pDct, U32 w, U32 h, U32 f,
@@ -50,6 +51,9 @@ HRESULT Create :: create ( IDictionary *pDct, U32 w, U32 h, U32 f,
 	////////////////////////////////////////////////////////////////////////
 	HRESULT	hr		= S_OK;
 	cvMatRef	*pMat	= NULL;
+
+	// Ensure GPU initialization has taken place
+	CCLOK ( Prepare::gpuInit(); )
 
 	// Create a matrix based on the GPU mode
 	CCLTRYE( (pMat = new cvMatRef()) != NULL, E_OUTOFMEMORY );
@@ -118,6 +122,8 @@ HRESULT Create :: onAttach ( bool bAttach )
 			iH = vL;
 		if (pnDesc->load ( adtString(L"CPU"), vL ) == S_OK)
 			bCPU = vL;
+		if (pnDesc->load ( adtString(L"Type"), vL ) == S_OK)
+			hr = adtValue::toString ( vL, strType );
 		}	// if
 
 	// Detach
@@ -151,12 +157,15 @@ HRESULT Create :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	if (_RCP(Fire))
 		{
 		IDictionary	*pImgUse = NULL;
+		cvMatRef		*pMat		= NULL;
 		U32			cvFmt;
 
 		// Obtain image refence
 		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, NULL ) );
 
 		// Process
+		// A 'type' can be specified if a certain type of matrix is to
+		// be created, other a blank image is created.
 		if (hr == S_OK)
 			{
 			// Map requested format into OpenCV format
@@ -171,10 +180,35 @@ HRESULT Create :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			else if (!WCASECMP(strFmt,L"S8x2"))
 				cvFmt = CV_8SC1;
 			else
-				hr = E_NOTIMPL;
+				cvFmt = CV_8UC1;
 
-			// Create a matrix based on the GPU mode
-			CCLTRY ( create ( pImgUse, iW, iH, cvFmt, NULL, bCPU ) );
+			// Create a blank matrix based on the GPU mode
+			CCLTRY ( create ( pImgUse, iW, iH, cvFmt, &pMat, bCPU ) );
+
+			// Gaussian kernel
+			if (!WCASECMP(strType,L"Gaussian"))
+				{
+				cv::Mat	matK;
+
+				// Create a CPU bound kernel
+				CCLOK ( matK = cv::getGaussianKernel(iW,0,cvFmt); )
+
+				// Gaussian kernel gives 1D version, create 2D version
+				CCLOK ( cv::mulTransposed ( matK, matK, false ); )
+
+				// Re-extract image to obtain matrix object
+				_RELEASE(pImgUse);
+				CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
+
+				// Copy to blank image
+				if (pMat->isGPU())
+					pMat->gpumat->upload ( matK );
+				else if (pMat->isUMat())
+					matK.copyTo ( *(pMat->umat) );
+				else
+					matK.copyTo ( *(pMat->mat) );
+				}	// if
+
 			}	// if
 
 		// Result

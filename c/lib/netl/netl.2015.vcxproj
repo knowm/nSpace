@@ -39,6 +39,7 @@
     <ProjectGuid>{1DDE8A69-B646-4786-A636-6D840C603695}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>netl</RootNamespace>
+    <ProjectName>netl</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

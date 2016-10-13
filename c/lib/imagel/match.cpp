@@ -19,8 +19,9 @@ Match :: Match ( void )
 	//		-	Constructor for the object
 	//
 	////////////////////////////////////////////////////////////////////////
-	pImg = NULL;
-	pTmp = NULL;
+	pImg		= NULL;
+	pTmp		= NULL;
+	tmType	= 0;
 	}	// Match
 
 HRESULT Match :: onAttach ( bool bAttach )
@@ -51,7 +52,12 @@ HRESULT Match :: onAttach ( bool bAttach )
 	// Detach
 	else
 		{
-		// Shutdown
+		// Clean up
+//		if (pTm != NULL)
+//			{
+//			delete pTm;
+//			pTm = NULL;
+//			}	// if
 		_RELEASE(pImg);
 		_RELEASE(pTmp);
 		}	// else
@@ -102,28 +108,34 @@ HRESULT Match :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 						ERROR_INVALID_STATE );
 
 		// Create a matrix to receive the results
-		CCLTRY ( Create::create ( pImgO, (pMatR->mat->rows) - (pMatT->mat->rows) + 1,
-													(pMatR->mat->cols) - (pMatT->mat->cols) + 1,
-													CV_32FC1, &pMatO ) );
+		CCLTRY ( Create::create ( pImgO, pMatR->rows() - pMatT->rows() + 1,
+													pMatR->cols() - pMatT->cols() + 1,
+													CV_32FC1, &pMatO, (pMatT->mat != NULL) ) );
 
 		// Perform matching with normalized coefficients
 		if (hr == S_OK)
 			{
 			if (pMatR->isGPU())
 				{
-				// CUDA does things differently
-				cv::cuda::TemplateMatching *pTm = NULL;
+				try
+					{
+					// Create a matching template
+					if (pTm == NULL || (pMatR->gpumat->type() != tmType))
+						{
+						CCLTRYE ( (pTm = cv::cuda::createTemplateMatching ( pMatR->gpumat->type(), 
+										CV_TM_CCORR_NORMED )) != NULL, E_OUTOFMEMORY );
+						CCLOK ( tmType = pMatR->gpumat->type(); )
+						}	// if
 
-				// Create a matching
-				CCLTRYE ( (pTm = cv::cuda::createTemplateMatching ( pMatR->gpumat->type(), 
-								CV_TM_CCORR_NORMED )) != NULL, E_OUTOFMEMORY );
-
-				// Execute
-				CCLOK ( pTm->match ( *(pMatR->gpumat), *(pMatT->gpumat), *(pMatO->gpumat) ); )
-
-				// Clean up
-				if (pTm != NULL)
-					delete pTm;
+					// Execute
+					CCLOK ( pTm->match ( *(pMatR->gpumat), *(pMatT->gpumat), *(pMatO->gpumat) ); )
+					}	// try
+				catch ( cv::Exception &ex )
+					{
+					lprintf ( LOG_WARN, L"createTemplateMatching exception:%S\r\n",
+									ex.err.c_str() );
+					hr = E_UNEXPECTED;
+					}	// catch
 				}	// if
 			else if (pMatR->isUMat())
 				cv::matchTemplate ( *(pMatR->umat), *(pMatT->umat), *(pMatO->umat),

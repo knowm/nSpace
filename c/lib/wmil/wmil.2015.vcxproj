@@ -33,6 +33,7 @@
     <ProjectGuid>{20A2401B-CB2F-4BC0-BD99-A742EE5ABF7B}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>wmil</RootNamespace>
+    <ProjectName>wmil</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

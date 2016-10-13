@@ -29,6 +29,7 @@
     <ProjectGuid>{8738FDAD-B4A1-48ED-B021-6FAAB9AB5072}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>nshxl</RootNamespace>
+    <ProjectName>nshxl</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

@@ -36,6 +36,7 @@
     <ProjectGuid>{8532DEAA-56D3-4FF4-8FB8-664EFE6EEF83}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>sysl</RootNamespace>
+    <ProjectName>sysl</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

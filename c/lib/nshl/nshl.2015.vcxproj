@@ -43,6 +43,7 @@
     <ProjectGuid>{A58C30ED-DB36-4390-BEEF-3F050BDD601E}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>nshl</RootNamespace>
+    <ProjectName>nshl</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

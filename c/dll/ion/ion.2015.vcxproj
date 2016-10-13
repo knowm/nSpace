@@ -22,6 +22,7 @@
     <ProjectGuid>{6222D284-3E51-4145-8FE1-4FE12C18029C}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>ion</RootNamespace>
+    <ProjectName>ion</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

@@ -34,6 +34,7 @@
     <ProjectGuid>{8D6E6DC8-BFC1-4D67-8B35-25A94C97BCEB}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>ccl</RootNamespace>
+    <ProjectName>ccl</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

@@ -50,6 +50,7 @@
     <ProjectGuid>{B8DE1218-452B-46CE-A380-4B11F3D8C1DA}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>adtl</RootNamespace>
+    <ProjectName>adtl</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

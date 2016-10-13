@@ -268,15 +268,26 @@ HRESULT image_from_mat ( Mat *pM, IDictionary *pImg )
 						hr = E_NOTIMPL;
 					}	// switch
 				break;
-	//		case 3 :
-	//			if (pM->depth() == 8)
-	//				hr = pImg->store ( strRefFormat, adtString(L"U8x2") );
-	//			break;
+			case 3 :
+				// Color
+				switch ( (pM->type() & CV_MAT_DEPTH_MASK) )
+					{
+					case CV_8U :
+						CCLTRY ( pImg->store ( strRefFormat, adtString(L"R8G8B8") ) );
+						break;
+					default :
+						hr = E_NOTIMPL;
+					}	// switch
+				break;
 			default :
 				lprintf ( LOG_WARN, L"Unsupported channels %d", pM->channels() );
 				hr = E_NOTIMPL;
 			}	// switch
 		}	// if
+
+	// Debug
+	if (hr != S_OK)
+		lprintf ( LOG_WARN, L"Failed 0x%x", hr );
 
 	// Clean up
 	_UNLOCK(pBits,pvBits);
