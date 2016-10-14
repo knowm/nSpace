@@ -271,6 +271,45 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 							}	// else
 						break;
 
+					// Comparisons
+					case MATHOP_EQ :
+					case MATHOP_GT :
+					case MATHOP_GE :
+					case MATHOP_LT :
+					case MATHOP_LE :
+					case MATHOP_NE :
+						{
+						// OpenCv compare operation
+						int
+						cmpop =	(iOp == MATHOP_EQ) ? cv::CMP_EQ :
+									(iOp == MATHOP_GT) ? cv::CMP_GT :
+									(iOp == MATHOP_GE) ? cv::CMP_GE :
+									(iOp == MATHOP_GT) ? cv::CMP_LT :
+									(iOp == MATHOP_GE) ? cv::CMP_LE : cv::CMP_NE;
+
+						// Perform comparison
+						if (bImgR)
+							{
+							if (pMatL->isGPU())
+								cv::cuda::compare ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat), cmpop );
+							else if (pMatL->isUMat())
+								cv::compare ( *(pMatL->umat), *(pMatR->umat), *(pMatO->umat), cmpop );
+							else
+								cv::compare ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat), cmpop );
+							}	// if
+						else
+							{
+							if (pMatL->isGPU())
+								cv::cuda::compare ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat), cmpop );
+							else if (pMatL->isUMat())
+								cv::compare ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat), cmpop );
+							else
+								cv::compare ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat), cmpop );
+							}	// else
+
+						}	// MATHOP_XXX
+						break;
+
 					// Not implemented
 					default :
 						hr = E_NOTIMPL;

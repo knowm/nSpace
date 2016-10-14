@@ -28,6 +28,8 @@
 #include <opencv2/cudaarithm.hpp>
 #include <opencv2/cudawarping.hpp>
 
+// Relevant math operations from 'mathl_.h'
+
 // Operations
 #define	MATHOP_NOP		-1
 
@@ -41,6 +43,14 @@
 #define	MATHOP_AND		10
 #define	MATHOP_OR		11
 #define	MATHOP_XOR		12
+
+// Comparison
+#define	MATHOP_EQ		60
+#define	MATHOP_GT		61
+#define	MATHOP_GE		62
+#define	MATHOP_LT		63
+#define	MATHOP_LE		64
+#define	MATHOP_NE		65
 
 ///////////
 // Objects
@@ -564,11 +574,12 @@ class Morph :
 	Morph ( void );										// Constructor
 
 	// Run-time data
-	IDictionary	*pImg;									// Image dictionary
-	cv::cuda::Filter 
-					*pfOpen;									// Open filter
-	cv::cuda::Filter 
-					*pfClose;								// Close filter
+	IDictionary			*pImg;							// Image dictionary
+	cv::cuda::Filter	*pfOpen;							// Open filter
+	cv::cuda::Filter 	*pfClose;						// Close filter
+	cv::cuda::Filter	*pfDi;							// Dilate filter
+	cv::cuda::Filter	*pfEr;							// Erosion filter
+	adtString			strType;							// Feature type
 
 	// CCL
 	CCL_OBJECT_BEGIN(Morph)
@@ -576,19 +587,15 @@ class Morph :
 	CCL_OBJECT_END()
 
 	// Connections
-	DECLARE_RCP(Close)
 	DECLARE_EMT(Error)
-	DECLARE_EMT(Fire)
+	DECLARE_CON(Fire)
 	DECLARE_RCP(Image)
 //	DECLARE_RCP(Kernel)
-	DECLARE_RCP(Open)
 	BEGIN_BEHAVIOUR()
-		DEFINE_RCP(Close)
 		DEFINE_EMT(Error)
-		DEFINE_EMT(Fire)
+		DEFINE_CON(Fire)
 		DEFINE_RCP(Image)
 //		DEFINE_RCP(Kernel)
-		DEFINE_RCP(Open)
 	END_BEHAVIOUR_NOTIFY()
 	};
 

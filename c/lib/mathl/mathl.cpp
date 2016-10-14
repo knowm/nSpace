@@ -968,6 +968,20 @@ HRESULT mathOp ( const WCHAR *wOp, int *piOp )
 	else if (!WCASENCMP(wOp,L"String",6))
 		(*piOp) = MATHOP_STRING;
 
+	// Comparison
+	else if (!WCASENCMP(wOp,L"Equal",5))
+		(*piOp) = MATHOP_EQ;
+	else if (!WCASENCMP(wOp,L"GreaterE",8))
+		(*piOp) = MATHOP_GE;
+	else if (!WCASENCMP(wOp,L"Greater",7))
+		(*piOp) = MATHOP_GT;
+	else if (!WCASENCMP(wOp,L"LessE",5))
+		(*piOp) = MATHOP_LE;
+	else if (!WCASENCMP(wOp,L"Less",4))
+		(*piOp) = MATHOP_LT;
+	else if (!WCASENCMP(wOp,L"NotEqual",8))
+		(*piOp) = MATHOP_NE;
+
 	// Debug
 	else
 		{

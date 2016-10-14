@@ -92,12 +92,33 @@ HRESULT Roi :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		IDictionary	*pSrcUse = NULL;
 		cvMatRef		*pMatSrc	= NULL;
 		cvMatRef		*pMatDst	= NULL;
+		cv::Rect		rct;
 
 		// State check
 		CCLTRYE ( pDst != NULL, ERROR_INVALID_STATE );
 
 		// Obtain image refence
 		CCLTRY ( Prepare::extract ( pSrc, v, &pSrcUse, &pMatSrc ) );
+
+		// Determine area of Roi.
+		if (hr == S_OK)
+			{
+			// Special case, no dimensions specified means entire image
+			if (iL == 0 && iT == 0 && iR == 0 && iB == 0)
+				{
+				rct.x			= 0;
+				rct.y			= 0;
+				rct.width	= pMatSrc->cols();
+				rct.height	= pMatSrc->rows();
+				}	// if
+			else
+				{
+				rct.x			= iL;
+				rct.y			= iT;
+				rct.width	= iR-iL;
+				rct.height	= iB-iT;
+				}	// else
+			}	// if
 
 		// Open CV uses exceptions
 		try
@@ -107,24 +128,8 @@ HRESULT Roi :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			CCLTRYE( (pMatDst = new cvMatRef()) != NULL, E_OUTOFMEMORY );
 			if (hr == S_OK && pMatSrc->isGPU())
 				{
-				// Adjust Roi.  Could error out but be flexible.
-				// Set limits so there is at least one pixel in each direction.
-				if (hr == S_OK)
-					{
-					// Width
-					if			(iL < 0)										iL = 0;
-					else if	((int)iL >= pMatSrc->gpumat->cols)	iL = pMatSrc->gpumat->cols-1;
-					if			(iR <= 0)									iR = 1;
-					else if	((int)iR >= pMatSrc->gpumat->cols)	iR = pMatSrc->gpumat->cols;
-					// Height
-					if			(iT < 0)										iT = 0;
-					else if	((int)iT >= pMatSrc->gpumat->rows)	iT = pMatSrc->gpumat->rows-1;
-					if			(iB <= 0)									iB = 1;
-					else if	((int)iB >= pMatSrc->gpumat->rows)	iB = pMatSrc->gpumat->rows;
-					}	// if
-
 				// Create ROI
-				CCLTRYE((pMatDst->gpumat = new cv::cuda::GpuMat ( *(pMatSrc->gpumat), cv::Rect(iL,iT,(iR-iL),(iB-iT)) ))
+				CCLTRYE((pMatDst->gpumat = new cv::cuda::GpuMat ( *(pMatSrc->gpumat), rct ))
 								!= NULL, E_OUTOFMEMORY);
 
 				// Requesting own copy of Roi ?
@@ -133,24 +138,8 @@ HRESULT Roi :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				}	// if
 			else if (hr == S_OK && pMatSrc->isUMat())
 				{
-				// Adjust Roi.  Could error out but be flexible.
-				// Set limits so there is at least one pixel in each direction.
-				if (hr == S_OK)
-					{
-					// Width
-					if			(iL < 0)									iL = 0;
-					else if	((int)iL >= pMatSrc->umat->cols)	iL = pMatSrc->umat->cols-1;
-					if			(iR <= 0)								iR = 1;
-					else if	((int)iR >= pMatSrc->umat->cols)	iR = pMatSrc->umat->cols;
-					// Height
-					if			(iT < 0)									iT = 0;
-					else if	((int)iT >= pMatSrc->umat->rows)	iT = pMatSrc->umat->rows-1;
-					if			(iB <= 0)								iB = 1;
-					else if	((int)iB >= pMatSrc->umat->rows)	iB = pMatSrc->umat->rows;
-					}	// if
-
 				// Create ROI
-				CCLTRYE((pMatDst->umat = new cv::UMat ( *(pMatSrc->umat), cv::Rect(iL,iT,(iR-iL),(iB-iT)) ))
+				CCLTRYE((pMatDst->umat = new cv::UMat ( *(pMatSrc->umat), rct ))
 								!= NULL, E_OUTOFMEMORY);
 
 				// Requesting own copy of Roi ?
@@ -159,24 +148,8 @@ HRESULT Roi :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				}	// else if
 			else
 				{
-				// Adjust Roi.  Could error out but be flexible.
-				// Set limits so there is at least one pixel in each direction.
-				if (hr == S_OK)
-					{
-					// Width
-					if			(iL < 0)									iL = 0;
-					else if	((int)iL >= pMatSrc->mat->cols)	iL = pMatSrc->mat->cols-1;
-					if			(iR <= 0)								iR = 1;
-					else if	((int)iR >= pMatSrc->mat->cols)	iR = pMatSrc->mat->cols;
-					// Height
-					if			(iT < 0)									iT = 0;
-					else if	((int)iT >= pMatSrc->mat->rows)	iT = pMatSrc->mat->rows-1;
-					if			(iB <= 0)								iB = 1;
-					else if	((int)iB >= pMatSrc->mat->rows)	iB = pMatSrc->mat->rows;
-					}	// if
-
 				// Create ROI
-				CCLTRYE((pMatDst->mat = new cv::Mat ( *(pMatSrc->mat), cv::Rect(iL,iT,(iR-iL),(iB-iT)) ))
+				CCLTRYE((pMatDst->mat = new cv::Mat ( *(pMatSrc->mat), rct ))
 							!= NULL, E_OUTOFMEMORY);
 
 				// Requesting own copy of Roi ?
@@ -186,7 +159,6 @@ HRESULT Roi :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 			// Result
 			CCLTRY ( pDst->store (	adtString(L"cvMatRef"), adtIUnknown(pMatDst) ) );
-
 			}	// try
 		catch ( cv::Exception ex )
 			{

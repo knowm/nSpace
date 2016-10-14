@@ -44,10 +44,9 @@ HRESULT Morph :: onAttach ( bool bAttach )
 		{
 		adtValue		vL;
 
-
 		// Defaults (optional)
-//		if (pnDesc->load ( adtString(L"Size"), vL ) == S_OK)
-//			iSz = vL;
+		if (pnDesc->load ( adtString(L"Type"), vL ) == S_OK)
+			hr = adtValue::toString ( vL, strType );
 		}	// if
 
 	// Detach
@@ -63,6 +62,16 @@ HRESULT Morph :: onAttach ( bool bAttach )
 			{
 			delete pfClose;
 			pfClose = NULL;
+			}	// if
+		if (pfEr != NULL)
+			{
+			delete pfEr;
+			pfEr = NULL;
+			}	// if
+		if (pfDi != NULL)
+			{
+			delete pfDi;
+			pfDi = NULL;
 			}	// if
 
 		// Shutdown
@@ -90,18 +99,30 @@ HRESULT Morph :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	////////////////////////////////////////////////////////////////////////
 	HRESULT	hr = S_OK;
 
-	// Open/close
-	if (_RCP(Open) || _RCP(Close))
+	// Execute
+	if (_RCP(Fire))
 		{
 		IDictionary	*pImgUse = NULL;
 		cvMatRef		*pMat		= NULL;
 		cv::Mat		matKer;
+		int			op;
 
 		// Obtain image refence
 		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
 
 		// TODO: Allow kernel image to be specified, for now use default
 		CCLOK ( matKer = cv::getStructuringElement ( cv::MORPH_RECT, cv::Size(3,3) ); )
+
+		// Operation
+		if (hr == S_OK)
+			{
+			op =	(!WCASECMP(strType,L"Open")) ?	cv::MORPH_OPEN :
+					(!WCASECMP(strType,L"Close")) ?	cv::MORPH_CLOSE :
+					(!WCASECMP(strType,L"Erode")) ?	cv::MORPH_ERODE :
+					(!WCASECMP(strType,L"Dilate")) ? cv::MORPH_DILATE : -1;
+			if (op == -1)
+				hr = E_NOTIMPL;
+			}	// if
 
 		// Perform operation
 		if (hr == S_OK)
@@ -116,21 +137,37 @@ HRESULT Morph :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 									pMat->gpumat->type(), matKer )) != NULL, E_OUTOFMEMORY );
 					CCLTRYE ( (pfClose = cv::cuda::createMorphologyFilter ( cv::MORPH_CLOSE,
 									pMat->gpumat->type(), matKer )) != NULL, E_OUTOFMEMORY );
+					CCLTRYE ( (pfEr = cv::cuda::createMorphologyFilter ( cv::MORPH_ERODE,
+									pMat->gpumat->type(), matKer )) != NULL, E_OUTOFMEMORY );
+					CCLTRYE ( (pfDi = cv::cuda::createMorphologyFilter ( cv::MORPH_DILATE,
+									pMat->gpumat->type(), matKer )) != NULL, E_OUTOFMEMORY );
 					}	// if
 
-				// Create filter object
-				// TODO: Only create once, delete on detachment
-				if (hr == S_OK && _RCP(Open))
-					pfOpen->apply ( *(pMat->gpumat), *(pMat->gpumat) );
-				else if (hr == S_OK && _RCP(Close))
-					pfClose->apply ( *(pMat->gpumat), *(pMat->gpumat) );
+				// Execute filter
+				switch (op)
+					{
+					case cv::MORPH_OPEN :
+						pfOpen->apply ( *(pMat->gpumat), *(pMat->gpumat) );
+						break;
+					case cv::MORPH_CLOSE :
+						pfClose->apply ( *(pMat->gpumat), *(pMat->gpumat) );
+						break;
+					case cv::MORPH_ERODE :
+						pfEr->apply ( *(pMat->gpumat), *(pMat->gpumat) );
+						break;
+					case cv::MORPH_DILATE :
+						pfDi->apply ( *(pMat->gpumat), *(pMat->gpumat) );
+						break;
+					default :
+						hr = E_NOTIMPL;
+					}	// switch
 				}	// if
 			else if (pMat->isUMat())
-				cv::morphologyEx ( *(pMat->umat), *(pMat->umat), 
-					(_RCP(Open)) ? cv::MORPH_OPEN : cv::MORPH_CLOSE, matKer );
+				{
+				cv::morphologyEx ( *(pMat->umat), *(pMat->umat), op, matKer );
+				}	// else if
 			else
-				cv::morphologyEx ( *(pMat->mat), *(pMat->mat), 
-					(_RCP(Open)) ? cv::MORPH_OPEN : cv::MORPH_CLOSE, matKer );
+				cv::morphologyEx ( *(pMat->mat), *(pMat->mat), op, matKer );
 			}	// if
 
 		// Result

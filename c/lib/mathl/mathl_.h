@@ -56,6 +56,14 @@
 #define	MATHOP_DATE		54
 #define	MATHOP_STRING	55
 
+// Comparison
+#define	MATHOP_EQ		60
+#define	MATHOP_GT		61
+#define	MATHOP_GE		62
+#define	MATHOP_LT		63
+#define	MATHOP_LE		64
+#define	MATHOP_NE		65
+
 // Radians <-> degrees
 #define	RAD_TO_DEG(a)		(a)*(180.0/3.14159265358979323846)
 #define	DEG_TO_RAD(a)		(a)*(3.14159265358979323846/180.0)
