@@ -96,49 +96,49 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "namespace", "namespace", "{
 		..\graph\lib\namespace\service.nspc = ..\graph\lib\namespace\service.nspc
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nsh.2015", "app\nsh\nsh.2015.vcxproj", "{14EDC47C-C44C-4821-B32D-DFC49FF00F67}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nsh", "app\nsh\nsh.2015.vcxproj", "{14EDC47C-C44C-4821-B32D-DFC49FF00F67}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ccl.2015", "lib\ccl\ccl.2015.vcxproj", "{8D6E6DC8-BFC1-4D67-8B35-25A94C97BCEB}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ccl", "lib\ccl\ccl.2015.vcxproj", "{8D6E6DC8-BFC1-4D67-8B35-25A94C97BCEB}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "iol.2015", "lib\iol\iol.2015.vcxproj", "{D46D1142-2F9F-4CAF-8764-F7D8BAE80FFD}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "iol", "lib\iol\iol.2015.vcxproj", "{D46D1142-2F9F-4CAF-8764-F7D8BAE80FFD}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sysl.2015", "lib\sysl\sysl.2015.vcxproj", "{8532DEAA-56D3-4FF4-8FB8-664EFE6EEF83}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sysl", "lib\sysl\sysl.2015.vcxproj", "{8532DEAA-56D3-4FF4-8FB8-664EFE6EEF83}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "adtl.2015", "lib\adtl\adtl.2015.vcxproj", "{B8DE1218-452B-46CE-A380-4B11F3D8C1DA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "adtl", "lib\adtl\adtl.2015.vcxproj", "{B8DE1218-452B-46CE-A380-4B11F3D8C1DA}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "adtn.2015", "dll\adtn\adtn.2015.vcxproj", "{27D48BF6-EBC4-417B-9E4E-B7FA2F75D570}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "adtn", "dll\adtn\adtn.2015.vcxproj", "{27D48BF6-EBC4-417B-9E4E-B7FA2F75D570}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ion.2015", "dll\ion\ion.2015.vcxproj", "{6222D284-3E51-4145-8FE1-4FE12C18029C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ion", "dll\ion\ion.2015.vcxproj", "{6222D284-3E51-4145-8FE1-4FE12C18029C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mathn.2015", "dll\mathn\mathn.2015.vcxproj", "{7435F9F4-3EFE-42AA-9436-0E4D5229CD8D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mathn", "dll\mathn\mathn.2015.vcxproj", "{7435F9F4-3EFE-42AA-9436-0E4D5229CD8D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "miscn.2015", "dll\miscn\miscn.2015.vcxproj", "{D3148DDA-8655-4779-B555-0707C04BDB2D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "miscn", "dll\miscn\miscn.2015.vcxproj", "{D3148DDA-8655-4779-B555-0707C04BDB2D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "netn.2015", "dll\netn\netn.2015.vcxproj", "{8B820B2B-829F-4C6D-8D16-FD867FA067EF}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "netn", "dll\netn\netn.2015.vcxproj", "{8B820B2B-829F-4C6D-8D16-FD867FA067EF}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nspcn.2015", "dll\nspcn\nspcn.2015.vcxproj", "{1F7F5996-F935-45D2-B4D5-E6E51BC465F7}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nspcn", "dll\nspcn\nspcn.2015.vcxproj", "{1F7F5996-F935-45D2-B4D5-E6E51BC465F7}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sysn.2015", "dll\sysn\sysn.2015.vcxproj", "{B3A74EA1-07FD-4E38-A10F-2D86CEDBB574}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sysn", "dll\sysn\sysn.2015.vcxproj", "{B3A74EA1-07FD-4E38-A10F-2D86CEDBB574}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "usbn.2015", "dll\usbn\usbn.2015.vcxproj", "{3BCB9212-D047-4D43-91B6-ACC8EC9CB7D1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "usbn", "dll\usbn\usbn.2015.vcxproj", "{3BCB9212-D047-4D43-91B6-ACC8EC9CB7D1}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wmin.2015", "dll\wmin\wmin.2015.vcxproj", "{64506169-1F9D-4679-B135-122B46F861EB}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wmin", "dll\wmin\wmin.2015.vcxproj", "{64506169-1F9D-4679-B135-122B46F861EB}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mathl.2015", "lib\mathl\mathl.2015.vcxproj", "{47939C76-2E04-4023-ADAA-911E6240104B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mathl", "lib\mathl\mathl.2015.vcxproj", "{47939C76-2E04-4023-ADAA-911E6240104B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "miscl.2015", "lib\miscl\miscl.2015.vcxproj", "{789616AD-B765-4211-9ACC-0CA60DEB4BD2}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "miscl", "lib\miscl\miscl.2015.vcxproj", "{789616AD-B765-4211-9ACC-0CA60DEB4BD2}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "netl.2015", "lib\netl\netl.2015.vcxproj", "{1DDE8A69-B646-4786-A636-6D840C603695}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "netl", "lib\netl\netl.2015.vcxproj", "{1DDE8A69-B646-4786-A636-6D840C603695}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nshl.2015", "lib\nshl\nshl.2015.vcxproj", "{A58C30ED-DB36-4390-BEEF-3F050BDD601E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nshl", "lib\nshl\nshl.2015.vcxproj", "{A58C30ED-DB36-4390-BEEF-3F050BDD601E}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nshxl.2015", "lib\nshxl\nshxl.2015.vcxproj", "{8738FDAD-B4A1-48ED-B021-6FAAB9AB5072}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nshxl", "lib\nshxl\nshxl.2015.vcxproj", "{8738FDAD-B4A1-48ED-B021-6FAAB9AB5072}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nspcl.2015", "lib\nspcl\nspcl.2015.vcxproj", "{422E909B-A304-47A3-A2E6-8959FF5BC156}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nspcl", "lib\nspcl\nspcl.2015.vcxproj", "{422E909B-A304-47A3-A2E6-8959FF5BC156}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "usbl.2015", "lib\usbl\usbl.2015.vcxproj", "{66F466A4-342A-48F4-B1A6-785C636457D1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "usbl", "lib\usbl\usbl.2015.vcxproj", "{66F466A4-342A-48F4-B1A6-785C636457D1}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wmil.2015", "lib\wmil\wmil.2015.vcxproj", "{20A2401B-CB2F-4BC0-BD99-A742EE5ABF7B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wmil", "lib\wmil\wmil.2015.vcxproj", "{20A2401B-CB2F-4BC0-BD99-A742EE5ABF7B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "comm", "comm", "{BB56DF02-AE58-4038-BB0D-DAE32A42E33B}"
 	ProjectSection(SolutionItems) = preProject
@@ -209,23 +209,23 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "portal", "portal", "{6247C9
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ext", "ext", "{BF214040-A370-4A9E-9A33-95D5AB5ECA2F}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libpng.2015", "lib\ext\libpng-1.2.7\libpng.2015.vcxproj", "{58CCE292-A622-4483-A310-8022215D158C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libpng", "lib\ext\libpng-1.2.7\libpng.2015.vcxproj", "{58CCE292-A622-4483-A310-8022215D158C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libtiff.2015", "lib\ext\libtiff\libtiff.2015.vcxproj", "{EA960234-7A49-4F69-A725-65EDCA57F825}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libtiff", "lib\ext\libtiff\libtiff.2015.vcxproj", "{EA960234-7A49-4F69-A725-65EDCA57F825}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib.2015", "lib\ext\zlib\zlib.2015.vcxproj", "{DE2F0159-E927-490E-8BD4-7182CFF70EBD}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "lib\ext\zlib\zlib.2015.vcxproj", "{DE2F0159-E927-490E-8BD4-7182CFF70EBD}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "imagel.2015", "lib\imagel\imagel.2015.vcxproj", "{44D3BD75-4549-420C-8B48-D243C02F8AB8}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "imagel", "lib\imagel\imagel.2015.vcxproj", "{44D3BD75-4549-420C-8B48-D243C02F8AB8}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "imagen.2015", "dll\imagen\imagen.2015.vcxproj", "{ADE2F4F2-AAE1-4CEC-A132-70C791263D9C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "imagen", "dll\imagen\imagen.2015.vcxproj", "{ADE2F4F2-AAE1-4CEC-A132-70C791263D9C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "widgetl.2015", "lib\widgetl\widgetl.2015.vcxproj", "{A20E9715-D1CE-4540-A3C5-271CE8E02E9A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "widgetl", "lib\widgetl\widgetl.2015.vcxproj", "{A20E9715-D1CE-4540-A3C5-271CE8E02E9A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "widgetn.2015", "dll\widgetn\widgetn.2015.vcxproj", "{EC41AE88-C0A6-40D0-980F-9C43E66ACEA1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "widgetn", "dll\widgetn\widgetn.2015.vcxproj", "{EC41AE88-C0A6-40D0-980F-9C43E66ACEA1}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sqll.2015", "lib\sqll\sqll.2015.vcxproj", "{9E63C94E-CD1F-4463-ADD1-9E0863367117}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sqll", "lib\sqll\sqll.2015.vcxproj", "{9E63C94E-CD1F-4463-ADD1-9E0863367117}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sqln.2015", "dll\sqln\sqln.2015.vcxproj", "{FA9D672F-ED44-497D-BAAC-108BFCA0DD08}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sqln", "dll\sqln\sqln.2015.vcxproj", "{FA9D672F-ED44-497D-BAAC-108BFCA0DD08}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "math", "math", "{2EA99CC7-9341-4268-A12D-CDE8D8268E79}"
 	ProjectSection(SolutionItems) = preProject
@@ -233,13 +233,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "math", "math", "{2EA99CC7-9
 		..\graph\state\math\tuple3.nspc = ..\graph\state\math\tuple3.nspc
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plotl.2015", "lib\plotl\plotl.2015.vcxproj", "{98FC8B7C-4110-495A-BF80-F3502D670F90}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plotl", "lib\plotl\plotl.2015.vcxproj", "{98FC8B7C-4110-495A-BF80-F3502D670F90}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plotn.2015", "dll\plotn\plotn.2015.vcxproj", "{CDB92F04-527F-47D6-8339-3E457F5FA17F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plotn", "dll\plotn\plotn.2015.vcxproj", "{CDB92F04-527F-47D6-8339-3E457F5FA17F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ext", "ext", "{B9187F45-DF26-41E6-B33B-6A1F9D01AE18}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mod_nspace", "dll\ext\mod_nspace\mod_nspace.vcxproj", "{18CB1363-F002-4B15-8F7F-F00E280DD92E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "interface", "interface", "{ECA2B9C6-6969-463F-8217-2E5AD6286A88}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\lib\interface\dict.nspc = ..\graph\lib\interface\dict.nspc
+		..\graph\lib\interface\list.nspc = ..\graph\lib\interface\list.nspc
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -574,5 +580,6 @@ Global
 		{CDB92F04-527F-47D6-8339-3E457F5FA17F} = {060BE89F-4362-4D47-8ED0-67F456629B3C}
 		{B9187F45-DF26-41E6-B33B-6A1F9D01AE18} = {060BE89F-4362-4D47-8ED0-67F456629B3C}
 		{18CB1363-F002-4B15-8F7F-F00E280DD92E} = {B9187F45-DF26-41E6-B33B-6A1F9D01AE18}
+		{ECA2B9C6-6969-463F-8217-2E5AD6286A88} = {8A6113B8-46B6-46BC-9F17-0EDC02FF5EA6}
 	EndGlobalSection
 EndGlobal

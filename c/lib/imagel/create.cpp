@@ -196,10 +196,6 @@ HRESULT Create :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				// Gaussian kernel gives 1D version, create 2D version
 				CCLOK ( cv::mulTransposed ( matK, matK, false ); )
 
-				// Re-extract image to obtain matrix object
-				_RELEASE(pImgUse);
-				CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
-
 				// Copy to blank image
 				if (pMat->isGPU())
 					pMat->gpumat->upload ( matK );
@@ -218,6 +214,7 @@ HRESULT Create :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			_EMT(Error,adtInt(hr));
 
 		// Clean up
+		_RELEASE(pMat);
 		_RELEASE(pImgUse);
 		}	// else if
 

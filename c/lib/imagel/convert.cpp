@@ -183,7 +183,7 @@ HRESULT Convert :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			else if (!WCASECMP(strTo,L"U8x2"))
 				convertTo ( pMat, pMat, CV_8UC1 );
 			else if (!WCASECMP(strTo,L"S8x2"))
-				convertTo ( pMat,pMat,  CV_8SC1 );
+				convertTo ( pMat, pMat, CV_8SC1 );
 			else
 				hr = E_NOTIMPL;
 			}	// if

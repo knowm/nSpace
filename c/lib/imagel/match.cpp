@@ -113,8 +113,49 @@ HRESULT Match :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 													CV_32FC1, &pMatO, (pMatT->mat != NULL) ) );
 
 		// Perform matching with normalized coefficients
+try
+	{
 		if (hr == S_OK)
 			{
+			cv::Mat	matR,matT,matC;
+
+//image_to_debug ( pMatR, L"Match", L"c:/temp/MatchR.png" );
+//image_to_debug ( pMatT, L"Match", L"c:/temp/MatchT.png" );
+
+			//
+			// NOTE: Currently getting different results from all different methods,
+			// CPU, CUDA and OpenCL (Umat).  Until this is figured out, downshift into CPU mode.
+			//
+			if (pMatR->isGPU())
+				{
+				pMatR->gpumat->download(matR);
+				pMatT->gpumat->download(matT);
+				}	// if
+			else if (pMatR->isUMat())
+				{
+				matR = pMatR->umat->getMat(cv::ACCESS_READ);
+				matT = pMatT->umat->getMat(cv::ACCESS_READ);
+				}	// else if
+			else
+				{
+				matR = *(pMatR->mat);
+				matT = *(pMatT->mat);
+				}	// else
+
+			// Perform match
+			cv::matchTemplate ( matR, matT, matC, CV_TM_CCORR_NORMED );
+
+			// Copy result to destination
+			if (pMatO->isGPU())
+				pMatO->gpumat->upload(matC);
+			else if (pMatR->isUMat())
+				matC.copyTo ( *(pMatO->umat) );
+			else
+				matC.copyTo ( *(pMatO->mat) );
+
+//image_to_debug ( pMatO, L"Match", L"c:/temp/MatchC1.png" );
+
+			/*
 			if (pMatR->isGPU())
 				{
 				try
@@ -138,12 +179,50 @@ HRESULT Match :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					}	// catch
 				}	// if
 			else if (pMatR->isUMat())
-				cv::matchTemplate ( *(pMatR->umat), *(pMatT->umat), *(pMatO->umat),
+				{
+				cv::UMat matC;
+
+				cv::matchTemplate ( *(pMatR->umat), *(pMatT->umat), matC,
+//				cv::matchTemplate ( *(pMatR->umat), *(pMatT->umat), *(pMatO->umat),
 											CV_TM_CCORR_NORMED );
+
+dbgprintf ( L"%d %d %d %d %d %d\r\n", 
+				pMatR->umat->type(), pMatR->umat->channels(), pMatR->umat->depth(),
+				pMatR->umat->dims, pMatR->umat->elemSize(), (pMatR->umat->type() & CV_MAT_DEPTH_MASK) );
+
+dbgprintf ( L"%d %d %d %d %d %d\r\n", 
+				matC.type(), matC.channels(), matC.depth(),
+				matC.dims, matC.elemSize(), (matC.type() & CV_MAT_DEPTH_MASK) );
+
+				matC.copyTo ( *(pMatO->umat) );
+				}	// else if
 			else
-				cv::matchTemplate ( *(pMatR->mat), *(pMatT->mat), *(pMatO->mat),
+				{
+				cv::UMat matC;
+
+//				cv::matchTemplate ( *(pMatR->mat), *(pMatT->mat), *(pMatO->mat),
+				cv::matchTemplate ( *(pMatR->mat), *(pMatT->mat), matC,
 											CV_TM_CCORR_NORMED );
+
+dbgprintf ( L"%d %d %d %d %d %d\r\n", 
+				pMatR->mat->type(), pMatR->mat->channels(), pMatR->mat->depth(),
+				pMatR->mat->dims, pMatR->mat->elemSize(), (pMatR->mat->type() & CV_MAT_DEPTH_MASK) );
+
+dbgprintf ( L"%d %d %d %d %d %d\r\n", 
+				matC.type(), matC.channels(), matC.depth(),
+				matC.dims, matC.elemSize(), (matC.type() & CV_MAT_DEPTH_MASK) );
+
+				matC.copyTo ( *(pMatO->mat) );
+				}	// else
+			*/
 			}	// if
+
+			}	// try
+		catch ( cv::Exception &e )
+			{
+			lprintf ( LOG_INFO, L"%S\r\n", e.err.c_str() );
+			hr = E_UNEXPECTED;
+			}	// catch
 
 		// Clean up
 		_RELEASE(pMatO);
