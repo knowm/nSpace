@@ -143,7 +143,7 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				}	// if
 
 			// Entropy calculation
-			if (hr == S_OK && bEnt == true && pMat->mat->channels() == 1)
+			if (hr == S_OK && bEnt == true && pMat->channels() == 1)
 				{
 				cv::Mat				matHst,matLog;
 
@@ -181,7 +181,7 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 										matHst, 1, &histSize, &histRange );
 
 					// Normalize
-					matHst /= (double)pMat->mat->total();
+					matHst /= (double)pMat->umat->total();
 
 					// Compute entropy
 					cv::log ( matHst, matLog );

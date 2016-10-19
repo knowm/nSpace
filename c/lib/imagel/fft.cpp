@@ -22,6 +22,7 @@ FFT :: FFT ( void ) : umatPlanes(2)
 	////////////////////////////////////////////////////////////////////////
 	pImg		= NULL;
 	pWnd		= NULL;
+	bRows		= false;
 	}	// FFT
 
 HRESULT FFT :: fft ( cv::Mat *pMat, cv::Mat *pWnd, bool bRows )
@@ -150,7 +151,8 @@ HRESULT FFT :: fft ( cv::UMat *pMat, cv::UMat *pWnd, bool bRows )
 									cv::BORDER_CONSTANT, cv::Scalar::all(0) );
 
 		// Produce a real and (zeroed) imaginary pair
-		umatPlanes[0] = umatPad;
+		Convert::convertTo ( &umatPad, &umatPlanes[0], CV_32F );
+//		umatPlanes[0] = umatPad;
 		umatPlanes[1] = cv::UMat ( umatPad.size(), CV_32F );
 		umatPlanes[1].setTo ( cv::Scalar(0) );
 		cv::merge ( umatPlanes, umatCmplx );
@@ -347,6 +349,8 @@ HRESULT FFT :: onAttach ( bool bAttach )
 		// Defaults
 		if (pnDesc->load ( adtString(L"Window"), vL ) == S_OK)
 			adtValue::toString ( vL, strWnd );
+		if (pnDesc->load ( adtString(L"Rows"), vL ) == S_OK)
+			bRows = vL;
 		}	// if
 
 	// Detach
@@ -396,11 +400,11 @@ HRESULT FFT :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		// Compute FFT/Magnitude
 //		CCLOK ( image_to_debug ( pMat, L"FFT", L"c:/temp/fft.png" ); )
 		if (hr == S_OK && pMat->isGPU())
-			hr = fft ( pMat->gpumat, (pWnd != NULL) ? pWnd->gpumat : NULL, true );
+			hr = fft ( pMat->gpumat, (pWnd != NULL) ? pWnd->gpumat : NULL, bRows );
 		else if (hr == S_OK && pMat->isUMat())
-			hr = fft ( pMat->umat, (pWnd != NULL) ? pWnd->umat : NULL, true );
+			hr = fft ( pMat->umat, (pWnd != NULL) ? pWnd->umat : NULL, bRows );
 		else
-			hr = fft ( pMat->mat, (pWnd != NULL) ? pWnd->mat : NULL, true );
+			hr = fft ( pMat->mat, (pWnd != NULL) ? pWnd->mat : NULL, bRows );
 
 		// Debug
 		if (hr != S_OK)

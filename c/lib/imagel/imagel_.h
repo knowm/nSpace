@@ -78,6 +78,10 @@ class cvMatRef :
 			{ return (mat != NULL) ? mat->cols :
 						(umat != NULL) ? umat->cols :
 						(gpumat != NULL) ? gpumat->cols : 0; }
+	S32	channels ( void )
+			{ return (mat != NULL) ? mat->channels() :
+						(umat != NULL) ? umat->channels() :
+						(gpumat != NULL) ? gpumat->channels() : 0; }
 
 	// Run-time data
 	cv::Mat				*mat;								// CPU matrix
@@ -222,6 +226,9 @@ class Convert :
 	// Utilities
 	static
 	HRESULT convertTo	( cvMatRef *, cvMatRef *, U32 );
+	static
+	HRESULT convertTo	( cv::UMat *, 
+								cv::UMat *, U32 );
 	static
 	HRESULT convertTo	( cv::cuda::GpuMat *, 
 								cv::cuda::GpuMat *, U32 );
@@ -449,6 +456,7 @@ class FFT :
 	IDictionary	*pImg;									// Image dictionary
 	adtString	strWnd;									// Window function
 	cvMatRef		*pWnd;									// Window function
+	adtBool		bRows;									// FFT by rows
 
 	// CCL
 	CCL_OBJECT_BEGIN(FFT)

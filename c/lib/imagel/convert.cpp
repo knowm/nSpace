@@ -45,10 +45,7 @@ HRESULT Convert :: convertTo (	cvMatRef *pMatSrc, cvMatRef *pMatDst,
 	if (pMatSrc->isGPU() && pMatDst->isGPU())
 		hr = convertTo ( pMatSrc->gpumat, pMatDst->gpumat, fmt );
 	else if (pMatSrc->isUMat() && pMatDst->isUMat())
-		{
-		// Direct in-memory conversion
-		pMatSrc->umat->convertTo ( *(pMatDst->umat), fmt );
-		}	// if
+		hr = convertTo ( pMatSrc->umat, pMatDst->umat, fmt );
 
 	else
 		{
@@ -73,6 +70,31 @@ HRESULT Convert :: convertTo (	cvMatRef *pMatSrc, cvMatRef *pMatDst,
 		else
 			matCnv.copyTo ( *(pMatDst->mat) );
 		}	// else
+
+	return hr;
+	}	// convertTo
+
+HRESULT Convert :: convertTo (	cv::UMat *pMatSrc, 
+											cv::UMat *pMatDst, U32 fmt )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Global utility to convert data to a particular format.
+	//
+	//	PARAMETERS
+	//		-	pMatSrc is the source data
+	//		-	pMatDst will receive the converted data
+	//		-	fmt is the new OpenCV format
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT				hr = S_OK;
+
+	// Direct in-memory conversion (?)
+	pMatSrc->convertTo ( *(pMatDst), fmt );
 
 	return hr;
 	}	// convertTo

@@ -20,8 +20,8 @@ adtString strRefWidth	( L"Width" );
 adtString strRefHeight	( L"Height" );
 adtString strRefFormat	( L"Format" );
 adtString strRefBits		( L"Bits" );
-adtString strRefBGRA		( L"B8G8R8A8" );
-adtString strRefBGR		( L"B8G8R8" );
+adtString strRefRGBA		( L"R8G8B8A8" );
+adtString strRefRGB		( L"R8G8B8" );
 adtString strRefOnImg	( L"OnImage" );
 adtString strRefLblPt	( L"LabelPt" );
 adtString strRefTitle	( L"Title" );
@@ -1442,11 +1442,11 @@ static void PNGAPI png_progressive_info ( png_structp png_ptr, png_infop info_pt
 		{
 		case PNG_COLOR_TYPE_RGB :
 			pThis->uStride	= w*3;
-			CCLTRY ( pThis->pDctImg->store ( strRefFormat, strRefBGR ) );
+			CCLTRY ( pThis->pDctImg->store ( strRefFormat, strRefRGB ) );
 			break;
 		case PNG_COLOR_TYPE_RGB_ALPHA :
 			pThis->uStride	= w*4;
-			CCLTRY ( pThis->pDctImg->store ( strRefFormat, strRefBGRA ) );
+			CCLTRY ( pThis->pDctImg->store ( strRefFormat, strRefRGBA ) );
 			break;
 		default :
 			hr = E_NOTIMPL;
