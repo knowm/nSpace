@@ -17,6 +17,7 @@ UnImage::UnImage()
 	////////////////////////////////////////////////////////////////////////
 	strTag	= L"";
 	pTex		= NULL;
+	pImgUp	= NULL;
 
 	// Globals
 	if (FCub == NULL)
@@ -142,6 +143,26 @@ bool UnImage :: mainTick ( float fD )
 
 	// Default behaviour
 	bWrk = UnElement::mainTick(fD);
+
+	// Image update
+	if (pImgUp != NULL)
+		{
+		IDictionary	*pImg = NULL;
+
+		// Transfer ownership
+		csImg.enter();
+		pImg		= pImgUp;
+		pImgUp	= NULL;
+		csImg.leave();
+
+		// Update if valid
+		if (pImg != NULL)
+			onImage(pImg);
+
+		// Clean up
+		_RELEASE(pImg);
+		}	// if
+
 /*
 	// Image tag
 	if (strTag[0] != '\0')
@@ -193,6 +214,7 @@ void UnImage :: onImage ( IDictionary *pImg )
 	bool				bBGRA			= false;
 	bool				bBGR			= false;
 	bool				bRGB			= false;
+	bool				bGrey8		= false;
 	adtInt			iW,iH;
 	adtValue			vL;
 	adtString		strFmt;
@@ -243,6 +265,8 @@ void UnImage :: onImage ( IDictionary *pImg )
 			bBGR = true;
 		else if (!WCASECMP(strFmt,L"R8G8B8"))
 			bRGB = true;
+		else if (!WCASECMP(strFmt,L"U8x2"))
+			bGrey8 = true;
 		else
 			hr = ERROR_NOT_SUPPORTED;
 		}	// if
@@ -256,19 +280,29 @@ void UnImage :: onImage ( IDictionary *pImg )
 				{
 				// Source index
 				U32 srcidx = r*iW + c;
-				srcidx *= ((bBGRA) ? 4 : 3);
+				srcidx *= ((bGrey8) ? 1 : (bBGRA) ? 4 : 3);
 
 				// Destination index
 				U32 dstidx = (r*pTex->GetSizeX() + c)*4;
 
 				// Copy pixel data
-				pcBitsDst[dstidx+0] = pcBitsSrc[(bRGB) ? srcidx+2 : srcidx+0];
-				pcBitsDst[dstidx+1] = pcBitsSrc[(bRGB) ? srcidx+1 : srcidx+1];
-				pcBitsDst[dstidx+2] = pcBitsSrc[(bRGB) ? srcidx+0 : srcidx+2];
-				if (bBGRA)
-					pcBitsDst[dstidx+3] = pcBitsSrc[srcidx+3];
-				else
+				if (bGrey8)
+					{
+					pcBitsDst[dstidx+0] = pcBitsSrc[srcidx];
+					pcBitsDst[dstidx+1] = pcBitsSrc[srcidx];
+					pcBitsDst[dstidx+2] = pcBitsSrc[srcidx];
 					pcBitsDst[dstidx+3] = 0xff;
+					}	// if
+				else
+					{
+					pcBitsDst[dstidx+0] = pcBitsSrc[(bRGB) ? srcidx+2 : srcidx+0];
+					pcBitsDst[dstidx+1] = pcBitsSrc[(bRGB) ? srcidx+1 : srcidx+1];
+					pcBitsDst[dstidx+2] = pcBitsSrc[(bRGB) ? srcidx+0 : srcidx+2];
+					if (bBGRA)
+						pcBitsDst[dstidx+3] = pcBitsSrc[srcidx+3];
+					else
+						pcBitsDst[dstidx+3] = 0xff;
+					}	// else
 				}	// for
 
 //		memset ( pcBitsDst, 0x80, pTex->GetSizeX()*pTex->GetSizeY()*4 );
@@ -311,12 +345,30 @@ bool UnImage :: onReceive (	nElement *pElem,
 	//
 	////////////////////////////////////////////////////////////////////////
 	bool	bSch	= false;
+	adtString strV(v);
+
+	// Debug
+//	dbgprintf ( L"UnImage::onReceive:%s:%s:%s\r\n", pwRoot, pwLoc, (LPCWSTR) strV );
 
 	// Base behaviour
 	bSch = UnElement::onReceive(pElem,pwRoot,pwLoc,v);
 
+	// Direct mage
+	if (!WCASECMP(pwLoc,L"Interface/Element/Default/OnFire/Value"))
+		{
+		HRESULT			hr		= S_OK;
+		adtIUnknown		unkV(v);
+
+		// Update image
+		csImg.enter();
+		_RELEASE(pImgUp);
+		CCLTRY ( _QISAFE(unkV,IID_IDictionary,&pImgUp) );
+		csImg.leave();
+		bSch	= true;
+		}	// if
+
 	// Tag
-	if (!WCASECMP(pwLoc,L"Interface/Tag/OnFire/Value"))
+	else if (!WCASECMP(pwLoc,L"Interface/Tag/OnFire/Value"))
 		{
 		// Tag update
 		adtValue::toString ( v, strTag );

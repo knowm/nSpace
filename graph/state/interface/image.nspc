@@ -12,7 +12,7 @@
 	#	Element										State/Interface/Element/ {}
 
 	% NSPC: A context specific reference tag to identify the image
-	$	Tag		Nspc.Value {}
+%	$	Tag		Nspc.Value {}
 
 	% MISCN: Original image size
 %	$	Width		Nspc.Value { Value 0:int }

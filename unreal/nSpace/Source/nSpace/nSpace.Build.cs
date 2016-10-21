@@ -26,12 +26,18 @@ public class nSpace : ModuleRules
 		// Libraries
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 			{
-			PublicAdditionalLibraries.Add(strn+"/c/x64/debug/sysl.2015.lib");
-			PublicAdditionalLibraries.Add(strn+"/c/x64/debug/nshxl.2015.lib");
-			PublicAdditionalLibraries.Add(strn+"/c/x64/debug/nspcl.2015.lib");
-			PublicAdditionalLibraries.Add(strn+"/c/x64/debug/adtl.2015.lib");
-			PublicAdditionalLibraries.Add(strn+"/c/x64/debug/ccl.2015.lib");
-			}	// if
+//			PublicAdditionalLibraries.Add(strn+"/c/x64/debug/sysl.lib");
+//			PublicAdditionalLibraries.Add(strn+"/c/x64/debug/nshxl.lib");
+//			PublicAdditionalLibraries.Add(strn+"/c/x64/debug/nspcl.lib");
+//			PublicAdditionalLibraries.Add(strn+"/c/x64/debug/adtl.lib");
+//			PublicAdditionalLibraries.Add(strn+"/c/x64/debug/ccl.lib");
+
+			PublicAdditionalLibraries.Add(strn + "/c/x64/release/sysl.lib");
+			PublicAdditionalLibraries.Add(strn + "/c/x64/release/nshxl.lib");
+			PublicAdditionalLibraries.Add(strn + "/c/x64/release/nspcl.lib");
+			PublicAdditionalLibraries.Add(strn + "/c/x64/release/adtl.lib");
+			PublicAdditionalLibraries.Add(strn + "/c/x64/release/ccl.lib");
+		}  // if
 
 		// 
 		// Uncomment if you are using Slate UI

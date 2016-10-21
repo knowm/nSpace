@@ -1,0 +1,17 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%							STATE.NSPC
+%
+%					3D Render state definition.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Subgraph: Camera state
+
+	% Subgraph: List of render location descriptors
+	#	Locations									State/Interface/Dict/ {}
+
+	% Subgraph: Input
+	#	Input											State/Render/3D/Input/ {}

@@ -10,6 +10,11 @@
 #include "nActor.h"
 #include "nElement.h"
 
+// Globals
+// Temporary hack until it is determined why Unreal engine in production
+// mode creates two actors.
+static AnActor *pThisActor = NULL;
+
 AnActor::AnActor()
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -171,6 +176,11 @@ void AnActor::BeginPlay()
 	// Default behaviour
 	Super::BeginPlay();
 
+	// TEMPORARY
+	if (pThisActor != NULL)
+		return;
+	pThisActor = this;
+
 	// Create worker object
 	CCLTRYE ( (pTick = new AnActort(this)) != NULL, E_OUTOFMEMORY );
 	CCLOK   ( pTick->AddRef(); )
@@ -192,14 +202,20 @@ void AnActor::EndPlay(const EEndPlayReason::Type rsn )
 	//
 	////////////////////////////////////////////////////////////////////////
 
-	// Debug
-	UE_LOG(LogTemp, Warning, TEXT("AnActor::EndPlay"));
-
-	// Shutdown worker thread
-	if (pThrd != NULL)
+	// TEMPORARY
+	if (pThisActor == this)
 		{
-		pThrd->threadStop(30000);
-		_RELEASE(pThrd);
+		// Debug
+		UE_LOG(LogTemp, Warning, TEXT("AnActor::EndPlay"));
+
+		// Shutdown worker thread
+		if (pThrd != NULL)
+			{
+			pThrd->threadStop(30000);
+			_RELEASE(pThrd);
+			}	// if
+
+		pThisActor = NULL;
 		}	// if
 
 	// Base behaviour

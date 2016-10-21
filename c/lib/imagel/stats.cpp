@@ -164,6 +164,9 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					// Normalize
 					cv::cuda::divide ( gpuHst, cv::Scalar(pMat->gpumat->rows*pMat->gpumat->cols), gpuHst );
 
+					// Ensure no log of zeroes
+					cv::cuda::add ( gpuHst, cv::Scalar::all(1e-20), gpuHst );
+
 					// Compute entropy
 					cv::cuda::log ( gpuHst, gpuLog );
 
@@ -172,6 +175,8 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				else if (pMat->isUMat())
 					{
 					cv::Mat	matHst,matLog;
+
+					// TODO: not working yet, keeps using same bits
 
 					// 'calcHist' not available for UMat ?
 					matHst = pMat->umat->getMat(cv::ACCESS_READ);
@@ -182,6 +187,9 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 					// Normalize
 					matHst /= (double)pMat->umat->total();
+
+					// Ensure no log of zeroes
+					cv::add ( matHst, cv::Scalar::all(1e-20), matHst );
 
 					// Compute entropy
 					cv::log ( matHst, matLog );
@@ -197,6 +205,9 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 					// Normalize
 					matHst /= (double)pMat->mat->total();
+
+					// Ensure no log of zeroes
+					cv::add ( matHst, cv::Scalar::all(1e-20), matHst );
 
 					// Compute entropy
 					cv::log ( matHst, matLog );

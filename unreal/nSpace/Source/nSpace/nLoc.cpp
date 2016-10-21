@@ -219,8 +219,8 @@ HRESULT AnLoc :: getParent (	const WCHAR *pwLoc,
 	}	// geParent
 
 HRESULT AnLoc :: onValue (	const WCHAR *pwRoot, 
-													const WCHAR *pwLoc,
-													const ADTVALUE &vV )
+									const WCHAR *pwLoc,
+									const ADTVALUE &vV )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//

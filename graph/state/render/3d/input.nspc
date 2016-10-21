@@ -1,0 +1,15 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								INPUT.NSPC
+%
+%		State definition for the direct 3D renderer input.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% NSPC: Ray input dictionary 
+	$	Ray Nspc.Value {}
+
+	% NSPC: Button input dictionary
+	$	Button Nspc.Value {}

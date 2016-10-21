@@ -247,6 +247,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "interface", "interface", "{
 		..\graph\lib\interface\list.nspc = ..\graph\lib\interface\list.nspc
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "render", "render", "{1C8C3A06-0F8C-471C-93EB-19694B40E292}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3d", "3d", "{9F4DE581-0E1E-4C59-832A-51A3DABFB34F}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\state\render\3d\input.nspc = ..\graph\state\render\3d\input.nspc
+		..\graph\state\render\3d\state.nspc = ..\graph\state\render\3d\state.nspc
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -581,5 +589,7 @@ Global
 		{B9187F45-DF26-41E6-B33B-6A1F9D01AE18} = {060BE89F-4362-4D47-8ED0-67F456629B3C}
 		{18CB1363-F002-4B15-8F7F-F00E280DD92E} = {B9187F45-DF26-41E6-B33B-6A1F9D01AE18}
 		{ECA2B9C6-6969-463F-8217-2E5AD6286A88} = {8A6113B8-46B6-46BC-9F17-0EDC02FF5EA6}
+		{1C8C3A06-0F8C-471C-93EB-19694B40E292} = {5A572578-54D6-40FE-93BC-F8E838082B52}
+		{9F4DE581-0E1E-4C59-832A-51A3DABFB34F} = {1C8C3A06-0F8C-471C-93EB-19694B40E292}
 	EndGlobalSection
 EndGlobal

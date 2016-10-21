@@ -378,7 +378,7 @@ HRESULT nElement :: onReceive (	const WCHAR *pwRoot,
 //	dbgprintf ( L"nElement::onReceive:%s:%s:%s:%d\r\n",
 //			pwRoot, pwLoc, (LPCWSTR)strDbg, v.vtype );
 
-	// Forward to root componen
+	// Forward to root component
 	if (pRoot != NULL)
 		bSch = pRoot->onReceive ( this, pwRoot, pwLoc, v );
 

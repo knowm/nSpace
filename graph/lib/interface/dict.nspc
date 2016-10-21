@@ -199,7 +199,7 @@
 	$	ValueKeyLd Misc.Dist {}
 		!	Key/OnFire								ValueKeyLd/Value
 		!	Load/OnFire								ValueKeyLd/Fire
-		!	ValueKeyLd/OnFire						State/Element/Default/Value/Fire
+		!	ValueKeyLd/OnFire						State/Element/Default/Fire
 
 	% MISCN: Clear selection
 	$	ValueKeyClr Misc.Dist { Value "" }
@@ -211,8 +211,7 @@
 
 	% MISCN: Clear selection ? (Use something other than null string ?)
 	$	SelClr Misc.Compare { Left "" }
-		!	State/Element/Default/Value/OnFire
-														SelClr/Fire
+		!	State/Element/Default/OnFire		SelClr/Fire
 
 	% Selection cleared
 	!	SelClr/OnEqual								OnClear/Fire

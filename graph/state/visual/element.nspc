@@ -24,7 +24,7 @@
 %	#	Input											State/Visual/Input/Element/ {}
 
 	% Subgraph: Drag/drop support
-	#	DragDrop										State/Visual/DragDrop/ {}
+%	#	DragDrop										State/Visual/DragDrop/ {}
 
 	% NSPC: Visual parent location
 %	$	Parent Nspc.Value {}

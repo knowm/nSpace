@@ -17,8 +17,10 @@ class NSPACE_API UnImage : public UnElement
 	UnImage();											// Constructor
 
 	// Run-time data
-	adtString	strTag;									// Image tag
-	UTexture2D	*pTex;									// Active texture
+	adtString	strTag;								// Image tag
+	IDictionary	*pImgUp;								// Image update
+	sysCS			csImg;								// Image update mutex
+	UTexture2D	*pTex;								// Active texture
 
 	UStaticMeshComponent			*pcShp;
 	UStaticMesh						*pMesh;
