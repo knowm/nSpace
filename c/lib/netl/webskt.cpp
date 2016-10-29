@@ -1,0 +1,60 @@
+////////////////////////////////////////////////////////////////////////
+//
+//									WEBSKT.CPP
+//
+//					Implementation of the web socket server
+//
+////////////////////////////////////////////////////////////////////////
+
+#include "netl_.h"
+#include <stdio.h>
+
+WebSktSrvr :: WebSktSrvr ( void )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Constructor for the WebSktSrvrability node
+	//
+	////////////////////////////////////////////////////////////////////////
+	}	// WebSktSrvr
+
+HRESULT WebSktSrvr :: construct ( void )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	OVERLOAD
+	//	FROM		CCLObject
+	//
+	//	PURPOSE
+	//		-	Called when the object is being created.
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT		hr		= S_OK;
+
+	// Server setup
+	server.init_asio();
+	server.set_open_handler(bind(&WebSktSrvr::on_open,this,std::placeholders::_1));
+	server.set_close_handler(bind(&WebSktSrvr::on_close,this,std::placeholders::_1));
+	server.set_message_handler(bind(&WebSktSrvr::on_message,this,
+										std::placeholders::_1,std::placeholders::_2));
+
+	return hr;
+	}	// construct
+
+void WebSktSrvr :: destruct ( void )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	OVERLOAD
+	//	FROM		CCLObject
+	//
+	//	PURPOSE
+	//		-	Called when the object is being destroyed
+	//
+	////////////////////////////////////////////////////////////////////////
+	}	// destruct
+
