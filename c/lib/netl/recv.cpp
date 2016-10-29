@@ -99,6 +99,7 @@ HRESULT Recv :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 			// Write data into stream
 			CCLTRY ( pStm->write ( cFrame, uBfrLen, NULL ) );
+//dbgprintf ( L"%S\r\n", cFrame );
 
 			// The amount of data read is less than requested, terminate read
 			if (hr == S_OK && uBfrLen < sizeof(cFrame))

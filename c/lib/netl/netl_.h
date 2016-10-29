@@ -54,6 +54,11 @@ typedef	int							SOCKET;
 #define	SIZE_FRAME_ETHERNET		1514				// Ethernet frame size
 #define	SIZE_PERSIST_CACHE		8192
 
+// Websockets TODO: Ifdef this/property page
+//#define	ASIO_STANDALONE
+#include	<websocketpp/config/asio_no_tls.hpp>
+#include <websocketpp/server.hpp>
+
 //
 // Class - Address.  Network address node.
 //
@@ -554,6 +559,44 @@ class SocketOp :
 
 	};
 
+//
+// Class - WebSktSrvr.  Web socket server.
+//
+typedef websocketpp::server<websocketpp::config::asio> server_t;
+
+class WebSktSrvr :
+	public CCLObject,										// Base class
+	public Behaviour										// Interface
+	{
+	public :
+	WebSktSrvr ( void );									// Constructor
+
+	// Run-time data
+	server_t	server;
+
+	// Callbacks
+	void on_close		( websocketpp::connection_hdl );
+	void on_open		( websocketpp::connection_hdl );
+	void on_message	( websocketpp::connection_hdl, server_t::message_ptr );
+
+	// CCL
+	CCL_OBJECT_BEGIN(WebSktSrvr)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+	virtual HRESULT	construct	( void );		// Construct object
+	virtual void		destruct	( void );			// Destruct object
+
+	// Connections
+	DECLARE_RCP(Start)
+	DECLARE_RCP(Stop)
+	BEGIN_BEHAVIOUR()
+		DEFINE_RCP(Start)
+		DEFINE_RCP(Stop)
+	END_BEHAVIOUR_NOTIFY()
+
+	private :
+
+	};
 
 // Protoypes
 HRESULT	NetSkt_AddRef	( void );
