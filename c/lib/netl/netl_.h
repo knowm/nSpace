@@ -54,10 +54,15 @@ typedef	int							SOCKET;
 #define	SIZE_FRAME_ETHERNET		1514				// Ethernet frame size
 #define	SIZE_PERSIST_CACHE		8192
 
+
 // Websockets TODO: Ifdef this/property page
+//#define	USE_WEBSKTPP
+#ifdef	USE_WEBSKTPP
 //#define	ASIO_STANDALONE
 #include	<websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
+#include <set>
+#endif
 
 //
 // Class - Address.  Network address node.
@@ -562,22 +567,34 @@ class SocketOp :
 //
 // Class - WebSktSrvr.  Web socket server.
 //
+#ifdef	USE_WEBSKTPP
 typedef websocketpp::server<websocketpp::config::asio> server_t;
+typedef std::set<websocketpp::connection_hdl,std::owner_less<websocketpp::connection_hdl>>	con_list;
 
 class WebSktSrvr :
 	public CCLObject,										// Base class
-	public Behaviour										// Interface
+	public Behaviour,										// Interface
+	public ITickable										// Interface
 	{
 	public :
 	WebSktSrvr ( void );									// Constructor
 
 	// Run-time data
-	server_t	server;
+	server_t	server;										// Server object
+	con_list	m_connections;								// Connection  list	
+	IThread	*pThrd;										// Worker thread
+	adtInt	iPort;										// Server port
 
 	// Callbacks
 	void on_close		( websocketpp::connection_hdl );
 	void on_open		( websocketpp::connection_hdl );
 	void on_message	( websocketpp::connection_hdl, server_t::message_ptr );
+
+	// 'ITickable' members
+	STDMETHOD(tick)		( void );
+	STDMETHOD(tickAbort)	( void );
+	STDMETHOD(tickBegin)	( void );
+	STDMETHOD(tickEnd)	( void );
 
 	// CCL
 	CCL_OBJECT_BEGIN(WebSktSrvr)
@@ -597,6 +614,7 @@ class WebSktSrvr :
 	private :
 
 	};
+#endif
 
 // Protoypes
 HRESULT	NetSkt_AddRef	( void );

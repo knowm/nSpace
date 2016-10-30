@@ -5,7 +5,7 @@
   <PropertyGroup />
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SDK_BOOST);$(SDK_WEBSKTPP)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SDK_WEBSKTPP)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup />

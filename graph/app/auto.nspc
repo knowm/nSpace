@@ -54,35 +54,39 @@
 	% Web sockets
 	%%%%%%%%%%%%%%
 
+	% NETN: Web socket server
+	$	Server Net.WebSktSrvr { Port 8443:int }
+		!	Initialize/OnFire						Server/Start
+		!	Uninitialize/OnFire					Server/Stop
+
 	% MISCN: Listening port
-	$	ValuePort Misc.Dist { Value 8443:int }
-		!	Initialize/OnFire						ValuePort/Fire
+%	$	ValuePort Misc.Dist { Value 8443:int }
+%		!	Initialize/OnFire						ValuePort/Fire
 
 	% Subgraph: Server / clients
-	#	Server										Lib/Comm/Network/Ip/Tcp/ServerClients/ {}
-		!	ValuePort/OnFire						Server/PortSrvr/Fire
-		!	Initialize/OnFire						Server/Start/Fire
-		!	Uninitialize/OnFire					Server/Stop/Fire
-		!	Server/OnConnect/OnFire				Debug/Fire
-		!	Server/OnRead/OnFire					Debug/Fire
+%	#	Server										Lib/Comm/Network/Ip/Tcp/ServerClients/ {}
+%		!	ValuePort/OnFire						Server/PortSrvr/Fire
+%		!	Initialize/OnFire						Server/Start/Fire
+%		!	Uninitialize/OnFire					Server/Stop/Fire
+%		!	Server/OnConnect/OnFire				Debug/Fire
+%		!	Server/OnRead/OnFire					Debug/Fire
 
 	% NETN: Read data
-	$	NetRx Net.Recv {}
-		!	Server/OnRead/OnFire					NetRx/Socket
-		!	NetRx/OnFire							Debug/Fire
+%	$	NetRx Net.Recv {}
+%		!	Server/OnRead/OnFire					NetRx/Socket
+%		!	NetRx/OnFire							Debug/Fire
 %		!	NetRx/Error								Debug/Fire
 
 	% On read error, close socket
-	!	NetRx/OnError								Server/Close/Fire
+%	!	NetRx/OnError								Server/Close/Fire
 
 	% MISCN: Create stream to receive data
-	$	CreateStmRx Misc.Create { Id IO.StmMemory }
-		!	Server/OnRead/OnFire					CreateStmRx/Fire
+%	$	CreateStmRx Misc.Create { Id IO.StmMemory }
+%		!	Server/OnRead/OnFire					CreateStmRx/Fire
 
 	% Trigger read
-	!	CreateStmRx/OnFire						NetRx/Stream
-	!	CreateStmRx/OnFire						NetRx/Fire
-
+%	!	CreateStmRx/OnFire						NetRx/Stream
+%	!	CreateStmRx/OnFire						NetRx/Fire
 
 	%%%%%%%%%%
 	% General
