@@ -515,7 +515,7 @@ HRESULT GnuPlotSrvr :: plot ( IDictionary *pReq )
 		if (hr == S_OK && !b3D)
 			{
 			// Record command, each vector
-			for (U32 i = 1;hr == S_OK && i < iRows;++i)
+			for (U32 i = 1,y = 1;hr == S_OK && i < iRows;++i,++y)
 				{
 				// Next line
 				CCLOK ( swprintf ( SWPF(wBfrLn,101), 
@@ -523,14 +523,15 @@ HRESULT GnuPlotSrvr :: plot ( IDictionary *pReq )
 				CCLTRY( strCmdBfr.append ( wBfrLn ) );
 
 				// Label for plot, default or specified
-//				if (hr == S_OK && pDctV[i]->load ( adtString(L"Label"), vL ) == S_OK)
-//					hr = strCmdBfr.append ( adtString(vL) );
-//				else if (hr == S_OK)
-//					{
+				CCLOK ( swprintf ( SWPF(wBfrLn,101), L"TitleY%d", y ); )
+				if (hr == S_OK && pReq->load ( adtString(wBfrLn), vL ) == S_OK)
+					hr = strCmdBfr.append ( adtString(vL) );
+				else if (hr == S_OK)
+					{
 					// Default
-					CCLOK ( swprintf ( SWPF(wBfrLn,101), L"Series %d", i ); )
+					CCLOK ( swprintf ( SWPF(wBfrLn,101), L"Series %d", y ); )
 					CCLOK ( strCmdBfr.append ( wBfrLn ); )
-//					}	// else
+					}	// else
 				CCLTRY ( strCmdBfr.append ( L"\"" ) );
 
 				// If two axis present, skip row 3 where second X row lives

@@ -255,6 +255,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3d", "3d", "{9F4DE581-0E1E-
 		..\graph\state\render\3d\state.nspc = ..\graph\state\render\3d\state.nspc
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "math", "math", "{2B2448AD-DD4F-4361-A6EC-D605F2F8A1D0}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\lib\math\CSVToDataBlk.nspc = ..\graph\lib\math\CSVToDataBlk.nspc
+		..\graph\lib\math\DataBlkToCSV.nspc = ..\graph\lib\math\DataBlkToCSV.nspc
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "geometry", "geometry", "{6A8E82FB-5EEE-4803-B67D-10F436489674}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\lib\math\geometry\RectIntRect.nspc = ..\graph\lib\math\geometry\RectIntRect.nspc
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -591,5 +602,7 @@ Global
 		{ECA2B9C6-6969-463F-8217-2E5AD6286A88} = {8A6113B8-46B6-46BC-9F17-0EDC02FF5EA6}
 		{1C8C3A06-0F8C-471C-93EB-19694B40E292} = {5A572578-54D6-40FE-93BC-F8E838082B52}
 		{9F4DE581-0E1E-4C59-832A-51A3DABFB34F} = {1C8C3A06-0F8C-471C-93EB-19694B40E292}
+		{2B2448AD-DD4F-4361-A6EC-D605F2F8A1D0} = {8A6113B8-46B6-46BC-9F17-0EDC02FF5EA6}
+		{6A8E82FB-5EEE-4803-B67D-10F436489674} = {2B2448AD-DD4F-4361-A6EC-D605F2F8A1D0}
 	EndGlobalSection
 EndGlobal

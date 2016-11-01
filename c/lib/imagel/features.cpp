@@ -19,7 +19,7 @@ Features :: Features ( void )
 	//		-	Constructor for the object
 	//
 	////////////////////////////////////////////////////////////////////////
-	pImg	= NULL;
+	pImg			= NULL;
 
 	// Defaults
 	strType	= L"";
@@ -108,6 +108,35 @@ HRESULT Features :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					// Replace original array
 					pMat->gpumat->upload ( matCircles );
 					}	// if
+				else if (!WCASECMP(strType,L"Canny"))
+					{
+/*
+					// TODO: Current calling any function on 'pgpuCanny' crashes.
+					// For now perform CPU based edge detection.
+					cv::Mat	cpuMat,cpuEdges;
+
+					// Download into CPU memory
+					pMat->gpumat->download ( cpuMat );
+
+					// Perform detection
+					cv::Canny ( cpuMat, cpuEdges, 100, 200 ); 
+
+					// Result
+					pMat->gpumat->upload ( cpuEdges );
+*/
+					cv::cuda::GpuMat	edges;
+
+					// Create canny detector algorithm if necessary
+					if (pgpuCanny == NULL)
+						pgpuCanny = cv::cuda::createCannyEdgeDetector ( 100, 200 );
+
+					// Perform detection
+					if (pgpuCanny != NULL)
+						pgpuCanny->detect ( *(pMat->gpumat), edges );
+
+					// Result
+					edges.copyTo ( *(pMat->gpumat) );
+					}	// else if
 				else
 					hr = E_NOTIMPL;
 				}	// if
@@ -126,6 +155,17 @@ HRESULT Features :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					// Replace original array
 					matCircles.copyTo(*(pMat->umat));
 					}	// if
+				else if (!WCASECMP(strType,L"Canny"))
+					{
+					cv::UMat matDst;
+
+					// Execute
+					cv::Canny ( *(pMat->umat), matDst, 100, 200 ); 
+
+					// Result
+					if (matDst.rows > 0 && matDst.cols > 0)
+						matDst.copyTo ( *(pMat->umat) );
+					}	// else if
 				else
 					hr = E_NOTIMPL;
 				}	// if
@@ -157,6 +197,17 @@ HRESULT Features :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					// Replace original array
 //					matCircles.copyTo(*(pMat->mat));
 					}	// if
+				else if (!WCASECMP(strType,L"Canny"))
+					{
+					cv::Mat matDst;
+
+					// Execute
+					cv::Canny ( *(pMat->mat), matDst, 100, 200 ); 
+
+					// Result
+					if (matDst.rows > 0 && matDst.cols > 0)
+						matDst.copyTo ( *(pMat->mat) );
+					}	// else if
 				else
 					hr = E_NOTIMPL;
 				}	// else

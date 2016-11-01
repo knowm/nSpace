@@ -24,7 +24,6 @@ Gradient :: Gradient ( void )
 	iDx			= 1;
 	iDy			= 1;
 	iSzk			= 3;
-	pgpuCanny	= NULL;
 	pgpuSobel	= NULL;
 	pgpuScharr	= NULL;
 	pgpuLaplace	= NULL;
@@ -68,7 +67,6 @@ HRESULT Gradient :: onAttach ( bool bAttach )
 		{
 		// Shutdown
 		_RELEASE(pImg);
-		_DELETE(pgpuCanny);
 		_DELETE(pgpuSobel);
 		_DELETE(pgpuScharr);
 		_DELETE(pgpuLaplace);
@@ -137,33 +135,6 @@ HRESULT Gradient :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 						if (pgpuScharr != NULL)
 							pgpuScharr->apply ( *(pMat->gpumat), *(pMat->gpumat) );
 						}	// if
-					else if (!WCASECMP(strType,L"Canny"))
-						{
-						// TODO: Current calling any function on 'pgpuCanny' crashes.
-						// For now perform CPU based edge detection.
-						cv::Mat	cpuMat,cpuEdges;
-
-						// Download into CPU memory
-						pMat->gpumat->download ( cpuMat );
-
-						// Perform detection
-						cv::Canny ( cpuMat, cpuEdges, 100, 200 ); 
-
-						// Result
-						pMat->gpumat->upload ( cpuEdges );
-
-						/*
-						if (pgpuCanny == NULL)
-							pgpuCanny = cv::cuda::createCannyEdgeDetector ( 100, 200 );
-						if (pgpuCanny != NULL)
-							{
-							// Crash! Open CV 3.1
-							pgpuCanny->clear();
-//							pgpuCanny->detect ( *(pMat->gpumat), *(pMat->gpumat) );
-							pgpuCanny->detect ( *(pMat->gpumat), edges );
-							}	// if
-						*/
-						}	// if
 					else
 						hr = E_NOTIMPL;
 					}	// if
@@ -176,8 +147,6 @@ HRESULT Gradient :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 						cv::Sobel ( *(pMat->umat), *(pMat->umat), CV_16SC1, iDx, iDy, iSzk );
 					else if (!WCASECMP(strType,L"Scharr"))
 						cv::Sobel ( *(pMat->umat), *(pMat->umat), CV_16SC1, iDx, iDy, -1 );
-					else if (!WCASECMP(strType,L"Canny"))
-						cv::Canny ( *(pMat->umat), *(pMat->umat), 100, 200 ); 
 					else
 						hr = E_NOTIMPL;
 					}	// else if
@@ -193,8 +162,6 @@ HRESULT Gradient :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 						cv::Sobel ( *(pMat->mat), matDst, CV_16SC1, iDx, iDy, iSzk );
 					else if (!WCASECMP(strType,L"Scharr"))
 						cv::Sobel ( *(pMat->mat), matDst, CV_16SC1, iDx, iDy, CV_SCHARR );
-					else if (!WCASECMP(strType,L"Canny"))
-						cv::Canny ( *(pMat->mat), matDst, 100, 200 ); 
 					else
 						hr = E_NOTIMPL;
 

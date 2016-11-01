@@ -146,6 +146,8 @@ class Image :
 	adtString		strLblX0,strLblX1;				// X-axis labels
 	adtString		strLblY0,strLblY1;				// Y-axis labels
 	adtBool			bX2;									// Two X-axis
+	adtString		strTitleY1,strTitleY2;			// Y titles for legend
+	adtString		strTitleY3,strTitleY4;			// Y titles for legend
 
 	// CCL
 	CCL_OBJECT_BEGIN(Image)

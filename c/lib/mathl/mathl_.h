@@ -277,6 +277,58 @@ class Function :
 
 	};
 */
+
+//
+// Class - Line.  Node to handle a line.
+//
+
+class Line :
+	public CCLObject,										// Base class
+	public Behaviour										// Interface
+	{
+	public :
+	Line ( void );											// Constructor
+
+	// Run-time data
+	adtDouble	dY2,dY1,dX1,dX2;						// Two-points for a line
+	adtDouble	dM,dB;									// Slope/intercept
+	bool			bVert;									// Line is vertical
+
+	// CCL
+	CCL_OBJECT_BEGIN(Line)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+
+	// Evaluation
+	DECLARE_CON(X)
+	DECLARE_CON(Y)
+	DECLARE_RCP(Two)
+
+	// Slope/intercept
+	DECLARE_CON(M)
+	DECLARE_CON(B)
+
+	// Two-point
+	DECLARE_RCP(X1)
+	DECLARE_RCP(X2)
+	DECLARE_RCP(Y1)
+	DECLARE_RCP(Y2)
+
+	BEGIN_BEHAVIOUR()
+		DEFINE_CON(X)
+		DEFINE_CON(Y)
+		DEFINE_CON(M)
+		DEFINE_CON(B)
+		DEFINE_RCP(Two)
+		DEFINE_RCP(X1)
+		DEFINE_RCP(X2)
+		DEFINE_RCP(Y1)
+		DEFINE_RCP(Y2)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
 //
 // Class - Matrix3D.  Node for a 3D matrix.
 //

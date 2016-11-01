@@ -406,6 +406,12 @@ class Features :
 		DEFINE_CON(Fire)
 		DEFINE_RCP(Image)
 	END_BEHAVIOUR_NOTIFY()
+
+	private :
+
+	// Internal state
+	cv::Ptr<cv::cuda::CannyEdgeDetector>	pgpuCanny;
+
 	};
 
 //
@@ -527,7 +533,6 @@ class Gradient :
 	private :
 
 	// Run-time data
-	cv::cuda::CannyEdgeDetector	*pgpuCanny;
 	cv::cuda::Filter					*pgpuSobel;
 	cv::cuda::Filter					*pgpuScharr;
 	cv::cuda::Filter					*pgpuLaplace;

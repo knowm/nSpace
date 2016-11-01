@@ -24,6 +24,7 @@
     <ClCompile Include="datablk.cpp" />
     <ClCompile Include="formula.cpp" />
     <ClCompile Include="function.cpp" />
+    <ClCompile Include="line.cpp" />
     <ClCompile Include="mat3d.cpp" />
     <ClCompile Include="mathl.cpp" />
     <ClCompile Include="trans3d.cpp" />

@@ -107,6 +107,14 @@ HRESULT Image :: onAttach ( bool bAttach )
 		// Defaults
 		if (pnDesc->load ( adtString(L"Title"), vL ) == S_OK)
 			adtValue::toString ( vL, strTitle );
+		if (pnDesc->load ( adtString(L"TitleY1"), vL ) == S_OK)
+			adtValue::toString ( vL, strTitleY1 );
+		if (pnDesc->load ( adtString(L"TitleY2"), vL ) == S_OK)
+			adtValue::toString ( vL, strTitleY2 );
+		if (pnDesc->load ( adtString(L"TitleY3"), vL ) == S_OK)
+			adtValue::toString ( vL, strTitleY3 );
+		if (pnDesc->load ( adtString(L"TitleY4"), vL ) == S_OK)
+			adtValue::toString ( vL, strTitleY4 );
 		if (pnDesc->load ( adtString(L"Index"), vL ) == S_OK)
 			iIdx = vL;
 		if (pnDesc->load ( adtString(L"Width"), vL ) == S_OK)
@@ -262,11 +270,27 @@ HRESULT Image :: update ( void )
 	// Data block		
 	CCLTRY ( pReq->store ( adtString(L"Data"), adtIUnknown(pData) ) );
 
-	// Latest title
+	// Latest titles
 	if (hr == S_OK && strTitle.length() > 0)
 		hr = pReq->store ( adtString(L"Title"), strTitle );
 	else if (hr == S_OK)
 		pReq->remove ( adtString(L"Title") );
+	if (hr == S_OK && strTitleY1.length() > 0)
+		hr = pReq->store ( adtString(L"TitleY1"), strTitleY1 );
+	else if (hr == S_OK)
+		pReq->remove ( adtString(L"TitleY1") );
+	if (hr == S_OK && strTitleY2.length() > 0)
+		hr = pReq->store ( adtString(L"TitleY2"), strTitleY2 );
+	else if (hr == S_OK)
+		pReq->remove ( adtString(L"TitleY2") );
+	if (hr == S_OK && strTitleY3.length() > 0)
+		hr = pReq->store ( adtString(L"TitleY3"), strTitleY3 );
+	else if (hr == S_OK)
+		pReq->remove ( adtString(L"TitleY3") );
+	if (hr == S_OK && strTitleY4.length() > 0)
+		hr = pReq->store ( adtString(L"TitleY4"), strTitleY4 );
+	else if (hr == S_OK)
+		pReq->remove ( adtString(L"TitleY4") );
 
 	// Latest labels
 	if (hr == S_OK && strLblX0.length() > 0)
