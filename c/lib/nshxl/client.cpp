@@ -188,11 +188,11 @@ HRESULT nSpaceClient :: listen ( const WCHAR *szPath, BOOL bL,
 		CCLTRYE	( vL.vtype == VTYPE_UNK && vL.punk != NULL, E_UNEXPECTED );
 		CCLTRY	( _QI(vL.punk,__uuidof(IListenX),&pLstn) );
 
+		// Disable callback before unlisten
+		CCLOK ( ((nSpaceClientL *)pLstn)->pCB = NULL; )
+
 		// Unlisten
 		CCLTRY	( pSpc->unlisten ( bstrPath, pLstn ) );
-
-		// Disable callback
-		CCLOK ( ((nSpaceClientL *)pLstn)->pCB = NULL; )
 
 		// Remove from dictionary
 		pLstns->remove ( adtString(bstrPath) );
