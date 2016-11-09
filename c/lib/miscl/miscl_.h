@@ -1247,4 +1247,32 @@ class Type :
 
 	};
 
+//
+// Class - UUIDOp.  Node to create a handle universally unique Ids (UUID).
+//
+
+class UUIDOp :
+	public CCLObject,										// Base class
+	public Behaviour										// Interface
+	{
+	public :
+	UUIDOp ( void );										// Constructor
+
+	// Run-time data
+
+	// CCL
+	CCL_OBJECT_BEGIN(UUIDOp)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_CON(Fire)
+	BEGIN_BEHAVIOUR()
+		DEFINE_CON(Fire)
+	END_BEHAVIOUR()
+
+	private :
+
+	};
+
 #endif

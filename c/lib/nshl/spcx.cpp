@@ -492,22 +492,21 @@ HRESULT NamespaceX :: store ( BSTR bstrPath, VARIANT *var )
 	// Storing is done from the root location so ignore any leading slashes
 	CCLOK ( strPath = (bstrPath != NULL && bstrPath[0] == '/') ? 
 								bstrPath+1 : bstrPath; )
-	
-	// Since storing only values (not locations) is supported through this interface,
-	// allow caller to just specify '/Fire' at the end of the path.
-	// Full path needs to be 'XXX/Fire/Value'
+
+	// Ensure path is not a location
 	if (hr == S_OK && strPath[(len=strPath.length())-1] == '/')
 		strPath.at(--len) = '\0';
-	if (hr == S_OK && WCASECMP(&strPath[len-6],L"/Value"))
-		hr = strPath.append ( L"/Value" );
+
+	// For the pending load, remove trailing '/Value' specification
+	// NOTE: Handle .../Value/Value
+	if (	hr == S_OK && 
+			(len > 6 && !WCASECMP(&strPath[len-6],L"/Value")) &&
+			(len > 12 && WCASECMP(&strPath[len-12],L"/Value/Value")) )
+		strPath.at(len-6) = '\0';
 
 	// Perform a 'load' first on the path before the store.  This allows any
-	// auto-instancing to occur before the store.  Let the store fail, not this.
-//	if (hr == S_OK)
-//		hr = pShell->pSpc->get ( strPath, vL, NULL );
-
-	// Access root namespace location/receptor
-	CCLTRY(pShell->pSpc->get(L"/",vR,NULL));
+	// auto-instancing to occur before the store.
+	CCLTRY ( pShell->pSpc->get ( strPath, vR, NULL ) );
 	CCLTRY ( _QISAFE((unkV=vR),IID_IReceptor,&pRecep) );
 
 	// Convert to local value type
@@ -517,9 +516,10 @@ HRESULT NamespaceX :: store ( BSTR bstrPath, VARIANT *var )
 	// Debug
 //	adtValue::toString ( vSt, strVar );
 //	dbgprintf ( L"NamespaceX::store:%s:%s\r\n", bstrPath, (LPCWSTR) strVar );
+	dbgprintf ( L"NamespaceX::store:strPath %s:hr 0x%x\r\n", (LPCWSTR)strPath, hr );
 
-	// Receive value into namespace
-	CCLTRY ( pRecep->receive ( NULL, strPath, vSt ) );
+	// Receive value into location
+	CCLTRY ( pRecep->receive ( NULL, L"Value", vSt ) );
 
 	// Clean up
 	if (hr != S_OK)

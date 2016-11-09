@@ -40,6 +40,7 @@
     <ClCompile Include="toggle.cpp" />
     <ClCompile Include="tokenit.cpp" />
     <ClCompile Include="type.cpp" />
+    <ClCompile Include="uuid.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="miscl.h" />

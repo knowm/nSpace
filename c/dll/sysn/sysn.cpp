@@ -14,11 +14,5 @@
 
 // Objects in this module
 CCL_OBJLIST_BEGIN()
-
-	// Objects
 	CCL_OBJLIST_ENTRY	(Thread)
-//	CCL_OBJLIST_ENTRY	(UtilUUID)
-
-	// Nodes
-
 CCL_OBJLIST_END()
