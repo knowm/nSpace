@@ -266,6 +266,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "geometry", "geometry", "{6A
 		..\graph\lib\math\geometry\RectIntRect.nspc = ..\graph\lib\math\geometry\RectIntRect.nspc
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "state", "state", "{33E69B39-F59B-475B-B97F-53533375B8DB}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\lib\state\capture.nspc = ..\graph\lib\state\capture.nspc
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -604,5 +609,6 @@ Global
 		{9F4DE581-0E1E-4C59-832A-51A3DABFB34F} = {1C8C3A06-0F8C-471C-93EB-19694B40E292}
 		{2B2448AD-DD4F-4361-A6EC-D605F2F8A1D0} = {8A6113B8-46B6-46BC-9F17-0EDC02FF5EA6}
 		{6A8E82FB-5EEE-4803-B67D-10F436489674} = {2B2448AD-DD4F-4361-A6EC-D605F2F8A1D0}
+		{33E69B39-F59B-475B-B97F-53533375B8DB} = {8A6113B8-46B6-46BC-9F17-0EDC02FF5EA6}
 	EndGlobalSection
 EndGlobal

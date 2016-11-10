@@ -1,0 +1,103 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%							CAPTURE.NSPC
+%
+%	Capture a list of values in the namespace.  This is
+%	a quick way to capture a set of values scattered around
+%	the namespace.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+	$	Root					Misc.Dist {}		% Optional root namespace path
+	$	Map					Misc.Dist {}		% Namespace path to dictionary path
+	$	Dictionary			Misc.Dist {}		% Root dictionary for values
+
+	% Actions
+	$	Capture				Misc.Dist {}		% Capture values
+	$	Initialize			Misc.Dist {}		% Initialize
+
+	% Notifications
+	$	OnCapture			Misc.Dist {}		% Capture complete
+		
+	% DEBUG
+	$	Debug Misc.Debug {}
+
+	%%%%%%%%%%
+	% Capture
+	%%%%%%%%%%
+
+	%% The 'map' dictionary keys contains namespaces paths and the values
+	%% are dictionary path to store the loaded values.
+
+	% Pre-load notification
+	!	Dictionary/OnFire							OnCapture/Value
+
+	% ADTN: Iterate the namespace paths
+	$	MapIt Adt.Iterate {}
+		!	Map/OnFire								MapIt/Container
+		!	Capture/OnFire							MapIt/First
+		!	MapIt/OnKey								Debug/Fire
+		!	MapIt/OnNext							Debug/Fire
+
+	% MATHN: Append root path if relative path is given
+	$	AppendRoot Math.Binary { Left "" }
+		!	Root/OnFire								AppendRoot/Left
+		!	MapIt/OnKey								AppendRoot/Right
+
+	% MISCN: Extract first character of path
+	$	FirstChar Misc.StringOp { From 0:int To 1:int }
+
+	% MISCN: First character a slash ?
+	$	IsRoot Misc.Compare { Left "/" }
+		!	FirstChar/OnFire						IsRoot/Fire
+
+	% Non-slash means relative path, use root
+	!	IsRoot/OnNotEqual							AppendRoot/Fire
+
+	% NSPC: Load value from namespace
+	$	LoadLoc Nspc.This {}
+		!	MapIt/OnKey								LoadLoc/Location
+		!	AppendRoot/OnFire						LoadLoc/Location
+		!	LoadLoc/OnNotFound					Debug/Fire
+		!	LoadLoc/OnLoad							Debug/Fire
+
+	% Generate path
+	!	MapIt/OnKey									FirstChar/Substring
+
+	%% The location may be a node with an 'OnFire' emitter or
+	%% it may just be a dictionary, support both.
+
+	% ADTN: Check for 'OnFire', ok if it fails
+	$	LoadOnFire Adt.Load { Key OnFire }
+		!	LoadLoc/OnLoad							LoadOnFire/Dictionary
+
+	% ADTN: Load the value stored at the location (if any)
+	$	LoadVal Adt.Load { Key Value }
+		!	LoadOnFire/OnFire						LoadVal/Dictionary
+		!	LoadOnFire/OnFire						LoadVal/Fire
+		!	LoadVal/OnFire							Debug/Fire
+
+	% NSPC: Store value at path in dictionary
+	$	StoreValue Nspc.KeyPath {}
+		!	Dictionary/OnFire						StoreValue/Dictionary
+		!	MapIt/OnNext							StoreValue/Key
+		!	LoadLoc/OnLoad							StoreValue/Value
+		!	LoadOnFire/OnNotFound				StoreValue/Store
+		!	LoadVal/OnFire							StoreValue/Value
+		!	LoadVal/OnFire							StoreValue/Store
+
+	% Load and store the value
+	!	LoadLoc/OnLoad								LoadOnFire/Fire
+
+	% Latent connections
+	!	MapIt/OnNext								LoadLoc/Load
+
+	% Next path
+	!	MapIt/OnNext								MapIt/Next
+
+	% Complete
+	!	MapIt/OnLast								OnCapture/Fire
+
