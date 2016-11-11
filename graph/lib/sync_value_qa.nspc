@@ -9,8 +9,9 @@
 @
 
 	% Context
-	$	Maximum			Misc.Dist {}			% Maximum queue size (0 = no limit)
-	$	Clone				Misc.Dist {}			% Signaled to clone values as they are queued
+	$	Maximum				Misc.Dist {}		% Maximum queue size (0 = no limit)
+	$	Clone					Misc.Dist {}		% Signaled to clone values as they are queued
+	$	Priority				Misc.Dist {}		% Set relative priority of async. emissions
 
 	% Actions
 	$	Value					Misc.Dist {}		% Add a value to the queue
@@ -20,9 +21,9 @@
 	$	Reset					Misc.Dist {}		% Reset/clear contents
 
 	% Notifications
-	$	OnValue			Misc.Dist {}			% A value is available
-	$	OnEmpty			Misc.Dist {}			% Value queue empty
-	$	OnFull			Misc.Dist {}			% Value queue full (if max)
+	$	OnValue				Misc.Dist {}		% A value is available
+	$	OnEmpty				Misc.Dist {}		% Value queue empty
+	$	OnFull				Misc.Dist {}		% Value queue full (if max)
 
 	% Subgraph: Synchronous value queue
 	#	Q												Lib/Sync_Value_Q/ {}
@@ -40,6 +41,7 @@
 
 	% MISCN: Asynchronous emission for values
 	$	AsyncEmit Misc.AsyncEmit {}
+		!	Priority/OnFire						AsyncEmit/Priority
 
 	% Emit values from queue asynchronously
 	!	Q/OnValue/OnFire							AsyncEmit/Fire

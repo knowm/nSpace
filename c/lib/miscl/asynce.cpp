@@ -19,6 +19,7 @@ AsyncEmit :: AsyncEmit ( void )
 	////////////////////////////////////////////////////////////////////////
 	pThrd		= NULL;
 	bRun		= false;
+	iPri		= 0;
 	evEmit.init();
 	}	// AsyncEmit
 
@@ -117,6 +118,8 @@ HRESULT AsyncEmit :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	// State
 	else if (_RCP(Value))
 		adtValue::copy ( v, vVal );
+	else if (_RCP(Priority))
+		iPri = v;
 	else
 		hr = ERROR_NO_MATCH;
 
@@ -162,3 +165,50 @@ HRESULT AsyncEmit :: tick ( void )
 	return hr;
 	}	// tick
 
+HRESULT AsyncEmit :: tickBegin ( void )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	OVERLOAD
+	//	FROM		ITickable
+	//
+	//	PURPOSE
+	//		-	Notifies the object that it should get ready to 'tick'.
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT		hr = S_OK;
+
+	// Priority
+	#ifdef	_WIN32
+	if (	hr == S_OK && iPri != 0 )
+		{
+		if (!SetThreadPriority ( GetCurrentThread(),
+				(iPri.vint == 2)	?	THREAD_PRIORITY_HIGHEST :
+				(iPri.vint == 1)	?	THREAD_PRIORITY_ABOVE_NORMAL :
+				(iPri.vint == -1)	?	THREAD_PRIORITY_BELOW_NORMAL :
+				(iPri.vint == -2)	?	THREAD_PRIORITY_LOWEST :
+											THREAD_PRIORITY_NORMAL ))
+			dbgprintf ( L"Timer::tickBegin:Unable to set priority\n" );
+		}	// if
+	#endif
+
+	#if	defined(__unix__) || defined(__APPLE__)
+	if (hr == S_OK && iPri != 0)
+		{
+		pthread_t	self;
+		sched_param	sp;
+		int			p,ret;
+
+		// Get current priority and adjust by the specified amount
+		CCLOK		( self = pthread_self(); )
+		CCLTRYE	( (ret = pthread_getschedparam ( self, &p, &sp )) == 0, ret );
+		CCLOK		( sp.sched_priority += ((S32)iPri); )
+		CCLTRYE	( (ret = pthread_setschedparam ( self, p, &sp )) == 0, ret );
+		}	// if
+	#endif
+
+	return S_OK;
+	}	// tickBegin

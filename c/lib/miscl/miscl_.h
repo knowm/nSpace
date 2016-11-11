@@ -48,6 +48,8 @@ class AsyncEmit :
 	//@{
 	//!	\brief Asynchronously emit a value.  If no value was previously specified, the provided value is used.
 	DECLARE_CON(Fire)
+	//!	\brief Specifies the relative priority for asynchrnous emissions.
+	DECLARE_RCP(Priority)
 	//!	\brief Specifies a value for subsequent emissions.
 	DECLARE_RCP(Value)
 	//!	\brief Emits error if cannot emit, such as if the node is already emitting a value.
@@ -55,6 +57,7 @@ class AsyncEmit :
 	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_CON(Fire)
+		DEFINE_RCP(Priority)
 		DEFINE_RCP(Value)
 		DEFINE_EMT(Error)
 	END_BEHAVIOUR_NOTIFY()
@@ -66,11 +69,12 @@ class AsyncEmit :
 	adtValue		vVal,vEmit;								// Emission value
 	bool			bRun;										// Running
 	sysEvent		evEmit;									// Emit event
+	adtInt		iPri;										// Relative priority
 
 	// 'ITickable' members
 	STDMETHOD(tick)		( void );
 	STDMETHOD(tickAbort)	( void ) { bRun = false; evEmit.signal(); return S_OK; }
-	STDMETHOD(tickBegin)	( void ) { return S_OK; }
+	STDMETHOD(tickBegin)	( void );
 	STDMETHOD(tickEnd)	( void ) { return S_OK; }
 
 	};

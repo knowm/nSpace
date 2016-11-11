@@ -112,8 +112,8 @@ HRESULT KeyPath :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		// State check
 		CCLTRYE ( pDct != NULL, ERROR_INVALID_STATE );
 
-		// Store value
-		CCLTRY ( nspcStoreValue ( pDct, strKey, *puseV ) );
+		// Store value (default to not storing parent references)
+		CCLTRY ( nspcStoreValue ( pDct, strKey, *puseV, false ) );
 
 		// Result
 		CCLOK ( _EMT(Store,(unkV=pDct) ); )

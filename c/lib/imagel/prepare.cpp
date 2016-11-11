@@ -85,10 +85,6 @@ HRESULT Prepare :: gpuInit ( void )
 	////////////////////////////////////////////////////////////////////////
 	int	ret;
 
-	// Already initialized ?
-	if (bGPUInit)
-		return S_OK;
-
 	// In general, for debug the  slow with acceleration enabled.  
 	// Since performance is not an issue
 	// when debugging default to CPU only.  The only time to enable
@@ -97,12 +93,14 @@ HRESULT Prepare :: gpuInit ( void )
 //	#if 0
 //	#ifndef	_DEBUG
 	#ifdef	_DEBUG
-	bCuda = false;
-	bUMat = false;
+	bCuda		= false;
+	bUMat		= false;
 	bGPUInit = true;
-	if (true)
-		return S_OK;
 	#endif
+
+	// Already initialized ?
+	if (bGPUInit)
+		return S_OK;
 
 	// Any CUDA-enabled devices ?
 	bCuda = false;
