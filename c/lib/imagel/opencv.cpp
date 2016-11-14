@@ -106,6 +106,8 @@ HRESULT image_save ( IDictionary *pImg, const WCHAR *pwLoc )
 	Mat			*pmImg	= NULL;
 	char			*paLoc	= NULL;
 	adtString	strLoc(pwLoc);
+	int			ret		= 0;
+	bool			b			= false;
 
 	// Convert image to OpenCV
 	CCLTRY ( image_to_mat ( pImg, &pmImg ) );
@@ -115,7 +117,11 @@ HRESULT image_save ( IDictionary *pImg, const WCHAR *pwLoc )
 
 	// 'imwrite' does not seem to work, OpenCV is so flaky
 	//	TODO: Replace with own PNG,BMP,etc persistence
-	CCLOK ( cvSaveImage ( paLoc, &(IplImage(*pmImg)) ); )
+//	CCLOK ( ret = cvSaveImage ( paLoc, &(IplImage(*pmImg)) ); )
+	CCLOK ( b = imwrite ( paLoc, *pmImg ); )
+	if (!b)
+		lprintf ( LOG_INFO, L"cvSaveImage : %S : b %d errno %d\r\n", 
+										paLoc, b, errno );
 
 	// Clean up
 	_FREEMEM(paLoc);

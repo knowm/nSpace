@@ -566,16 +566,18 @@ HRESULT adtValue :: toString ( const ADTVALUE &v, adtString &s )
 			break;
 		case VTYPE_R4 :
 			{
-			WCHAR	wNumStr[21];
-			swprintf ( SWPF(wNumStr,20), L"%.6g", v.vflt );
+			WCHAR	wNumStr[51];
+//			swprintf ( SWPF(wNumStr,50), L"%.6g", v.vflt );
+			swprintf ( SWPF(wNumStr,50), L"%g", v.vflt );
 			s = wNumStr;
 			s.at();
 			}	// VTYPE_R4
 			break;
 		case VTYPE_R8 :
 			{
-			WCHAR	wNumStr[31];
-			swprintf ( SWPF(wNumStr,20), L"%.15g", v.vdbl );
+			WCHAR	wNumStr[51];
+//			swprintf ( SWPF(wNumStr,50), L"%.15g", v.vdbl );
+			swprintf ( SWPF(wNumStr,50), L"%g", v.vdbl );
 			s = wNumStr;
 			s.at();
 			}	// VTYPE_R8
