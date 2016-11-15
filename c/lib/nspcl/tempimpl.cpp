@@ -790,6 +790,31 @@ HRESULT TemporalImpl :: open ( IDictionary *pOpts, IUnknown **ppLoc )
 	return hr;
 	}	// open
 
+HRESULT TemporalImpl :: resolve ( const WCHAR *pwLoc, bool bAbs, 
+												ADTVALUE &vLoc )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	FROM	ILocations
+	//
+	//	PURPOSE
+	//		-	Resolve provided location to an absolute or relative path
+	//			within the stream source.
+	//
+	//	PARAMETERS
+	//		-	pwLoc specifies the stream location
+	//		-	bAbs is true to produce an absolute path, or false to produce
+	//			a relative path
+	//		-	vLoc will receive the new location
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	// TODO: Make sense ?
+	return E_NOTIMPL;
+	}	// resolve
+
 HRESULT TemporalImpl :: status ( const WCHAR *wLoc, IDictionary *pSt )
 	{
 	////////////////////////////////////////////////////////////////////////

@@ -169,6 +169,7 @@ class StmSrcFile :
 	// 'ILocations' members
 	STDMETHOD(open)		( IDictionary *,	IUnknown ** );
 	STDMETHOD(locations)	( const WCHAR *,	IIt ** );
+	STDMETHOD(resolve)	( const WCHAR *,	bool, ADTVALUE & );
 	STDMETHOD(status)		( const WCHAR *,	IDictionary * );
 
 	// CCL
@@ -841,6 +842,7 @@ class StreamSource :
 	// Connections
 	DECLARE_CON(Open)
 	DECLARE_CON(Next)
+	DECLARE_CON(Resolve)
 	DECLARE_CON(Status)
 	DECLARE_RCP(First)
 	DECLARE_RCP(Location)
@@ -851,6 +853,7 @@ class StreamSource :
 	BEGIN_BEHAVIOUR()
 		DEFINE_CON(Open)
 		DEFINE_CON(Next)
+		DEFINE_CON(Resolve)
 		DEFINE_CON(Status)
 
 		DEFINE_RCP(First)

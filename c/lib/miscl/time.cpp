@@ -100,6 +100,7 @@ HRESULT TimeOp :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		CCLOK ( _EMT(Hour,adtInt(st.wHour ) ); )
 		CCLOK ( _EMT(Minute,adtInt(st.wMinute ) ); )
 		CCLOK ( _EMT(Second,adtInt(st.wSecond ) ); )
+		CCLOK ( _EMT(Millisecond,adtInt(st.wMilliseconds) ); )
 
 		// Emit date (calendar) portion and time portion of full date
 		CCLOK ( calendar = (U32) floor(date); )

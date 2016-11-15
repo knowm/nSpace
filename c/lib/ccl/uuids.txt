@@ -213,7 +213,7 @@
 2534d0da-8628-11d2-868c-006008addfed				// CLSID_Features (imagel)
 2534d0db-8628-11d2-868c-006008addfed				// CLSID_WebSocketSrvr (netl)
 2534d0dc-8628-11d2-868c-006008addfed				//	CLSID_Line (mathl)
-2534d0dd-8628-11d2-868c-006008addfed				//	
+2534d0dd-8628-11d2-868c-006008addfed				//	CLSID_Speak (medial)
 2534d0de-8628-11d2-868c-006008addfed				//	
 2534d0df-8628-11d2-868c-006008addfed				//	
 2534d0e0-8628-11d2-868c-006008addfed				// 

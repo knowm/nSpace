@@ -185,6 +185,25 @@ HRESULT StreamSource :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		_RELEASE(pDct);
 		}	// else if
 
+	// Resolve location
+	else if (_RCP(Resolve))
+		{
+		adtString	strLocRes;
+
+		// State check
+		CCLTRYE ( pSrc != NULL, ERROR_INVALID_STATE );
+		CCLTRYE ( strLoc.length() > 0, ERROR_INVALID_STATE );
+
+		// TODO: Support going relative
+		CCLTRY ( pSrc->resolve ( strLoc, true, strLocRes ) );
+
+		// Result
+		if (hr == S_OK)
+			_EMT(Resolve,strLocRes);
+		else
+			_EMT(Error,strLoc);
+		}	// else if
+
 	// State
 	else if (_RCP(Options))
 		{

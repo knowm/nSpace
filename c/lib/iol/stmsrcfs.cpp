@@ -456,6 +456,70 @@ HRESULT StmSrcFile :: open ( IDictionary *pOpts, IUnknown **ppLoc )
 	return hr;
 	}	// open
 
+HRESULT StmSrcFile :: resolve ( const WCHAR *pwLoc, bool bAbs, 
+											ADTVALUE &vLoc )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	FROM	ILocations
+	//
+	//	PURPOSE
+	//		-	Resolve provided location to an absolute or relative path
+	//			within the stream source.
+	//
+	//	PARAMETERS
+	//		-	pwLoc specifies the stream location
+	//		-	bAbs is true to produce an absolute path, or false to produce
+	//			a relative path
+	//		-	vLoc will receive the new location
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT		hr		= S_OK;
+
+	// To absolute
+	if (bAbs)
+		{
+		adtString strLocFull;
+
+		// Use default behaviour
+		CCLTRY ( toPath ( pwLoc, strLocFull ) );
+
+		// Result
+		CCLTRY ( adtValue::copy ( strLocFull, vLoc ) );
+		}	// if
+
+	// To relative
+	else
+		{
+		adtValue		vL;
+		adtString	strRoot,strLocRel;
+		U32			len;
+
+		// A relative path make sense only if the prefix matches the
+		// default root.
+
+		// Load root in case it has changed
+		CCLTRY ( pDct->load ( adtString(L"Root"), vL ) );
+		CCLTRYE( (strRoot = vL).length() > 0, E_UNEXPECTED );
+
+		// Prefix the same ?
+		if (	hr == S_OK && 
+				wcslen(pwLoc) > (len = strRoot.length()) &&
+				!WCASENCMP(pwLoc,strRoot,len) )
+			strLocRel = &(pwLoc[len]);
+		else
+			strLocRel = pwLoc;
+
+		// Result
+		CCLTRY ( adtValue::copy ( strLocRel, vLoc ) );			
+		}	// else
+
+	return hr;
+	}	// resolve
+
 HRESULT StmSrcFile :: status ( const WCHAR *wLoc, IDictionary *pSt )
 	{
 	////////////////////////////////////////////////////////////////////////

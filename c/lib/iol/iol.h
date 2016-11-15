@@ -56,9 +56,10 @@ DEFINE_GUID	(	IID_ILocations, 0x2534d007, 0x8628, 0x11d2, 0x86, 0x8c,
 DECLARE_INTERFACE_(ILocations,IUnknown)
 	{
 	public :
-	STDMETHOD(open)		( IDictionary *,	IUnknown ** )		PURE;
-	STDMETHOD(locations)	( const WCHAR *,	IIt ** )				PURE;
-	STDMETHOD(status)		( const WCHAR *,	IDictionary * )	PURE;
+	STDMETHOD(open)		( IDictionary *,	IUnknown ** )			PURE;
+	STDMETHOD(locations)	( const WCHAR *,	IIt ** )					PURE;
+	STDMETHOD(resolve)	( const WCHAR *,	bool, ADTVALUE & )	PURE;
+	STDMETHOD(status)		( const WCHAR *,	IDictionary * )		PURE;
 	};
 
 //

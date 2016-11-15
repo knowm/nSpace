@@ -393,6 +393,7 @@ class TemporalImpl :
 	// 'ILocations' members
 	STDMETHOD(open)		( IDictionary *,	IUnknown ** );
 	STDMETHOD(locations)	( const WCHAR *,	IIt ** );
+	STDMETHOD(resolve)	( const WCHAR *,	bool, ADTVALUE & );
 	STDMETHOD(status)		( const WCHAR *,	IDictionary * );
 
 	// 'ITemporalImpl' members
