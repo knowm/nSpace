@@ -139,7 +139,6 @@ HRESULT GnuPlotSrvr :: plot ( IDictionary *pReq )
 	adtBool			bX2(false);
 
 	// Thread safety in case of multiple plot clients
-	dbgprintf ( L"GnuPlotSrvr::plot { %p\r\n", this );
 	csPlot.enter();
 
 	// Value is expected to be a dictionary of vectors label V1, V2, etc...
@@ -661,7 +660,8 @@ HRESULT GnuPlotSrvr :: plot ( IDictionary *pReq )
 
 	// Thread safety
 	csPlot.leave();
-	dbgprintf ( L"} GnuPlotSrvr::plot 0x%x\r\n", hr );
+	if (hr != S_OK)
+		lprintf ( LOG_WARN, L"GnuPlotSrvr::plot:failed 0x%x\r\n", hr );
 
 	return hr;
 	}	// plot
@@ -728,7 +728,7 @@ HRESULT GnuPlotSrvr :: png_end ( void )
 	HRESULT	hr	= S_OK;
 
 	// Debug
-	dbgprintf ( L"GnuPlotSrvr::png_end:0x%x\r\n", hr_img );
+//	dbgprintf ( L"GnuPlotSrvr::png_end:0x%x\r\n", hr_img );
 
 	// Error ?
 	CCLTRYE ( hr_img == S_OK, hr_img );
