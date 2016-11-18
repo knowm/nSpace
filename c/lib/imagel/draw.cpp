@@ -81,6 +81,10 @@ HRESULT Draw :: onAttach ( bool bAttach )
 			fX0 = vL;
 		if (pnDesc->load ( adtString(L"Y0"), vL ) == S_OK)
 			fY0 = vL;
+		if (pnDesc->load ( adtString(L"X1"), vL ) == S_OK)
+			fX1 = vL;
+		if (pnDesc->load ( adtString(L"Y1"), vL ) == S_OK)
+			fY1 = vL;
 		}	// if
 
 	// Detach
@@ -217,6 +221,10 @@ HRESULT Draw :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		fH = v;
 	else if (_RCP(Width))
 		fW = v;
+	else if (_RCP(Thick))
+		iThick = v;
+	else if (_RCP(Radius))
+		fRad = v;
 	else
 		hr = ERROR_NO_MATCH;
 
