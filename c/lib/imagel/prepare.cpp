@@ -22,8 +22,9 @@ Prepare :: Prepare ( void )
 	//		-	Constructor for the object
 	//
 	////////////////////////////////////////////////////////////////////////
-	pImg		= NULL;
-	bCPU		= false;
+	pImg	= NULL;
+	bCPU	= false;
+	bRel	= false;
 	}	// Prepare
 
 HRESULT Prepare :: extract (	IDictionary *pDct, const ADTVALUE &vAlt,
@@ -182,6 +183,8 @@ HRESULT Prepare :: onAttach ( bool bAttach )
 		// Defaults
 		if (pnDesc->load ( adtString(L"CPU"), vL ) == S_OK)
 			bCPU = vL;
+		if (pnDesc->load ( adtString(L"Release"), vL ) == S_OK)
+			bRel = vL;
 		}	// if
 
 	// Detach
@@ -276,8 +279,8 @@ HRESULT Prepare :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		// Obtain image refence
 		CCLTRY ( extract ( pImg, v, &pImgUse, &pMat ) );
 
-		// Process image
-		if (hr == S_OK)
+		// Copy image from source
+		if (hr == S_OK && bRel == false)
 			{
 			cv::Mat		mat;
 

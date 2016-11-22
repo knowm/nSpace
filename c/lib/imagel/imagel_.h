@@ -342,7 +342,7 @@ class Draw :
 	adtFloat		fR,fB,fG;								// Color
 	adtFloat		fX0,fX1,fY0,fY1;						// Endpoints
 	adtFloat		fW,fH;									// Width,height
-	adtFloat		fAngle;									// Angle
+	adtFloat		fA,fA0,fA1;								// Angles
 	adtInt		iThick;									// Thickness
 	adtFloat		fRad;										// Radius
 	adtString	strShp;									// Shape to draw
@@ -354,6 +354,8 @@ class Draw :
 
 	// Connections
 	DECLARE_RCP(Angle)
+	DECLARE_RCP(Angle0)
+	DECLARE_RCP(Angle1)
 	DECLARE_EMT(Error)
 	DECLARE_CON(Fire)
 	DECLARE_RCP(Height)
@@ -367,6 +369,8 @@ class Draw :
 	DECLARE_RCP(Y1)
 	BEGIN_BEHAVIOUR()
 		DEFINE_RCP(Angle)
+		DEFINE_RCP(Angle0)
+		DEFINE_RCP(Angle1)
 		DEFINE_EMT(Error)
 		DEFINE_CON(Fire)
 		DEFINE_RCP(Height)
@@ -696,6 +700,7 @@ class Prepare :
 	// Run-time data
 	IDictionary	*pImg;									// Image dictionary
 	adtBool		bCPU;										// Force CPU bound image
+	adtBool		bRel;										// Release only on download
 
 	// Utilities
 	static

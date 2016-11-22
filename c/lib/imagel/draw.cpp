@@ -24,7 +24,9 @@ Draw :: Draw ( void )
 	fX0		= fY0 = fX1 = fY1 = 0.0f;
 	iThick	= 1;
 	fRad		= 1.0f;
-	fAngle	= 0.0f;
+	fA			= 0.0f;
+	fA0		= 0.0f;
+	fA1		= 0.0f;
 	strShp	= L"Line";
 	}	// Draw
 
@@ -76,7 +78,11 @@ HRESULT Draw :: onAttach ( bool bAttach )
 		if (pnDesc->load ( adtString(L"Height"), vL ) == S_OK)
 			fH = vL;
 		if (pnDesc->load ( adtString(L"Angle"), vL ) == S_OK)
-			fAngle = vL;
+			fA = vL;
+		if (pnDesc->load ( adtString(L"Angle0"), vL ) == S_OK)
+			fA0 = vL;
+		if (pnDesc->load ( adtString(L"Angle1"), vL ) == S_OK)
+			fA1 = vL;
 		if (pnDesc->load ( adtString(L"X0"), vL ) == S_OK)
 			fX0 = vL;
 		if (pnDesc->load ( adtString(L"Y0"), vL ) == S_OK)
@@ -146,7 +152,7 @@ HRESULT Draw :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		else if (hr == S_OK && !WCASECMP(strShp,L"Ellipse"))
 			{
 			// Rotated rectangle for which to bound the ellipse
-			cv::RotatedRect	rct ( cv::Point2f(fX0,fY0), cv::Size2f(fW,fH), fAngle );
+			cv::RotatedRect	rct ( cv::Point2f(fX0,fY0), cv::Size2f(fW,fH), fA );
 
 			// Perform draw
 			if (pMat->isGPU())
@@ -155,6 +161,22 @@ HRESULT Draw :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				cv::ellipse ( (*pMat->umat), rct, clr, iThick );
 			else
 				cv::ellipse ( (*pMat->mat), rct, clr, iThick );
+			}	// else if
+		else if (hr == S_OK && !WCASECMP(strShp,L"Arc"))
+			{
+			// Perform draw
+			if (pMat->isGPU())
+				cv::ellipse ( matNoGpu, cv::Point((int)fX0,(int)fY0), 
+									cv::Size((int)fX1,(int)fY1),
+									fA, fA0, fA1, clr, iThick );
+			else if (pMat->isUMat())
+				cv::ellipse ( (*pMat->umat), cv::Point((int)fX0,(int)fY0), 
+									cv::Size((int)fX1,(int)fY1),
+									fA, fA0, fA1, clr, iThick );
+			else
+				cv::ellipse ( (*pMat->mat), cv::Point((int)fX0,(int)fY0), 
+									cv::Size((int)fX1,(int)fY1),
+									fA, fA0, fA1, clr, iThick );
 			}	// else if
 		else if (hr == S_OK && !WCASECMP(strShp,L"Circle"))
 			{
@@ -216,7 +238,11 @@ HRESULT Draw :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	else if (_RCP(Y1))
 		fY1 = v;
 	else if (_RCP(Angle))
-		fAngle = v;
+		fA = v;
+	else if (_RCP(Angle0))
+		fA0 = v;
+	else if (_RCP(Angle1))
+		fA1 = v;
 	else if (_RCP(Height))
 		fH = v;
 	else if (_RCP(Width))
