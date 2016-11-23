@@ -574,8 +574,8 @@ HRESULT AnActort :: tickBegin ( void )
 	// Create client
 	CCLTRYE((pThis->pCli = new nSpaceClient()) != NULL, E_OUTOFMEMORY);
 
-	// Open private namespace with own command line
-	CCLTRY(pThis->pCli->open(L"{ Namespace Unreal }", false, NULL));
+	// Open default namespace 
+	CCLTRY(pThis->pCli->open(L"{ Namespace Default }", true, NULL));
 
 	// Listen to the default render locations which contains desired visuals to be rendered
 	CCLTRY ( pThis->pCli->listen ( pThis->strRenLoc, true, this ) );
