@@ -236,6 +236,13 @@ HRESULT DictFormat :: format ( IContainer *pFmt )
 				hr = pStm->write ( &z, 1, NULL );
 			}	// else if
 
+		// Boolean
+		else if (hr == S_OK && oVal.vtype == VTYPE_BOOL)
+			{
+			U16 vb = oVal.vbool;
+			CCLTRY ( pStm->write ( &vb, sizeof(vb), NULL ) );
+			}	// if
+
 		// Object
 		else if (hr == S_OK && oVal.vtype == VTYPE_UNK)
 			{

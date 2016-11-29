@@ -99,16 +99,19 @@ HRESULT DictParse :: parse ( IContainer *pFmt )
 
 		// Fields (required)
 		CCLTRY	( pDictSpec->load ( adtString(L"Type"), sType ) );
-		CCLTRY	( pDictSpec->load ( adtString(L"Size"), vSz ) );
 
-		// Size, if a string is specified for the 'Size' field then it refers
-		// to a field in the dictionary.
-		if (hr == S_OK && adtValue::type(vSz) == VTYPE_STR)
-			hr = pDict->load ( vSz, uSz );
-		else if (hr == S_OK && vSz.vtype == VTYPE_I4)
-			uSz = vSz.vint;
-		else
-			hr = E_UNEXPECTED;
+		// Size field required for certain type
+		if (pDictSpec->load ( adtString(L"Size"), vSz ) == S_OK)
+			{
+			// Size, if a string is specified for the 'Size' field then it refers
+			// to a field in the dictionary.
+			if (hr == S_OK && adtValue::type(vSz) == VTYPE_STR)
+				hr = pDict->load ( vSz, uSz );
+			else if (hr == S_OK && vSz.vtype == VTYPE_I4)
+				uSz = vSz.vint;
+			else
+				hr = E_UNEXPECTED;
+			}	// if
 
 		// Convert field based on type.  Little endian default.
 		if (hr == S_OK && !WCASENCMP ( L"Int", sType, 3 ))
@@ -231,8 +234,7 @@ HRESULT DictParse :: parse ( IContainer *pFmt )
 			adtFloat	fFlt;
 
 			// Read
-			CCLTRYE(uSz == 4,E_INVALIDARG);
-			CCLTRY ( pStm->read ( &(fFlt.vflt), uSz, NULL ) );
+			CCLTRY ( pStm->read ( &(fFlt.vflt), sizeof(fFlt.vflt), NULL ) );
 			CCLOK  ( adtValue::copy ( fFlt, vVal ); )
 			}	// if
 
@@ -241,9 +243,17 @@ HRESULT DictParse :: parse ( IContainer *pFmt )
 			adtDouble	fDbl;
 
 			// Read
-			CCLTRYE(uSz == 8,E_INVALIDARG);
-			CCLTRY ( pStm->read ( &(fDbl.vdbl), uSz, NULL ) );
+			CCLTRY ( pStm->read ( &(fDbl.vdbl), sizeof(fDbl.vdbl), NULL ) );
 			CCLOK  ( adtValue::copy ( fDbl, vVal ); )
+			}	// if
+
+		else if (hr == S_OK && !WCASENCMP ( L"Bool", sType, 4 ))
+			{
+			adtBool bV;
+
+			// Read
+			CCLTRY ( pStm->read ( &(bV.vbool), sizeof(bV.vbool), NULL ) );
+			CCLOK  ( adtValue::copy ( bV, vVal ); )
 			}	// if
 
 		else if (hr == S_OK && !WCASECMP ( L"String", sType ))
@@ -318,6 +328,9 @@ HRESULT DictParse :: parse ( IContainer *pFmt )
 			IByteStream	*pStmDst = NULL;
 			adtIUnknown	unkV;
 			
+			// Size must be specified
+			CCLTRYE ( uSz > 0, E_INVALIDARG );
+
 			// Unformatted data, store as stream
 			CCLTRY ( COCREATE ( L"Io.StmMemory", IID_IByteStream, &pStmDst ) );
 
