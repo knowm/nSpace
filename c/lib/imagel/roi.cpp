@@ -90,12 +90,21 @@ HRESULT Roi :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	if (_RCP(Fire))
 		{
 		IDictionary	*pSrcUse = NULL;
+		IDictionary *pDstUse = pDst;
 		cvMatRef		*pMatSrc	= NULL;
 		cvMatRef		*pMatDst	= NULL;
 		cv::Rect		rct;
 
+		// Destination can be provided as part of 'Fire'
+		_ADDREF(pDstUse);
+		if (hr == S_OK && pDstUse == NULL)
+			{
+			adtIUnknown		unkV(v);
+			_QISAFE(unkV,IID_IDictionary,&pDstUse);
+			}	// if
+
 		// State check
-		CCLTRYE ( pDst != NULL, ERROR_INVALID_STATE );
+		CCLTRYE ( pDstUse != NULL, ERROR_INVALID_STATE );
 
 		// Obtain image refence
 		CCLTRY ( Prepare::extract ( pSrc, v, &pSrcUse, &pMatSrc ) );
@@ -158,7 +167,7 @@ HRESULT Roi :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				}	// else
 
 			// Result
-			CCLTRY ( pDst->store (	adtString(L"cvMatRef"), adtIUnknown(pMatDst) ) );
+			CCLTRY ( pDstUse->store (	adtString(L"cvMatRef"), adtIUnknown(pMatDst) ) );
 			}	// try
 		catch ( cv::Exception ex )
 			{
@@ -168,13 +177,14 @@ HRESULT Roi :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 		// Result
 		if (hr == S_OK)
-			_EMT(Fire,adtIUnknown(pDst));
+			_EMT(Fire,adtIUnknown(pDstUse));
 		else
 			_EMT(Error,adtInt(hr));
 
 		// Clean up
 		_RELEASE(pMatDst);
 		_RELEASE(pMatSrc);
+		_RELEASE(pDstUse);
 		_RELEASE(pSrcUse);
 		}	// if
 

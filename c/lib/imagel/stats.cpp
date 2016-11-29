@@ -169,8 +169,8 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 					// Compute entropy
 					cv::cuda::log ( gpuHst, gpuLog );
-
-//					ent = (float)(-1*cv::cuda::sum(gpuHst.mul(matLog)).val[0]);
+					cv::cuda::multiply(gpuHst,gpuLog,gpuHst);
+					ent = (float)(-1*cv::cuda::sum(gpuHst).val[0]);
 					}	// if
 				else if (pMat->isUMat())
 					{
@@ -193,7 +193,8 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 					// Compute entropy
 					cv::log ( matHst, matLog );
-					ent = (float)(-1*cv::sum(matHst.mul(matLog)).val[0]);
+					cv::multiply(matHst,matLog,matHst);
+					ent = (float)(-1*cv::sum(matHst).val[0]);
 					}	// if
 				else
 					{
@@ -211,7 +212,8 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 					// Compute entropy
 					cv::log ( matHst, matLog );
-					ent = (float)(-1*cv::sum(matHst.mul(matLog)).val[0]);
+					cv::multiply(matHst,matLog,matHst);
+					ent = (float)(-1*cv::sum(matHst).val[0]);
 					}	// else
 
 				// Result

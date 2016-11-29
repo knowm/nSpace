@@ -189,7 +189,18 @@ HRESULT nSpaceClient :: listen ( const WCHAR *szPath, BOOL bL,
 		CCLTRY	( _QI(vL.punk,__uuidof(IListenX),&pLstn) );
 
 		// Disable callback before unlisten
-		CCLOK ( ((nSpaceClientL *)pLstn)->pCB = NULL; )
+		if (hr == S_OK)
+			{
+			nSpaceClientL *pL = (nSpaceClientL *)pLstn;
+
+			// Synchronize with possible on-going reception of values
+			if (pL->csRx.enter())
+				{
+				// Callback now invalid
+				pL->pCB = NULL;
+				pL->csRx.leave();
+				}	// if
+			}	// if
 
 		// Unlisten
 		CCLTRY	( pSpc->unlisten ( bstrPath, pLstn ) );
@@ -488,17 +499,20 @@ HRESULT nSpaceClientL :: receive ( BSTR bstrRoot, BSTR bstrLoc, VARIANT *var )
 	// Thread protection
 	csRx.enter();
 
-	// Convert to local value
-	CCLOK ( varL = var; )
-	CCLTRY( varL.toValue(vRx) );
-
-	// Notify callback object
-//	dbgprintf ( L"nSpaceClientL::receive:pCB %p\r\n", pCB );
+	// Callback object still valid ?
 	if (pCB != NULL)
+		{
+		// Convert to local value
+		CCLOK ( varL = var; )
+		CCLTRY( varL.toValue(vRx) );
+
+		// Notify callback object
+//	dbgprintf ( L"nSpaceClientL::receive:pCB %p\r\n", pCB );
 		pCB->onReceive ( bstrRoot, bstrLoc, vRx );
 
-	// Clean up
-	adtValue::clear(vRx);
+		// Clean up
+		adtValue::clear(vRx);
+		}	// if
 
 	// Thread protection
 	csRx.leave();
