@@ -64,6 +64,11 @@ typedef	int							SOCKET;
 #include <set>
 #endif
 
+#ifdef	SDK_TST
+#error	byteme
+#endif
+
+
 //
 // Class - Address.  Network address node.
 //
