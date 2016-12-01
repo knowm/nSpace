@@ -436,4 +436,3 @@ HRESULT Avail :: tickEnd ( void )
 	return S_OK;
 	}	// tickEnd
 
-

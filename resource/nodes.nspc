@@ -1,0 +1,3746 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%									NODES.NSPC
+%
+%	Node descriptor database.  Defined as a graph so it can
+%	be included in other graphs rather than having to load it as an external
+%	file.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Actions
+	$	Initialize			Misc.Dist {}		% Initialize
+
+	% MISCN: Database value
+	$ ValueNodes Misc.Dist { Value
+
+	{
+	%%%%%%%
+	% ADTN
+	%%%%%%%
+
+	Adt.Iterate
+		{
+		Description	"Iterate the values in a list or the key/value pairs in a dictionary"
+		Tags			( Dictionary Iterate Key )
+		Receptor
+			{
+			Container
+				{
+				Type			Container
+				Description	"List of values or a dictionary of key/value pairs to iterate"
+				}
+			First
+				{
+				Type			Any
+				Description	"Emit the first (key) value in the container"
+				}
+			Last
+				{
+				Type			Any
+				Description	"Emit the last (key) value in the container"
+				}
+			Next
+				{
+				Type			Any
+				Description	"Emit the next (key) value in the container"
+				}
+			Previous
+				{
+				Type			Any
+				Description	"Emit the previous (key) value in the container"
+				}
+			}
+		Emitter
+			{
+			First
+				{
+				Type			Any
+				Description	"The iteration is already at the first entry of the container."
+				}
+			Last
+				{
+				Type			Any
+				Description	"The iteration is already a the least entry of the container."
+				}
+			Next
+				{
+				Type			Any
+				Description	"Emits the next/previous value in the container."
+				}
+			Key
+				{
+				Type			Any
+				Description	"Emits the next/previous key in the dictionary (emits before the value)."
+				}
+			}
+		}
+
+	Adt.Keys
+		{
+		Description "Loads/stores mutiple key/value pairs in a dictionary"
+		Tags			( Dictionary Key )
+		Attribute
+			{
+			Keys
+				{
+				Type			List
+				Description	"List of keys to load/store from/to dictionary on request.  A receptor/emitter pair is created for each each for storage/loading of individual values."
+				}
+			}
+		Receptor
+			{
+			Dictionary
+				{
+				Type			Dictionary
+				Description	"Dictionary containing or is to contain the key/value pairs."
+				}
+			Load
+				{
+				Type			Any
+				Description	"Load all of the values associated with the key list."
+				}
+			Store
+				{
+				Type			Any
+				Description	"Store all of the currently cached key/value pairs into the dictionary."
+				}
+			}
+		Emitter
+			{
+			Load
+				{
+				Type			Any
+				Description	"Emits the dictionary when a load has completed."
+				}
+			Store
+				{
+				Type			Any
+				Description	"Emits the dictionary when a store has completed."
+				}
+			NotFound
+				{
+				Type			Any
+				Description	"Emits a key that was not found in the dictionary during a load request."
+				}
+			}
+		}
+
+	Adt.Load
+		{
+		Description "Retrieves the value associated with a key from inside a dictionary."
+		Tags			( Dictionary Load Key )
+		Attribute
+			{
+			Key
+				{
+				Type			Any
+				Description	"A default key to use during the load operation."
+				}
+			}
+		Receptor
+			{
+			Dictionary
+				{
+				Type			Dictionary
+				Description	"Dictionary containing the key/value pairs."
+				}
+			Fire
+				{
+				Type			Any
+				Description	"Load value associated with key."
+				}
+			Key
+				{
+				Type			Any
+				Description	"Specify the key to use when loading from the dictionary."
+				}
+			}
+		Emitter
+			{
+			Fire
+				{
+				Type			Any
+				Description	"Value from the dictionary associated with the key.
+				}
+			NotFound
+				{
+				Type			Any
+				Description	"Key that was not found inside dictionary."
+				}
+			}
+		}
+
+	Adt.Remove
+		{
+		Description "Removes a value from a list or a key/value pair from a dictionary."
+		Tags			( Dictionary List Remove Key Clear )
+		Attribute
+			{
+			Key
+				{
+				Type			Any
+				Description	"A default key to use during the remove operation."
+				}
+			}
+		Receptor
+			{
+			Clear
+				{
+				Type			Any
+				Description	"Clears the contents of the container."
+				}
+			Container
+				{
+				Type			Container
+				Description	"List or dictionary containing the values."
+				}
+			Fire
+				{
+				Type			Any
+				Description	"Remove a value from the list or a key/value pair from the dictionary."
+				}
+			Key
+				{
+				Type			Any
+				Description	"Specify the key/value to use when removing a value from the container."
+				}
+			}
+		Emitter
+			{
+			Fire
+				{
+				Type			Any
+				Description	"The container from which a value was removed."
+				}
+			NotFound
+				{
+				Type			Any
+				Description	"The key/value that was not found inside the container."
+				}
+			}
+		}
+
+	Adt.Stat
+		{
+		Description "Obtain information about a container."
+		Tags			( Dictionary List Container Count )
+		Receptor
+			{
+			Container
+				{
+				Type			Container
+				Description	"Container to use for statistics."
+				}
+			Fire
+				{
+				Type			Any
+				Description	"Obtain informaiton about the container."
+				}
+			}
+		Emitter
+			{
+			Count
+				{
+				Type			Integer
+				Description	"The number of items in the container.
+				}
+			Empty
+				{
+				Type			Any
+				Description	"The container that does not contain any values."
+				}
+			NotEmpty
+				{
+				Type			Any
+				Description	"The container that contains at least one value."
+				}
+			}
+		}
+
+	Adt.Store
+		{
+		Description "Associates a key with a value inside a dictionary."
+		Tags			( Dictionary Store Key )
+		Attribute
+			{
+			Key
+				{
+				Type			Any
+				Description	"A default key to use during the store operation."
+				}
+			Value
+				{
+				Type			Any
+				Description	"A default value to use during the store operation."
+				}
+			}
+		Receptor
+			{
+			Dictionary
+				{
+				Type			Dictionary
+				Description	"Dictionary that will receive the key/value pair."
+				}
+			Fire
+				{
+				Type			Any
+				Description	"Associate value with key inside dictionary."
+				}
+			Key
+				{
+				Type			Any
+				Description	"Specify the key to use when storing a value to the dictionary."
+				}
+			Value
+				{
+				Type			Any
+				Description	"Specify the value to use when storing to the dictionary (optional)."
+				}
+			}
+		Emitter
+			{
+			Fire
+				{
+				Type			Any
+				Description	"Dictionary in which a value was associated with a key."
+				}
+			}
+		}
+
+	Adt.Write
+		{
+		Description "Writes values to a list."
+		Tags			( Container List )
+		Attribute
+			{
+			Value
+				{
+				Type			Any
+				Description	"A default value to use during the write operation."
+				}
+			}
+		Receptor
+			{
+			List
+				{
+				Type			List
+				Description	"List that will receive the values."
+				}
+			Fire
+				{
+				Type			Any
+				Description	"Write provided (or default) value to the list."
+				}
+			Value
+				{
+				Type			Any
+				Description	"Specify the value to use when storing to the list."
+				}
+			}
+		Emitter
+			{
+			Fire
+				{
+				Type			Any
+				Description	"List to which a value was written."
+				}
+			}
+		}
+
+	%%%%%%%
+	% GDIN
+	%%%%%%%
+
+	GDI.Button
+		{
+		Description "Manages GDI buttons."
+		Tags			( UI Button GDI )
+		Attribute
+			{
+			}
+		Receptor
+			{
+			Dictionary
+				{
+				Type			Dictionary
+				Description	"Dictionary that contains the context for a specific button."
+				}
+			Open
+				{
+				Type			Any
+				Description	"Open a button using the information in the provided dictionary.  Dictionary should include Xpos,Ypos,Width,Height,etc for button"
+				}
+			Close
+				{
+				Type			Any
+				Description	"Close a button identified by the information in the provided dictionary."
+				}
+			Owner
+				{
+				Type			Dictionary
+				Description	"Dictionary that contains the context for the owner GDI widget such as a window."
+				}
+			Enable
+				{
+				Type			Boolean
+				Description	"Enable/disable button."
+				}
+			}
+		Emitter
+			{
+			Clicked
+				{
+				Type			Dictionary
+				Description	"Dictionary for the button that was clicked."
+				}
+			Close
+				{
+				Type			Dictionary
+				Description	"Dictionary containing the closed button."
+				}
+			Dictionary
+				{
+				Type			Dictionary
+				Description	"Dictionary for the button that is generating an event."
+				}
+			Open
+				{
+				Type			Dictionary
+				Description	"Dictionary containing the opened button."
+				}
+			}
+		}
+
+	GDI.Combobox
+		{
+		Description "Manages GDI comboboxes."
+		Tags			( UI Combobox GDI )
+		Attribute
+			{
+			}
+		Receptor
+			{
+			Dictionary
+				{
+				Type			Dictionary
+				Description	"Dictionary that contains the context for a specific combobox."
+				}
+			Open
+				{
+				Type			Any
+				Description	"Open a combobox using the information in the provided dictionary.  Dictionary should include Xpos,Ypos,Width,Height,etc for combobox"
+				}
+			Close
+				{
+				Type			Any
+				Description	"Close a combobox identified by the information in the provided dictionary."
+				}
+			Owner
+				{
+				Type			Dictionary
+				Description	"Dictionary that contains the context for the owner GDI widget such as a window."
+				}
+			Select
+				{
+				Type			Any
+				Description	"Select an item in the combobox by position (index) or by string"
+				}
+			Enable
+				{
+				Type			Boolean
+				Description	"Enable/disable button."
+				}
+			}
+		Emitter
+			{
+			Add
+				{
+				Type			Any
+				Description	"Add a string version of a value to the combobox."
+				}
+			Close
+				{
+				Type			Dictionary
+				Description	"Dictionary containing the closed combobox."
+				}
+			Dictionary
+				{
+				Type			Dictionary
+				Description	"Dictionary for the combobox that is generating an event."
+				}
+			Open
+				{
+				Type			Dictionary
+				Description	"Dictionary containing the opened combobox."
+				}
+			Remove
+				{
+				Type			Any
+				Description	"Remove string version of a value from the combobox."
+				}
+			Reset
+				{
+				Type			Any
+				Description	"Clear the contents of a combobox."
+				}
+			Select
+				{
+				Type			Integer
+				Description	"Position of an item that has been selected in the combobox."
+				}
+			}
+		}
+
+	GDI.Edit
+		{
+		Description "Manages GDI edit control."
+		Tags			( UI Edit GDI )
+		Attribute
+			{
+			}
+		Receptor
+			{
+			Dictionary
+				{
+				Type			Dictionary
+				Description	"Dictionary that contains the context for a specific label."
+				}
+			Open
+				{
+				Type			Any
+				Description	"Open a label using the information in the provided dictionary.  Dictionary should include Xpos,Ypos,Width,Height,etc for label"
+				}
+			Close
+				{
+				Type			Any
+				Description	"Close a label identified by the information in the provided dictionary."
+				}
+			Owner
+				{
+				Type			Dictionary
+				Description	"Dictionary that contains the context for the owner GDI widget such as a window."
+				}
+			Text
+				{
+				Type			Any
+				Description	"Change the text for the control."
+				}
+			Enable
+				{
+				Type			Boolean
+				Description	"Enable/disable control."
+				}
+			}
+		Emitter
+			{
+			Close
+				{
+				Type			Dictionary
+				Description	"Dictionary containing the closed control."
+				}
+			Dictionary
+				{
+				Type			Dictionary
+				Description	"Dictionary for the control that is generating an event."
+				}
+			Open
+				{
+				Type			Dictionary
+				Description	"Dictionary containing the opened control."
+				}
+			Text
+				{
+				Type			String
+				Description	"Changed text for control."
+				}
+			}
+		}
+
+	GDI.FileSelect
+		{
+		Description "GDI file selection control."
+		Tags			( UI File Select GDI )
+		Attribute
+			{
+			Title
+				{
+				Type			String
+				Description	"Title to use for file selection window."
+				}
+			Extension
+				{
+				Type			String
+				Description	"Default file extension Example : .txt"
+				}
+			Filter
+				{
+				Type			String
+				Description	"Allowed file extensions.  Example : Text files (*.txt)|*.txt||"
+				}
+			Save
+				{
+				Type			Boolean
+				Description	"True for 'Save' dialog, false for 'Load' dialog."
+				}
+			}
+		Receptor
+			{
+			Location
+				{
+				Type			String
+				Description	"Set the starting location of the selection."
+				}
+			Owner
+				{
+				Type			Dictionary
+				Description	"Dictionary that contains the information for the owner GDI control."
+				}
+			Select
+				{
+				Type			Any
+				Description	"Perform the file selection."
+				}
+			}
+		Emitter
+			{
+			Location
+				{
+				Type			String
+				Description	"Selected location."
+				}
+			NotSelect
+				{
+				Type			Integer
+				Description	"Error code for non-selection."
+				}
+			}
+		}
+
+	GDI.Label
+		{
+		Description "Manages GDI text labels."
+		Tags			( UI Label GDI )
+		Attribute
+			{
+			}
+		Receptor
+			{
+			Dictionary
+				{
+				Type			Dictionary
+				Description	"Dictionary that contains the context for a specific label."
+				}
+			Open
+				{
+				Type			Any
+				Description	"Open a label using the information in the provided dictionary.  Dictionary should include Xpos,Ypos,Width,Height,etc for label"
+				}
+			Close
+				{
+				Type			Any
+				Description	"Close a label identified by the information in the provided dictionary."
+				}
+			Owner
+				{
+				Type			Dictionary
+				Description	"Dictionary that contains the context for the owner GDI widget such as a window."
+				}
+			Text
+				{
+				Type			Any
+				Description	"Change the text for the current label."
+				}
+
+			}
+		Emitter
+			{
+			Close
+				{
+				Type			Dictionary
+				Description	"Dictionary containing the closed label."
+				}
+			Open
+				{
+				Type			Dictionary
+				Description	"Dictionary containing the opened label."
+				}
+			}
+		}
+
+	GDI.Listbox
+		{
+		Description "Manages GDI listboxes."
+		Tags			( UI Listbox GDI )
+		Attribute
+			{
+			}
+		Receptor
+			{
+			Add
+				{
+				Type			Any
+				Description	"Add a string version of a value to the listbox."
+				}
+			Close
+				{
+				Type			Any
+				Description	"Close a listbox identified by the information in the provided dictionary."
+				}
+			Dictionary
+				{
+				Type			Dictionary
+				Description	"Dictionary that contains the context for a specific listbox."
+				}
+			Enable
+				{
+				Type			Boolean
+				Description	"Enable/disable control."
+				}
+			Open
+				{
+				Type			Any
+				Description	"Open a listbox using the information in the provided dictionary.  Dictionary should include Xpos,Ypos,Width,Height,etc for listbox"
+				}
+			Select
+				{
+				Type			Any
+				Description	"Select an item in the listbox by position (index) or by string"
+				}
+			Owner
+				{
+				Type			Dictionary
+				Description	"Dictionary that contains the context for the owner GDI widget such as a window."
+				}
+			Remove
+				{
+				Type			Any
+				Description	"Remove string version of a value from the listbox."
+				}
+			Reset
+				{
+				Type			Any
+				Description	"Clear the contents of a listbox."
+				}
+			}
+		Emitter
+			{
+			Close
+				{
+				Type			Dictionary
+				Description	"Dictionary containing the closed combobox."
+				}
+			Dictionary
+				{
+				Type			Dictionary
+				Description	"Dictionary for the combobox that is generating an event."
+				}
+			Open
+				{
+				Type			Dictionary
+				Description	"Dictionary containing the opened combobox."
+				}
+			Select
+				{
+				Type			Integer
+				Description	"Position of an item that has been selected in the listbox."
+				}
+			}
+		}
+
+	GDI.Tree
+		{
+		Description "Manages GDI tree controls."
+		Tags			( UI Tree GDI )
+		Attribute
+			{
+			}
+		Receptor
+			{
+			Close
+				{
+				Type			Any
+				Description	"Close a control identified by the information in the provided dictionary."
+				}
+			Dictionary
+				{
+				Type			Dictionary
+				Description	"Dictionary that contains the context for a specific control."
+				}
+			Open
+				{
+				Type			Any
+				Description	"Open a control using the information in the provided dictionary.  Dictionary should include Xpos,Ypos,Width,Height,etc for control"
+				}
+			Select
+				{
+				Type			Any
+				Description	"Select an item by path"
+				}
+			Owner
+				{
+				Type			Dictionary
+				Description	"Dictionary that contains the information for the owner GDI widget."
+				}
+			Path
+				{
+				Type			String
+				Description	"The path to a tree item for future operations."
+				}
+			Remove
+				{
+				Type			Any
+				Description	"Remove item by path from the control."
+				}
+			Reset
+				{
+				Type			Any
+				Description	"Clear the contents of a control."
+				}
+			Store
+				{
+				Type			Any
+				Description	"Store path in tree control."
+				}
+			}
+		Emitter
+			{
+			Close
+				{
+				Type			Dictionary
+				Description	"Dictionary containing the closed control."
+				}
+			Dictionary
+				{
+				Type			Dictionary
+				Description	"Dictionary for the control that is generating an event."
+				}
+			Open
+				{
+				Type			Dictionary
+				Description	"Dictionary containing the opened control."
+				}
+			Select
+				{
+				Type			Integer
+				Description	"Path of selected item in tree."
+				}
+			}
+		}
+
+	GDI.Window
+		{
+		Description "Manages GDI windows."
+		Tags			( UI Window GDI )
+		Attribute
+			{
+			}
+		Receptor
+			{
+			Dictionary
+				{
+				Type			Dictionary
+				Description	"Dictionary that contains the context for a specific window."
+				}
+			Enable
+				{
+				Type			Boolean
+				Description	"Enable/disable control."
+				}
+			Modal
+				{
+				Type			Boolean
+				Description	"True to make window modal, false for modeless."
+				}
+			Open
+				{
+				Type			Any
+				Description	"Open a window using the information in the provided dictionary.  Dictionary should include Xpos,Ypos,Width,Height,etc for window"
+				}
+			Close
+				{
+				Type			Any
+				Description	"Close a window identified by the information in the provided dictionary."
+				}
+			Owner
+				{
+				Type			Dictionary
+				Description	"Dictionary that contains the context for the owner GDI widget such as a window."
+				}
+
+			}
+		Emitter
+			{
+			Close
+				{
+				Type			Dictionary
+				Description	"Dictionary containing the closed window."
+				}
+			Dictionary
+				{
+				Type			Dictionary
+				Description	"Dictionary for the control that is generating an event."
+				}
+			Open
+				{
+				Type			Dictionary
+				Description	"Dictionary containing the opened window."
+				}
+			Mouse
+				{
+				Type			Dictionary
+				Description	"Dictionary containing mouse event information."
+				}
+			}
+		}
+
+	%%%%%%%%%
+	% IMAGEN
+	%%%%%%%%%
+
+	Image.Bitmap
+		{
+		Description "Load and/or save bitmap from/to a byte stream."
+		Tags			( Dictionary Bitmap Bmp ByteStream Load Save Persist )
+		Receptor
+			{
+			Dictionary
+				{
+				Type			Dictionary
+				Description	"Dictionary that will receive or contains the information about the image."
+				}
+			Stream
+				{
+				Type			Stream
+				Description	"Byte stream that contains or will receive the byte data."
+				}
+			Load
+				{
+				Type			Any
+				Description	"Load a bitmap image from the byte stream into the dictionary."
+				}
+			Save
+				{
+				Type			Any
+				Description	"Save a bitmap image from dictionary into the byte stream."
+				}
+			}
+		Emitter
+			{
+			Load
+				{
+				Type			Any
+				Description	"Dictionary for bitmap image that was loaded from the byte stream."
+				}
+			Save
+				{
+				Type			Any
+				Description	"Byte stream for bitmap image that was saved from the dictionary."
+				}
+			Error
+				{
+				Type			Any
+				Description	"Error code for an unsuccessful load or save."
+				}
+			}
+		}
+
+	Image.Png
+		{
+		Description "Load and/or save PNG from/to a byte stream."
+		Tags			( Dictionary ByteStream Load Png Save Persist )
+		Receptor
+			{
+			Dictionary
+				{
+				Type			Dictionary
+				Description	"Dictionary that will receive or contains the information about the image."
+				}
+			Stream
+				{
+				Type			Stream
+				Description	"Byte stream that contains or will receive the byte data."
+				}
+			Load
+				{
+				Type			Any
+				Description	"Load a bitmap image from the byte stream into the dictionary."
+				}
+			Save
+				{
+				Type			Any
+				Description	"Save a bitmap image from dictionary into the byte stream."
+				}
+			}
+		Emitter
+			{
+			Load
+				{
+				Type			Any
+				Description	"Dictionary for image that was loaded from the byte stream."
+				}
+			Save
+				{
+				Type			Any
+				Description	"Byte stream for image that was saved from the dictionary."
+				}
+			Error
+				{
+				Type			Any
+				Description	"Error code for an unsuccessful load or save."
+				}
+			}
+		}
+
+	Image.Text
+		{
+		Description "Node to render text to an image."
+		Tags			( Dictionary ByteStream Load Png Save Persist )
+		Receptor
+			{
+			Font
+				{
+				Type			String
+				Description	"Font to use for rendering."
+				}
+			Image
+				{
+				Type			Dictionary
+				Description	"Dictionary that will receive the image information."
+				}
+			Render
+				{
+				Type			Any
+				Description	"Perform render of text to image."
+				}
+			Size
+				{
+				Type			Integer
+				Description	"Font point size to use."
+				}
+			Value
+				{
+				Type			Any
+				Description	"Value to render as text."
+				}
+			}
+		Emitter
+			{
+			Render
+				{
+				Type			Any
+				Description	"Image dictionary for rendered text."
+				}
+			Error
+				{
+				Type			Integer
+				Description	"Error code for an unsuccessful render."
+				}
+			}
+		}
+
+	%%%%%%
+	% ION
+	%%%%%%
+
+	Io.EnumDevClass
+		{
+		Description "Iterate through system devices of a particular class."
+		Tags			( Iterate Devices Class )
+		Attribute
+			{
+			Class
+				{
+				Type			String
+				Description	"A string identifying the device class to enumerate."
+				}
+			}
+		Receptor
+			{
+			First
+				{
+				Type			Any
+				Description	"Obtain the first device in the list."
+				}
+			Next
+				{
+				Type			Any
+				Description	"Obtain the next device in the list."
+				}
+			}
+		Emitter
+			{
+			End
+				{
+				Type			Integer
+				Description	"End of device list has been reached."
+				}
+			Name
+				{
+				Type			String
+				Description	"Friendly name of next device."
+				}
+			Next
+				{
+				Type			String
+				Description	"System identifier for next device in list."
+				}
+			}
+		}
+
+	Io.GpibNi
+		{
+		Description "Node for National Instruments GPIB."
+		Tags			( GPIB National Instruments )
+		Receptor
+			{
+			Board
+				{
+				Type			Integer
+				Description	"Identifier for the next board."
+				}
+			BoardFirst
+				{
+				Type			Any
+				Description	"Obtain the first GPIB board in the system."
+				}
+			BoardNext
+				{
+				Type			Any
+				Description	"Obtain the next GPIB board in the system."
+				}
+
+			Clear
+				{
+				Type			Any
+				Description	"Perform a GPIB clear on device."
+				}
+			Poll
+				{
+				Type			Any
+				Description	"Perform a serial poll on device."
+				}
+			Read
+				{
+				Type			Any
+				Description	"Perform a read from a device."
+				}
+			Write
+				{
+				Type			Any
+				Description	"Perform a write to a device."
+				}
+			Size
+				{
+				Type			Integer
+				Description	"Specify the size of the next read or write."
+				}
+			Device
+				{
+				Type			Integer
+				Description	"Set the target device descriptor."
+				}
+			Stream
+				{
+				Type			Stream
+				Description	"Specify the byte stream for the next read or write."
+				}
+			Timeout
+				{
+				Type			Integer
+				Description	"Specify the timeout for the next read or write."
+				}
+			}
+		Emitter
+			{
+			Board
+				{
+				Type			Integer
+				Description	"Board number for enumerated board."
+				}
+			End
+				{
+				Type			Integer
+				Description	"End of board list has been reached."
+				}
+			Available
+				{
+				Type			Integer
+				Description	"Data available bit set on serial poll."
+				}
+			Poll
+				{
+				Type			Integer
+				Description	"Result of serial poll."
+				}
+			Read
+				{
+				Type			Stream
+				Description	"Stream containing the number of bytes read or written."
+				}
+			Size
+				{
+				Type			Integer
+				Description	"Size of the read operation."
+				}
+			Write
+				{
+				Type			Stream
+				Description	"Stream that was written."
+				}
+			Error
+				{
+				Type			Integer
+				Description	"Error code of operation attempt."
+				}
+			}
+		}
+
+	Io.GpibSicl
+		{
+		Description "Node for Agilent Sicl GPIB boards."
+		Tags			( GPIB Agilent SICL )
+		Receptor
+			{
+			Board
+				{
+				Type			Integer
+				Description	"Identifier for the next board."
+				}
+			BoardFirst
+				{
+				Type			Any
+				Description	"Obtain the first GPIB board in the system."
+				}
+			BoardNext
+				{
+				Type			Any
+				Description	"Obtain the next GPIB board in the system."
+				}
+
+			Clear
+				{
+				Type			Any
+				Description	"Perform a GPIB clear on device."
+				}
+			Poll
+				{
+				Type			Any
+				Description	"Perform a serial poll on device."
+				}
+			Read
+				{
+				Type			Any
+				Description	"Perform a read from a device."
+				}
+			Write
+				{
+				Type			Any
+				Description	"Perform a write to a device."
+				}
+			Size
+				{
+				Type			Integer
+				Description	"Specify the size of the next read or write."
+				}
+			Device
+				{
+				Type			Integer
+				Description	"Set the target device descriptor."
+				}
+			Stream
+				{
+				Type			Stream
+				Description	"Specify the byte stream for the next read or write."
+				}
+			Timeout
+				{
+				Type			Integer
+				Description	"Specify the timeout for the next read or write."
+				}
+			}
+		Emitter
+			{
+			Board
+				{
+				Type			Integer
+				Description	"Board number for enumerated board."
+				}
+			End
+				{
+				Type			Integer
+				Description	"End of board list has been reached."
+				}
+			Available
+				{
+				Type			Integer
+				Description	"Data available bit set on serial poll."
+				}
+			Poll
+				{
+				Type			Integer
+				Description	"Result of serial poll."
+				}
+			Read
+				{
+				Type			Stream
+				Description	"Stream containing the number of bytes read or written."
+				}
+			Size
+				{
+				Type			Integer
+				Description	"Size of the read operation."
+				}
+			Write
+				{
+				Type			Stream
+				Description	"Stream that was written."
+				}
+			Error
+				{
+				Type			Integer
+				Description	"Error code of operation attempt."
+				}
+			}
+		}
+
+	IO.Hid
+		{
+		Description "Capture data from Human Interface Devices."
+		Tags			( Hid Input Capture )
+		Receptor
+			{
+			Start
+				{
+				Type			Any
+				Description	"Start asynchronous Hid capture."
+				}
+			Stop
+				{
+				Type			Any
+				Description	"Stop asynchronous Hid capture."
+				}
+			}
+		Emitter
+			{
+			Name
+				{
+				Type			String
+				Description	"Input button name."
+				}
+			State
+				{
+				Type			String
+				Description	"Input button state."
+				}
+			X
+				{
+				Type			Integer
+				Description	"Absolute X coodinate of input."
+				}
+			Y
+				{
+				Type			Integer
+				Description	"Absolute Y coodinate of input."
+				}
+			Xrel
+				{
+				Type			Integer
+				Description	"Relative X coodinate of input."
+				}
+			Yrel
+				{
+				Type			Integer
+				Description	"Relative Y coodinate of input."
+				}
+			Error
+				{
+				Type			Integer
+				Description	"Error code of operation."
+				}
+			}
+		}
+
+	IO.Persist
+		{
+		Description "Load or store a value to a byte stream using a specified parser."
+		Tags			( Load Save Persist Stream )
+		Receptor
+			{
+			Load
+				{
+				Type			Any
+				Description	"Load a persisted value from the byte stream."
+				}
+			Parser
+				{
+				Type			Object
+				Description	"An object that is capable of persisting a value from and to a byte stream."
+				}
+			Save
+				{
+				Type			Any
+				Description	"Save a value to the the byte stream."
+				}
+			Stream
+				{
+				Type			Stream
+				Description	"Byte stream that will store or contains the bytes for a persisted value."
+				}
+			Value
+				{
+				Type			Any
+				Description	"Specify the value to save to the byte stream."
+				}
+			}
+		Emitter
+			{
+			Error
+				{
+				Type			Integer
+				Description	"Emits an error code for an unsuccessful load or save."
+				}
+			Load
+				{
+				Type			Any
+				Description	"Emits a value that has been successfully loaded from the byte stream."
+				}
+			Save
+				{
+				Type			Any
+				Description	"Emits the byte stream to which a value has been persisted."
+				}
+			}
+		}
+
+	IO.Resource
+		{
+		Description "Access a generic resource such as a file."
+		Tags			( File Resource )
+		Attribute
+			{
+			Options
+				{
+				Type			Dictionary
+				Description	"Specify a default set of options for the resource."
+				}
+			}
+		Receptor
+			{
+			Close
+				{
+				Type			Any
+				Description	"Close the current resource."
+				}
+			Open
+				{
+				Type			Any
+				Description	"Open a resource into the dictionary with the provided options."
+				}
+			Resource
+				{
+				Type			Dictionary
+				Description	"Set the active resource context."
+				}
+			Options
+				{
+				Type			Dictionary
+				Description	"Dictionary that contains the options appropriate for the resource object."
+				}
+			}
+		Emitter
+			{
+			Error
+				{
+				Type			Integer
+				Description	"Emits an error code for an unsuccessful open."
+				}
+			Open
+				{
+				Type			Dictionary
+				Description	"Resource dictionary that was opened."
+				}
+			Close
+				{
+				Type			Dictionary
+				Description	"Resource dictionary that was closed."
+				}
+			}
+		}
+
+	IO.Stream
+		{
+		Description "Perform general operations on a byte stream."
+		Tags			( ByteStream Seek )
+		Attribute
+			{
+			Offset
+				{
+				Type			Integer
+				Description	"Specify a default offset within the byte stream."
+				}
+			Origin
+				{
+				Type			String
+				Description	"Specify a default origin of any operation.  Origins are: SET (From beginning), END (from end) or CURRENT (from current position)."
+				}
+			}
+		Receptor
+			{
+			Stream
+				{
+				Type			ByteStream
+				Description	"Specify which byte stream upon which to perform operations."
+				}
+			Offset
+				{
+				Type			Integer
+				Description	"Specify an offset within the byte stream."
+				}
+			Origin
+				{
+				Type			String
+				Description	"Specify the origin of any operation.  Origins are: SET (From beginning), END (from end) or CURRENT (from current position)."
+				}
+			Seek
+				{
+				Type			Any
+				Description	"Perform a seek operation on the byte stream from the origin to the offset."
+				}
+			}
+		Emitter
+			{
+			Position
+				{
+				Type			Integer
+				Description	"Emits the position of the byte stream after an operation."
+				}
+			}
+		}
+
+	IO.StreamCopy
+		{
+		Description "Copies from a source byte stream into a destination byte stream."
+		Tags			( ByteStream Copy )
+		Attribute
+			{
+			Size
+				{
+				Type			Integer
+				Description	"Specify a default size of the copy operation."
+				}
+			}
+		Receptor
+			{
+			Destination
+				{
+				Type			ByteStream
+				Description	"Byte stream that will receive the copied bytes."
+				}
+			Source
+				{
+				Type			ByteStream
+				Description	"Byte stream containing the bytes to copy."
+				}
+			Size
+				{
+				Type			Integer
+				Description	"The number of bytes to copy (zero means to copy all the bytes in the source stream)."
+				}
+			Fire
+				{
+				Type			Any
+				Description	"Read bytes from the source stream and writes them to the destination stream."
+				}
+			}
+		Emitter
+			{
+			Error
+				{
+				Type			Integer
+				Description	"Emits an error code for an unsuccessful copy."
+				}
+			Fire
+				{
+				Type			ByteStream
+				Description	"Destination byte stream to which bytes were written."
+				}
+			}
+		}
+
+	IO.StreamSource
+		{
+		Description "Access stream within a stream source."
+		Tags			( ByteStream Stream StreamSource )
+		Attribute
+			{
+			Options
+				{
+				Type			Dictionary
+				Description	"Specify a default set of options for the stream."
+				}
+			}
+		Receptor
+			{
+			Open
+				{
+				Type			Any
+				Description	"Open a byte stream from within the stream source."
+				}
+			First
+				{
+				Type			Any
+				Description	"Obtain the first byte stream location within the stream source."
+				}
+			Location
+				{
+				Type			String
+				Description	"Set the byte stream location within the stream source."
+				}
+			Next
+				{
+				Type			Any
+				Description	"Obtain the next byte stream location within the stream source."
+				}
+			Options
+				{
+				Type			Dictionary
+				Description	"Dictionary that contains the options for the byte stream within the stream source."
+				}
+			Source
+				{
+				Type			Dictionary
+				Description	"Stream source object for byte stream operations."
+				}
+			Status
+				{
+				Type			Any
+				Description	"Obtain information about the specified stream location within the stream source."
+				}
+			}
+		Emitter
+			{
+			Error
+				{
+				Type			Integer
+				Description	"Emits an error code for an unsuccessful operation."
+				}
+			First
+				{
+				Type			String
+				Description	"First location of a byte stream within the stream source."
+				}
+			Next
+				{
+				Type			String
+				Description	"Next location of a byte stream within the stream source."
+				}
+			Open
+				{
+				Type			Dictionary
+				Description	"Resource dictionary that was opened."
+				}
+			Status
+				{
+				Type			Dictionary
+				Description	"Dictionary that contains information about the byte stream at the location within the stream source."
+				}
+			}
+		}
+
+	Io.Visa
+		{
+		Description "Node for performing VISA I/O operations."
+		Tags			( GPIB VISA )
+		Receptor
+			{
+			First
+				{
+				Type			Any
+				Description	"Obtain the first VISA device."
+				}
+			Next
+				{
+				Type			Any
+				Description	"Obtain the next VISA device."
+				}
+			Clear
+				{
+				Type			Any
+				Description	"Perform a device clear."
+				}
+			Poll
+				{
+				Type			Any
+				Description	"Perform a device serial poll."
+				}
+			Read
+				{
+				Type			Any
+				Description	"Perform a read from a device."
+				}
+			Write
+				{
+				Type			Any
+				Description	"Perform a write to a device."
+				}
+			Size
+				{
+				Type			Integer
+				Description	"Specify the size of the next read or write."
+				}
+			Device
+				{
+				Type			String
+				Description	"Set the target device address."
+				}
+			Stream
+				{
+				Type			Stream
+				Description	"Specify the byte stream for the next read or write."
+				}
+			Timeout
+				{
+				Type			Integer
+				Description	"Specify the timeout for the next read or write."
+				}
+			Query
+				{
+				Type			Any
+				Description	"Obtain information about the target device address."
+				}
+			}
+		Emitter
+			{
+			End
+				{
+				Type			Integer
+				Description	"End of device list has been reached."
+				}
+			Next
+				{
+				Type			String
+				Description	"Device string for the next device."
+				}
+			Error
+				{
+				Type			Integer
+				Description	"Error code of operation attempt."
+				}
+			Poll
+				{
+				Type			Integer
+				Description	"Result of serial poll."
+				}
+			Read
+				{
+				Type			Stream
+				Description	"Stream containing the number of bytes read or written."
+				}
+			Size
+				{
+				Type			Integer
+				Description	"Size of the read operation."
+				}
+			Write
+				{
+				Type			Stream
+				Description	"Stream that was written."
+				}
+
+
+			InterfaceType
+				{
+				Type			String
+				Description	"Enumerated interface type."
+				}
+			InterfaceNumber
+				{
+				Type			Integer
+				Description	"Enumerated interface number."
+				}
+			Class
+				{
+				Type			String
+				Description	"Enumerated class type."
+				}
+			Alias
+				{
+				Type			String
+				Description	"Enumerated device alias."
+				}
+			}
+		}
+
+	%%%%%%%%
+	% MISCN
+	%%%%%%%%
+
+	Misc.AsyncEmit
+		{
+		Description "Asynchronous emission of a value."
+		Tags			( Asynchronous )
+		Attribute
+			{
+			Value
+				{
+				Type			Any
+				Description	"A default value to emit."
+				}
+			}
+		Receptor
+			{
+			Fire
+				{
+				Type			Any
+				Description	"Asynchronously emit value."
+				}
+			}
+		Emitter
+			{
+			Fire
+				{
+				Type			Any
+				Description	"Asynchronously emitted value."
+				}
+			}
+		}
+
+	Misc.AsyncQ
+		{
+		Description "Asynchronous queues for receiving values and emitting them on another thread."
+		Tags			( Asynchronous Queue )
+		Attribute
+			{
+			Size
+				{
+				Type			Integer
+				Description	"A maximum size for the internal queue before values are not accepted."
+				}
+			Block
+				{
+				Type			Bool
+				Description	"If enabled (true) reception of values is blocked until the size of the queue drops below the maximum size."
+				}
+			}
+		Receptor
+			{
+			Id
+				{
+				Type			Any
+				Description	"Select a queue with the specified Id."
+				}
+			Fire
+				{
+				Type			Any
+				Description	"Receive a value to emit asychronously on the current queue."
+				}
+			Next
+				{
+				Type			Any
+				Description	"Proceed to the next value in the current queue."
+				}
+			Retry
+				{
+				Type			Any
+				Description	"Re-emit the active value for the current queue."
+				}
+			Start
+				{
+				Type			Any
+				Description	"Start queue operation."
+				}
+			Stop
+				{
+				Type			Any
+				Description	"Stop queue operation."
+				}
+			}
+		Emitter
+			{
+			Id
+				{
+				Type			Any
+				Description	"Queue Id for the value to be emitted."
+				}
+			Fire
+				{
+				Type			Any
+				Description	"Active value from the current queue."
+				}
+			Empty
+				{
+				Type			Any
+				Description	"Queue has no values."
+				}
+			}
+		}
+
+	Misc.Clone
+		{
+		Description "Clone a value."
+		Tags			( Clone )
+		Attribute
+			{
+			Value
+				{
+				Type			Any
+				Description	"A default value to clone."
+				}
+			}
+		Receptor
+			{
+			Fire
+				{
+				Type			Any
+				Description	"Clone value."
+				}
+			}
+		Emitter
+			{
+			Fire
+				{
+				Type			Any
+				Description	"Cloned value."
+				}
+			Error
+				{
+				Type			Integer
+				Description	"Error code on failed clone."
+				}
+			}
+		}
+
+	Misc.Compare
+		{
+		Description "Compares a left value to a right value (left <> right)."
+		Tags			( Compare )
+		Attribute
+			{
+			Left
+				{
+				Type			Any
+				Description	"A default value to use for the left side of the compare."
+				}
+			Right
+				{
+				Type			Any
+				Description	"A default value to use for the right side of the compare."
+				}
+			}
+		Receptor
+			{
+			Left
+				{
+				Type			Any
+				Description	"A value to use for the left side of the compare."
+				}
+			Right
+				{
+				Type			Any
+				Description	"A value to use for the right side of the compare."
+				}
+			Fire
+				{
+				Type			Any
+				Description	"Compare the left value to the right value."
+				}
+			}
+		Emitter
+			{
+			Equal
+				{
+				Type			Any
+				Description	"The right value that was equal to the left value."
+				}
+			NotEqual
+				{
+				Type			Any
+				Description	"The right value that was NOT equal to the left value."
+				}
+			Less
+				{
+				Type			Any
+				Description	"The right value that was greater than the left value (left < right)."
+				}
+			Greater
+				{
+				Type			Any
+				Description	"The right value that was less than the left value (left > right)."
+				}
+			Error
+				{
+				Type			Any
+				Description	"An error code for an unsuccessful compare, common errors are : Missing left or right values or comparing two uncomparable types."
+				}
+			}
+		}
+
+	Misc.Create
+		{
+		Description "Create objects with the specified system Id."
+		Tags			( Create )
+		Attribute
+			{
+			Id
+				{
+				Type			String
+				Description	"A default object Id to use for creation (Example: Adt.Dictionary)"
+				}
+			}
+		Receptor
+			{
+			Id
+				{
+				Type			String
+				Description	"An object Id to use for creation (Example: Adt.Dictionary)"
+				}
+			Fire
+				{
+				Type			Any
+				Description	"Create an object with the current Id."
+				}
+			}
+		Emitter
+			{
+			Fire
+				{
+				Type			Any
+				Description	"Object that was created."
+				}
+			Error
+				{
+				Type			Any
+				Description	"Error code for the object Id that could not be created."
+				}
+			}
+		}
+
+	Misc.Decode
+		{
+		Description "Selects an output from a single input value."
+		Tags			( Decode Dictionary Select )
+		Attribute
+			{
+			Values
+				{
+				Type			Dictionary
+				Description	"A dictionary that specifies a map between the selectable values (keys) to the output emitters (values)."
+				}
+			}
+		Receptor
+			{
+			Fire
+				{
+				Type			Any
+				Description	"Emit the default or provided value out the selected emitter."
+				}
+			Select
+				{
+				Type			Any
+				Description	"Select an emitter to use."
+				}
+			Value
+				{
+				Type			Any
+				Description	"Select a default value to emit out the selected emitter."
+				}
+			}
+		Emitter
+			{
+			Default
+				{
+				Type			Any
+				Description	"Default or provided value that did not match any of the selectable values."
+				}
+			}
+		}
+
+	Misc.Debug
+		{
+		Description "A node used for debugging a graph."
+		Tags			( Debug )
+		Attribute
+			{
+			Message
+				{
+				Type			String
+				Description	"A custom message to display on debug output."
+				}
+			}
+		Receptor
+			{
+			Fire
+				{
+				Type			Any
+				Description	"Output a debug string describing value."
+				}
+			Break
+				{
+				Type			Any
+				Description	"Interrupt/debug execution by issuing a debug break."
+				}
+			Log
+				{
+				Type			Any
+				Description	"Enable log retrieval for node."
+				}
+			Reset
+				{
+				Type			Any
+				Description	"Reset timing information."
+				}
+			Mark
+				{
+				Type			Any
+				Description	"Output timing information from last reset."
+				}
+			}
+		Emitter
+			{
+			Log
+				{
+				Type			String
+				Description	"Next string from the logging system."
+				}
+			}
+		}
+
+	Misc.Demux
+		{
+		Description "Select an output based on a single input value keyed from a dictionary."
+		Tags			( Demux Dictionary Select )
+		Attribute
+			{
+			Key
+				{
+				Type			Any
+				Description	"A default key to use during the selection operation."
+				}
+			Values
+				{
+				Type			List
+				Description	"A list of values to use as selectable outputs."
+				}
+			}
+		Receptor
+			{
+			Dictionary
+				{
+				Type			Dictionary
+				Description	"Dictionary to look up a value with a key to select an output."
+				}
+			Fire
+				{
+				Type			Any
+				Description	"Select and emit the default or provided value out the selected emitter."
+				}
+			Key
+				{
+				Type			Any
+				Description	"A key to use during the selection operation."
+				}
+			Value
+				{
+				Type			Any
+				Description	"A default value to emit out the selected emitter."
+				}
+			}
+		Emitter
+			{
+			Default
+				{
+				Type			Any
+				Description	"Default or proivded value that did not match any of the selectable values."
+				}
+			}
+		}
+
+	Misc.DictParse
+		{
+		Description "Parse an input byte stream into a dictionary."
+		Tags			( Dictionary Parse )
+		Attribute
+			{
+			Format
+				{
+				Type			Dictionary
+				Description	"Specifies a default format for the incoming byte stream."
+				}
+			}
+		Receptor
+			{
+			Dictionary
+				{
+				Type			Dictionary
+				Description	"A dictionary that will receive the results of the parse."
+				}
+			Format
+				{
+				Type			Dictionary
+				Description	"Specifies a format for the incoming byte stream."
+				}
+			Stream
+				{
+				Type			ByteStream
+				Description	"Byte stream containing the bytes to parse."
+				}
+			Fire
+				{
+				Type			Any
+				Description	"Parse the byte stream according to the format into the dictionary."
+				}
+			}
+		Emitter
+			{
+			Fire
+				{
+				Type			Dictionary
+				Description	"Dictionary containing the result of the parse."
+				}
+			Error
+				{
+				Type			Dictionary
+				Description	"Dictionary that did not receive the parse due to an error."
+				}
+			}
+		}
+
+	Misc.Dist
+		{
+		Description "Distribution node for values.  Does not perform any operation on the value itself."
+		Tags			( Noop )
+		Attribute
+			{
+			Value
+				{
+				Type			Any
+				Description	"Specifies a default value to emit."
+				}
+			}
+		Receptor
+			{
+			Fire
+				{
+				Type			Any
+				Description	"Emit the default or provided value."
+				}
+			}
+		Emitter
+			{
+			Fire
+				{
+				Type			Any
+				Description	"Default or proivded value."
+				}
+			}
+		}
+
+	Misc.String
+		{
+		Description "Perform general string operations."
+		Tags			( String Substring Length Replace Search )
+		Attribute
+			{
+			From
+				{
+				Type			Integer
+				Description	"A default index into the source string from which to perform the string operation."
+				}
+			To
+				{
+				Type			Integer
+				Description	"A default index into the source string to which to perform the string operation."
+				}
+			Source
+				{
+				Type			String
+				Description	"A default string to use as the source of the string operation."
+				}
+			Destination
+				{
+				Type			String
+				Description	"A default string to use as the destination of the string operation."
+				}
+			Type
+				{
+				Type			String
+				Values		( Digit )
+				Description	"A default type to use when checking for character types."
+				}
+			}
+		Receptor
+			{
+			IndexOf
+				{
+				Type			Any
+				Description	"Emit the index in the destination string that matches the source string."
+				}
+			LastIndexOf
+				{
+				Type			Any
+				Description	"Emit the last index in the destination string that matches the source string."
+				}
+			IsType
+				{
+				Type			Any
+				Description	"Determine if character at the from index in the source string is of the current type."
+				}
+			Destination
+				{
+				Type			String
+				Description	"String to use as the destination of the string operation."
+				}
+			Replace
+				{
+				Type			Any
+				Description	"Replace strings in the source string with the destination string."
+				}
+			Length
+				{
+				Type			Any
+				Description	"Emit the length of the source string."
+				}
+			Substring
+				{
+				Type			Any
+				Description	"Generate a substring using the from and to indices into the source string."
+				}
+			From
+				{
+				Type			Integer
+				Description	"A index into the source string from which to perform the string operation."
+				}
+			To
+				{
+				Type			Integer
+				Description	"A index into the source string to which to perform the string operation."
+				}
+			Source
+				{
+				Type			String
+				Description	"String to use as the source of the string operation."
+				}
+			}
+		Emitter
+			{
+			Fire
+				{
+				Type			Integer
+				Description	"Result of the requested string operation."
+				}
+			NotFound
+				{
+				Type			String
+				Description	"Source string that did not match any of the destination string."
+				}
+			True
+				{
+				Type			String
+				Description	"Type string for which the character matches."
+				}
+			False
+				{
+				Type			String
+				Description	"Type string for which the character does NOT match."
+				}
+			}
+		}
+
+	Misc.StringFormat
+		{
+		Description "Format a string according to a format using the dictionary as source of values."
+		Tags			( Dictionary Format String )
+		Attribute
+			{
+			}
+		Receptor
+			{
+			Dictionary
+				{
+				Type			Dictionary
+				Description	"A dictionary that contains the source values."
+				}
+			Format
+				{
+				Type			Dictionary
+				Description	"Specifies a format for the formatted string."
+				}
+			Fire
+				{
+				Type			Any
+				Description	"Emit a formatted string according to the format."
+				}
+			}
+		Emitter
+			{
+			Fire
+				{
+				Type			String
+				Description	"The formatted string."
+				}
+			}
+		}
+
+	Misc.StringParse
+		{
+		Description "Parse an input string into a dictionary."
+		Tags			( String Dictionary Parse )
+		Attribute
+			{
+			Format
+				{
+				Type			Dictionary
+				Description	"Specifies a default format for the string."
+				}
+			}
+		Receptor
+			{
+			Dictionary
+				{
+				Type			Dictionary
+				Description	"A dictionary that will receive the results of the parse."
+				}
+			Format
+				{
+				Type			Dictionary
+				Description	"Specifies a format for the string."
+				}
+			String
+				{
+				Type			String
+				Description	"String to parse."
+				}
+			Fire
+				{
+				Type			Any
+				Description	"Parse the string according to the format into the dictionary."
+				}
+			}
+		Emitter
+			{
+			Fire
+				{
+				Type			Dictionary
+				Description	"Dictionary containing the results of the parse."
+				}
+			Position
+				{
+				Type			Integer
+				Description	"The index in the string at which the parsing stopped."
+				}
+			}
+		}
+
+	Misc.StringStream
+		{
+		Description "Convert between strings and streams."
+		Tags			( String Stream )
+		Attribute
+			{
+			Terminate
+				{
+				Type			String
+				Description	"Specifies a default terminator to use when converting a string to a stream."
+				}
+			Terminate?
+				{
+				Type			Boolean
+				Description	"Specifies whether to terminate a string converting to a stream."
+				}
+			CodePage
+				{
+				Type			String
+				Values		( ANSI UTF7 UTF8 )
+				Description	"Specifies a code page when reading a string from a stream."
+				}
+			}
+		Receptor
+			{
+			From
+				{
+				Type			Any
+				Description	"Convert bytes from the stream into a string."
+				}
+			Prefix
+				{
+				Type			String
+				Description	"String that is found and skipped during conversion from a stream."
+				}
+			Reset
+				{
+				Type			Any
+				Description	"Reset/clear the conversion state."
+				}
+			Stream
+				{
+				Type			ByteStream
+				Description	"Byte stream will either receive the converted string or contains the bytes to convert to a string."
+				}
+			String
+				{
+				Type			String
+				Description	"String that will be converted to a stream."
+				}
+			Terminate
+				{
+				Type			String
+				Description	"Specifies a terminator to use when converting a string to a stream."
+				}
+			From
+				{
+				Type			Any
+				Description	"Convert string into the stream of bytes."
+				}
+			}
+		Emitter
+			{
+			Fire
+				{
+				Type			Any
+				Description	"The result of the conversion."
+				}
+			End
+				{
+				Type			ByteStream
+				Description	"Byte stream that has ran out of available bytes during conversion to a string."
+				}
+			}
+		}
+
+	Misc.StringSubst
+		{
+		Description "Replaces character in a string."
+		Tags			( String Replace )
+		Attribute
+			{
+			Map
+				{
+				Type			Dictionary
+				Description	"Contains a mapping of which strings (key) to map to what other strings (value)."
+				}
+			From
+				{
+				Type			String
+				Description	"Contains the 'from' characters to map."
+				}
+			To
+				{
+				Type			String
+				Description	"Contains the 'to' characters from which to map."
+				}
+			}
+		Receptor
+			{
+			Map
+				{
+				Type			Dictionary
+				Description	"Contains a mapping of which strings (key) to map to what other strings (value)."
+				}
+			Fire
+				{
+				Type			Any
+				Description	"Perform  mapping."
+				}
+			}
+		Emitter
+			{
+			Fire
+				{
+				Type			String
+				Description	"Re-mapped string."
+				}
+			}
+		}
+
+	Misc.Time
+		{
+		Description "Peform operations that deal with times/dates."
+		Tags			( Time Date )
+		Attribute
+			{
+			}
+		Receptor
+			{
+			Now
+				{
+				Type			Any
+				Description	"Emit the time and date for right now."
+				}
+			}
+		Emitter
+			{
+			Date
+				{
+				Type			Date
+				Description	"Date result of the operation."
+				}
+			}
+		}
+
+	Misc.Timer
+		{
+		Description "Emit an asynchronous signal at the specified interval."
+		Tags			( Timer Asynchronous )
+		Attribute
+			{
+			Rate
+				{
+				Type			Integer
+				Description	"Default rate in milliseconds at which the timer should fire."
+				}
+			Priority
+				{
+				Type			Integer
+				Minimum		-2:int
+				Maximum		+2:int
+				Default		+0:int
+				Description	"System priority for the timer, 0 = default, -1 = Lower, +1 = Higher."
+				}
+			Arm
+				{
+				Type			Boolean
+				Description	"Specifies if the timer need to be armed before each firing."
+				}
+			}
+		Receptor
+			{
+			Arm
+				{
+				Type			Any
+				Description	"Arm the timer (if armable) for firing."
+				}
+			Disarm
+				{
+				Type			Any
+				Description	"Disarm the timer (if armable) from firing."
+				}
+			Rate
+				{
+				Type			Integer
+				Description	"Rate in milliseconds at which the timer should fire."
+				}
+			Start
+				{
+				Type			Any
+				Description	"Start timer operation."
+				}
+			Stop
+				{
+				Type			Any
+				Description	"Stop timer operation."
+				}
+			Fire
+				{
+				Type			Any
+				Description	"Fire the timer now regardless of the timer state."
+				}
+			}
+		Emitter
+			{
+			Fire
+				{
+				Type			Integer
+				Description	"Emits when the timer expires."
+				}
+			}
+		}
+
+	Misc.Toggle
+		{
+		Description "Toggles between true and false states."
+		Tags			( True False Toggle Boolean )
+		Attribute
+			{
+			Default
+				{
+				Type			Boolean
+				Description	"The default state of the node, true or false."
+				}
+			}
+		Receptor
+			{
+			Fire
+				{
+				Type			Any
+				Description	"Emit the value out the emitter that matches the toggle state."
+				}
+			True
+				{
+				Type			Any
+				Description	"Sets the toggle state to true."
+				}
+			False
+				{
+				Type			Any
+				Description	"Sets the toggle state to false."
+				}
+			Not
+				{
+				Type			Any
+				Description	"Invert the current toggle state."
+				}
+			}
+		Emitter
+			{
+			Fire
+				{
+				Type			Boolean
+				Description	"The current toggle state (true or false)."
+				}
+			True
+				{
+				Type			Any
+				Description	"Value when toggle state is true."
+				}
+			False
+				{
+				Type			Any
+				Description	"Value when toggle state is false."
+				}
+			}
+		}
+
+	Misc.TokenIt
+		{
+		Description "Iterate the tokens in a string."
+		Tags			( Token String Iterate )
+		Attribute
+			{
+			Delimiter
+				{
+				Type			String
+				Description	"Default delimiter to use for generating string tokens."
+				}
+			}
+		Receptor
+			{
+			Count
+				{
+				Type			Any
+				Description	"Emit the number of tokens in the string."
+				}
+			First
+				{
+				Type			String
+				Description	"Emit the first token in the string."
+				}
+			Next
+				{
+				Type			String
+				Description	"Emit the next token in the string."
+				}
+			Delimiter
+				{
+				Type			String
+				Description	"Delimiter to use for generating string tokens."
+				}
+			String
+				{
+				Type			String
+				Description	"String from which to generate tokens."
+				}
+			}
+		Emitter
+			{
+			Count
+				{
+				Type			Integer
+				Description	"The number of tokens in the string."
+				}
+			Next
+				{
+				Type			String
+				Description	"The next token in the string."
+				}
+			End
+				{
+				Type			Integer
+				Description	"The end of the tokens has been reached."
+				}
+			}
+		}
+
+	Misc.Type
+		{
+		Description "Determine, check, or convert a value from valid types."
+		Tags			( Type Query )
+		Receptor
+			{
+			Convert
+				{
+				Type			Any
+				Description	"Convert a value from one value type to another."
+				}
+			Fire
+				{
+				Type			Any
+				Description	"Check if the value has the specified type."
+				}
+			Query
+				{
+				Type			Any
+				Description	"Obtain a string identifier for the type of a value."
+				}
+			Type
+				{
+				Type			String
+				Description	"String identifier for a value type to either conversion or comparison."
+				}
+			Value
+				{
+				Type			Any
+				Description	"Specify the value to use when performing type checking."
+				}
+			}
+		Emitter
+			{
+			Equal
+				{
+				Type			Any
+				Description	"Activates if the value has the specified type."
+				}
+			Error
+				{
+				Type			Integer
+				Description	"Activates if the value could not be converted to the specified type."
+				}
+			Fire
+				{
+				Type			Any
+				Description	"Value after conversion to the specified type."
+				}
+			NotEqual
+				{
+				Type			Any
+				Description	"Activates if the value does not have the specified type."
+				}
+			Type
+				{
+				Type			String
+				Description	"A string identifier for the type of the value."
+				}
+			}
+		}
+
+	%%%%%%%
+	% NETN
+	%%%%%%%
+
+	Net.Address
+		{
+		Description "Perform operations on network addresses."
+		Tags			( Network Address )
+		Attribute
+			{
+			}
+		Receptor
+			{
+			Address
+				{
+				Type			Any
+				Description	"Set the current address using either a number or string (e.g. 127.0.0.1:1234)."
+				}
+			Port
+				{
+				Type			Integer
+				Description	"Explicity set the current port if not specified in the address string."
+				}
+			Resolve
+				{
+				Type			Any
+				Description	"Resolve the address (supports host name strings) into an explicit integer address and port."
+				}
+			String
+				{
+				Type			Any
+				Description	"Convert the address and port to a string representation."
+				}
+			}
+		Emitter
+			{
+			Port
+				{
+				Type			Integer
+				Description	"Port portion of resolved address."
+				}
+			Address
+				{
+				Type			Integer
+				Description	"Address portion of resolved address."
+				}
+			String
+				{
+				Type			String
+				Description	"String representation of the address."
+				}
+			}
+		}
+
+	Net.Avail
+		{
+		Description "Monitors socket dictionaries for read and/or write availability."
+		Tags			( Socket Asynchronous Network )
+		Attribute
+			{
+			Timeout
+				{
+				Type			Integer
+				Description	"Default timeout in milliseconds to wait for availability."
+				}
+			Read
+				{
+				Type			Boolean
+				Description	"True to enable waiting for readability."
+				}
+			Write
+				{
+				Type			Boolean
+				Description	"True to enable waiting for writeability."
+				}
+			}
+		Receptor
+			{
+			Add
+				{
+				Type			Any
+				Description	"Add the socket dictionary to the monitoring."
+				}
+			Remove
+				{
+				Type			Any
+				Description	"Remove the socket dictionary from the monitoring."
+				}
+			Socket
+				{
+				Type			Dictionary
+				Description	"Active socket dictionary."
+				}
+			Start
+				{
+				Type			Any
+				Description	"Start monitoring operation."
+				}
+			Stop
+				{
+				Type			Any
+				Description	"Stop monitoring operation."
+				}
+			Timeout
+				{
+				Type			Integer
+				Description	"Timeout in milliseconds to wait for availability."
+				}
+			}
+		Emitter
+			{
+			Read
+				{
+				Type			Dictionary
+				Description	"Socket dictionary that is available for reading."
+				}
+			Write
+				{
+				Type			Dictionary
+				Description	"Socket dictionary that is available for writing."
+				}
+			}
+		}
+
+	Net.Client
+		{
+		Description "A client socket node to accept an incoming connection or connect to a remote server."
+		Tags			( Network Socket Address )
+		Attribute
+			{
+			}
+		Receptor
+			{
+			Accept
+				{
+				Type			Any
+				Description	"Accept an incoming connection on the socket."
+				}
+			Connect
+				{
+				Type			Any
+				Description	"Connect to a server at the address and port."
+				}
+			Address
+				{
+				Type			Any
+				Description	"Address (integer or string) for connections."
+				}
+			Port
+				{
+				Type			Integer
+				Description	"Explicity set the current port if not specified in the address string."
+				}
+			Socket
+				{
+				Type			Dictionary
+				Description	"Active socket dictionary."
+				}
+			Timeout
+				{
+				Type			Integer
+				Description	"Timeout in milliseconds for connection timeout."
+				}
+			}
+		Emitter
+			{
+			Accept
+				{
+				Type			Dictionary
+				Description	"Socket dictionary connection that was accepted."
+				}
+			Connect
+				{
+				Type			Dictionary
+				Description	"Socket dictionary that has been connected."
+				}
+			Pending
+				{
+				Type			Dictionary
+				Description	"Socket dictionary that has a pending connection."
+				}
+			Error
+				{
+				Type			Integer
+				Description	"Error code for an unsuccessful operation."
+				}
+			}
+		}
+
+	Net.DatagramRx
+		{
+		Description "Receive datagrams on a socket."
+		Tags			( Network Socket Datagram UDP Receive )
+		Attribute
+			{
+			}
+		Receptor
+			{
+			Fire
+				{
+				Type			Any
+				Description	"Receive a datagram into the byte stream."
+				}
+			Socket
+				{
+				Type			Dictionary
+				Description	"Set socket dictionary."
+				}
+			Stream
+				{
+				Type			ByteStream
+				Description	"Byte stream that will receive the datagram."
+				}
+			}
+		Emitter
+			{
+			Address
+				{
+				Type			Integer
+				Description	"Address from which the datagram was received."
+				}
+			Port
+				{
+				Type			Integer
+				Description	"Port from which the datagram was received."
+				}
+			Fire
+				{
+				Type			ByteStream
+				Description	"Byte stream to which the datagram was received."
+				}
+			Error
+				{
+				Type			Integer
+				Description	"Error code for an unsuccessful operation."
+				}
+			}
+		}
+
+	Net.DatagramTx
+		{
+		Description "Transmit datagrams on a socket."
+		Tags			( Network Socket Datagram UDP Transmit )
+		Attribute
+			{
+			}
+		Receptor
+			{
+			Address
+				{
+				Type			Integer
+				Description	"Address to which to send the datagram."
+				}
+			Port
+				{
+				Type			Integer
+				Description	"Port to which to send the datagram."
+				}
+			Fire
+				{
+				Type			Any
+				Description	"Transmit datagram from stream to destination."
+				}
+			Socket
+				{
+				Type			Dictionary
+				Description	"Set socket dictionary."
+				}
+			Size
+				{
+				Type			Integer
+				Description	"Count of bytes from stream to send."
+				}
+			Stream
+				{
+				Type			ByteStream
+				Description	"Byte stream containing the datagram to send."
+				}
+			}
+		Emitter
+			{
+			Fire
+				{
+				Type			ByteStream
+				Description	"Byte stream containing the datagram that was sent."
+				}
+			Error
+				{
+				Type			Integer
+				Description	"Error code for an unsuccessful operation."
+				}
+			}
+		}
+
+	Net.Interfaces
+		{
+		Description "Iterates and monitors the state of the network interfaces."
+		Tags			( Network Socket Interface Iterate )
+		Attribute
+			{
+			}
+		Receptor
+			{
+			First
+				{
+				Type			Any
+				Description	"Emit the first network interface."
+				}
+			Next
+				{
+				Type			Any
+				Description	"Emit the next network interface."
+				}
+			Start
+				{
+				Type			Any
+				Description	"Start monitoring operation."
+				}
+			Stop
+				{
+				Type			Any
+				Description	"Stop monitoring operation."
+				}
+			}
+		Emitter
+			{
+			End
+				{
+				Type			Integer
+				Description	"Iteration of the network interfacs has ended."
+				}
+			Change
+				{
+				Type			Integer
+				Description	"The state of the network interfaces have changed."
+				}
+			}
+		}
+
+	Net.Multicast
+		{
+		Description "Manage the multicast membership of a socket dictionary."
+		Tags			( Network Socket Multicast )
+		Attribute
+			{
+			}
+		Receptor
+			{
+			Add
+				{
+				Type			Any
+				Description	"Add the socket dictionary to the multicast group."
+				}
+			Remove
+				{
+				Type			Any
+				Description	"Remove the socket dictionary from the multicast group."
+				}
+			Interface
+				{
+				Type			Any
+				Description	"Address of multicast interface group."
+				}
+			Multicast
+				{
+				Type			Any
+				Description	"Address of multicast group."
+				}
+			Socket
+				{
+				Type			Dictionary
+				Description	"Set socket dictionary."
+				}
+			}
+		Emitter
+			{
+			Add
+				{
+				Type			Dictionary
+				Description	"Socket dictionary added to multicast group."
+				}
+			Remove
+				{
+				Type			Dictionary
+				Description	"Socket dictionary removed from multicast group."
+				}
+			Error
+				{
+				Type			Integer
+				Description	"Error code for an unsuccessful operation."
+				}
+			}
+		}
+
+	Net.PersistSkt
+		{
+		Description "Load or store a value to a socket dictionary using a specified parser."
+		Tags			( Load Save Persist Network Socket )
+		Receptor
+			{
+			Load
+				{
+				Type			Any
+				Description	"Load a persisted value from the socket."
+				}
+			Parser
+				{
+				Type			Object
+				Description	"An object that is capable of persisting a value from and to a byte stream."
+				}
+			Save
+				{
+				Type			Any
+				Description	"Save a value to the the socket."
+				}
+			Socket
+				{
+				Type			Dictionary
+				Description	"Set socket dictionary."
+				}
+			Value
+				{
+				Type			Any
+				Description	"Specify the value to save to the socket."
+				}
+			}
+		Emitter
+			{
+			Error
+				{
+				Type			Integer
+				Description	"Emits an error code for an unsuccessful load or save."
+				}
+			Load
+				{
+				Type			Any
+				Description	"Emits a value that has been successfully loaded from the socket."
+				}
+			Save
+				{
+				Type			Any
+				Description	"Emits the value that was saved to the socket."
+				}
+			}
+		}
+
+	Net.Recv
+		{
+		Description "Receive data on a socket."
+		Tags			( Socket Read Network )
+		Receptor
+			{
+			Fire
+				{
+				Type			Any
+				Description	"Activate the read operation on the socket."
+				}
+			Socket
+				{
+				Type			Dictionary
+				Description	"Dictionary that contains information about an open socket."
+				}
+			Stream
+				{
+				Type			Stream
+				Description	"Byte stream that will receive the data."
+				}
+			Timeout
+				{
+				Type			Integer
+				Description	"Specify a timeout (in ms) for the read operation, default is 1000 (1 sec)."
+				}
+			}
+		Emitter
+			{
+			Error
+				{
+				Type			Integer
+				Description	"Emit an error code when there is a problem with a requested read operation."
+				}
+			Fire
+				{
+				Type			Any
+				Description	"Byte stream that has received data."
+				}
+			}
+		}
+
+	Net.Send
+		{
+		Description "Send data on a socket."
+		Tags			( Socket Write Network )
+		Receptor
+			{
+			Fire
+				{
+				Type			Any
+				Description	"Activate the send operation on the socket."
+				}
+			Size
+				{
+				Type			Integer
+				Description	"Count of bytes from stream to send."
+				}
+			Socket
+				{
+				Type			Dictionary
+				Description	"Dictionary that contains information about an open socket."
+				}
+			Stream
+				{
+				Type			Stream
+				Description	"Byte stream that contains the data to send."
+				}
+			Timeout
+				{
+				Type			Integer
+				Description	"Specify a timeout (in ms) for the send operation, default is 1000 (1 sec)."
+				}
+			}
+		Emitter
+			{
+			Error
+				{
+				Type			Integer
+				Description	"Error code when there is a problem with a requested send operation."
+				}
+			Fire
+				{
+				Type			Integer
+				Description	"Number of bytes that were sent."
+				}
+			}
+		}
+
+	Net.SocketOp
+		{
+		Description "General operations on a socket dictionary."
+		Tags			( Socket Network Bind )
+		Receptor
+			{
+			Address
+				{
+				Type			Integer
+				Description	"Address for socket operations."
+				}
+			Port
+				{
+				Type			Integer
+				Description	"Port for socket operations."
+				}
+			Socket
+				{
+				Type			Dictionary
+				Description	"Dictionary that contains information about an open socket."
+				}
+			Open
+				{
+				Type			Any
+				Description	"Open and bind a socket using the current setup."
+				}
+			Close
+				{
+				Type			Any
+				Description	"Close the socket dictionary."
+				}
+			Query
+				{
+				Type			Any
+				Description	"Emit the address and port for the socket dictionary and the socket's peer."
+				}
+			}
+		Emitter
+			{
+			Address
+				{
+				Type			Integer
+				Description	"Address for socket dictionary."
+				}
+			Port
+				{
+				Type			Integer
+				Description	"Port for socket dictionary."
+				}
+			PeerAddress
+				{
+				Type			Integer
+				Description	"Address for socket's peer."
+				}
+			PeerPort
+				{
+				Type			Integer
+				Description	"Port for socket's peer."
+				}
+			Open
+				{
+				Type			Dictionary
+				Description	"Socket dictionary that was opened."
+				}
+			Close
+				{
+				Type			
+				Description	"Socket dictionary that was closed."
+				}
+			Error
+				{
+				Type			Integer
+				Description	"Error code when there is a problem with a socket operation."
+				}
+			}
+		}
+
+	%%%%%%%%
+	% NSPCN
+	%%%%%%%%
+
+	Nspc.Connect
+		{
+		Description "Connect/disconnect emitters to/from receptors."
+		Tags			( nSpace Receptor Emitter )
+		Receptor
+			{
+			Receptor
+				{
+				Type			Receptor
+				Description	"Receptor for emitter connection/disconnect."
+				}
+			Emitter
+				{
+				Type			Emitter
+				Description	"Emitter for receptor connection/disconnect."
+				}
+			Connect
+				{
+				Type			Any
+				Description	"Connect the emitter to the receptor."
+				}
+			Disconnect
+				{
+				Type			Any
+				Description	"Disconnet the receptor from the emitter."
+				}
+			}
+		Emitter
+			{
+			Error
+				{
+				Type			Integer
+				Description	"Error code when there is a problem with an operation."
+				}
+			}
+		}
+
+	Nspc.Emitters
+		{
+		Description "Emitter management."
+		Tags			( nSpace Emitter )
+		Receptor
+			{
+			Emit
+				{
+				Type			Any
+				Description	"Emit value out emitter."
+				}
+			Emitter
+				{
+				Type			Emitter
+				Description	"Default emitter to use for operations."
+				}
+			Get
+				{
+				Type			Any
+				Description	"Emit the latest value cached in the emitter."
+				}
+			Clear
+				{
+				Type			Any
+				Description	"Clear the latest value cached in the emitter."
+				}
+			Value
+				{
+				Type			Any
+				Description	"Default value to use for emissions."
+				}
+			}
+		Emitter
+			{
+			}
+		}
+
+	Nspc.Link
+		{
+		Description "Link/unlink subgraph locations."
+		Tags			( nSpace Link Unlink Subgraph )
+		Attribute
+			{
+			Source
+				{
+				Type			String
+				Description	"Default source subgraph namespace location."
+				}
+			Destination
+				{
+				Type			String
+				Description	"Default destination subgraph namespace location."
+				}
+			}
+		Receptor
+			{
+			Source
+				{
+				Type			String
+				Description	"Source subgraph namespace location."
+				}
+			Destination
+				{
+				Type			String
+				Description	"Destination subgraph namespace location."
+				}
+			Link
+				{
+				Type			Any
+				Description	"Link the source location to the destination location."
+				}
+			Unlink
+				{
+				Type			Any
+				Description	"Unlink the destination location."
+				}
+			}
+		Emitter
+			{
+			Link
+				{
+				Type			String
+				Description	"Destination location that was linked."
+				}
+			Unlink
+				{
+				Type			String
+				Description	"Destination location that was unlinked."
+				}
+			Error
+				{
+				Type			Integer
+				Description	"Error code when there is a problem with an operation."
+				}
+			}
+		}
+
+	Nspc.Receptors
+		{
+		Description "Receptor management."
+		Tags			( nSpace Receptor )
+		Receptor
+			{
+			Receive
+				{
+				Type			Receptor
+				Description	"Receive value into receptor."
+				}
+			Value
+				{
+				Type			Any
+				Description	"Default value to use for receptions."
+				}
+			}
+		Emitter
+			{
+			Error
+				{
+				Type			Integer
+				Description	"Error code when there is a problem with an operation."
+				}
+			}
+		}
+
+	Nspc.This
+		{
+		Description "Operations on the local namespace."
+		Tags			( nSpace Namespace )
+		Attribute
+			{
+			Location
+				{
+				Type			String
+				Description	"Default location of namespace operations."
+				}
+			Definition
+				{
+				Type			String
+				Description	"Default graph definition for namespace operations."
+				}
+			}
+		Receptor
+			{
+			Location
+				{
+				Type			String
+				Description	"Location of namespace operations."
+				}
+			Definition
+				{
+				Type			String
+				Description	"Graph definition for namespace operations."
+				}
+			Get
+				{
+				Type			String
+				Description	"Retrieve an object from the namespace at the location."
+				}
+			Fire
+				{
+				Type			String
+				Description	"Emit information about the local graph environment."
+				}
+			}
+		Emitter
+			{
+			Get
+				{
+				Type			String
+				Description	"Object retrieved from the namespace at the location."
+				}
+			Graph
+				{
+				Type			Object
+				Description	"Graph object containing the node."
+				}
+			NotFound
+				{
+				Type			String
+				Description	"Location that was not found within the namespace."
+				}
+			StreamSource
+				{
+				Type			Object
+				Description	"Default stream source for the namespace."
+				}
+			}
+		}
+
+	Nspc.Value
+		{
+		Description "A single nSpace value."
+		Tags			( nSpace Value )
+		Attribute
+			{
+			Value
+				{
+				Type			Any
+				Description	"Default value to use emission."
+				}
+			}
+		Receptor
+			{
+			Fire
+				{
+				Type			Any
+				Description	"Set and emit a new value for the node."
+				}
+			}
+		Emitter
+			{
+			Fire
+				{
+				Type			Any
+				Description	"Value for node."
+				}
+			}
+		}
+
+	Nspc.Values
+		{
+		Description "One or more nSpace values."
+		Tags			( nSpace Values )
+		Attribute
+			{
+			Dynamic
+				{
+				Type			Boolean
+				Description	"True to enable support for dynamic emitter values, default is false."
+				}
+			Values
+				{
+				Type			Dictionary
+				Description	"Value specification.  The keys represent the emitters and the values are the default values for the emitters."
+				}
+			}
+		Receptor
+			{
+			_Add
+				{
+				Type			String
+				Description	"Add an emitter with the provided name, only available for dynamic values."
+				}
+			_Remove
+				{
+				Type			String
+				Description	"Remove emitter with the provided name, only available for dynamic values."
+				}
+			}
+		Emitter
+			{
+			_Add
+				{
+				Type			Emitter
+				Description	"Emitter that was added."
+				}
+			_Remove
+				{
+				Type			Emitter
+				Description	"Emitter that was removed."
+				}
+			}
+		}
+
+	}	}
+	!	Initialize/OnFire							ValueNodes/Fire

@@ -28,6 +28,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "graph", "graph", "{23602D14
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "resource", "resource", "{CF8D6E2C-36DB-48C5-9F9D-B4CAFCB8E13E}"
+	ProjectSection(SolutionItems) = preProject
+		..\resource\nodes.nspc = ..\resource\nodes.nspc
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "record", "record", "{83A86A15-2F05-4EFB-B7C1-18592F7F3B06}"
 	ProjectSection(SolutionItems) = preProject
