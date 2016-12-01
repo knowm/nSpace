@@ -330,6 +330,8 @@ HRESULT DataBlock :: onAttach ( bool bAttach )
 		{
 		// Clean up
 		_RELEASE(pSrc);
+		_UNLOCK(plsBits,plsfBits);
+		_RELEASE(plsBits);
 		_RELEASE(pBlk);
 		}	// else
 
@@ -360,7 +362,7 @@ HRESULT DataBlock :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		CCLTRYE ( pBlk != NULL, ERROR_INVALID_STATE );
 		CCLTRYE ( pSrc != NULL, ERROR_INVALID_STATE );
 
-		// Add the specified row indexb
+		// Add the specified row
 		CCLTRY ( addRow ( pBlk, pSrc, iY ) );
 
 		// Result
@@ -371,67 +373,85 @@ HRESULT DataBlock :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	// Load single value
 	else if (_RCP(Load))
 		{
-		IMemoryMapped	*pBits	= NULL;
-		float				*pfBits	= NULL;
-		adtInt			iW,iH;
-		adtString		strFmt;
 		adtValue			vL;
 
 		// State check
 		CCLTRYE ( pBlk != NULL, ERROR_INVALID_STATE );
 
 		// Access data block
-		CCLTRY ( lock ( pBlk, iW, iH, strFmt, &pBits, (void **) &pfBits ) );
+		if (hr == S_OK && plsBits == NULL)
+			{
+			adtString	strFmt;
+
+			// Obtain info.
+			CCLTRY ( lock ( pBlk, ilsW, ilsH, strFmt, &plsBits, (void **) &plsfBits ) );
+
+			// For now only base format supported
+			CCLTRYE ( !WCASECMP(strFmt,L"F32x2"), ERROR_INVALID_STATE );
+			}	// if
+
+		// Valid lock ?
+		CCLTRYE ( plsfBits != NULL, E_UNEXPECTED );
 
 		// Valid range ?
-		CCLTRYE ( iX >= 0 && iX < iW, E_INVALIDARG );
-		CCLTRYE ( iY >= 0 && iY < iH, E_INVALIDARG );
+		CCLTRYE ( iX >= 0 && iX < ilsW, E_INVALIDARG );
+		CCLTRYE ( iY >= 0 && iY < ilsH, E_INVALIDARG );
 
 		// Access value
-		CCLTRY ( adtValue::copy ( adtFloat(pfBits[iY*iW+iX]), vL ) );
-
-		// Clean up
-		_UNLOCK(pBits,pfBits);
-		_RELEASE(pBits);
+		CCLTRY ( adtValue::copy ( adtFloat(plsfBits[iY*ilsW+iX]), vL ) );
 
 		// Result
 		if (hr == S_OK)
 			_EMT(Load,vL);
 		else
 			_EMT(Error,adtInt(hr));
+
+		// Debug
+		if (hr != S_OK)
+			lprintf ( LOG_WARN, L"%s: Unable to load value from %d,%d\r\n", 
+							(LPCWSTR)strnName, (S32)iX, (S32)iY );
 		}	// if
 
 	// Store single value
 	else if (_RCP(Store))
 		{
-		IMemoryMapped	*pBits	= NULL;
-		float				*pfBits	= NULL;
-		adtInt			iW,iH;
-		adtString		strFmt;
 		adtValue			vL;
 
 		// State check
 		CCLTRYE ( pBlk != NULL, ERROR_INVALID_STATE );
 
 		// Access data block
-		CCLTRY ( lock ( pBlk, iW, iH, strFmt, &pBits, (void **) &pfBits ) );
+		if (hr == S_OK && plsBits == NULL)
+			{
+			adtString	strFmt;
+
+			// Obtain info.
+			CCLTRY ( lock ( pBlk, ilsW, ilsH, strFmt, &plsBits, (void **) &plsfBits ) );
+
+			// For now only base format supported
+			CCLTRYE ( !WCASECMP(strFmt,L"F32x2"), ERROR_INVALID_STATE );
+			}	// if
+
+		// Valid lock ?
+		CCLTRYE ( plsfBits != NULL, E_UNEXPECTED );
 
 		// Valid range ?
-		CCLTRYE ( iX >= 0 && iX < iW, E_INVALIDARG );
-		CCLTRYE ( iY >= 0 && iY < iH, E_INVALIDARG );
+		CCLTRYE ( iX >= 0 && iX < ilsW, E_INVALIDARG );
+		CCLTRYE ( iY >= 0 && iY < ilsH, E_INVALIDARG );
 
 		// Store
-		CCLOK ( pfBits[iY*iW+iX] = adtFloat(vValue); )
-
-		// Clean up
-		_UNLOCK(pBits,pfBits);
-		_RELEASE(pBits);
+		CCLOK ( plsfBits[iY*ilsW+iX] = adtFloat(vValue); )
 
 		// Result
 		if (hr == S_OK)
 			_EMT(Store,vL);
 		else
 			_EMT(Error,adtInt(hr));
+
+		// Debug
+		if (hr != S_OK)
+			lprintf ( LOG_WARN, L"%s: Unable to store value to %d,%d\r\n", 
+							(LPCWSTR)strnName, (S32)iX, (S32)iY );
 		}	// if
 
 	// Reset state
@@ -450,6 +470,8 @@ HRESULT DataBlock :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		{
 		adtIUnknown unkV(v);
 		_RELEASE(pBlk);
+		_UNLOCK(plsBits,plsfBits);
+		_RELEASE(plsBits);
 		_QISAFE(unkV,IID_IDictionary,&pBlk);
 		}	// else if
 	else if (_RCP(Source))

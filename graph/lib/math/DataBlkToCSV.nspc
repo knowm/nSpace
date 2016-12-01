@@ -38,7 +38,7 @@
 
 	% MATHN: Column (row in CSV) counter
 	$	ColCnt Math.Counter { Reset 0:int }
-		!	ColCnt/OnFire							Debug/Fire
+%		!	ColCnt/OnFire							Debug/Fire
 
 	% MISCN: More columns ?
 	$	ColMore Misc.Compare { Left 0:int }
@@ -47,7 +47,7 @@
 	% MATHN: Row (column in CSV) counter
 	$	RowCnt Math.Counter { Reset 0:int }
 		!	ColMore/OnGreater						RowCnt/Reset
-		!	RowCnt/OnFire							Debug/Fire
+%		!	RowCnt/OnFire							Debug/Fire
 
 	% MISCN: More rows ?
 	$	RowMore Misc.Compare { Left 0:int }
@@ -67,14 +67,14 @@
 	% MISCN: Convert to string representation
 	$	ValToStr Misc.Type { Type String }
 		!	LoadValue/OnLoad						ValToStr/Convert
-		!	ValToStr/OnFire						Debug/Fire
+%		!	ValToStr/OnFire						Debug/Fire
 		!	ValToStr/OnFire						StrToStm/String
 		!	ValToStr/OnFire						StrToStm/To
 
 	% MISCN: Comma after values
 	$	ValueComma Misc.Dist { Value " , " }
 		!	ValToStr/OnFire						ValueComma/Fire
-		!	ValueComma/OnFire						Debug/Fire
+%		!	ValueComma/OnFire						Debug/Fire
 		!	ValueComma/OnFire						StrToStm/String
 		!	ValueComma/OnFire						StrToStm/To
 
@@ -84,8 +84,7 @@
 	% MISCN: Carriage return after row
 	$	ValueCRLF Misc.Dist { Value "\r\n" }
 		!	RowMore/OnEqual						ValueCRLF/Fire
-		!	ValueCRLF/OnFire						Debug/Fire
-		!	ValueCRLF/OnFire						Debug/Fire
+%		!	ValueCRLF/OnFire						Debug/Fire
 		!	ValueCRLF/OnFire						StrToStm/String
 		!	ValueCRLF/OnFire						StrToStm/To
 

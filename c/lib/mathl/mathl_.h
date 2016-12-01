@@ -155,6 +155,11 @@ class DataBlock :
 	adtInt			iX,iY;								// X,Y coordinates
 	adtValue			vValue;								// Value
 
+	// Load/store locked state.
+	IMemoryMapped	*plsBits;							// Load/store memory object
+	float				*plsfBits;							// Load/store pointer
+	adtInt			ilsW,ilsH;							// Load/store size
+
 	// Utilities
 	static 
 	HRESULT lock ( IUnknown *, adtInt &, adtInt &, adtString &, IMemoryMapped **, void ** );
