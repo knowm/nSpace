@@ -75,6 +75,8 @@ HRESULT Compare :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 //		dbgprintf ( L"Hi\r\n" );
 //		if (!WCASECMP(strnName,L"IsRecepE"))
 //			dbgprintf ( L"Hi\r\n" );
+//		if (hr == S_OK && adtValue::type(*pvRight) == VTYPE_DATE)
+//			dbgprintf ( L"Hi\r\n" );
 
 		// Compare values
 		CCLOK ( res = adtValue::compare ( vLeft, *pvRight ); )

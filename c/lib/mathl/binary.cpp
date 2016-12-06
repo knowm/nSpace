@@ -99,7 +99,7 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			_EMT(Fire,vRes);
 		else
 			{
-			dbgprintf ( L"%s:Fire:Error:hr 0x%x:%d\r\n", (LPCWSTR)strnName, hr, iOp );
+			lprintf ( LOG_ERR, L"%s:Fire:Error:hr 0x%x:%d\r\n", (LPCWSTR)strnName, hr, iOp );
 			_EMT(Error,adtInt(hr) );
 			}	// else
 		}	// if

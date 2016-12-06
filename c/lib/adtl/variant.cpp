@@ -52,7 +52,14 @@ HRESULT adtVariant :: clear ( void )
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	return VariantClear(this);
+
+	// Free up resources
+	VariantClear(this);
+
+	// Initialize fields
+	VariantInit(this);
+
+	return S_OK;
 	}	// clear
 
 HRESULT adtVariant :: toValue ( ADTVALUE &v )
@@ -218,7 +225,7 @@ adtVariant :: adtVariant ( const ADTVALUE &val )
 
 adtVariant& adtVariant::operator= ( const WCHAR *val )
 	{
-	VariantClear(this);
+	clear();
 	vt			= VT_BSTR;
 	bstrVal	= SysAllocString(val);
 	return *this;
@@ -233,7 +240,8 @@ adtVariant& adtVariant::operator= ( const VARIANT *pv )
 
 adtVariant& adtVariant::operator= ( const ADTVALUE &v )
 	{
-	VariantClear(this);
+	// Current contents are now invalid
+	clear();
 
 	// Map internal types to variant types
 	switch (v.vtype)
