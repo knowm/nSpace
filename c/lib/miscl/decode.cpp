@@ -163,6 +163,8 @@ HRESULT Decode :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			if (hr == S_OK)	pR->receive ( this, prl, adtValue::empty(Value) ? v : (adtValue &) Value );
 			else					_EMT(Default,adtValue::empty(Value) ? v : (adtValue &) Value );
 
+			// Clean up
+			_RELEASE(pR);
 			}	// if
 		}	// if
 

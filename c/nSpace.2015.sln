@@ -39,6 +39,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "record", "record", "{83A86A
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{8A6113B8-46B6-46BC-9F17-0EDC02FF5EA6}"
 	ProjectSection(SolutionItems) = preProject
+		..\graph\lib\debounce.nspc = ..\graph\lib\debounce.nspc
 		..\graph\lib\ordered_list.nspc = ..\graph\lib\ordered_list.nspc
 		..\graph\lib\sync_value_q.nspc = ..\graph\lib\sync_value_q.nspc
 		..\graph\lib\sync_value_qa.nspc = ..\graph\lib\sync_value_qa.nspc

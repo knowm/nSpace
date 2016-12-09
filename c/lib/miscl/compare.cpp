@@ -73,7 +73,7 @@ HRESULT Compare :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 //		if (	hr == S_OK && vLeft.vtype == VTYPE_STR && vLeft.pstr != NULL &&
 //			!WCASECMP(vLeft.pstr, L"State/Graph/Instance" ))
 //		dbgprintf ( L"Hi\r\n" );
-//		if (!WCASECMP(strnName,L"IsRecepE"))
+//		if (!WCASECMP(strnName,L"IsIdleCenter"))
 //			dbgprintf ( L"Hi\r\n" );
 //		if (hr == S_OK && adtValue::type(*pvRight) == VTYPE_DATE)
 //			dbgprintf ( L"Hi\r\n" );

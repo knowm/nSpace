@@ -843,10 +843,11 @@ class Value :
 	Value ( void );										// Constructor
 
 	// Run-time datas
-	adtValue		vE,vL;									// Internal
+	adtValue		vE,vD,vL;								// Internal
 	adtString	strT,strV;								// Internal
 	adtString	strType;									// Value type
 	IDictionary	*pDsc;									// Active descriptor
+	bool			bDiff;									// Difference value ?
 
 	// Utilities
 	HRESULT validate ( IDictionary *, const ADTVALUE &, ADTVALUE & );

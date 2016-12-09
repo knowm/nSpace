@@ -14,6 +14,7 @@ static adtString	strRefType		( L"Type" );
 static adtString	strRefMin		( L"Minimum" );
 static adtString	strRefMax		( L"Maximum" );
 static adtString	strRefAllowed	( L"Allowed" );
+static adtString	strRefDiff		( L"Diff" );
 
 Value :: Value ( void )
 	{
@@ -23,7 +24,8 @@ Value :: Value ( void )
 	//		-	Constructor for the node
 	//
 	////////////////////////////////////////////////////////////////////////
-	pDsc = NULL;
+	pDsc	= NULL;
+	bDiff	= false;
 	}	// Value
 
 HRESULT Value :: onAttach ( bool bAttach )
@@ -52,6 +54,8 @@ HRESULT Value :: onAttach ( bool bAttach )
 			receive ( prFire, L"Value", vL );
 		if (	pnDesc->load ( strRefType, vL )	== S_OK )
 			adtValue::toString ( vL, strType );
+		if (	pnDesc->load ( strRefDiff, vL )	== S_OK )
+			bDiff = adtBool(vL);
 
 		// The descriptor is emitted for this value so the outside world
 		// can monitor value attributes (minimum,maximum,type,etc).
@@ -90,14 +94,26 @@ HRESULT Value :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	// Value
 	if (_RCP(Fire))
 		{
+		// Difference value ?
+		if (bDiff)
+			adtValue::copy ( vE, vD );
+
 		// Validate
 		if (strType[0] != '\0')
 			validate ( pDsc, v, vE );
 		else
 			adtValue::copy ( v, vE );
 
+		// Debug
+//		if (bDiff && adtValue::compare ( vD, vE ) == 0)
+//			dbgprintf ( L"Hi\r\n" );
+
 		// Updated value
-		_EMT(Fire,vE);
+		if (!bDiff || adtValue::compare ( vD, vE ) != 0)
+			{
+			_EMT(Fire,vE);
+			}	// if
+
 		}	// if
 
 	// Descriptor
@@ -117,6 +133,10 @@ HRESULT Value :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				adtValue::toString ( vL, strType );
 			else
 				strType = L"";
+			if (pDsc->load ( strRefDiff, vL ) == S_OK)
+				bDiff = adtBool(vL);
+			else
+				bDiff = false;
 			}	// if
 
 		// Forward through emitter

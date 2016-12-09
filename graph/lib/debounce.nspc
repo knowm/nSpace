@@ -1,0 +1,96 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%										DEBOUNCE.NSPC
+%
+%		Provides a timed 'debouncing' of a value.  This allows a value to be
+%		fed into this graph and only values that are the same for a specified
+%		amount of time will be emitted.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+	$	DeltaT			Misc.Dist {}			% Debounce time (number of days TODO: Fix relative date specifications)
+	$	Value				Misc.Dist {}			% Latest value
+
+	% Actions
+	$	Initialize		Misc.Dist {}			% Initialize graph
+	$	Reset				Misc.Dist {}			% Reset logic to provided value
+
+	% Notifications
+	$	OnValue			Misc.Dist {}			% A stable value has been produced
+
+	%%%%%%%%%%%
+	% Debounce
+	%%%%%%%%%%%
+
+	% MISCN: Is incoming value different than current value
+	$	DiffVal Misc.Compare { Left 0:int }
+		!	OnValue/OnFire							DiffVal/Left
+		!	Value/OnFire							DiffVal/Fire
+
+	% MISCN: True if first difference
+	$	DiffFirst Misc.Toggle {}
+		!	DiffVal/OnNotEqual					DiffFirst/Fire
+
+	% A new value means the next difference is the first
+	!	OnValue/OnFire								DiffFirst/True
+
+	% If the value goes back to the original, timing will have to restart
+	!	DiffVal/OnEqual							DiffFirst/True
+
+	%% First time there is a difference, start timing
+	%% New values 'drive' the checking of time, no values = no differences.
+
+	% MISCN: Then/now timestamps
+	$	Then	Misc.TimeOp {}
+	$	Now	Misc.TimeOp {}
+
+	% MISCN: Possible new value
+	$	ValueNew Misc.Dist {}
+		!	DiffFirst/OnTrue						ValueNew/Value
+		!	ValueNew/OnFire						OnValue/Fire
+
+	% Grab timestamp of when value changed
+	!	DiffFirst/OnTrue							Then/Now
+
+	% Next value is not first
+	!	DiffFirst/OnTrue							DiffFirst/False
+
+	%% Difference still present.
+
+	% MISCN: Is the new difference different than previous differences
+	$	DiffDiffVal Misc.Compare { Left 0:int }
+		!	DiffFirst/OnTrue						DiffDiffVal/Left
+		!	DiffFirst/OnFalse						DiffDiffVal/Fire
+
+	% If value is yet different again, treat as first time
+	!	DiffDiffVal/OnNotEqual					DiffFirst/True
+	!	DiffDiffVal/OnNotEqual					DiffFirst/Fire
+
+	% Grab now
+	!	DiffDiffVal/OnEqual						Now/Now
+
+	% MISCN: Amount of time
+	$	DiffDt Math.Binary { Op Sub }
+		!	Then/OnNow								DiffDt/Right
+		!	Now/OnNow								DiffDt/Left
+		!	Now/OnNow								DiffDt/Fire
+
+	% MISCN: Long enough ? 
+	$	DiffMore Misc.Compare { Left 0:double }
+		!	DeltaT/OnFire							DiffMore/Left
+		!	DiffDt/OnFire							DiffMore/Fire
+
+	% Value has been the same for long enough, use it
+	!	DiffMore/OnLess							ValueNew/Fire
+
+	%%%%%%%%
+	% Reset
+	%%%%%%%%
+
+	% Reset with new value as the 'real' value
+	!	Reset/OnFire								ValueNew/Value
+	!	Reset/OnFire								ValueNew/Fire
+
