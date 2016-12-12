@@ -376,7 +376,6 @@ HRESULT Debug :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		dbgprintf ( L"MiscDebug::receive:Break @ %s\r\n", (LPCWSTR)strnName );
 		}	// else if
 
-
 	// Timing
 	else if (_RCP(Reset))
 		{
