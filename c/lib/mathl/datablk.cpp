@@ -362,6 +362,10 @@ HRESULT DataBlock :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		CCLTRYE ( pBlk != NULL, ERROR_INVALID_STATE );
 		CCLTRYE ( pSrc != NULL, ERROR_INVALID_STATE );
 
+		// Debug
+//		if (!WCASECMP(strnName,L"RasterBlk"))
+//			dbgprintf ( L"Hi\r\n" );
+
 		// Add the specified row
 		CCLTRY ( addRow ( pBlk, pSrc, iY ) );
 
