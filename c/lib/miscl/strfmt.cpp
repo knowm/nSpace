@@ -256,7 +256,7 @@ HRESULT StringFormat :: formatString ( IUnknown *pSpecs,
 							CCLTRY ( pDict->load ( adtString(L"Encode"), sEncode ); )
 
 							// Base64ish ?
-							if (hr == S_OK && !wcsncmp ( sEncode, L"Base64", 6 ))
+							if (hr == S_OK && !WCASENCMP ( sEncode, L"Base64", 6 ))
 								{
 								char	*res     = NULL;
 								U64	sz			= 0;
@@ -315,7 +315,7 @@ HRESULT StringFormat :: formatString ( IUnknown *pSpecs,
 								}	// if
 
 							// Hex ?
-							else if (hr == S_OK && !wcsncmp ( sEncode, L"HEX", 3 ))
+							else if (hr == S_OK && !WCASENCMP ( sEncode, L"HEX", 3 ))
 								{
 								adtString	sRes;
 								U64			sz;

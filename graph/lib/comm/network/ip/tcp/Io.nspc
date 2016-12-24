@@ -1,0 +1,158 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								IO.NSPC
+%
+%					Server/Clients TCP/IP behaviour.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+	$	Socket				Misc.Dist {}		% Socket
+	$	Stream				Misc.Dist {}		% Stream
+
+	% Actions
+	$	Initialize			Misc.Dist {}		% Initialize
+	$	Uninitialize		Misc.Dist {}		% Uninitialize
+	$	Close					Misc.Dist {}		% Socket closing
+	$	Open					Misc.Dist {}		% Open estbalished socket connection
+	$	Transmit				Misc.Dist {}		% Transmit stream
+	$	Read					Misc.Dist {}		% Read from 'ready' socket
+
+	% Notifications
+	$	OnOpen				Misc.Dist {}		% Connection open
+	$	OnStream				Misc.Dist {}		% Stream read
+	$	OnClose				Misc.Dist {}		% Socket needs to be closed
+
+	% DEBUG
+	$	Debug Misc.Debug {}
+%		!	Socket/OnFire							Debug/Fire
+		!	Open/OnFire								Debug/Fire
+		!	OnOpen/OnFire							Debug/Fire
+		!	OnClose/OnFire							Debug/Fire
+
+	%%%%%%%
+	% Open
+	%%%%%%%
+
+	%% If socket is flagged to be secure, attach to SSL.
+
+	% MISCN: Demux secure flag
+	$	DemuxSecureOp Misc.Demux { Key Secure Values ( true ) }
+		!	Socket/OnFire							DemuxSecureOp/Dictionary
+		!	Open/OnFire								DemuxSecureOp/Fire
+
+	% OPENSSL: Attach socket to SSL
+	$	Attach OpenSSL.SSLConnect {}
+		!	Socket/OnFire							Attach/Descriptor
+		!	DemuxSecureOp/Ontrue					Attach/Attach
+
+	% MISCN: Possible close on error
+	$	ValueCloseRx Misc.Dist {}
+		!	Socket/OnFire							ValueCloseRx/Value
+		!	ValueCloseRx/OnFire					OnClose/Fire
+
+	% When secure connection has been negotiated
+	!	Attach/OnAttach							OnOpen/Fire
+	!	Attach/OnError								ValueCloseRx/Fire
+
+	% Nothing more to do for unsecure connections
+	!	DemuxSecureOp/OnDefault					OnOpen/Fire
+
+	%%%%%%%%
+	% Close
+	%%%%%%%%
+
+	%% Close socket I/O
+
+	% MISCN: Demux secure flag
+	$	DemuxSecureCl Misc.Demux { Key Secure Values ( true ) }
+		!	Socket/OnFire							DemuxSecureCl/Dictionary
+		!	Close/OnFire							DemuxSecureCl/Fire
+
+	% Detach socket from SSL
+	!	DemuxSecureCl/Ontrue						Attach/Detach
+
+	% Nothing more to do for unsecure connections
+
+	%%%%%%%%%%%
+	% Transmit
+	%%%%%%%%%%%
+
+	% MISCN: Length of stream
+	$	StmLenTx Io.StreamOp { Offset 0:int Origin Current }
+		!	Stream/OnFire							StmLenTx/Stream
+		!	Transmit/OnFire						StmLenTx/Available
+
+	% MISCN: Demux secure flag
+	$	DemuxSecureTx Misc.Demux { Key Secure Values ( true ) }
+		!	Socket/OnFire							DemuxSecureTx/Dictionary
+		!	Transmit/OnFire						DemuxSecureTx/Fire
+
+	% NETN: Unsecure transmit
+	$	NetTx Net.Send {}
+		!	Socket/OnFire							NetTx/Socket
+		!	Stream/OnFire							NetTx/Stream
+		!	StmLenTx/OnAvailable					NetTx/Size
+		!	DemuxSecureTx/OnDefault				NetTx/Fire
+		!	NetTx/OnFire							Debug/Fire
+		!	NetTx/OnError							Debug/Fire
+
+	% OPENSSL: Secure transmit
+	$	SslTx OpenSSL.SSLConnect {}
+		!	Socket/OnFire							SslTx/Descriptor
+		!	Stream/OnFire							SslTx/Stream
+		!	StmLenTx/OnAvailable					SslTx/Size
+		!	DemuxSecureTx/Ontrue					SslTx/Write
+		!	SslTx/OnWrite							Debug/Fire
+		!	SslTx/OnError							Debug/Fire
+
+	%%%%%%%
+	% Read
+	%%%%%%%
+
+	% MISCN: Create stream to receive data
+	$	CreateStmRx Misc.Create { Id IO.StmMemory }
+		!	Read/OnFire								CreateStmRx/Fire
+
+	% MISCN: Demux secure flag
+	$	DemuxSecureRx Misc.Demux { Key Secure Values ( true ) }
+		!	Socket/OnFire							DemuxSecureRx/Dictionary
+		!	Read/OnFire								DemuxSecureRx/Fire
+
+	%% The secure read used the same node 
+
+	% OPENSSL: Secure read
+	$	SslRx OpenSSL.SSLConnect {}
+		!	Socket/OnFire							SslRx/Descriptor
+		!	CreateStmRx/OnFire					SslRx/Stream
+		!	DemuxSecureRx/Ontrue					SslRx/Read
+
+	% When secure connection has been negotiated
+	!	SslRx/OnAttach								OnOpen/Fire
+
+	% Close on error
+	!	SslRx/OnError								ValueCloseRx/Fire
+
+	%% Unsecure read
+
+	% NETN: Receive data
+	$	NetRx Net.Recv {}
+		!	CreateStmRx/OnFire					NetRx/Stream
+		!	Socket/OnFire							NetRx/Socket
+		!	DemuxSecureRx/OnDefault				NetRx/Fire
+
+	% Close on error
+	!	NetRx/OnError								ValueCloseRx/Fire
+
+	%% Result
+
+	% MISCN: Reset stream position
+	$	StmPosRx Io.StreamOp { Offset 0:int Origin Set }
+		!	SslRx/OnRead							StmPosRx/Seek
+		!	NetRx/OnFire							StmPosRx/Seek
+
+	% Notify
+	!	SslRx/OnRead								OnStream/Fire
+	!	NetRx/OnFire								OnStream/Fire

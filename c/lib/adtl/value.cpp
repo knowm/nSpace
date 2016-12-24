@@ -576,8 +576,8 @@ HRESULT adtValue :: toString ( const ADTVALUE &v, adtString &s )
 		case VTYPE_R8 :
 			{
 			WCHAR	wNumStr[51];
-//			swprintf ( SWPF(wNumStr,50), L"%.15g", v.vdbl );
-			swprintf ( SWPF(wNumStr,50), L"%g", v.vdbl );
+			swprintf ( SWPF(wNumStr,50), L"%.15g", v.vdbl );
+//			swprintf ( SWPF(wNumStr,50), L"%g", v.vdbl );
 			s = wNumStr;
 			s.at();
 			}	// VTYPE_R8

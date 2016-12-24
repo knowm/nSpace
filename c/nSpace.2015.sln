@@ -67,6 +67,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ip", "ip", "{136D525D-DB06-
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tcp", "tcp", "{16608C67-3E3E-4356-8AEB-C53D8B447DF2}"
 	ProjectSection(SolutionItems) = preProject
+		..\graph\lib\comm\network\ip\tcp\Io.nspc = ..\graph\lib\comm\network\ip\tcp\Io.nspc
 		..\graph\lib\comm\network\ip\tcp\ServerClients.nspc = ..\graph\lib\comm\network\ip\tcp\ServerClients.nspc
 	EndProjectSection
 EndProject
@@ -278,6 +279,16 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "medial", "lib\medial\medial.2015.vcxproj", "{60150E63-28B4-43B6-93DF-EA59274DEB03}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "median", "dll\median\median.2015.vcxproj", "{D7685757-4194-4A7F-9BD6-670785196277}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ws", "ws", "{F46BDA5D-9985-43B3-A043-544498CB2BC6}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\lib\comm\network\ip\tcp\http\ws\format.nspc = ..\graph\lib\comm\network\ip\tcp\http\ws\format.nspc
+		..\graph\lib\comm\network\ip\tcp\http\ws\server.nspc = ..\graph\lib\comm\network\ip\tcp\http\ws\server.nspc
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "openssll", "lib\openssll\openssll.2015.vcxproj", "{1173DBF7-1ADA-4FA9-9068-07D6B1DBE1A6}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "openssln", "dll\openssln\openssln.2015.vcxproj", "{5BBC9B52-7B61-493E-A321-E2BA9AFC2E88}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -559,6 +570,22 @@ Global
 		{D7685757-4194-4A7F-9BD6-670785196277}.Release|Win32.Build.0 = Release|Win32
 		{D7685757-4194-4A7F-9BD6-670785196277}.Release|x64.ActiveCfg = Release|x64
 		{D7685757-4194-4A7F-9BD6-670785196277}.Release|x64.Build.0 = Release|x64
+		{1173DBF7-1ADA-4FA9-9068-07D6B1DBE1A6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1173DBF7-1ADA-4FA9-9068-07D6B1DBE1A6}.Debug|Win32.Build.0 = Debug|Win32
+		{1173DBF7-1ADA-4FA9-9068-07D6B1DBE1A6}.Debug|x64.ActiveCfg = Debug|x64
+		{1173DBF7-1ADA-4FA9-9068-07D6B1DBE1A6}.Debug|x64.Build.0 = Debug|x64
+		{1173DBF7-1ADA-4FA9-9068-07D6B1DBE1A6}.Release|Win32.ActiveCfg = Release|Win32
+		{1173DBF7-1ADA-4FA9-9068-07D6B1DBE1A6}.Release|Win32.Build.0 = Release|Win32
+		{1173DBF7-1ADA-4FA9-9068-07D6B1DBE1A6}.Release|x64.ActiveCfg = Release|x64
+		{1173DBF7-1ADA-4FA9-9068-07D6B1DBE1A6}.Release|x64.Build.0 = Release|x64
+		{5BBC9B52-7B61-493E-A321-E2BA9AFC2E88}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5BBC9B52-7B61-493E-A321-E2BA9AFC2E88}.Debug|Win32.Build.0 = Debug|Win32
+		{5BBC9B52-7B61-493E-A321-E2BA9AFC2E88}.Debug|x64.ActiveCfg = Debug|x64
+		{5BBC9B52-7B61-493E-A321-E2BA9AFC2E88}.Debug|x64.Build.0 = Debug|x64
+		{5BBC9B52-7B61-493E-A321-E2BA9AFC2E88}.Release|Win32.ActiveCfg = Release|Win32
+		{5BBC9B52-7B61-493E-A321-E2BA9AFC2E88}.Release|Win32.Build.0 = Release|Win32
+		{5BBC9B52-7B61-493E-A321-E2BA9AFC2E88}.Release|x64.ActiveCfg = Release|x64
+		{5BBC9B52-7B61-493E-A321-E2BA9AFC2E88}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -636,5 +663,8 @@ Global
 		{33E69B39-F59B-475B-B97F-53533375B8DB} = {8A6113B8-46B6-46BC-9F17-0EDC02FF5EA6}
 		{60150E63-28B4-43B6-93DF-EA59274DEB03} = {4560AF12-FA84-49FA-94E4-19CB5A898DF0}
 		{D7685757-4194-4A7F-9BD6-670785196277} = {060BE89F-4362-4D47-8ED0-67F456629B3C}
+		{F46BDA5D-9985-43B3-A043-544498CB2BC6} = {6F1AD522-CE38-40A5-84F1-E6CFE9923420}
+		{1173DBF7-1ADA-4FA9-9068-07D6B1DBE1A6} = {4560AF12-FA84-49FA-94E4-19CB5A898DF0}
+		{5BBC9B52-7B61-493E-A321-E2BA9AFC2E88} = {060BE89F-4362-4D47-8ED0-67F456629B3C}
 	EndGlobalSection
 EndGlobal

@@ -54,10 +54,97 @@
 	% Web sockets
 	%%%%%%%%%%%%%%
 
+	% MISCN: Listening port
+	$	ValuePort Misc.Dist { Value 8443:int }
+		!	Initialize/OnFire						ValuePort/Fire
+
+	% Subgraph: Web socket server
+	#	Server										Lib/Comm/Network/Ip/Tcp/Http/Ws/Server/ {}
+		!	ValuePort/OnFire						Server/PortSrvr/Fire
+
+	% NETN: Read data
+%	$	NetRx Net.Recv {}
+%		!	Server/OnRead/OnFire					NetRx/Socket
+%		!	NetRx/OnFire							Debug/Fire
+%		!	NetRx/OnError							Debug/Fire
+
+	% On read error, close socket
+%	!	NetRx/OnError								Server/Close/Fire
+
+	% MISCN: Create stream to receive data
+%	$	CreateStmRx Misc.Create { Id IO.StmMemory }
+
+	% Trigger read
+%	!	CreateStmRx/OnFire						NetRx/Stream
+%	!	CreateStmRx/OnFire						NetRx/Fire
+
+	% MISCN: Get length of stream
+%	$	StmLenRx Io.StreamOp { Offset 0:int Origin Current }
+%		!	NetRx/OnFire							StmLenRx/Seek
+%		!	StmLenRx/OnPosition					Debug/Fire
+
+	% MISCN: Reset stream position
+%	$	StmPosRx Io.StreamOp { Offset 0:int Origin Set }
+%		!	NetRx/OnFire							StmPosRx/Seek
+
+	% Latent connections
+%	!	Server/OnRead/OnFire						CreateStmRx/Fire
+
+	% MISCN: Create parser for XML
+%	$	CreatePrsrXml Misc.Create { Id IO.StmPrsXML }
+%		!	Initialize/OnFire						CreatePrsrXml/Fire
+
 	% NETN: Web socket server
-	$	Server Net.WebSktSrvr { Port 8443:int }
-		!	Initialize/OnFire						Server/Start
-		!	Uninitialize/OnFire					Server/Stop
+%	$	Server Net.WebSktSrvr { Port 8443:int }
+%		!	Initialize/OnFire						Server/Start
+%		!	Uninitialize/OnFire					Server/Stop
+%		!	Server/OnOpen							Debug/Fire
+%		!	Server/OnClose							Debug/Fire
+%		!	Server/OnMessage						Debug/Fire
+
+	% MISCN: Convert received message to 
+
+	% MISCN: Persist value from stream
+%	$	ValToStm IO.Persist {}
+%		!	CreatePrsrXml/OnFire					ValToStm/Parser
+%		!	Server/OnMessage						ValToStm/Stream
+%		!	Server/OnMessage						ValToStm/Load
+%		!	ValToStm/OnLoad						Debug/Fire
+
+	%% Responses
+
+	% MISCN: Create byte stream to receive data
+%	$	CreateStm Misc.Create { Id Io.StmMemory }
+%		!	Initialize/OnFire						CreateStm/Fire
+
+	% ION: Reset size/position of outgoing stream
+%	$	StmPos Io.StreamOp { Origin Set Offset 0:int }
+%		!	CreateStm/OnFire						StmPos/Stream
+
+	% Echo
+%	!	Server/OnSocket							Server/Socket
+
+	% MISCN: Response value
+%	$	ValueResp Misc.Dist { Value ( You Can Byte Me Now 3.14159265358979323:double ) }
+
+	% MISCN: Persist value to stream
+%	$	ValToStm IO.Persist {}
+%		!	CreatePrsrXml/OnFire					ValToStm/Parser
+%		!	CreateStm/OnFire						ValToStm/Stream
+%		!	ValueResp/OnFire						ValToStm/Value
+%		!	ValueResp/OnFire						ValToStm/Save
+%		!	ValToStm/OnSave						Debug/Fire
+
+	% Persist response to stream
+%	!	ValToStm/OnLoad							ValueResp/Fire
+
+	% Reset position, send response, and reset size for next time
+%	!	ValToStm/OnSave							StmPos/Seek
+%	!	ValToStm/OnSave							Server/Message
+%	!	ValToStm/OnSave							StmPos/Size
+
+	% MISCN: Respond
+%	$	Value
 
 	% MISCN: Listening port
 %	$	ValuePort Misc.Dist { Value 8443:int }

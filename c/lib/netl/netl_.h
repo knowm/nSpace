@@ -54,21 +54,6 @@ typedef	int							SOCKET;
 #define	SIZE_FRAME_ETHERNET		1514				// Ethernet frame size
 #define	SIZE_PERSIST_CACHE		8192
 
-
-// Websockets TODO: Ifdef this/property page
-//#define	USE_WEBSKTPP
-#ifdef	USE_WEBSKTPP
-//#define	ASIO_STANDALONE
-#include	<websocketpp/config/asio_no_tls.hpp>
-#include <websocketpp/server.hpp>
-#include <set>
-#endif
-
-#ifdef	SDK_TST
-#error	byteme
-#endif
-
-
 //
 // Class - Address.  Network address node.
 //
@@ -573,7 +558,7 @@ class SocketOp :
 // Class - WebSktSrvr.  Web socket server.
 //
 #ifdef	USE_WEBSKTPP
-typedef websocketpp::server<websocketpp::config::asio> server_t;
+typedef websocketpp::server<websocketpp::config::asio>													server_t;
 typedef std::set<websocketpp::connection_hdl,std::owner_less<websocketpp::connection_hdl>>	con_list;
 
 class WebSktSrvr :
@@ -585,10 +570,11 @@ class WebSktSrvr :
 	WebSktSrvr ( void );									// Constructor
 
 	// Run-time data
-	server_t	server;										// Server object
-	con_list	m_connections;								// Connection  list	
-	IThread	*pThrd;										// Worker thread
-	adtInt	iPort;										// Server port
+	server_t		server;									// Server object
+	con_list		m_connections;							// Connection  list	
+	IThread		*pThrd;									// Worker thread
+	adtInt		iPort;									// Server port
+	adtLong		lId;										// Active Id
 
 	// Callbacks
 	void on_close		( websocketpp::connection_hdl );
@@ -609,9 +595,17 @@ class WebSktSrvr :
 	virtual void		destruct	( void );			// Destruct object
 
 	// Connections
+	DECLARE_EMT(Close)
+	DECLARE_CON(Id)
+	DECLARE_CON(Message)
+	DECLARE_EMT(Open)
 	DECLARE_RCP(Start)
 	DECLARE_RCP(Stop)
 	BEGIN_BEHAVIOUR()
+		DEFINE_EMT(Close)
+		DEFINE_CON(Id)
+		DEFINE_CON(Message)
+		DEFINE_EMT(Open)
 		DEFINE_RCP(Start)
 		DEFINE_RCP(Stop)
 	END_BEHAVIOUR_NOTIFY()

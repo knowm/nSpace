@@ -102,6 +102,10 @@
 				"MM-total-records"		(	{ Constant ":" } { Skip " " } { Name TotalRecords Type Integer } )
 				"MM-returned-records"	(	{ Constant ":" } { Skip " " } { Name ReturnedRecords Type Integer } )
 
+				% Websockets
+				Upgrade						( { Constant ":" } { Skip " " } { Name Upgrade } )
+				Sec-WebSocket-Version	( { Constant ":" } { Skip " " } { Name WebSocketVersion } )
+				Sec-WebSocket-Key			( { Constant ":" } { Skip " " } { Name WebSocketKey } )
 				}	% Subformat
 			}	% Header
 

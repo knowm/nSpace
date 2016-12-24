@@ -1,0 +1,44 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%							FORMAT.NSPC
+%
+%		Format specifications for various WebSocket entities.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Actions
+	$	Initialize			Misc.Dist {}			% Initialize
+
+	% MISCN: Input header format for frame
+	$	ValueFrmIn Misc.Dist { Value (
+
+			% Op-code bit field
+			{
+			Name	OpCodeBits
+			Type	Integer
+			Size	1:int
+			Bits
+				{
+				Fin		{ Mask 0x80:int Map {	0x0:int false:bool 0x80:int true:bool } }
+				OpCode	{ Mask 0x0f:int Map {	0x0:int Continue 0x1:int Text 0x2:int Binary
+															0x8:int Close 0x9:int Ping 0xa:int Pong } }
+				}	% Bits
+			}	% OpCodeBits
+
+			% Payload length (for single byte lengths)
+			{
+			Name	PayloadBits
+			Type	Integer
+			Size	1:int
+			Bits
+				{
+				Mask		{ Mask 0x80:int Map { 0x0:int false:bool 0x80:int true:bool } }
+				Length	{ Mask 0x7f:int }
+				}	% Bits
+			}	% PayloadBits
+
+		)	}	% ValueFrmIn
+		!	Initialize/OnFire						ValueFrmIn/Fire
+

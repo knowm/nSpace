@@ -1,0 +1,230 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								Server.NSPC
+%
+%							Websocket server.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+	$	PortSrvr				Misc.Dist {}			% Server port
+
+	% Actions
+	$	Initialize			Misc.Dist {}			% Initialize
+	$	Uninitialize		Misc.Dist {}			% Uninitialize
+	
+	% Notifications
+	$	OnReceive			Misc.Dist {}			% Message received
+	$	OnState				Misc.Dist {}			% Message client state
+
+	% DEBUG
+	$	Debug Misc.Debug {}
+		!	OnReceive/OnFire						Debug/Fire
+
+	%%%%%%%%
+	% Setup
+	%%%%%%%%
+
+	% Subgraph: TCP server
+	#	Server										Lib/Comm/Network/Ip/Tcp/ServerClients/ {}
+%		!	Server/OnConnect/Fire				Debug/Fire
+		!	Server/OnRead/Fire					Debug/Fire
+
+	% Server port required
+	!	PortSrvr/OnFire							Server/PortSrvr/Fire
+	!	PortSrvr/OnFire							Server/Start/Fire
+
+	% Current using the socket dictionary to contain the state
+	!	Server/OnRead/OnFire						OnState/Fire
+
+	% Subgraph: I/O
+	#	Io												Lib/Comm/Network/Ip/Tcp/Io/ {}
+		!	Server/OnRead/OnFire					Io/Socket/Fire
+		!	Server/OnRead/OnFire					Io/Read/Fire
+
+	% Subgraph: Parse stream into response
+	#	StmToResp									Lib/Comm/Network/Ip/Tcp/Http/StmRsp/ {}
+		!	StmToResp/OnResponse/OnFire		OnReceive/Fire
+
+	% Subgraph: Convert response dictionary into stream
+	#	RespToStm									Lib/Comm/Network/Ip/Tcp/Http/ReqStm/ {}
+
+	% Subgraph: Websocket formats
+	#	Format										Lib/Comm/Network/Ip/Tcp/Http/Ws/Format/ {}
+
+	%%%%%%%%%%%
+	% Incoming
+	%%%%%%%%%%%
+
+	% MISCN: Demux the web socket state
+	$	DemuxWs Misc.Demux { Key WebSocket Values ( true ) }
+		!	OnState/OnFire							DemuxWs/Dictionary
+		!	Io/OnStream/OnFire					DemuxWs/Fire
+
+	% Parse request, currently assumes entire request comes in together (FIX)
+	!	DemuxWs/OnDefault							Debug/Fire
+	!	DemuxWs/OnDefault							StmToResp/Reset/Fire
+	!	DemuxWs/OnDefault							StmToResp/Stream/Fire
+	!	DemuxWs/OnDefault							StmToResp/Parse/Fire
+
+	% If I/O subgraph detects closer, tell server
+	!	Io/OnClose/OnFire							Server/Socket/Fire
+	!	Io/OnClose/OnFire							Server/Close/Fire
+
+	%%%%%%%%%%
+	% Upgrade
+	%%%%%%%%%%
+
+	% MISCN: Demux the upgrade key
+	$	DemuxUp Misc.Demux { Key Upgrade Values ( WebSocket ) }
+		!	OnReceive/OnFire						DemuxUp/Dictionary
+		!	OnReceive/OnFire						DemuxUp/Fire
+
+	% ADTN: Load the provided key
+	$	LoadKey Adt.Load { Key WebSocketKey }
+		!	DemuxUp/OnWebSocket					LoadKey/Dictionary
+		!	DemuxUp/OnWebSocket					LoadKey/Fire
+
+	%% Per RFC 6455 GUID is appended to key, SHA1 hash is generated, and the base64 string will be sent back.
+
+	% MATHN: Append WebSocket GUID 
+	$	AppendUpGUID Math.Binary { Right "258EAFA5-E914-47DA-95CA-C5AB0DC85B11" }
+		!	LoadKey/OnFire							AppendUpGUID/Left
+		!	LoadKey/OnFire							AppendUpGUID/Fire
+		!	AppendUpGUID/OnFire					Debug/Fire
+
+	%% Place string in stream for the SHA1 calculation
+
+	% MISCN: Create stream to receive hash
+	$	CreateHashStm Misc.Create { Id Io.StmMemory }
+		!	AppendUpGUID/OnFire					CreateHashStm/Fire
+
+	% MISCN: Reset position/size of stream as needed
+	$	StmPos Io.StreamOp {}
+		!	CreateHashStm/OnFire					StmPos/Stream
+
+	% MISCN: String to hash into stream
+	$	StrUp Misc.StringStream {}
+		!	CreateHashStm/OnFire					StrUp/Stream
+		!	AppendUpGUID/OnFire					StrUp/String
+		!	AppendUpGUID/OnFire					StrUp/To
+
+	% Reset position of stream for use
+	!	StrUp/OnFire								StmPos/Seek
+
+	% OPENSSL: Generate SHA1 hash
+	$	HashUp OpenSSL.EVPSign { Type SHA1 }
+		!	CreateHashStm/OnFire					HashUp/Stream
+		!	HashUp/OnFinal							Debug/Fire
+
+	% Add contents of stream to digest
+	!	StrUp/OnFire								HashUp/Begin
+	!	StrUp/OnFire								HashUp/Update
+
+	% Re-use hash stream to receive result
+	!	StrUp/OnFire								StmPos/Size
+	!	StrUp/OnFire								HashUp/Final
+
+	% Reset position of stream for use
+	!	HashUp/OnFinal								StmPos/Seek
+
+	%%%%%%%%%%%
+	% Response
+	%%%%%%%%%%%
+
+	% MISCN: Response template
+	$	ValueWsResp Misc.Dist { Value { Method	Response Response	Switch } }
+		!	Initialize/OnFire						ValueWsResp/Fire
+
+	% ADTN: Store acceptance key in header
+	$	StoreWsAccept Adt.Store { Key WebSocketAccept }
+		!	ValueWsResp/OnFire					StoreWsAccept/Dictionary
+		!	HashUp/OnFinal							StoreWsAccept/Fire
+
+	% Convert dictionary to stream
+	!	StoreWsAccept/OnFire						Debug/Fire
+	!	StoreWsAccept/OnFire						RespToStm/Dictionary/Fire
+	!	StoreWsAccept/OnFire						RespToStm/ToStream/Fire
+
+	% Send resposne stream to current socket
+	!	RespToStm/OnStream/OnFire				Io/Stream/Fire
+	!	RespToStm/OnStream/OnFire				Io/Transmit/Fire
+
+	% ADTN: Now in websocket mode
+	$	StoreWs Adt.Store { Key WebSocket Value true:bool }
+		!	OnState/OnFire							StoreWs/Dictionary
+		!	RespToStm/OnStream/OnFire			StoreWs/Fire
+
+	%%%%%%%%%%%%%
+	% Data frame
+	%%%%%%%%%%%%%
+
+	%% Data received after websocket established.  Process frames.
+	!	DemuxWs/Ontrue								Debug/Fire
+
+	% MISCN: Create dictionary to received parsed frame
+	$	CreateFrmDct Misc.Create { Id Adt.Dictionary }
+		!	DemuxWs/Ontrue							CreateFrmDct/Fire
+
+	% MISCN: Initial parse of header
+	$	FrmPrs Misc.DictParse {}
+		!	Format/ValueFrmIn/OnFire			FrmPrs/Format
+		!	CreateFrmDct/OnFire					FrmPrs/Dictionary
+		!	DemuxWs/Ontrue							FrmPrs/Stream
+		!	FrmPrs/OnFire							Debug/Fire
+
+	%%
+	%% The minimum number of bytes are used to encode the payload length.  Read the proper
+	%% amount of additional length bytes based on the initial payload length.
+	%%
+
+	% ADTN: Load payload length
+	$	LoadFrmLenI Adt.Load { Key Length }
+		!	FrmPrs/OnFire							LoadFrmLenI/Dictionary
+		!	FrmPrs/OnFire							LoadFrmLenI/Fire
+
+	% MISCN: Length check
+	$	IsLengthT Misc.Compare { Left 126:int }
+		!	LoadFrmLenI/OnFire					IsLengthT/Fire
+	$	IsLengthE Misc.Compare { Left 127:int }
+		!	IsLengthT/OnNotEqual					IsLengthE/Fire
+
+	% MISCN: Read additional two or four byte lengths from stream
+	$	FrmPrsLenT Misc.DictParse { Format ( { Name Length Type Integer Size 2:int } ) }
+		!	CreateFrmDct/OnFire					FrmPrsLenT/Dictionary
+		!	DemuxWs/Ontrue							FrmPrsLenT/Stream
+		!	IsLengthT/OnEqual						FrmPrsLenT/Fire
+	$	FrmPrsLenE Misc.DictParse { Format ( { Name Length Type Long } ) }
+		!	CreateFrmDct/OnFire					FrmPrsLenE/Dictionary
+		!	DemuxWs/Ontrue							FrmPrsLenE/Stream
+		!	IsLengthE/OnEqual						FrmPrsLenE/Fire
+
+	%%
+	%% If mask is present, the 4 byte masking value must be extracted next.
+	%%
+
+	% MISCN: Demux the mask flag
+	$	DemuxMask Misc.Demux { Key Mask Values ( true ) } 
+		!	FrmPrs/OnFire							DemuxMask/Dictionary
+		!	FrmPrs/OnFire							DemuxMask/Fire
+
+	% MISCN: Extract masking value
+	$	FrmPrsMask Misc.DictParse { Format ( { Name MaskValue Type Integer Size 4:int } ) }
+		!	CreateFrmDct/OnFire					FrmPrsMask/Dictionary
+		!	DemuxWs/Ontrue							FrmPrsMask/Stream
+		!	DemuxMask/Ontrue						FrmPrsMask/Fire
+
+	%% 
+	%% The remaining data is payload data (possibly masked)
+	%%
+	!	FrmPrs/OnFire								Debug/Fire
+
+	% ADTN: Load the final length
+%	$	LoadFrmLen Adt.Load { Key Length }
+%		!	CreateFrmDct/OnFire
+
+	% Latent connections
+	!	DemuxWs/Ontrue								FrmPrs/Fire
+

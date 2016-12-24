@@ -38,8 +38,10 @@
 							Ok					"200 OK\r\n"
 							"Not Found"		"404 Not found\r\n"
 							"No content"	"204 NO CONTENT\r\n"
+%							Switch			"101 Web Socket Protocol Handshake\r\n"
+							Switch			"101 Switching Protocols\r\n"
 							}
-						Substring
+						Subformat
 							{
 							% Success
 							Ok
@@ -59,7 +61,16 @@
 								(
 								{ Constant "\r\n" }
 								)
-							}	% Substring
+							Switch
+								(
+%								{ Constant "Access-Control-Allow-Credentials: true\r\n" }
+								{ Constant "Sec-WebSocket-Accept: " } { Name WebSocketAccept Encode base64 }
+								{ Constant "\r\n" }
+								{ Constant "Upgrade: WebSocket\r\n" }
+								{ Constant "Connection: Upgrade\r\n" }
+								{ Constant "\r\n" }
+								)
+							}	% Subformat
 						}	% Response
 					)	% Response
 
@@ -73,7 +84,7 @@
 							{
 							Ok				"200 OK"
 							}
-						Substring
+						Subformat
 							{
 							% Success
 							Ok
@@ -82,7 +93,7 @@
 								{ Constant "\r\nTimeout: " }	{ Name Timeout }
 								{ Constant "\r\n\r\n" }
 								)	% Ok
-							}	% Substring
+							}	% Subformat
 						}	% Response
 					)	% Subscribe
 				Unsubscribe

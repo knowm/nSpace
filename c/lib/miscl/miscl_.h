@@ -70,6 +70,8 @@ class AsyncEmit :
 	bool			bRun;										// Running
 	sysEvent		evEmit;									// Emit event
 	adtInt		iPri;										// Relative priority
+	sysCS			csVal;									// Value mutex
+	adtBool		bSingle;									// Single shot
 
 	// 'ITickable' members
 	STDMETHOD(tick)		( void );

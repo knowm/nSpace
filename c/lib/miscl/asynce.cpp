@@ -20,6 +20,7 @@ AsyncEmit :: AsyncEmit ( void )
 	pThrd		= NULL;
 	bRun		= false;
 	iPri		= 0;
+	bSingle	= false;
 	evEmit.init();
 	}	// AsyncEmit
 
@@ -60,6 +61,8 @@ HRESULT AsyncEmit :: onAttach ( bool bAttach )
 
 		// Default states
 		pnDesc->load ( adtString(L"Value"), vVal );
+		if (pnDesc->load ( adtString(L"Single"), vL ) == S_OK)
+			bSingle = vL;
 		}	// if
 
 	// Detach
@@ -100,6 +103,14 @@ HRESULT AsyncEmit :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		// Value slot available ?
 		CCLTRYE ( adtValue::empty(vEmit) == true, ERROR_INVALID_STATE );
 
+		// Single shot ?
+		if (bSingle == true && pThrd != NULL)
+			{
+			bRun = false;
+			pThrd->threadStop(5000);
+			_RELEASE(pThrd);
+			}	// if
+
 		// Create thread if necessary
 		if (hr == S_OK && pThrd == NULL)
 			{
@@ -109,7 +120,9 @@ HRESULT AsyncEmit :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			}	// if
 
 		// Copy value to emit
+		csVal.enter();
 		CCLTRY ( adtValue::copy ( adtValue::empty(vVal) ? v : vVal, vEmit ) );
+		csVal.leave();
 
 		// Emission value available
 		CCLOK ( evEmit.signal(); )
@@ -150,17 +163,26 @@ HRESULT AsyncEmit :: tick ( void )
 	CCLTRYE ( bRun == true, S_FALSE );
 
 	// Emit value
-	if (hr == S_OK)
+	if (hr == S_OK && !adtValue::empty(vEmit))
 		{
 		// Make local copy so value can be readied immediately
+		csVal.enter();
 		CCLTRY ( adtValue::copy ( vEmit, vEmitNow ) );
 
 		// Clear value to signal slot available
 		CCLOK ( adtValue::clear ( vEmit ); )
+		csVal.leave();
 
 		// Emit
-		_EMT(Fire,vEmitNow);
+		CCLOK ( _EMT(Fire,vEmitNow); )
+
+		// No need to exit thread due to emission error
+		hr = S_OK;
 		}	// if
+
+	// Single shot ?
+	if (bSingle == true)
+		hr = S_FALSE;
 
 	return hr;
 	}	// tick

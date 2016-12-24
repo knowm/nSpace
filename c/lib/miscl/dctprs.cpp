@@ -229,6 +229,15 @@ HRESULT DictParse :: parse ( IContainer *pFmt )
 			CCLOK  ( adtValue::copy ( uInt, vVal ); )
 			}	// if
 
+		else if (hr == S_OK && !WCASECMP ( L"Long", sType ))
+			{
+			adtLong	lV;
+
+			// Read
+			CCLTRY ( pStm->read ( &(lV.vlong), sizeof(lV.vlong), NULL ) );
+			CCLOK  ( adtValue::copy ( lV, vVal ); )
+			}	// if
+
 		else if (hr == S_OK && !WCASECMP ( L"Float", sType ))
 			{
 			adtFloat	fFlt;
