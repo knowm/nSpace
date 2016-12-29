@@ -42,3 +42,34 @@
 		)	}	% ValueFrmIn
 		!	Initialize/OnFire						ValueFrmIn/Fire
 
+	% MISCN: Output header format
+	$	ValueFrmOut Misc.Dist { Value (
+
+			% Op-code bit field
+			{
+			Name	OpCodeBits
+			Type	Integer
+			Size	1:int
+			}	% OpCodeBits
+
+			% Payload length, depends on number of bytes
+			{
+			Name	LengthSize
+			Size	0:int
+			Subformat
+				{
+				1:int	( { Name Length Size 1:int } )
+				2:int	( { Value 126:int Size 1:int } { Name Length Size 2:int } )
+				8:int	( { Value 127:int Size 1:int } { Name Length Size 8:int } )
+				}	 % Subformat
+
+			}	% LengthSize
+
+			% Payload
+			{
+			Name	Data
+			Size	Length
+			}	% Payload
+
+		)	}	% ValueFrmOut
+		!	Initialize/OnFire						ValueFrmOut/Fire

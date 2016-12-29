@@ -91,7 +91,9 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		CCLTRYE ( adtValue::empty(vR) == false, ERROR_INVALID_STATE );
 		CCLTRYE ( iOp >= MATHOP_ADD, ERROR_INVALID_STATE );
 
-		// Perform operation
+		// Perform operation, copy provided value in case operation 
+		// needs a destination.
+		CCLTRY ( adtValue::copy ( v, vRes ) );
 		CCLTRY ( mathBinary ( iOp, vL, vR, vRes ) );
 
 		// Result

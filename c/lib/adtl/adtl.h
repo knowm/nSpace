@@ -69,6 +69,29 @@ struct tagADTVALUE
 	(a).vdbl			= 0.0;								\
 	}
 
+// Endian
+
+// U16 swap
+#define	SWAPS(a)										\
+				(											\
+				(((a) << 8)	& 0xff00) |				\
+				(((a) >> 8) & 0x00ff)				\
+				)
+
+// U32 swap
+#define	SWAPI(a)													\
+				(														\
+				(SWAPS(((a) >>  0) & 0x0000ffff) << 16) |	\
+				(SWAPS(((a) >> 16) & 0x0000ffff) <<  0)	\
+				)
+
+// U64 swap
+#define	SWAPL(a)													\
+				(														\
+				(SWAPI(((a) >>  0) & 0xffffffff) << 32) |	\
+				(SWAPI(((a) >> 32) & 0xffffffff) <<  0)	\
+				)
+
 // Forward dec.
 struct IList;
 

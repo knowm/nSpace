@@ -10,6 +10,8 @@
 
 	% Context
 	$	PortSrvr				Misc.Dist {}			% Server port
+	$	Client				Misc.Dist {}			% Set active client
+	$	Transmit				Misc.Dist {}			% Transmit stream to client
 
 	% Actions
 	$	Initialize			Misc.Dist {}			% Initialize
@@ -17,7 +19,7 @@
 	
 	% Notifications
 	$	OnReceive			Misc.Dist {}			% Message received
-	$	OnState				Misc.Dist {}			% Message client state
+	$	OnClient				Misc.Dist {}			% Message client state
 
 	% DEBUG
 	$	Debug Misc.Debug {}
@@ -37,7 +39,8 @@
 	!	PortSrvr/OnFire							Server/Start/Fire
 
 	% Current using the socket dictionary to contain the state
-	!	Server/OnRead/OnFire						OnState/Fire
+	!	Server/OnRead/OnFire						OnClient/Fire
+	!	Server/OnRead/OnFire						Server/Socket/Fire
 
 	% Subgraph: I/O
 	#	Io												Lib/Comm/Network/Ip/Tcp/Io/ {}
@@ -60,7 +63,7 @@
 
 	% MISCN: Demux the web socket state
 	$	DemuxWs Misc.Demux { Key WebSocket Values ( true ) }
-		!	OnState/OnFire							DemuxWs/Dictionary
+		!	OnClient/OnFire						DemuxWs/Dictionary
 		!	Io/OnStream/OnFire					DemuxWs/Fire
 
 	% Parse request, currently assumes entire request comes in together (FIX)
@@ -154,7 +157,7 @@
 
 	% ADTN: Now in websocket mode
 	$	StoreWs Adt.Store { Key WebSocket Value true:bool }
-		!	OnState/OnFire							StoreWs/Dictionary
+		!	OnClient/OnFire						StoreWs/Dictionary
 		!	RespToStm/OnStream/OnFire			StoreWs/Fire
 
 	%%%%%%%%%%%%%
@@ -175,6 +178,11 @@
 		!	DemuxWs/Ontrue							FrmPrs/Stream
 		!	FrmPrs/OnFire							Debug/Fire
 
+	% MISCN: Demux the opcode for the message
+	$	DemuxOp Misc.Demux { Key OpCode Values ( Text Binary Close ) }
+		!	FrmPrs/OnFire							DemuxOp/Dictionary
+		!	FrmPrs/OnFire							DemuxOp/Fire
+
 	%%
 	%% The minimum number of bytes are used to encode the payload length.  Read the proper
 	%% amount of additional length bytes based on the initial payload length.
@@ -182,8 +190,10 @@
 
 	% ADTN: Load payload length
 	$	LoadFrmLenI Adt.Load { Key Length }
-		!	FrmPrs/OnFire							LoadFrmLenI/Dictionary
-		!	FrmPrs/OnFire							LoadFrmLenI/Fire
+		!	DemuxOp/OnText							LoadFrmLenI/Dictionary
+		!	DemuxOp/OnText							LoadFrmLenI/Fire
+		!	DemuxOp/OnBinary						LoadFrmLenI/Dictionary
+		!	DemuxOp/OnBinary						LoadFrmLenI/Fire
 
 	% MISCN: Length check
 	$	IsLengthT Misc.Compare { Left 126:int }
@@ -192,14 +202,16 @@
 		!	IsLengthT/OnNotEqual					IsLengthE/Fire
 
 	% MISCN: Read additional two or four byte lengths from stream
-	$	FrmPrsLenT Misc.DictParse { Format ( { Name Length Type Integer Size 2:int } ) }
+	$	FrmPrsLenT Misc.DictParse { Endian Big Format ( { Name Length Type Integer Size 2:int } ) }
 		!	CreateFrmDct/OnFire					FrmPrsLenT/Dictionary
 		!	DemuxWs/Ontrue							FrmPrsLenT/Stream
 		!	IsLengthT/OnEqual						FrmPrsLenT/Fire
-	$	FrmPrsLenE Misc.DictParse { Format ( { Name Length Type Long } ) }
+		!	FrmPrsLenT/OnFire						Debug/Fire
+	$	FrmPrsLenE Misc.DictParse { Endian Big Format ( { Name Length Type Long } ) }
 		!	CreateFrmDct/OnFire					FrmPrsLenE/Dictionary
 		!	DemuxWs/Ontrue							FrmPrsLenE/Stream
 		!	IsLengthE/OnEqual						FrmPrsLenE/Fire
+		!	FrmPrsLenE/OnFire						Debug/Fire
 
 	%%
 	%% If mask is present, the 4 byte masking value must be extracted next.
@@ -207,8 +219,10 @@
 
 	% MISCN: Demux the mask flag
 	$	DemuxMask Misc.Demux { Key Mask Values ( true ) } 
-		!	FrmPrs/OnFire							DemuxMask/Dictionary
-		!	FrmPrs/OnFire							DemuxMask/Fire
+		!	DemuxOp/OnText							DemuxMask/Dictionary
+		!	DemuxOp/OnText							DemuxMask/Fire
+		!	DemuxOp/OnBinary						DemuxMask/Dictionary
+		!	DemuxOp/OnBinary						DemuxMask/Fire
 
 	% MISCN: Extract masking value
 	$	FrmPrsMask Misc.DictParse { Format ( { Name MaskValue Type Integer Size 4:int } ) }
@@ -221,10 +235,110 @@
 	%%
 	!	FrmPrs/OnFire								Debug/Fire
 
-	% ADTN: Load the final length
-%	$	LoadFrmLen Adt.Load { Key Length }
-%		!	CreateFrmDct/OnFire
+	% ADTN: Check for mask value
+	$	LoadMask Adt.Load { Key MaskValue }
+		!	FrmPrsMask/OnFire						LoadMask/Dictionary
+		!	FrmPrsMask/OnFire						LoadMask/Fire
+
+	% MATHN: Apply mask to remaining bytes according to RFC
+	$	MaskXor Math.Binary { Op Xor }
+		!	DemuxWs/Ontrue							MaskXor/Left
+		!	LoadMask/OnFire						MaskXor/Right
+
+	% MISCN: Create stream to receive unmasked hash
+	$	CreateMaskStm Misc.Create { Id Io.StmMemory }
+		!	LoadMask/OnFire						CreateMaskStm/Fire
+		!	CreateMaskStm/OnFire					MaskXor/Fire
+
+	% MISCN: Reset position/size of stream as needed
+	$	MaskStmPos Io.StreamOp {}
+		!	MaskXor/OnFire							MaskStmPos/Seek
+
+	% Debug
+	!	MaskXor/OnFire								Debug/Fire
+
+	% MISCN: Resulting socket/stream
+	$	ValueStmRx Misc.Dist {}
+		!	DemuxWs/Ontrue							ValueStmRx/Value
+		!	CreateMaskStm/OnFire					ValueStmRx/Value
+		!	ValueStmRx/OnFire						OnReceive/Fire
+
+	% Result
+	!	DemuxOp/OnText								ValueStmRx/Fire
+	!	DemuxOp/OnBinary							ValueStmRx/Fire
+
+	%%%%%%%%
+	% Close
+	%%%%%%%%
+
+	% Client is closing connection.
+	!	DemuxOp/OnClose							Debug/Fire
+	!	DemuxOp/OnClose							Server/Close/Fire
 
 	% Latent connections
 	!	DemuxWs/Ontrue								FrmPrs/Fire
+
+	%%%%%%%%%%%
+	% Transmit
+	%%%%%%%%%%%
+
+	% Active client
+	!	Client/OnFire								Io/Socket/Fire
+
+	% MISCN: Transmission template TODO: When payload size > 7 bits
+	$	ValueWsTx Misc.Dist { Value { OpCodeBits 0x81:int LengthSize 1:int } }
+		!	Initialize/OnFire						ValueWsTx/Fire
+
+	% MISCN: Size of outgoing stream
+	$	StmPosTx Io.StreamOp {}
+		!	Transmit/OnFire						StmPosTx/Available
+
+	% MISCN: Determine required length size
+	$	LenEightTx Misc.Compare { Left 0x10000:int }
+		!	StmPosTx/OnAvailable					LenEightTx/Fire
+	$	LenTwoTx Misc.Compare { Left 125:int }
+		!	LenEightTx/OnGreater					LenTwoTx/Fire
+
+	% MISCN: Length sizes
+	$	ValueEightTx Misc.Dist { Value 8:int }
+		!	LenEightTx/OnEqual					ValueEightTx/Fire
+		!	LenEightTx/OnLess						ValueEightTx/Fire
+	$	ValueTwoTx Misc.Dist { Value 2:int }
+		!	LenTwoTx/OnLess						ValueTwoTx/Fire
+	$	ValueOneTx Misc.Dist { Value 1:int }
+		!	LenTwoTx/OnEqual						ValueOneTx/Fire
+		!	LenTwoTx/OnGreater					ValueOneTx/Fire
+
+	% ADTN: Store size and data in dictionary
+	$	StoreWsTx Adt.Keys { Keys ( Length LengthSize Data ) }
+		!	ValueWsTx/OnFire						StoreWsTx/Dictionary
+		!	ValueOneTx/OnFire						StoreWsTx/LengthSize
+		!	ValueTwoTx/OnFire						StoreWsTx/LengthSize
+		!	ValueEightTx/OnFire					StoreWsTx/LengthSize
+		!	StmPosTx/OnAvailable					StoreWsTx/Length
+		!	Transmit/OnFire						StoreWsTx/Data
+		!	Transmit/OnFire						StoreWsTx/Store
+		!	StoreWsTx/OnStore						Debug/Fire
+
+	% MISCN: Create stream for outgoing bytes
+	$	CreateTxStm Misc.Create { Id Io.StmMemory }
+		!	StoreWsTx/OnStore						CreateTxStm/Fire
+
+	% MISCN: Initial parse of header
+	$	FrmFmt Misc.DictFormat { Endian Big }
+		!	Format/ValueFrmOut/OnFire			FrmFmt/Format
+		!	CreateTxStm/OnFire					FrmFmt/Stream
+		!	StoreWsTx/OnStore						FrmFmt/Dictionary
+		!	StoreWsTx/OnStore						FrmFmt/Fire
+
+	% Reset position of stream
+	!	FrmFmt/OnFire								StmPosTx/Seek
+
+	% Request transmission
+	!	FrmFmt/OnFire								Debug/Fire
+	!	FrmFmt/OnFire								Debug/Fire
+	!	FrmFmt/OnFire								Debug/Fire
+	!	FrmFmt/OnFire								Debug/Fire
+	!	FrmFmt/OnFire								Io/Stream/Fire
+	!	FrmFmt/OnFire								Io/Transmit/Fire
 

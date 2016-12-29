@@ -54,14 +54,13 @@ HRESULT mathBinary ( int iOp, const ADTVALUE &vL, const ADTVALUE &vR, ADTVALUE &
 		return mathBinary ( iOp, vL, *(vR.pval), v );
 
 	// Setup
-	CCLOK   ( adtValue::clear ( v ); )
 	CCLTRYE ( adtValue::empty(vL) == false, ERROR_INVALID_STATE );
 	CCLTRYE ( adtValue::empty(vR) == false, ERROR_INVALID_STATE );
 
-	// Special case.  If either side is a dictionary, it is assumed operation	
-	// involves tuples (vectors).
+	// Special case.  If either side is an object, it is assumed operation	
+	// involves more complicated structures (tuples,etc).
 	if (hr == S_OK && (vL.vtype == VTYPE_UNK || vR.vtype == VTYPE_UNK))
-		return mathBinaryV ( iOp, vL, vR, v );
+		return mathBinary_ ( iOp, vL, vR, v );
 
 	// Value type of left side
 	switch ((int)adtValue::type(vL))
@@ -92,26 +91,30 @@ HRESULT mathBinary ( int iOp, const ADTVALUE &vL, const ADTVALUE &vR, ADTVALUE &
 				{
 				case VTYPE_I4  :
 					v.vtype	= VTYPE_I4;
-					v.vint	=	(iOp == MATHOP_ADD) ? vL.vint+vR.vint :
-									(iOp == MATHOP_SUB) ? vL.vint-vR.vint :
-									(iOp == MATHOP_MUL) ? vL.vint*vR.vint :
+					v.vint	=	(iOp == MATHOP_ADD)	? vL.vint+vR.vint :
+									(iOp == MATHOP_SUB)	? vL.vint-vR.vint :
+									(iOp == MATHOP_MUL)	? vL.vint*vR.vint :
 									(iOp == MATHOP_DIV && vR.vint != 0) ? vL.vint/vR.vint : 
-									(iOp == MATHOP_MOD) ? (vL.vint % vR.vint) : 
-									(iOp == MATHOP_AND) ? (vL.vint & vR.vint) : 
-									(iOp == MATHOP_MIN) ? ((vL.vint < vR.vint) ? vL.vint : vR.vint) :
-									(iOp == MATHOP_MAX) ? ((vL.vint > vR.vint) ? vL.vint : vR.vint) :
+									(iOp == MATHOP_MOD)	? (vL.vint % vR.vint) : 
+									(iOp == MATHOP_AND)	? (vL.vint & vR.vint) : 
+									(iOp == MATHOP_OR)	? (vL.vint | vR.vint) : 
+									(iOp == MATHOP_XOR)	? (vL.vint ^ vR.vint) : 
+									(iOp == MATHOP_MIN)	? ((vL.vint < vR.vint) ? vL.vint : vR.vint) :
+									(iOp == MATHOP_MAX)	? ((vL.vint > vR.vint) ? vL.vint : vR.vint) :
 									vL.vint;
 					break;
 				case VTYPE_I8 :
 					v.vtype	= VTYPE_I8;
-					v.vlong	=	(iOp == MATHOP_ADD) ? vL.vint+vR.vlong :
-									(iOp == MATHOP_SUB) ? vL.vint-vR.vlong :
-									(iOp == MATHOP_MUL) ? vL.vint*vR.vlong :
+					v.vlong	=	(iOp == MATHOP_ADD)	? vL.vint+vR.vlong :
+									(iOp == MATHOP_SUB)	? vL.vint-vR.vlong :
+									(iOp == MATHOP_MUL)	? vL.vint*vR.vlong :
 									(iOp == MATHOP_DIV && vR.vlong != 0) ? vL.vint/vR.vlong :
-									(iOp == MATHOP_MOD) ? (vL.vint % vR.vlong) : 
-									(iOp == MATHOP_AND) ? (vL.vint & vR.vlong) : 
-									(iOp == MATHOP_MIN) ? ((vL.vint < vR.vlong) ? vL.vint : vR.vlong) :
-									(iOp == MATHOP_MAX) ? ((vL.vint > vR.vlong) ? vL.vint : vR.vlong) :
+									(iOp == MATHOP_MOD)	? (vL.vint % vR.vlong) : 
+									(iOp == MATHOP_AND)	? (vL.vint & vR.vlong) : 
+									(iOp == MATHOP_OR)	? (vL.vint | vR.vlong) : 
+									(iOp == MATHOP_XOR)	? (vL.vint ^ vR.vlong) : 
+									(iOp == MATHOP_MIN)	? ((vL.vint < vR.vlong) ? vL.vint : vR.vlong) :
+									(iOp == MATHOP_MAX)	? ((vL.vint > vR.vlong) ? vL.vint : vR.vlong) :
 									vL.vint;
 					break;
 				case VTYPE_R4  :
@@ -173,26 +176,30 @@ HRESULT mathBinary ( int iOp, const ADTVALUE &vL, const ADTVALUE &vR, ADTVALUE &
 				{
 				case VTYPE_I4  :
 					v.vtype	= VTYPE_I8;
-					v.vlong	=	(iOp == MATHOP_ADD) ? vL.vlong+vR.vint :
-									(iOp == MATHOP_SUB) ? vL.vlong-vR.vint :
-									(iOp == MATHOP_MUL) ? vL.vlong*vR.vint :
+					v.vlong	=	(iOp == MATHOP_ADD)	? vL.vlong+vR.vint :
+									(iOp == MATHOP_SUB)	? vL.vlong-vR.vint :
+									(iOp == MATHOP_MUL)	? vL.vlong*vR.vint :
 									(iOp == MATHOP_DIV && vR.vint != 0) ? vL.vlong/vR.vint :
-									(iOp == MATHOP_MOD) ? (vL.vlong % vR.vint) : 
-									(iOp == MATHOP_AND) ? (vL.vlong & vR.vint) : 
-									(iOp == MATHOP_MIN) ? ((vL.vlong < vR.vint) ? vL.vlong : vR.vint) :
-									(iOp == MATHOP_MAX) ? ((vL.vlong > vR.vint) ? vL.vlong : vR.vint) :
+									(iOp == MATHOP_MOD)	? (vL.vlong % vR.vint) : 
+									(iOp == MATHOP_AND)	? (vL.vlong & vR.vint) : 
+									(iOp == MATHOP_OR)	? (vL.vlong | vR.vint) : 
+									(iOp == MATHOP_XOR)	? (vL.vlong ^ vR.vint) : 
+									(iOp == MATHOP_MIN)	? ((vL.vlong < vR.vint) ? vL.vlong : vR.vint) :
+									(iOp == MATHOP_MAX)	? ((vL.vlong > vR.vint) ? vL.vlong : vR.vint) :
 									vL.vlong;
 					break;
 				case VTYPE_I8 :
 					v.vtype	= VTYPE_I8;
-					v.vlong	=	(iOp == MATHOP_ADD) ? vL.vlong+vR.vlong :
-									(iOp == MATHOP_SUB) ? vL.vlong-vR.vlong :
-									(iOp == MATHOP_MUL) ? vL.vlong*vR.vlong :
+					v.vlong	=	(iOp == MATHOP_ADD)	? vL.vlong+vR.vlong :
+									(iOp == MATHOP_SUB)	? vL.vlong-vR.vlong :
+									(iOp == MATHOP_MUL)	? vL.vlong*vR.vlong :
 									(iOp == MATHOP_DIV && vR.vlong != 0) ? vL.vlong/vR.vlong :
-									(iOp == MATHOP_MOD) ? (vL.vlong % vR.vlong) : 
-									(iOp == MATHOP_AND) ? (vL.vlong & vR.vlong) : 
-									(iOp == MATHOP_MIN) ? ((vL.vlong < vR.vlong) ? vL.vlong : vR.vlong) :
-									(iOp == MATHOP_MAX) ? ((vL.vlong > vR.vlong) ? vL.vlong : vR.vlong) :
+									(iOp == MATHOP_MOD)	? (vL.vlong % vR.vlong) : 
+									(iOp == MATHOP_AND)	? (vL.vlong & vR.vlong) : 
+									(iOp == MATHOP_OR)	? (vL.vlong | vR.vlong) : 
+									(iOp == MATHOP_XOR)	? (vL.vlong ^ vR.vlong) : 
+									(iOp == MATHOP_MIN)	? ((vL.vlong < vR.vlong) ? vL.vlong : vR.vlong) :
+									(iOp == MATHOP_MAX)	? ((vL.vlong > vR.vlong) ? vL.vlong : vR.vlong) :
 									vL.vlong;
 					break;
 				case VTYPE_R4  :
@@ -421,12 +428,13 @@ HRESULT mathBinary ( int iOp, const ADTVALUE &vL, const ADTVALUE &vR, ADTVALUE &
 	return hr;
 	}	// mathBinary
 
-HRESULT mathBinaryV ( int iOp, const ADTVALUE &vL, const ADTVALUE &vR, ADTVALUE &v )
+HRESULT mathBinary_ (	int iOp, const ADTVALUE &vL, const ADTVALUE &vR, 
+								ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
 	//	PURPOSE
-	//		-	Perform a binary (vector) operation on values.
+	//		-	Perform a binary (object) operation on values.
 	//
 	//	PARAMETERS
 	//		-	iOp is the operation to perform
@@ -441,24 +449,28 @@ HRESULT mathBinaryV ( int iOp, const ADTVALUE &vL, const ADTVALUE &vR, ADTVALUE 
 	HRESULT		hr			= S_OK;
 	IDictionary	*pDctL	= NULL;
 	IDictionary	*pDctR	= NULL;
+	IByteStream	*pStmL	= NULL;
+	IByteStream	*pStmR	= NULL;
 	adtDouble	dblL,dblR;
 
 	// Dereference values
 	if (hr == S_OK && vL.vtype == (VTYPE_VALUE|VTYPE_BYREF) && vL.pval != NULL)
-		return mathBinaryV ( iOp, *(vL.pval), vR, v );
+		return mathBinary_ ( iOp, *(vL.pval), vR, v );
 	if (hr == S_OK && vR.vtype == (VTYPE_VALUE|VTYPE_BYREF) && vR.pval != NULL)
-		return mathBinaryV ( iOp, vL, *(vR.pval), v );
+		return mathBinary_ ( iOp, vL, *(vR.pval), v );
 
 	// Each side will either be treated as a vector or a scalar (double)
 	if (hr == S_OK && vL.vtype == VTYPE_UNK)
 		{
-		CCLTRY(_QISAFE(vL.punk,IID_IDictionary,&pDctL));
+		_QISAFE(vL.punk,IID_IDictionary,&pDctL);
+		_QISAFE(vL.punk,IID_IByteStream,&pStmL);
 		}	// if
 	else
 		dblL = adtDouble(vL);
 	if (hr == S_OK && vR.vtype == VTYPE_UNK)
 		{
-		CCLTRY(_QISAFE(vR.punk,IID_IDictionary,&pDctR));
+		_QISAFE(vR.punk,IID_IDictionary,&pDctR);
+		_QISAFE(vR.punk,IID_IByteStream,&pStmR);
 		}	// if
 	else
 		dblR = adtDouble(vR);
@@ -596,7 +608,7 @@ HRESULT mathBinaryV ( int iOp, const ADTVALUE &vL, const ADTVALUE &vR, ADTVALUE 
 						dRes = adtDouble(vVL) - adtDouble(vVR);
 						break;
 					default :
-						dbgprintf ( L"mathBinaryV::Unsupported vector/vector operation %d\r\n", iOp );
+						dbgprintf ( L"mathBinary_::Unsupported vector/vector operation %d\r\n", iOp );
 						hr = E_NOTIMPL;
 					}	// switch
 
@@ -620,7 +632,7 @@ HRESULT mathBinaryV ( int iOp, const ADTVALUE &vL, const ADTVALUE &vR, ADTVALUE 
 		else
 			{
 			hr = E_NOTIMPL;
-			dbgprintf ( L"mathBinaryV::Unsupported dual vector operation %d\r\n", iOp );
+			dbgprintf ( L"mathBinary_::Unsupported dual vector operation %d\r\n", iOp );
 			}	// else
  
 		}	// if
@@ -664,7 +676,7 @@ HRESULT mathBinaryV ( int iOp, const ADTVALUE &vL, const ADTVALUE &vR, ADTVALUE 
 						dRes = 0;
 					break;
 				default :
-					dbgprintf ( L"mathBinaryV::Unsupported vector/scalar operation %d\r\n", iOp );
+					dbgprintf ( L"mathBinary_::Unsupported vector/scalar operation %d\r\n", iOp );
 					hr = E_NOTIMPL;
 				}	// switch
 
@@ -682,21 +694,84 @@ HRESULT mathBinaryV ( int iOp, const ADTVALUE &vL, const ADTVALUE &vR, ADTVALUE 
 		_RELEASE(pIt);
 		_RELEASE(pDctRes);
 		_RELEASE(pDctV);
-		}	// if
+		}	// else if
+
+	// Byte stream / scalar operation
+	else if (hr == S_OK && (pStmL != NULL && pStmR == NULL))
+		{
+		IByteStream	*pStmRes = NULL;
+		U8				cM[8],szR,cR,cV;
+		adtIUnknown	unkV(v);
+		U32			i;
+
+		// Results will be in provided stream
+		CCLTRY ( _QISAFE(unkV,IID_IByteStream,&pStmRes) );
+
+		// Right side of information
+		if (hr == S_OK)
+			{
+			// Mask size
+			switch (vR.vtype)
+				{
+				case VTYPE_I4 :
+					*(U32 *)(cM) = (U32)(vR.vint);
+					szR = sizeof(U32);
+					break;
+				case VTYPE_I8 :
+					*(U64 *)(cM) = (U64)(vR.vlong);
+					szR = sizeof(U64);
+					break;
+				default :
+					hr = E_NOTIMPL;
+				}	// switch
+			}	// if
+
+		// Apply mask
+		CCLOK ( i = 0; )
+		while (hr == S_OK && pStmL->read ( &cV, 1, NULL ) == S_OK)
+			{
+			// Current byte of mask
+			cR = cM[i++ % szR];
+
+			// Apply operation
+			switch ( iOp )
+				{
+				case MATHOP_AND :
+					cV = (cV & cR);
+					break;
+				case MATHOP_OR :
+					cV = (cV | cR);
+					break;
+				case MATHOP_XOR :
+					cV = (cV ^ cR);
+					break;
+				default :
+					lprintf ( LOG_ERR, L"mathBinary_::Unsupported byte stream operation %d\r\n", iOp );
+					hr = E_NOTIMPL;
+				}	// switch
+
+			// Output
+			CCLTRY ( pStmRes->write ( &cV, 1, NULL ) );
+			}	// while
+
+		// Clean up
+		_RELEASE(pStmRes);
+		}	// else if
 
 	// Unsupported combo (scalar/scalar handled by other function)
 	else
-		{
-		dbgprintf ( L"mathBinaryV::Unsupported vector operation %d\r\n", iOp );
 		hr = E_NOTIMPL;
-		}	// else
 
 	// Clean up
+	if (hr != S_OK)
+		lprintf ( LOG_ERR, L"mathBinary_::Unsupported vector operation %d,0x%x\r\n", iOp, hr );
+	_RELEASE(pStmL);
+	_RELEASE(pStmR);
 	_RELEASE(pDctL);
 	_RELEASE(pDctR);
 
 	return hr;	
-	}	// mathBinaryV
+	}	// mathBinary_
 
 HRESULT mathInv ( double *dA, double *dC )
 	{
@@ -917,6 +992,8 @@ HRESULT mathOp ( const WCHAR *wOp, int *piOp )
 		(*piOp) = MATHOP_AND;
 	else if (!WCASENCMP(wOp,L"Or",2))
 		(*piOp) = MATHOP_OR;
+	else if (!WCASENCMP(wOp,L"Xor",3))
+		(*piOp) = MATHOP_XOR;
 
 	// Vector
 	else if (!WCASENCMP(wOp,L"Dot",3))

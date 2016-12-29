@@ -17,9 +17,10 @@ DictFormat :: DictFormat ( void )
 	//		-	Constructor for the node
 	//
 	////////////////////////////////////////////////////////////////////////
-	pStm	= NULL;
-	pDct	= NULL;
-	pFmt	= NULL;
+	pStm			= NULL;
+	pDct			= NULL;
+	pFmt			= NULL;
+	bEndianBig	= false;
 
 	// Frequently used keys
 	strkSize	= L"Size";
@@ -55,6 +56,12 @@ HRESULT DictFormat :: onAttach ( bool bAttach )
 		// Allow format to specified as a node property
 		if (pnDesc->load ( adtString(L"Format"),	v ) == S_OK)
 			_QISAFE((unkV=v),IID_IContainer,&pFmt);
+		if (pnDesc->load ( adtString(L"Endian"),	v ) == S_OK)
+			{
+			adtString	strEnd(v);
+			if (!WCASECMP(strEnd,L"Big"))
+				bEndianBig = true;
+			}	// if
 
 		}	// if
 
@@ -115,6 +122,8 @@ HRESULT DictFormat :: format ( IContainer *pFmt )
 				hr = pDct->load ( vSz, vSz );
 			if (vSz.vtype == VTYPE_I4)
 				oSz = vSz.vint;
+			else if (vSz.vtype == VTYPE_I8)
+				oSz = (S32)(vSz.vlong);
 			else
 				hr = E_UNEXPECTED;
 			}	// if
@@ -180,6 +189,7 @@ HRESULT DictFormat :: format ( IContainer *pFmt )
 				case 2 :
 					{
 					U16	s = (oVal.vtype == VTYPE_I8) ? (U16)(oVal.vlong & 0xffff) : (U16)(oVal.vint & 0xffff);
+					if (bEndianBig)	s = SWAPS(s);
 					CCLTRY ( pStm->write ( &s, 2, NULL ) );
 					}	// case 2
 					break;
@@ -188,7 +198,17 @@ HRESULT DictFormat :: format ( IContainer *pFmt )
 				case 4 :
 					{
 					U32	i = (oVal.vtype == VTYPE_I8) ? (U32)(oVal.vlong & 0xffffffffff) : (U32)(oVal.vint);
+					if (bEndianBig)	i = SWAPI(i);
 					CCLTRY ( pStm->write ( &i, 4, NULL ) );
+					}	// case 4
+					break;
+
+				// 64-bits
+				case 8 :
+					{
+					U64	i = (oVal.vtype == VTYPE_I8) ? (U64)(oVal.vlong) : (U64)(oVal.vint);
+					if (bEndianBig)	i = SWAPL(i);
+					CCLTRY ( pStm->write ( &i, 8, NULL ) );
 					}	// case 4
 					break;
 
@@ -196,6 +216,13 @@ HRESULT DictFormat :: format ( IContainer *pFmt )
 					dbgprintf ( L"ConvDictToBin::receiveFire:Invalid integer size\n" );
 					hr = E_UNEXPECTED;
 				}	// switch
+			}	// if
+
+		// Long
+		else if (hr == S_OK && oVal.vtype == VTYPE_I8)
+			{
+			U64 v = oVal.vlong;
+			CCLTRY ( pStm->write ( &v, sizeof(v), NULL ) );
 			}	// if
 
 		// Float

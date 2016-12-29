@@ -576,6 +576,7 @@ class DictFormat :
 	IContainer		*pFmt;								// Format
 	adtString		strkSize,strkName,strkVal;		// String keys
 	adtString		strkMap,strkType,strkSub;		// String keys
+	adtBool			bEndianBig;							// Big endian ?
 
 	// Internal utilities
 	HRESULT format ( IContainer * );
@@ -626,6 +627,7 @@ class DictParse :
 	IDictionary		*pDict;								// Active dictionary
 	IContainer		*pFmt;								// Active format
 	IByteStream		*pStm;								// Input stream
+	adtBool			bEndianBig;							// Big endian ?
 //	adtString		strParse;							// Input string
 
 	// Internal utilities

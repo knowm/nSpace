@@ -20,6 +20,7 @@ DictParse :: DictParse ( void )
 	pFmt			= NULL;
 	pStm			= NULL;
 	pDict			= NULL;
+	bEndianBig	= false;
 //	strParse		= "";
 	}	// DictParse
 
@@ -48,6 +49,12 @@ HRESULT DictParse :: onAttach ( bool bAttach )
 		// Allow format to specified as a node property
 		if (pnDesc->load ( adtString(L"Format"),	v ) == S_OK)
 			_QISAFE((unkV=v),IID_IContainer,&pFmt);
+		if (pnDesc->load ( adtString(L"Endian"),	v ) == S_OK)
+			{
+			adtString	strEnd(v);
+			if (!WCASECMP(strEnd,L"Big"))
+				bEndianBig = true;
+			}	// if
 		}	// if
 
 	// Detach
@@ -158,7 +165,8 @@ HRESULT DictParse :: parse ( IContainer *pFmt )
 						{
 						CCLTRY ( pStm->read ( &(uInt.vint), 2, NULL ) );
 						}	// else
-//					if (bLittleE == false)	uInt.vint = (U16) SWAPS(uInt.vint);
+					if (hr == S_OK && bEndianBig == true)	
+						uInt.vint = ((U16) SWAPS(uInt.vint));
 					}	// case 1
 					break;
 
@@ -167,8 +175,9 @@ HRESULT DictParse :: parse ( IContainer *pFmt )
 					if (hr == S_OK)
 						{
 						CCLTRY ( pStm->read ( &(uInt.vint), uSz, NULL ) );
-//						if (bLittleE == false)	uInt.vint = (U32) SWAPL(uInt.vint);
 						}	// if
+					if (hr == S_OK && bEndianBig == true)	
+						uInt.vint = ((U32) SWAPI(uInt.vint));
 					break;
 
 				default :

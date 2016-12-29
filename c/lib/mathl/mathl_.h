@@ -586,7 +586,7 @@ class Vector3 :
 
 // Prototypes
 HRESULT mathBinary	( int, const ADTVALUE &, const ADTVALUE &, ADTVALUE & );
-HRESULT mathBinaryV	( int, const ADTVALUE &, const ADTVALUE &, ADTVALUE & );
+HRESULT mathBinary_	( int, const ADTVALUE &, const ADTVALUE &, ADTVALUE & );
 HRESULT mathInv		( double *, double * );
 HRESULT mathUnary		( int, const ADTVALUE &, ADTVALUE & );
 HRESULT mathOp			( const WCHAR *, int * );
