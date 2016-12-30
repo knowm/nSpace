@@ -20,6 +20,8 @@
 	% Notifications
 	$	OnReceive			Misc.Dist {}			% Message received
 	$	OnClient				Misc.Dist {}			% Message client state
+	$	OnOpen				Misc.Dist {}			% Connection open
+	$	OnClose				Misc.Dist {}			% Connection closed
 
 	% DEBUG
 	$	Debug Misc.Debug {}
@@ -160,6 +162,9 @@
 		!	OnClient/OnFire						StoreWs/Dictionary
 		!	RespToStm/OnStream/OnFire			StoreWs/Fire
 
+	% Announce connection
+	!	StoreWs/OnFire								OnOpen/Fire
+
 	%%%%%%%%%%%%%
 	% Data frame
 	%%%%%%%%%%%%%
@@ -277,6 +282,9 @@
 
 	% Latent connections
 	!	DemuxWs/Ontrue								FrmPrs/Fire
+
+	% Announce closures
+	!	Io/OnClose/OnFire							OnClose/Fire
 
 	%%%%%%%%%%%
 	% Transmit

@@ -290,6 +290,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "openssll", "lib\openssll\op
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "openssln", "dll\openssln\openssln.2015.vcxproj", "{5BBC9B52-7B61-493E-A321-E2BA9AFC2E88}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "web", "web", "{B9C9DC71-8E24-42A5-940B-C802AD2614FC}"
+	ProjectSection(SolutionItems) = preProject
+		..\resource\web\nspace_bind.js = ..\resource\web\nspace_bind.js
+		..\resource\web\WebSocketTest.html = ..\resource\web\WebSocketTest.html
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -666,5 +672,6 @@ Global
 		{F46BDA5D-9985-43B3-A043-544498CB2BC6} = {6F1AD522-CE38-40A5-84F1-E6CFE9923420}
 		{1173DBF7-1ADA-4FA9-9068-07D6B1DBE1A6} = {4560AF12-FA84-49FA-94E4-19CB5A898DF0}
 		{5BBC9B52-7B61-493E-A321-E2BA9AFC2E88} = {060BE89F-4362-4D47-8ED0-67F456629B3C}
+		{B9C9DC71-8E24-42A5-940B-C802AD2614FC} = {CF8D6E2C-36DB-48C5-9F9D-B4CAFCB8E13E}
 	EndGlobalSection
 EndGlobal
