@@ -1,0 +1,19 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								SHARED.NSPC
+%
+%						Portal run-time state
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% NSPC: Id of this namespace
+	$	IdThis Nspc.Value { Value "" }
+
+	% NSPC: Registered namespace Ids
+	$	Nspc Nspc.Value { Value {} }
+
+	% NSPC: Share list
+	$	Shares Nspc.Value { Value () }
+

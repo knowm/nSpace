@@ -1,0 +1,16 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								STATE.NSPC
+%
+%						Namespace locator state
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% NSPC: Discovery handlers
+	$	Handlers Nspc.Value { Value { Udpm "Lib/Namespace/Locate/Udpm/" } }
+
+	% NSPC: Id of this namespace
+	$	IdThis Nspc.Value {}
+

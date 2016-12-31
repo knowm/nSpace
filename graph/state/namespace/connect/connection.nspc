@@ -1,0 +1,21 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%									CONNECTION.NSPC
+%
+%								Namespace connection
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% MISCN: Connection status
+	% Idle		- Connection is closed.
+	% Open		- Connection requested
+	% Opened		- Connection is active
+	% Close		- Close the connection
+	% Error		- Error on connection
+	$	Status	Nspc.Value { Value Idle Allowed ( Idle Open Opened Close Error ) }
+
+	% Subgraph: I/O transfers
+	#	IO												State/Comm/IO/ {}
+

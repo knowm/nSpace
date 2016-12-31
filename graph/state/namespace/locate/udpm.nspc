@@ -1,0 +1,18 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								UDPM.NSPC
+%
+%					UDP multicase locator state
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% NSPC: Multicase address
+	$	AddressMulti Nspc.Value { Value "239.255.255.222:16360" }
+
+	% NSPC: Port for which to advertise the namespace
+	% Can be filled in at run-time by TCP connector, etc
+	$	PortNspc Nspc.Value {}
+%	$	PortNspc Nspc.Value { Value 16368:int }
+

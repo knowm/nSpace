@@ -54,6 +54,13 @@
 	% Web sockets
 	%%%%%%%%%%%%%%
 
+	% Subgraph: Interface elements
+	#	ButtonTest									State/Interface/Button/ {}
+		!	ButtonTest/Activate/OnFire			Debug/Fire
+		!	ButtonTest/Activate/OnFire			Debug/Fire
+		!	ButtonTest/Activate/OnFire			Debug/Fire
+		!	ButtonTest/Activate/OnFire			Debug/Fire
+
 	% MISCN: Listening port
 	$	ValuePort Misc.Dist { Value 8443:int }
 		!	Initialize/OnFire						ValuePort/Fire
@@ -87,7 +94,7 @@
 	!	Server/OnClient/OnFire					Server/Client/Fire
 
 	% MISCN: Response value
-	$	ValueResp Misc.Dist { Value ( You Can Byte Me Now 3.14159265358979323:double ) }
+	$	ValueResp Misc.Dist { Value { You Can Byte Me Now 3.14159265358979323:double } }
 %	$	ValueResp Misc.Dist { Value ( You 3.14159265358979323:double ) }
 		!	ValueResp/OnFire						Debug/Fire
 
@@ -100,7 +107,7 @@
 		!	ValToStm/OnSave						Debug/Fire
 
 	% Persist response to stream
-	!	StmToVal/OnLoad							ValueResp/Fire
+%	!	StmToVal/OnLoad							ValueResp/Fire
 
 	% Reset position, send response, and reset size for next time
 	!	ValToStm/OnSave							StmPos/Seek

@@ -1,0 +1,21 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								STATE.NSPC
+%
+%							Namespace portal state
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% NSPC: Portal Id of 'this' namespace
+	$	IdThis Nspc.Value { Value "" }
+
+	% NSPC: Share desciptors (list of dictionaries with from/to specs)
+	$	Shares Nspc.Value { Value () }
+	%	Debug
+%	$	Shares Nspc.Value { Value (
+%			{	From	"{12345678-8628-11d2-868c-006008addfed}/Apps/Auto/StateA/" 
+%				To		"/Portal/StateA/" }
+%		) }
+

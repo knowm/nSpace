@@ -1,0 +1,15 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								INTERFACE.NSPC
+%
+%								Portal interface
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Subgraph: Active shares (From = To)
+	#	Shares										State/Interface/Dict/ {}
+
+	% Subgraph: Id for this namespace
+	#	IdThis										State/Interface/Label/ {}

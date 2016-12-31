@@ -1,0 +1,21 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								INTERFACE.NSPC
+%
+%				Interface for namespace locator
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Subgraph: Resolved locations {Id} = {Connection}
+	#	Locations									State/Interface/Dict/ {}
+
+	% Subgraph: Id for this namespace
+	#	IdThis										State/Interface/Label/ {}
+
+	% MISCN: Link signal
+	$	~Link Misc.Dist {}
+
+
+

@@ -1,0 +1,18 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								INTERFACE.NSPC
+%
+%				Interface for namespace connector
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Subgraph: Active connections 
+	#	Connections									State/Interface/Dict/ {}
+
+	% Subgraph: Id for this namespace
+	#	IdThis										State/Interface/Label/ {}
+
+
+

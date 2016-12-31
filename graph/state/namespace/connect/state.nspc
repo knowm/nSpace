@@ -1,0 +1,13 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								STATE.NSPC
+%
+%					Namespace connector state
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% NSPC: Transport handlers
+	$ Transport Nspc.Value { Value { Tcp "Lib/Namespace/Connect/Tcp/" } }
+
