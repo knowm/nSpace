@@ -49,12 +49,41 @@ new function ()
 			//		-	event contains the message
 			//
 			////////////////////////////////////////////////////////////////////////
-			var value = null;
+			var msg		= null;
+			var elem		= null;
+			var loc		= null;
+			var type		= null;
+			var value	= null;
 
 			// Extract nSpace value from incoming XML
 			parser	= new DOMParser();
 			xmlDoc	= parser.parseFromString(event.data,"text/xml");
-			value		= xmlToValue ( xmlDoc.documentElement );
+			msg		= xmlToValue ( xmlDoc.documentElement );
+
+			// Debug
+			console.log(msg);
+
+			// Root path of value mapped to element
+			elem = nElems[msg["Root"]];
+			if (elem == null)
+				return;
+
+			// To make it easier to process string
+			loc = msg["Location"].toLowerCase();
+			type = elem.nodeName.toLowerCase();
+
+			//
+			// Process value based on element type
+			//
+
+			// Button
+			if (type == "button")
+				{
+				// Enable
+				if (loc == "element/enable/onfire/value")
+					elem.disabled = !msg["Value"];
+				}	// if
+
 			},
 
 		onOpen : function ()
@@ -89,8 +118,14 @@ new function ()
 					// Generate full bind path
 					path = root + elems[i].getAttribute("data-npath");
 
+					// Assign full path for quick reference
+					elems[i].attributes["data-nabs"] = path;
+
 					// Associate the path with the HTML element
 					nElems[path] = elems[i];
+
+					// Set-up events
+					elems[i].onclick = onClickElem;
 
 					// Send listen request for path
 					listen(path);
@@ -133,6 +168,7 @@ new function ()
 		// Send request
 		if (ws != null)
 			ws.send(req);
+
 		}	// listen
 
 	var xmlToValue = function(elem)
@@ -188,23 +224,31 @@ new function ()
 		// Single value
 		else if (elem.nodeName == "Value")
 			{
-			var val = elem.firstChild.nodeValue;
+			var val = null;
 
 			// Type specified ?
 			var type = (elem.attributes.length > 0) ?
 							elem.attributes["Type"].nodeValue : null;
 
-			// Default
-			if (type == null)
-				type = "string";
-			else 
-				type = type.toLowerCase();
+			// It is possible to receive an 'empty' value in which
+			// case there is not 'firstChild'.
+			if (	(elem.firstChild != null) &&
+					(val = elem.firstChild.nodeValue) != null)
+				{
+				// Default
+				if (type == null)
+					type = "string";
+				else 
+					type = type.toLowerCase();
 
-			// Convert type
-			if (type == "float" || type == "double")
-				val = parseFloat(val);
-			else if (type == "int" || type == "long")
-				val = parseInt(val);
+				// Convert type
+				if (type == "float" || type == "double")
+					val = parseFloat(val);
+				else if (type == "int" || type == "long")
+					val = parseInt(val);
+				else if (type == "boolean")
+					val = Boolean(val.toLowerCase() == "true");
+				}	// if
 
 			// Use as return value
 			ret = val;
@@ -212,6 +256,117 @@ new function ()
 
 		return ret;
 		}	// xmlToValue
+
+	var valueToXml = function(value)
+		{
+		////////////////////////////////////////////////////////////////////////
+		//
+		//	PURPOSE
+		//		-	Convert value to XML.
+		//
+		//	PARAMETERS
+		//		-	value is the value to convert
+		//
+		// RETURN VALUE
+		//		XML string representing value
+		//
+		////////////////////////////////////////////////////////////////////////
+		var ret = null;
+		var dct = {};
+		var lst = [];
+
+		// Dictionary
+		if (value instanceof Object)
+			{
+			// Begin dictionary
+			ret = "<Dictionary>"
+
+			// Append values
+			for (var key in value)
+				{
+				// Key then value
+				ret += valueToXml(key);
+				ret += valueToXml(value[key]);
+				}	// for
+
+			// End dictionary
+			ret += "</Dictionary>";
+			}	// if
+
+		// List
+		else if (value instanceof Array)
+			{
+			console.log("Array");
+			}	// else if
+
+		// Value
+		else
+			{
+			// Begin value
+			ret = "<Value";
+
+			// String
+			console.log(typeof value);
+			if (typeof value == "string")
+				ret += ">"+value.toString();
+
+			// Number
+			else if (typeof value == "number")
+				{
+				// Integer
+				if (Number.isInteger(value))
+					{
+					ret += " Type=\"Integer\">";
+					ret += value.toString();
+					}	// else if
+				else
+					{
+					ret += " Type=\"Float\">";
+					ret += value.toString();
+					}	// else
+
+				}	// else if
+
+			// Boolean
+			else if (typeof value == "boolean")
+				{
+				ret += " Type=\"Boolean\">";
+				ret += value.toString();
+				}	// else if
+
+			// Default
+			else
+				ret += ">"+value.toString();
+
+			// End value
+			ret += "</Value>";
+			}	// else
+
+		return ret;
+		}	// valueToXml
+
+	//
+	// Events
+	//
+
+	// Buttons
+	var onClickElem = function(event)
+		{
+		var dct  = {};
+		var type = event.srcElement.nodeName.toLowerCase(); 
+
+		// Button
+		if (type == "button")
+			{
+			// Send activate value
+			dct["Verb"]			= "Store";
+			dct["Location"]	= event.srcElement.attributes["data-nabs"] + "Activate/OnFire/Value";
+			dct["Value"]		= 0;
+			var xml = valueToXml ( dct );
+			ws.send ( xml );
+			}	// if
+
+		}	// onClickElem
 
 	}	// function
 

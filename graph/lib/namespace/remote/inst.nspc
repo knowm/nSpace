@@ -1,0 +1,177 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								INST.NSPC
+%
+%		A remote server implementation for load/store/listen
+%		capability over any client interface.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+
+	% Actions
+	$	Initialize			Misc.Dist {}		% Initialize
+	$	Uninitialize		Misc.Dist {}		% Uninitialize
+
+	% Notifications
+	$	OnReceive			Misc.Dist {}		% Value received
+
+	% DEBUG
+	$	Debug Misc.Debug {}
+		!	Initialize/OnFire						Debug/Fire
+
+	%%%%%%%%
+	% Setup
+	%%%%%%%%
+
+	% Subgraph: State for this instance
+%	#	State											State/Namespace/Remote/State/ {}
+
+	% MISCN: Create dictionary to keep track of listened locations vs. clients
+	$	CreateListensDct Misc.Create { Id Adt.Dictionary }
+		!	Initialize/OnFire						CreateListensDct/Fire
+
+	%%%%%%%%%%
+	% Servers
+	%%%%%%%%%%
+
+	%% TOOD: Dynamically added servers
+
+	% Subgraph: Websocket server
+	#	Ws												Lib/Namespace/Remote/Ws/Inst/ {}
+		!	Ws/State/OnValue/OnFire				OnReceive/Fire
+
+	%%%%%%%%%%
+	% Receive
+	%%%%%%%%%%
+
+	% ADTN: Load the active connection string
+	$	LoadConnRx Adt.Load { Key Connection }
+		!	OnReceive/OnFire						LoadConnRx/Dictionary
+		!	OnReceive/OnFire						LoadConnRx/Fire
+
+	% ADTN: Load the received value
+	$	LoadValRx Adt.Load { Key Value }
+		!	OnReceive/OnFire						LoadValRx/Dictionary
+		!	OnReceive/OnFire						LoadValRx/Fire
+
+	% ADTN: Load path if specified
+	$	LoadPathRx Adt.Load { Key Path }
+		!	LoadValRx/OnFire						LoadPathRx/Dictionary
+		!	LoadValRx/OnFire						LoadPathRx/Fire
+
+	% MISCN: Demux verb
+	$	DemuxVerb Misc.Demux { Key Verb Values ( Store Load Listen ) }
+		!	LoadValRx/OnFire						DemuxVerb/Dictionary
+		!	LoadValRx/OnFire						DemuxVerb/Fire
+
+	%%%%%%%
+	% Load
+	%%%%%%%
+
+	%%%%%%%%
+	% Store
+	%%%%%%%%
+
+	%%%%%%%%%
+	% Listen
+	%%%%%%%%%
+	!	DemuxVerb/OnListen						Debug/Fire
+
+	% ADTN: Load listen dictionay for path
+	$	LoadListenDct Adt.Load {}
+		!	CreateListensDct/OnFire				LoadListenDct/Dictionary
+		!	LoadPathRx/OnFire						LoadListenDct/Key
+		!	DemuxVerb/OnListen					LoadListenDct/Fire
+
+	%% Listen dictionary does not exist yet, add it and initiate the first listen of location
+
+	% ADTN: Store listen dictionary under path
+	$	StoreListenDct Adt.Store {}
+		!	CreateListensDct/OnFire				StoreListenDct/Dictionary
+		!	LoadListenDct/OnNotFound			StoreListenDct/Key
+
+	% MISCN: Create client listen dictionary
+	$	CreateListenDct Misc.Create { Id Adt.Dictionary }
+		!	LoadListenDct/OnNotFound			CreateListenDct/Fire
+		!	CreateListenDct/OnFire				StoreListenDct/Fire
+
+	% ADTN: Store client connection as a listener to location
+	$	StoreListenConn Adt.Store { Value 0:int }
+		!	LoadConnRx/OnFire						StoreListenConn/Key
+		!	LoadListenDct/OnFire					StoreListenConn/Dictionary
+		!	LoadListenDct/OnFire					StoreListenConn/Fire
+		!	CreateListenDct/OnFire				StoreListenConn/Dictionary
+		!	CreateListenDct/OnFire				StoreListenConn/Fire
+
+	% NSPC: Request listen for new requests, existing values will immediately be output
+	$	Reflect Nspc.Reflect {}
+		!	LoadListenDct/OnNotFound			Reflect/Root
+		!	LoadListenDct/OnNotFound			Reflect/Add
+		!	Reflect/OnRoot							Debug/Fire
+		!	Reflect/OnLocation					Debug/Fire
+		!	Reflect/OnValue						Debug/Fire
+
+	%%%%%%%%
+	% Value
+	%%%%%%%%
+
+	%% Transmit values to listening clients.
+
+	% MISCN: Create dictionary to store values
+	$	CreateDctTx Misc.Create { Id Adt.Dictionary }
+		!	Initialize/OnFire						CreateDctTx/Fire
+
+	% MISCN: Create value dictionary
+	$	CreateDctValTx Misc.Create { Id Adt.Dictionary }
+		!	Initialize/OnFire						CreateDctValTx/Fire
+
+	% ADTN: Store value dictionary in transmit dictionary
+	$	StoreDctTx Adt.Store { Key Value }
+		!	CreateDctTx/OnFire					StoreDctTx/Dictionary
+		!	CreateDctValTx/OnFire				StoreDctTx/Fire
+
+	% MISCN: Value verb
+	$	ValueVerb Misc.Dist { Value Value }
+		!	Initialize/OnFire						ValueVerb/Fire
+
+	% ADTN: Load the clients listening to location
+	$	LoadValueConn Adt.Load {}
+		!	CreateListensDct/OnFire				LoadValueConn/Dictionary
+		!	Reflect/OnRoot							LoadValueConn/Key
+
+	% ADTN: Store information in dictionary
+	$	StoreDctValTx Adt.Keys { Keys ( Verb Root Location Value ) }
+		!	CreateDctValTx/OnFire				StoreDctValTx/Dictionary
+		!	ValueVerb/OnFire						StoreDctValTx/Verb
+		!	Reflect/OnRoot							StoreDctValTx/Root
+		!	Reflect/OnLocation					StoreDctValTx/Location
+		!	Reflect/OnValue						StoreDctValTx/Value
+		!	LoadValueConn/OnFire					StoreDctValTx/Store
+		!	StoreDctValTx/OnStore				Debug/Fire
+
+	% ADTN: Iterate connections for root
+	$	ListenConnIt Adt.Iterate {}
+		!	LoadValueConn/OnFire					ListenConnIt/Container
+		!	LoadValueConn/OnFire					ListenConnIt/First
+
+	% ADTN: Store connection 
+	$	StoreDctConnTx Adt.Store { Key Connection }
+		!	CreateDctTx/OnFire					StoreDctConnTx/Dictionary
+		!	ListenConnIt/OnKey					StoreDctConnTx/Fire
+
+	% Transmit value
+%	!	StoreDctConnTx/OnFire					Debug/Fire
+	!	StoreDctConnTx/OnFire					Ws/State/Value/Fire
+
+	% Next connection
+	!	ListenConnIt/OnNext						ListenConnIt/Next
+
+	% Latent connections
+	!	Reflect/OnValue							LoadValueConn/Fire
+
+
+
+

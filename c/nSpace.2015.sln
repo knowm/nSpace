@@ -296,6 +296,45 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "web", "web", "{B9C9DC71-8E2
 		..\resource\web\WebSocketTest.html = ..\resource\web\WebSocketTest.html
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "namespace", "namespace", "{4A030D83-78F9-4712-BFCA-17428B21F7AF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "connect", "connect", "{A39543DD-3801-4177-81F3-8C6E3D35BB3B}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\state\namespace\connect\connection.nspc = ..\graph\state\namespace\connect\connection.nspc
+		..\graph\state\namespace\connect\interface.nspc = ..\graph\state\namespace\connect\interface.nspc
+		..\graph\state\namespace\connect\state.nspc = ..\graph\state\namespace\connect\state.nspc
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "locate", "locate", "{E6570AE8-9B0D-449F-96EC-60277D590E3D}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\state\namespace\locate\interface.nspc = ..\graph\state\namespace\locate\interface.nspc
+		..\graph\state\namespace\locate\state.nspc = ..\graph\state\namespace\locate\state.nspc
+		..\graph\state\namespace\locate\udpm.nspc = ..\graph\state\namespace\locate\udpm.nspc
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "portal", "portal", "{7FF4ACCD-A79B-4F1F-A6DF-C44B291CE5CE}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\state\namespace\portal\interface.nspc = ..\graph\state\namespace\portal\interface.nspc
+		..\graph\state\namespace\portal\shared.nspc = ..\graph\state\namespace\portal\shared.nspc
+		..\graph\state\namespace\portal\state.nspc = ..\graph\state\namespace\portal\state.nspc
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "remote", "remote", "{3CA8D5E3-9653-4E39-A9B6-F800CF5DA584}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\state\namespace\remote\server.nspc = ..\graph\state\namespace\remote\server.nspc
+		..\graph\state\namespace\remote\state.nspc = ..\graph\state\namespace\remote\state.nspc
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "remote", "remote", "{312DFD1B-DEFE-4997-AF75-D55ADA883863}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\lib\namespace\remote\inst.nspc = ..\graph\lib\namespace\remote\inst.nspc
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ws", "ws", "{DF76A8AC-ABE7-4042-BC3B-4A736E83B686}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\lib\namespace\remote\ws\inst.nspc = ..\graph\lib\namespace\remote\ws\inst.nspc
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -673,5 +712,12 @@ Global
 		{1173DBF7-1ADA-4FA9-9068-07D6B1DBE1A6} = {4560AF12-FA84-49FA-94E4-19CB5A898DF0}
 		{5BBC9B52-7B61-493E-A321-E2BA9AFC2E88} = {060BE89F-4362-4D47-8ED0-67F456629B3C}
 		{B9C9DC71-8E24-42A5-940B-C802AD2614FC} = {CF8D6E2C-36DB-48C5-9F9D-B4CAFCB8E13E}
+		{4A030D83-78F9-4712-BFCA-17428B21F7AF} = {5A572578-54D6-40FE-93BC-F8E838082B52}
+		{A39543DD-3801-4177-81F3-8C6E3D35BB3B} = {4A030D83-78F9-4712-BFCA-17428B21F7AF}
+		{E6570AE8-9B0D-449F-96EC-60277D590E3D} = {4A030D83-78F9-4712-BFCA-17428B21F7AF}
+		{7FF4ACCD-A79B-4F1F-A6DF-C44B291CE5CE} = {4A030D83-78F9-4712-BFCA-17428B21F7AF}
+		{3CA8D5E3-9653-4E39-A9B6-F800CF5DA584} = {4A030D83-78F9-4712-BFCA-17428B21F7AF}
+		{312DFD1B-DEFE-4997-AF75-D55ADA883863} = {10AC39FC-B398-48A3-9C9C-95A4E07D9A48}
+		{DF76A8AC-ABE7-4042-BC3B-4A736E83B686} = {312DFD1B-DEFE-4997-AF75-D55ADA883863}
 	EndGlobalSection
 EndGlobal

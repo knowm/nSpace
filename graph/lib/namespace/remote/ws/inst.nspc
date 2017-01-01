@@ -1,0 +1,155 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								INST.NSPC
+%
+%			A remote namespace server via WebSockets
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+
+	% Actions
+	$	Initialize			Misc.Dist {}		% Initialize
+	$	Uninitialize		Misc.Dist {}		% Uninitialize
+
+	% Notifications
+
+	% DEBUG
+	$	Debug Misc.Debug {}
+		!	Initialize/OnFire						Debug/Fire
+
+	%%%%%%%%
+	% Setup
+	%%%%%%%%
+
+	% Subgraph: State for this instance
+	#	State											State/Namespace/Remote/Server/ {}
+
+	%%%%%%%%%
+	% Server
+	%%%%%%%%%
+
+	% MISCN: Listening port TODO: From temporal...
+	$	ValuePort Misc.Dist { Value 8443:int }
+		!	Initialize/OnFire						ValuePort/Fire
+
+	% Subgraph: Web socket server
+	#	Server										Lib/Comm/Network/Ip/Tcp/Http/Ws/Server/ {}
+		!	ValuePort/OnFire						Server/PortSrvr/Fire
+
+	% MISCN: Create dictionary for active clients
+	$	CreateCliDct Misc.Create { Id Adt.Dictionary }
+		!	Initialize/OnFire						CreateCliDct/Fire
+
+	% MISCN: Create parser for XML
+	$	CreatePrsrXml Misc.Create { Id IO.StmPrsXML }
+		!	Initialize/OnFire						CreatePrsrXml/Fire
+
+	%%%%%%%
+	% Open
+	%%%%%%%
+
+	%% When a client has connected, update state
+
+	% MISCN: Connection open
+	$	OnOpen Misc.Dist {}
+		!	Server/OnOpen/OnFire					OnOpen/Fire
+
+	% ADTN: Store state under connection string
+	$	StoreOpenConn Adt.Store {}
+		!	CreateCliDct/OnFire					StoreOpenConn/Dictionary
+		!	OnOpen/OnFire							StoreOpenConn/Value
+
+	% ADTN: Load remote connection string of client
+	$	LoadOpenConn Adt.Load { Key Remote }
+		!	OnOpen/OnFire							LoadOpenConn/Dictionary
+		!	OnOpen/OnFire							LoadOpenConn/Fire
+		!	LoadOpenConn/OnFire					StoreOpenConn/Key
+		!	LoadOpenConn/OnFire					StoreOpenConn/Fire
+
+	%%%%%%%%%%
+	% Receive
+	%%%%%%%%%%
+
+	%% Currently WebSockets is implemented as XML nSpace values. TOOD: Binary support.
+
+	% MISCN: Persist value from incoming stream
+	$	StmToVal Io.Persist {}
+		!	CreatePrsrXml/OnFire					StmToVal/Parser
+		!	Server/OnReceive/OnFire				StmToVal/Stream
+		!	Server/OnReceive/OnFire				StmToVal/Load
+		!	StmToVal/OnLoad						Debug/Fire
+
+	% MISCN: Create dictionary to hold value
+	$	CreateDctRx Misc.Create { Id Adt.Dictionary }
+		!	StmToVal/OnLoad						CreateDctRx/Fire
+
+	% ADTN: Store value in dictionary
+	$	StoreValRx Adt.Store { Key Value }
+		!	CreateDctRx/OnFire					StoreValRx/Dictionary
+		!	StmToVal/OnLoad						StoreValRx/Fire
+
+	% ADTN: Load the connection string for the received message
+	$	LoadConnRx Adt.Load { Key Remote }
+		!	Server/OnClient/OnFire				LoadConnRx/Dictionary
+		!	StoreValRx/OnFire						LoadConnRx/Fire
+
+	% ADTN: Store connection string in received message
+	$	StoreConnRx Adt.Store { Key Connection }
+		!	CreateDctRx/OnFire					StoreConnRx/Dictionary
+		!	LoadConnRx/OnFire						StoreConnRx/Fire
+
+	% Value received
+	!	StoreConnRx/OnFire						Debug/Fire
+	!	StoreConnRx/OnFire						State/OnValue/Fire
+
+	%%%%%%%%%%%
+	% Transmit
+	%%%%%%%%%%%
+
+	% ADTN: Load target connection
+	$	LoadConnTx Adt.Load { Key Connection }
+		!	State/Value/OnFire					LoadConnTx/Dictionary
+
+	% ADTN: Does connection match open connection ?
+	$	LoadCliTx Adt.Load {}
+		!	CreateCliDct/OnFire					LoadCliTx/Dictionary
+		!	LoadConnTx/OnFire						LoadCliTx/Key
+		!	LoadConnTx/OnFire						LoadCliTx/Fire
+
+	% Active client
+	!	LoadCliTx/OnFire							Server/Client/Fire
+
+	%% Persist value to XML string stream
+
+	% MISCN: Create byte stream to receive data
+	$	CreateStmTx Misc.Create { Id Io.StmMemory }
+		!	Initialize/OnFire						CreateStmTx/Fire
+
+	% ION: Reset size/position of outgoing stream
+	$	StmPosTx Io.StreamOp { Origin Set Offset 0:int }
+		!	CreateStmTx/OnFire					StmPosTx/Stream
+
+	% ADTN: Load target value
+	$	LoadValueTx Adt.Load { Key Value }
+		!	State/Value/OnFire					LoadValueTx/Dictionary
+		!	LoadCliTx/OnFire						LoadValueTx/Fire
+		!	LoadValueTx/OnFire					Debug/Fire
+
+	% MISCN: Persist value to stream
+	$	ValToStm Io.Persist {}
+		!	CreatePrsrXml/OnFire					ValToStm/Parser
+		!	CreateStmTx/OnFire					ValToStm/Stream
+		!	LoadValueTx/OnFire					ValToStm/Value
+		!	LoadValueTx/OnFire					ValToStm/Save
+
+	% Reset position, send response, and reset size for next time
+	!	ValToStm/OnSave							StmPosTx/Seek
+	!	ValToStm/OnSave							Debug/Fire
+	!	ValToStm/OnSave							Server/Transmit/Fire
+	!	ValToStm/OnSave							StmPosTx/Size
+
+	% Latent connections
+	!	State/Value/OnFire						LoadConnTx/Fire

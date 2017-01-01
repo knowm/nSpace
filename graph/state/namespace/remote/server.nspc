@@ -1,0 +1,16 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								SERVER.NSPC
+%
+%						A remote server state
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% NSPC: Transmit value to client, contains client connection string
+	$	Value Misc.Dist {}
+
+	% NSPC: Message received from client, contains client connection string
+	$	OnValue Misc.Dist {}
+
