@@ -55,20 +55,22 @@
 	%%%%%%%%%%%%%%
 
 	% Subgraph: Remote namespace server
-	#	Server										Lib/Namespace/Remote/Inst/ {}
+%	#	Server										Lib/Namespace/Remote/Inst/ {}
 
 	% Subgraph: Interface elements
-	#	ButtonTest									State/Interface/Button/ {}
-		!	ButtonTest/Activate/OnFire			Debug/Fire
-		!	ButtonTest/Activate/OnFire			Debug/Fire
-		!	ButtonTest/Activate/OnFire			Debug/Fire
-		!	ButtonTest/Activate/OnFire			Debug/Fire
+%	#	ButtonTest									State/Interface/Button/ {}
+%		!	ButtonTest/Activate/OnFire			Debug/Fire
+%		!	ButtonTest/Activate/OnFire			Debug/Fire
+%		!	ButtonTest/Activate/OnFire			Debug/Fire
+%		!	ButtonTest/Activate/OnFire			Debug/Fire
 
 	% MISCN: Disable button
 %	$	ValueDis Misc.Dist { Value false:bool }
-	$	ValueDis Misc.Dist { Value true:bool }
-		!	Initialize/OnFire						ValueDis/Fire
-		!	ValueDis/OnFire						ButtonTest/Element/Enable/Fire
+%	$	ValueDis Misc.Dist { Value true:bool }
+%		!	Initialize/OnFire						ValueDis/Fire
+%		!	ValueDis/OnFire						ButtonTest/Element/Enable/Fire
+
+	%%%%%
 
 	% MISCN: Listening port
 %	$	ValuePort Misc.Dist { Value 8443:int }
