@@ -26,7 +26,7 @@
 /////////
 
 //
-// Class - Device.  USB device node.
+// Class - Device.  WinUSB device node.
 //
 
 class Device :
@@ -72,7 +72,7 @@ class Device :
 	};
 
 //
-// Class - Endpoint.  USB Endpoint node.
+// Class - Endpoint.  WinUSB Endpoint node.
 //
 
 class Endpoint :

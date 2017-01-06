@@ -594,6 +594,7 @@ class NotifyDevices :
 	HWND			hWndDev;									// Handle to hidden window
 	HDEVNOTIFY	hDev;										// Device notification
 	IDictionary	*pDctN;									// Notification dictionary
+	GUID			guidClass;								// Class ID
 
 	// 'ITickable' members
 	STDMETHOD(tick)		( void );

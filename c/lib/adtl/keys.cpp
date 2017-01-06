@@ -121,6 +121,7 @@ HRESULT Keys :: onAttach ( bool bAttach )
 		{
 		_RELEASE(pRcps);
 		_RELEASE(pKeysOut);
+		_RELEASE(pKeys);
 		}	// else
 
 	return hr;
@@ -221,6 +222,40 @@ HRESULT Keys :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 		// Result
 		CCLOK ( _EMT(Store,(unkV = pDict)); )
+		}	// else if
+
+	// Copy keys
+	else if (_RCP(Copy))
+		{
+		IDictionary	*pDst = NULL;
+		IIt			*pIt	= NULL;
+		adtValue		vK,vV;
+		adtIUnknown	unkV(v);
+
+		// State check, destination dictionary must be specified
+		CCLTRYE( pDict != NULL, ERROR_INVALID_STATE );
+		CCLTRY ( _QISAFE(unkV,IID_IDictionary,&pDst) );
+
+		// Copy key/values
+		CCLTRY(pKeys->iterate(&pIt));
+		while (hr == S_OK && pIt->read ( vK ) == S_OK)
+			{
+			// Load key from source, store in destination
+			if (pDict->load ( vK, vV ) == S_OK)
+				hr = pDst->store ( vK, vV );
+			else
+				_EMT(NotFound,vK);
+
+			// Clean up
+			pIt->next();
+			}	// while
+
+		// Clean up
+		_RELEASE(pIt);
+		_RELEASE(pDst);
+
+		// Result
+		CCLOK ( _EMT(Copy,v); )
 		}	// else if
 
 	// Clear cached values

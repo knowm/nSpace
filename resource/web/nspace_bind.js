@@ -34,8 +34,7 @@ new function ()
 			// Establish connection to webserver
 			ws					= new WebSocket("ws://localhost:8080/nspace");
 			ws.onopen		= this.onOpen;
-			ws.onmessage	= this.onMessage;
-
+			ws.onmessage	= this.onMessage;		
 			},
 
 		onMessage : function(event)

@@ -530,13 +530,14 @@
 %		!	CntQ/OnFire								MoreQ/Fire
 %		!	MoreQ/OnGreater						CntQ/Increment
 
-
 	%%%%%%%%%%%%%%
 	% Enumeration
 	%%%%%%%%%%%%%%
 
 	% Subgraph: Enumeration
 %	#	Enum											Lib/Comm/Usb/Enum/ {}
+%		!	Initialize/OnFire						Enum/Start/Fire
+%		!	Uninitialize/OnFire					Enum/Stop/Fire
 %		!	Enum/OnNext/OnFire					Debug/Fire
 %		!	Enum/OnNext/OnFire					Enum/Next/Fire
 %		!	Enum/OnEnd/OnFire						Debug/Fire

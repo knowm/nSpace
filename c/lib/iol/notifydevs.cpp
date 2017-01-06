@@ -50,12 +50,12 @@ HRESULT NotifyDevices :: onAttach ( bool bAttach )
 		adtValue	vL;
 
 		// Defaults
-//		if (	pnDesc->load ( adtString(L"Class"), vL ) == S_OK )
-//			{
-//			adtString	strClass(vL);
-//			if (strClass.length() > 0)
-//				CLSIDFromString ( strClass, &guidClass );
-//			}	// if
+		if (	pnDesc->load ( adtString(L"Class"), vL ) == S_OK )
+			{
+			adtString	strClass(vL);
+			if (strClass.length() > 0)
+				CLSIDFromString ( strClass, &guidClass );
+			}	// if
 
 		// Notification dictionary
 		CCLTRY ( COCREATE ( L"Adt.Dictionary", IID_IDictionary, &pDctN ) );
@@ -201,12 +201,11 @@ HRESULT NotifyDevices :: tickBegin ( void )
 	// Registrations
 	if (hr == S_OK)
 		{
-		// TODO: Specify all interested device interface, right just USB
+		// TODO: Support list of classes ?
 		memset ( &devIntf, 0, sizeof(devIntf) );
 		devIntf.dbcc_size			= sizeof(devIntf);
 		devIntf.dbcc_devicetype	= DBT_DEVTYP_DEVICEINTERFACE;
-		CLSIDFromString ( L"{A5DCBF10-6530-11D2-901F-00C04FB951ED}", 
-								&devIntf.dbcc_classguid );
+		devIntf.dbcc_classguid	= guidClass;
 		CCLTRYE ( (hDev = RegisterDeviceNotification ( hWndDev, &devIntf,
 						DEVICE_NOTIFY_WINDOW_HANDLE )) != NULL, GetLastError() );		
 		}	// if
@@ -376,6 +375,12 @@ LRESULT CALLBACK NotifyDevices ::
 
 				}	// switch(wParam)
 			break;
+
+		case WM_DESTROY :
+			// Object ptr now invalid
+			SetWindowLongPtr ( hWnd, GWLP_USERDATA, 0 );
+			break;
+
 		}	// switch
 
 	// Default beahviour

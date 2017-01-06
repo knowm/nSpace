@@ -9,11 +9,13 @@
 @
 
 	% MISCN: Device status
-	% Idle	- Idle.
-	% Open	- Device is requesting interface to open
-	% Opened - Communication channel is open and ready for transfers.
-	% Close	- Device is requesting interface to close
-	% Error	- Error opening device
+	% Idle		- Idle (device not present).
+	% Present	- Device is present.
+	% Open		- Device is requesting interface to open.
+	% Opened		- Communication channel is open and ready for transfers.
+	% Close		- Device is requesting interface to close
+	% Closed		- Device is closed either by request or removal
+	% Error		- Error opening device
 	$	Status	Nspc.Value { Value Idle }
 
 	% Subgraph: I/O

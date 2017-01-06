@@ -535,12 +535,14 @@ class Keys :
 
 	// Connections
 	DECLARE_RCP(Clear)
+	DECLARE_CON(Copy)
 	DECLARE_RCP(Dictionary)
 	DECLARE_CON(Load)
 	DECLARE_CON(Store)
 	DECLARE_EMT(NotFound)
 	BEGIN_BEHAVIOUR()
 		DEFINE_RCP(Clear)
+		DEFINE_CON(Copy)
 		DEFINE_RCP(Dictionary)
 		DEFINE_CON(Load)
 		DEFINE_CON(Store)

@@ -9,8 +9,13 @@
 @
 
 	% NSPC: Local path to USB device
-	$	Path Nspc.Value {}
+	$	Path				Nspc.Value {}
 
-	% NSPC: Vendor and product Id
-	$	VendorId Nspc.Value { Value 0:int }
-	$	ProductId Nspc.Value { Value 0:int }
+	% NSPC: Vendor Id
+	$	VendorId			Nspc.Value { Value 0:int }
+
+	% NSPC: Product Id
+	$	ProductId		Nspc.Value { Value 0:int }
+
+	% NSPC: Serial number
+	$	SerialNumber	Nspc.Value { Value 0:int }

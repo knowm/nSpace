@@ -292,6 +292,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "openssln", "dll\openssln\op
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "web", "web", "{B9C9DC71-8E24-42A5-940B-C802AD2614FC}"
 	ProjectSection(SolutionItems) = preProject
+		..\resource\web\default.css = ..\resource\web\default.css
 		..\resource\web\nspace_bind.js = ..\resource\web\nspace_bind.js
 		..\resource\web\WebSocketTest.html = ..\resource\web\WebSocketTest.html
 	EndProjectSection
@@ -333,6 +334,15 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ws", "ws", "{DF76A8AC-ABE7-4042-BC3B-4A736E83B686}"
 	ProjectSection(SolutionItems) = preProject
 		..\graph\lib\namespace\remote\ws\inst.nspc = ..\graph\lib\namespace\remote\ws\inst.nspc
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "driver", "driver", "{F2A02BCD-0B38-4294-9DD7-2E3E7EBB38EF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "device", "device", "{133215BB-3776-4185-986D-19EAAC1C3FF2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "manager", "manager", "{F6441972-5EAD-44AB-845A-D200E3D384D6}"
+	ProjectSection(SolutionItems) = preProject
+		..\graph\driver\device\manager\inst.nspc = ..\graph\driver\device\manager\inst.nspc
 	EndProjectSection
 EndProject
 Global
@@ -717,5 +727,8 @@ Global
 		{3CA8D5E3-9653-4E39-A9B6-F800CF5DA584} = {4A030D83-78F9-4712-BFCA-17428B21F7AF}
 		{312DFD1B-DEFE-4997-AF75-D55ADA883863} = {10AC39FC-B398-48A3-9C9C-95A4E07D9A48}
 		{DF76A8AC-ABE7-4042-BC3B-4A736E83B686} = {312DFD1B-DEFE-4997-AF75-D55ADA883863}
+		{F2A02BCD-0B38-4294-9DD7-2E3E7EBB38EF} = {6136E7F7-76C9-492D-A32C-36C14EF0DE79}
+		{133215BB-3776-4185-986D-19EAAC1C3FF2} = {F2A02BCD-0B38-4294-9DD7-2E3E7EBB38EF}
+		{F6441972-5EAD-44AB-845A-D200E3D384D6} = {133215BB-3776-4185-986D-19EAAC1C3FF2}
 	EndGlobalSection
 EndGlobal
