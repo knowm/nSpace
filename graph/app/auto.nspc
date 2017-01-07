@@ -55,20 +55,27 @@
 	%%%%%%%%%%%%%%
 
 	% Subgraph: Remote namespace server
-%	#	Server										Lib/Namespace/Remote/Inst/ {}
+	#	Server										Lib/Namespace/Remote/Inst/ {}
 
 	% Subgraph: Interface elements
-%	#	ButtonTest									State/Interface/Button/ {}
-%		!	ButtonTest/Activate/OnFire			Debug/Fire
-%		!	ButtonTest/Activate/OnFire			Debug/Fire
-%		!	ButtonTest/Activate/OnFire			Debug/Fire
-%		!	ButtonTest/Activate/OnFire			Debug/Fire
+	#	ButtonTest									State/Interface/Button/ {}
+		!	ButtonTest/Activate/OnFire			Debug/Fire
+	#	CheckboxTest								State/Interface/Button/ {}
+		!	CheckboxTest/Activate/OnFire		Debug/Fire
 
 	% MISCN: Disable button
 %	$	ValueDis Misc.Dist { Value false:bool }
 %	$	ValueDis Misc.Dist { Value true:bool }
 %		!	Initialize/OnFire						ValueDis/Fire
 %		!	ValueDis/OnFire						ButtonTest/Element/Enable/Fire
+
+	% MISCN: Checked/unchecked
+	$	ValueChk Misc.Dist { Value true:bool }
+		!	Initialize/OnFire						ValueChk/Fire
+		!	ValueChk/OnFire						CheckboxTest/Activate/Fire
+	$	ValueUnchk Misc.Dist { Value false:bool }
+		!	Initialize/OnFire						ValueUnchk/Fire
+%		!	ValueUnchk/OnFire						CheckboxTest/Activate/Fire
 
 	%%%%%
 

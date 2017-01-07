@@ -294,6 +294,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "web", "web", "{B9C9DC71-8E2
 	ProjectSection(SolutionItems) = preProject
 		..\resource\web\default.css = ..\resource\web\default.css
 		..\resource\web\nspace_bind.js = ..\resource\web\nspace_bind.js
+		..\resource\web\nspace_xml.js = ..\resource\web\nspace_xml.js
 		..\resource\web\WebSocketTest.html = ..\resource\web\WebSocketTest.html
 	EndProjectSection
 EndProject
