@@ -353,6 +353,7 @@ class StmPrsXML :
 	public CCLObject,										// Base class
 	#ifdef	__USESAX__
 	public ISAXContentHandler,							// Interface
+	public ISAXErrorHandler,							// Interface
 	#endif
 	public IStreamPersist								// Interface
 	{
@@ -392,6 +393,11 @@ class StmPrsXML :
 	STDMETHOD(ignorableWhitespace)	( const wchar_t *, int );
 	STDMETHOD(processingInstruction)	( const wchar_t *, int, const wchar_t *, int );
 	STDMETHOD(skippedEntity)			( const wchar_t *, int );
+
+	// 'ISAXErrorHandler' members
+	STDMETHOD(error)						( ISAXLocator *, const wchar_t *, HRESULT );
+	STDMETHOD(fatalError)				( ISAXLocator *, const wchar_t *, HRESULT );
+	STDMETHOD(ignorableWarning)		( ISAXLocator *, const wchar_t *, HRESULT );
 	#endif
 
 	// CCL
@@ -399,6 +405,7 @@ class StmPrsXML :
 		CCL_INTF(IStreamPersist)
 		#ifdef	__USESAX__
 		CCL_INTF(ISAXContentHandler)
+		CCL_INTF(ISAXErrorHandler)
 		#endif
 	CCL_OBJECT_END()
 	virtual HRESULT	construct	( void );		// Construct object

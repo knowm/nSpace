@@ -211,12 +211,12 @@
 		!	CreateFrmDct/OnFire					FrmPrsLenT/Dictionary
 		!	DemuxWs/Ontrue							FrmPrsLenT/Stream
 		!	IsLengthT/OnEqual						FrmPrsLenT/Fire
-		!	FrmPrsLenT/OnFire						Debug/Fire
+%		!	FrmPrsLenT/OnFire						Debug/Fire
 	$	FrmPrsLenE Misc.DictParse { Endian Big Format ( { Name Length Type Long } ) }
 		!	CreateFrmDct/OnFire					FrmPrsLenE/Dictionary
 		!	DemuxWs/Ontrue							FrmPrsLenE/Stream
 		!	IsLengthE/OnEqual						FrmPrsLenE/Fire
-		!	FrmPrsLenE/OnFire						Debug/Fire
+%		!	FrmPrsLenE/OnFire						Debug/Fire
 
 	%%
 	%% If mask is present, the 4 byte masking value must be extracted next.
@@ -234,6 +234,35 @@
 		!	CreateFrmDct/OnFire					FrmPrsMask/Dictionary
 		!	DemuxWs/Ontrue							FrmPrsMask/Stream
 		!	DemuxMask/Ontrue						FrmPrsMask/Fire
+
+	%%
+	%% Apparently some clients can send additional data beyond the specified payload length.
+	%% Truncate remaing stream to amount alreay used plus specified size.
+	%%
+
+	% ADTN: Load the final length
+	$	LoadLength Adt.Load { Key Length }
+		!	DemuxMask/OnDefault					LoadLength/Dictionary
+		!	DemuxMask/OnDefault					LoadLength/Fire
+		!	FrmPrsMask/OnFire						LoadLength/Dictionary
+		!	FrmPrsMask/OnFire						LoadLength/Fire
+
+	% ION: Obtain the amount of the stream already used
+	$	WsStmPos Io.StreamOp { Origin Current Offset 0:int }
+		!	DemuxWs/Ontrue							WsStmPos/Stream
+		!	LoadLength/OnFire						WsStmPos/Seek
+
+	% MATHN: Add payload length plus amount used
+	$	AddFrmLen Math.Binary {}
+		!	WsStmPos/OnPosition					AddFrmLen/Left
+		!	LoadLength/OnFire						AddFrmLen/Right
+		!	LoadLength/OnFire						AddFrmLen/Fire
+
+	% ION: Truncate to actual size
+	$	WsStmSize Io.StreamOp {}
+		!	DemuxWs/Ontrue							WsStmSize/Stream
+		!	AddFrmLen/OnFire						WsStmSize/Offset
+		!	AddFrmLen/OnFire						WsStmSize/Size
 
 	%% 
 	%% The remaining data is payload data (possibly masked)
@@ -260,7 +289,7 @@
 		!	MaskXor/OnFire							MaskStmPos/Seek
 
 	% Debug
-	!	MaskXor/OnFire								Debug/Fire
+%	!	MaskXor/OnFire								Debug/Fire
 
 	% MISCN: Resulting socket/stream
 	$	ValueStmRx Misc.Dist {}
@@ -343,10 +372,6 @@
 	!	FrmFmt/OnFire								StmPosTx/Seek
 
 	% Request transmission
-	!	FrmFmt/OnFire								Debug/Fire
-	!	FrmFmt/OnFire								Debug/Fire
-	!	FrmFmt/OnFire								Debug/Fire
-	!	FrmFmt/OnFire								Debug/Fire
 	!	FrmFmt/OnFire								Io/Stream/Fire
 	!	FrmFmt/OnFire								Io/Transmit/Fire
 

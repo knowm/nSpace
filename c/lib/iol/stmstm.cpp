@@ -76,9 +76,17 @@ HRESULT StmOnByteStm :: Read ( void *pvBfr, ULONG nr, ULONG *pnr )
 	HRESULT	hr		= S_OK;
 	U64		nrd	= 0;
 
-	// Perform read
+	// State check
 	CCLTRYE	( pStm != NULL, E_UNEXPECTED );
-	CCLTRY	( pStm->read ( pvBfr, nr, &nrd ) );
+	if (hr == S_OK)
+		{
+		// Perform read
+		CCLTRY ( pStm->read ( pvBfr, nr, &nrd ) );
+
+		// ISequentialStream protocol
+		if (hr == S_OK && nrd < nr)
+			hr = S_FALSE;
+		}	// if
 
 	// Result
 	if (pnr != NULL) *pnr = (ULONG)nrd;

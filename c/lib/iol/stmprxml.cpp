@@ -161,6 +161,9 @@ HRESULT StmPrsXML :: load ( IByteStream *pStm, ADTVALUE &v )
 	ISAXXMLReader	*pRdr	= (ISAXXMLReader *) punkRdr;
 	VARIANT			var;
 
+	// Error handling
+	CCLTRY ( pRdr->putErrorHandler(this) );
+
 	// Variant version of IStream object
 	VariantInit ( &var );
 	var.vt = VT_UNKNOWN;
@@ -179,6 +182,8 @@ HRESULT StmPrsXML :: load ( IByteStream *pStm, ADTVALUE &v )
 	CCLTRY ( adtValue::copy ( vSAXFrom, v ) );
 
 	// Clean up
+	if (pRdr != NULL)
+		pRdr->putErrorHandler(NULL);
 	adtValue::clear(vSAXFrom);
 	VariantClear ( &var );
 
@@ -761,5 +766,39 @@ HRESULT StmPrsXML ::
 	////////////////////////////////////////////////////////////////////////
 	return S_OK;
 	}	// skippedEntity
+
+//
+// Error handling
+//
+
+HRESULT StmPrsXML :: error	(  ISAXLocator *pLocator, 
+										const wchar_t *pwchErrorMessage, HRESULT )
+	{
+	int l,c;
+	pLocator->getLineNumber(&l);
+	pLocator->getColumnNumber(&c);
+	lprintf ( LOG_ERR, L"error : %d,%d : %s", l, c, pwchErrorMessage  );
+	return S_OK;
+	}	// error
+
+HRESULT StmPrsXML :: fatalError	(  ISAXLocator *pLocator, 
+												const wchar_t *pwchErrorMessage, HRESULT )
+	{
+	int l,c;
+	pLocator->getLineNumber(&l);
+	pLocator->getColumnNumber(&c);
+	lprintf ( LOG_ERR, L"fatalError : %d,%d : %s", l, c, pwchErrorMessage );
+	return S_OK;
+	}	// fataError
+
+HRESULT StmPrsXML :: ignorableWarning	(  ISAXLocator *pLocator, 
+														const wchar_t *pwchErrorMessage, HRESULT )
+	{
+	int l,c;
+	pLocator->getLineNumber(&l);
+	pLocator->getColumnNumber(&c);
+	lprintf ( LOG_ERR, L"ignorableWarning : %d,%d : %s", l, c, pwchErrorMessage );
+	return S_OK;
+	}	// ignorableWarning
 
 #endif

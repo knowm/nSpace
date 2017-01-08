@@ -49,8 +49,8 @@ var nSpaceXML =
 
 			// Load key/value pairs into dictionary
 			for (var i = 0;i < elem.childNodes.length;i+=2)
-				if (	((key = load(elem.childNodes[i+0])) != null) &&
-						((val = load(elem.childNodes[i+1])) != null) )
+				if (	((key = nSpaceXML.load(elem.childNodes[i+0])) != null) &&
+						((val = nSpaceXML.load(elem.childNodes[i+1])) != null) )
 					dct[key] = val;
 
 			// Use as return value
@@ -65,7 +65,7 @@ var nSpaceXML =
 
 			// Load child values into list
 			for (var i = 0;i < elem.childNodes.length;++i)
-				if ((val = load(elem.childNodes[i])) != null)
+				if ((val = nSpaceXML.load(elem.childNodes[i])) != null)
 					lst.push ( val );
 
 			// Use as return value
@@ -136,8 +136,8 @@ var nSpaceXML =
 			for (var key in value)
 				{
 				// Key then value
-				ret += save(key);
-				ret += save(value[key]);
+				ret += nSpaceXML.save(key);
+				ret += nSpaceXML.save(value[key]);
 				}	// for
 
 			// End dictionary

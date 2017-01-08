@@ -77,6 +77,7 @@ new function ()
 			//
 			// Process value based on element type
 			//
+			console.log("Location:"+loc+":Type:"+type);
 
 			// Button
 			if (type == "button")
@@ -154,7 +155,7 @@ new function ()
 
 		}	// nSpace_bind
 
-	var listen = function(path)
+	var listen = function(srcPath)
 		{
 		////////////////////////////////////////////////////////////////////////
 		//
@@ -162,27 +163,21 @@ new function ()
 		//		-	Issue a 'listen' request for the specified path
 		//
 		//	PARAMETERS
-		//		-	path is the path to listen to
+		//		-	srcPath is the path to listen to
 		//
 		////////////////////////////////////////////////////////////////////////
-		var req = null;
+		var req = 
+			{
+			verb: "Listen",
+			path: ""
+			};
 
-		// Send XML request string.
-		req = "<Dictionary>";
-
-		// Verb
-		req += "<Value>Verb</Value><Value>Listen</Value>";
-
-		// Path
-		req += "<Value>Path</Value><Value>"+path+"</Value>";
-
-		// End of dictionary
-		req += "</Dictionary>";
+		// Path for listening
+		req["path"] = srcPath;
 
 		// Send request
 		if (ws != null)
-			ws.send(req);
-
+			ws.send(nSpaceXML.save(req));
 		}	// listen
 
 	//
