@@ -458,6 +458,36 @@ HRESULT DataBlock :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 							(LPCWSTR)strnName, (S32)iX, (S32)iY );
 		}	// if
 
+	// Set size
+	else if (_RCP(Set))
+		{
+		IMemoryMapped	*pBits = NULL;
+
+		// State check
+		CCLTRYE ( pBlk != NULL && iX > 0 && iY > 0, ERROR_INVALID_STATE );
+
+		// Allocate the memory first to ensure success
+		CCLTRY ( COCREATE ( L"Io.MemoryBlock", IID_IMemoryMapped, &pBits ) );
+		CCLTRY ( pBits->setSize ( iX*iY*sizeof(float) ) );
+		CCLTRY ( pBlk->store ( adtString(L"Bits"), adtIUnknown(pBits) ) );
+
+		// Initialize dictionary
+		CCLTRY ( pBlk->store ( strRefWidth, iX ) );
+		CCLTRY ( pBlk->store ( strRefHeight, iY ) );
+		CCLTRY ( pBlk->store ( strRefFormat, adtString(L"F32x2") ) );
+
+		// Result
+		if (hr == S_OK)
+			_EMT(Set,adtIUnknown(pBlk));
+		else
+			_EMT(Error,adtInt(hr));
+
+		// Debug
+		if (hr != S_OK)
+			lprintf ( LOG_WARN, L"%s: Unable to set size to %d,%d\r\n", 
+							(LPCWSTR)strnName, (S32)iX, (S32)iY );
+		}	// else if
+
 	// Reset state
 	else if (_RCP(Reset))
 		{

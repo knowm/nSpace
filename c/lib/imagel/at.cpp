@@ -221,7 +221,7 @@ HRESULT At :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		if (hr == S_OK)
 			{
 			if (_RCP(Load))
-				_EMT(Load,adtIUnknown(pImgUse));
+				_EMT(Load,vL);
 			else
 				_EMT(Store,adtIUnknown(pImgUse));
 			}	// if
