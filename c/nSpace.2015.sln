@@ -295,6 +295,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "web", "web", "{B9C9DC71-8E2
 		..\resource\web\default.css = ..\resource\web\default.css
 		..\resource\web\nspace_bind.js = ..\resource\web\nspace_bind.js
 		..\resource\web\nspace_xml.js = ..\resource\web\nspace_xml.js
+		..\resource\web\readme.txt = ..\resource\web\readme.txt
 		..\resource\web\WebSocketTest.html = ..\resource\web\WebSocketTest.html
 	EndProjectSection
 EndProject
@@ -629,6 +630,7 @@ Global
 		{1173DBF7-1ADA-4FA9-9068-07D6B1DBE1A6}.Debug|Win32.ActiveCfg = Debug|Win32
 		{1173DBF7-1ADA-4FA9-9068-07D6B1DBE1A6}.Debug|Win32.Build.0 = Debug|Win32
 		{1173DBF7-1ADA-4FA9-9068-07D6B1DBE1A6}.Debug|x64.ActiveCfg = Debug|x64
+		{1173DBF7-1ADA-4FA9-9068-07D6B1DBE1A6}.Debug|x64.Build.0 = Debug|x64
 		{1173DBF7-1ADA-4FA9-9068-07D6B1DBE1A6}.Release|Win32.ActiveCfg = Release|Win32
 		{1173DBF7-1ADA-4FA9-9068-07D6B1DBE1A6}.Release|Win32.Build.0 = Release|Win32
 		{1173DBF7-1ADA-4FA9-9068-07D6B1DBE1A6}.Release|x64.ActiveCfg = Release|x64
@@ -636,6 +638,7 @@ Global
 		{5BBC9B52-7B61-493E-A321-E2BA9AFC2E88}.Debug|Win32.ActiveCfg = Debug|Win32
 		{5BBC9B52-7B61-493E-A321-E2BA9AFC2E88}.Debug|Win32.Build.0 = Debug|Win32
 		{5BBC9B52-7B61-493E-A321-E2BA9AFC2E88}.Debug|x64.ActiveCfg = Debug|x64
+		{5BBC9B52-7B61-493E-A321-E2BA9AFC2E88}.Debug|x64.Build.0 = Debug|x64
 		{5BBC9B52-7B61-493E-A321-E2BA9AFC2E88}.Release|Win32.ActiveCfg = Release|Win32
 		{5BBC9B52-7B61-493E-A321-E2BA9AFC2E88}.Release|Win32.Build.0 = Release|Win32
 		{5BBC9B52-7B61-493E-A321-E2BA9AFC2E88}.Release|x64.ActiveCfg = Release|x64

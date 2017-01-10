@@ -69,6 +69,31 @@
 		!	LoadOpenConn/OnFire					StoreOpenConn/Key
 		!	LoadOpenConn/OnFire					StoreOpenConn/Fire
 
+	% Announce to server
+	!	LoadOpenConn/OnFire						State/OnOpen/Fire
+
+	%%%%%%%%
+	% Close
+	%%%%%%%%
+
+	% MISCN: Connection closed
+	$	OnClose Misc.Dist {}
+		!	Server/OnClose/OnFire				OnClose/Fire
+
+	% ADTN: Load remote connection string of client
+	$	LoadCloseConn Adt.Load { Key Remote }
+		!	OnClose/OnFire							LoadCloseConn/Dictionary
+		!	OnClose/OnFire							LoadCloseConn/Fire
+
+	% ADTN: Remove the client from internal dictionary
+	$	RemoveCloseConn Adt.Remove {}
+		!	CreateCliDct/OnFire					RemoveCloseConn/Container
+		!	LoadCloseConn/OnFire					RemoveCloseConn/Key
+		!	LoadCloseConn/OnFire					RemoveCloseConn/Fire
+
+	% Announce to server
+	!	LoadCloseConn/OnFire						State/OnClose/Fire
+
 	%%%%%%%%%%
 	% Receive
 	%%%%%%%%%%
@@ -102,7 +127,7 @@
 		!	LoadConnRx/OnFire						StoreConnRx/Fire
 
 	% Value received
-	!	StoreConnRx/OnFire						Debug/Fire
+%	!	StoreConnRx/OnFire						Debug/Fire
 	!	StoreConnRx/OnFire						State/OnValue/Fire
 
 	%%%%%%%%%%%

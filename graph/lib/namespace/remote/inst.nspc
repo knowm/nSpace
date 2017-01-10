@@ -17,6 +17,10 @@
 
 	% Notifications
 	$	OnReceive			Misc.Dist {}		% Value received
+	$	OnClose				Misc.Dist {}		% Client closing
+	$	OnConnection		Misc.Dist {}		% Current connection
+	$	OnLocation			Misc.Dist {}		% Current location
+	$	OnValue				Misc.Dist {}		% Current value
 
 	% DEBUG
 	$	Debug Misc.Debug {}
@@ -42,6 +46,7 @@
 	% Subgraph: Websocket server
 	#	Ws												Lib/Namespace/Remote/Ws/Inst/ {}
 		!	Ws/State/OnValue/OnFire				OnReceive/Fire
+		!	Ws/State/OnClose/OnFire				OnClose/Fire
 
 	%%%%%%%%%%
 	% Receive
@@ -51,19 +56,27 @@
 	$	LoadConnRx Adt.Load { Key Connection }
 		!	OnReceive/OnFire						LoadConnRx/Dictionary
 		!	OnReceive/OnFire						LoadConnRx/Fire
+		!	LoadConnRx/OnFire						OnConnection/Fire
 
 	% ADTN: Load the received value
 	$	LoadValRx Adt.Load { Key Value }
 		!	OnReceive/OnFire						LoadValRx/Dictionary
 		!	OnReceive/OnFire						LoadValRx/Fire
 
-	% ADTN: Load path if specified
-	$	LoadPathRx Adt.Load { Key Path }
-		!	LoadValRx/OnFire						LoadPathRx/Dictionary
-		!	LoadValRx/OnFire						LoadPathRx/Fire
+	% ADTN: Load location if specified
+	$	LoadLocationRx Adt.Load { Key Location }
+		!	LoadValRx/OnFire						LoadLocationRx/Dictionary
+		!	LoadValRx/OnFire						LoadLocationRx/Fire
+		!	LoadLocationRx/OnFire				OnLocation/Fire
+
+	% ADTN: Load actual value is specified
+	$	LoadValValRx Adt.Load { Key Value }
+		!	LoadValRx/OnFire						LoadValValRx/Dictionary
+		!	LoadValRx/OnFire						LoadValValRx/Fire
+		!	LoadValValRx/OnFire					OnValue/Fire
 
 	% MISCN: Demux verb
-	$	DemuxVerb Misc.Demux { Key Verb Values ( Store Load Listen ) }
+	$	DemuxVerb Misc.Demux { Key Verb Values ( Store Load Listen Unlisten ) }
 		!	LoadValRx/OnFire						DemuxVerb/Dictionary
 		!	LoadValRx/OnFire						DemuxVerb/Fire
 
@@ -71,9 +84,23 @@
 	% Load
 	%%%%%%%
 
+	%% TODO: Load
+
+	% NSPC: Store provided value into path
+%	$	StoreValue Nspc.Reflect { Location Value }
+%		!	OnLocation/OnFire						StoreValue/Root
+%		!	OnValue/OnFire							StoreValue/Value
+%		!	DemuxVerb/OnStore						StoreValue/Store
+
 	%%%%%%%%
 	% Store
 	%%%%%%%%
+
+	% NSPC: Store provided value into path
+	$	StoreValue Nspc.Reflect { Location Value }
+		!	OnLocation/OnFire						StoreValue/Root
+		!	OnValue/OnFire							StoreValue/Value
+		!	DemuxVerb/OnStore						StoreValue/Store
 
 	%%%%%%%%%
 	% Listen
@@ -83,7 +110,7 @@
 	% ADTN: Load listen dictionay for path
 	$	LoadListenDct Adt.Load {}
 		!	CreateListensDct/OnFire				LoadListenDct/Dictionary
-		!	LoadPathRx/OnFire						LoadListenDct/Key
+		!	OnLocation/OnFire						LoadListenDct/Key
 		!	DemuxVerb/OnListen					LoadListenDct/Fire
 
 	%% Listen dictionary does not exist yet, add it and initiate the first listen of location
@@ -100,11 +127,13 @@
 
 	% ADTN: Store client connection as a listener to location
 	$	StoreListenConn Adt.Store { Value 0:int }
-		!	LoadConnRx/OnFire						StoreListenConn/Key
+		!	OnConnection/OnFire					StoreListenConn/Key
 		!	LoadListenDct/OnFire					StoreListenConn/Dictionary
 		!	LoadListenDct/OnFire					StoreListenConn/Fire
 		!	CreateListenDct/OnFire				StoreListenConn/Dictionary
 		!	CreateListenDct/OnFire				StoreListenConn/Fire
+
+	% TODO: Multiple clients, new clients must get state reflecting only to them
 
 	% NSPC: Request listen for new requests, existing values will immediately be output
 	$	Reflect Nspc.Reflect {}
@@ -113,6 +142,44 @@
 		!	Reflect/OnRoot							Debug/Fire
 		!	Reflect/OnLocation					Debug/Fire
 		!	Reflect/OnValue						Debug/Fire
+
+	%%%%%%%%%%%
+	% Unlisten
+	%%%%%%%%%%%
+
+	% ADTN: Load listen dictionay for path
+	$	LoadUnlistenDct Adt.Load {}
+		!	CreateListensDct/OnFire				LoadUnlistenDct/Dictionary
+		!	OnLocation/OnFire						LoadUnlistenDct/Key
+		!	DemuxVerb/OnUnlisten					LoadUnlistenDct/Fire
+
+	% If not listen dictionary is found for path then there is nothing to 'unlisten'.
+
+	% ADTN: Remove specified path from listen dictionary
+	$	RemoveUnlisten Adt.Remove {}
+		!	OnConnection/OnFire					RemoveUnlisten/Key
+		!	LoadUnlistenDct/OnFire				RemoveUnlisten/Container
+		!	LoadUnlistenDct/OnFire				RemoveUnlisten/Fire
+
+	%% If there are no more clients listening to the location, stop listening to it locally.
+
+	% ADTN: Count number of clients for path
+	$	CountUnlisten Adt.Stat {}
+		!	RemoveUnlisten/OnFire				CountUnlisten/Container
+		!	RemoveUnlisten/OnFire				CountUnlisten/Fire
+
+	% ADTN: If empty remove path from listens
+	$	RemoveUnlistenPath Adt.Remove {}
+		!	CreateListensDct/OnFire				RemoveUnlistenPath/Container
+		!	OnLocation/OnFire						RemoveUnlistenPath/Key
+		!	CountUnlisten/OnEmpty				RemoveUnlistenPath/Fire
+
+	% MISCN: If empty, unreflect location
+	$	ValueUnreflect Misc.Dist {}
+		!	OnLocation/OnFire						ValueUnreflect/Value
+		!	CountUnlisten/OnEmpty				ValueUnreflect/Fire
+		!	ValueUnreflect/OnFire				Reflect/Root
+		!	ValueUnreflect/OnFire				Reflect/Remove
 
 	%%%%%%%%
 	% Value
@@ -172,6 +239,42 @@
 	% Latent connections
 	!	Reflect/OnValue							LoadValueConn/Fire
 
+	%%%%%%%%
+	% Close
+	%%%%%%%%
 
+	% MISCN: Connection closed
+%	$	OnClose Misc.Dist {}
+%		!	Server/OnClose/OnFire				OnClose/Fire
+		!	OnClose/OnFire							Debug/Fire
 
+	% Active connection
+	!	OnClose/OnFire								OnConnection/Fire
 
+	%% Automatically shutdown any 'listens' the client may have
+
+	% ADTN: Iterate existing listens
+	$	CloseIt Adt.Iterate {}
+		!	CreateListensDct/OnFire				CloseIt/Container
+
+	% MISCN: Current location in case of unlisten
+	$	ValueCloseLoc Misc.Dist {}
+		!	CloseIt/OnKey							ValueCloseLoc/Value
+		!	ValueCloseLoc/OnFire					OnLocation/Fire
+
+	% ADTN: Is client listening to path ?
+	$	LoadCloseChk Adt.Load {}
+		!	OnClose/OnFire							LoadCloseChk/Key
+		!	CloseIt/OnNext							LoadCloseChk/Dictionary
+		!	CloseIt/OnNext							LoadCloseChk/Fire
+
+	% Yes, client is listening, unlisten and restart iteration due to container changing
+	!	LoadCloseChk/OnFire						ValueCloseLoc/Fire
+	!	LoadCloseChk/OnFire						LoadUnlistenDct/Fire
+	!	LoadCloseChk/OnFire						CloseIt/First
+
+	% Not listening, check next path
+	!	LoadCloseChk/OnNotFound					CloseIt/Next
+
+	% Latent connections
+	!	OnClose/OnFire								CloseIt/First

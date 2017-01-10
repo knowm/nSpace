@@ -16,13 +16,13 @@ libSSL	libS;
 //
 
 libSSL :: libSSL ( void ) : 
-	#ifdef	_WIN64
-	dlleay ( L"libcrypto-1_1-x64.dll" ), 
-	dllssl ( L"libssl-1_1-x64.dll" )
-	#else
+//	#ifdef	_WIN64
+//	dlleay ( L"libcrypto-1_1-x64.dll" ), 
+//	dllssl ( L"libssl-1_1-x64.dll" )
+//	#else
 	dlleay ( L"libeay32.dll" ), 
 	dllssl ( L"ssleay32.dll" )
-	#endif
+//	#endif
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -101,11 +101,11 @@ LONG libSSL :: AddRef ( void )
 	// EVP_XXX
  	CCLTRYE ( ( evp_ctx_new =
 						(EVP_MD_CTX * (*) ( void ))
-						GetProcAddress ( dlleay, "EVP_MD_CTX_new" ) ) != NULL,
+						GetProcAddress ( dlleay, "EVP_MD_CTX_create" ) ) != NULL,
 						GetLastError() );
 	CCLTRYE ( ( evp_ctx_free = 
 						(void (*) ( EVP_MD_CTX *))
-						GetProcAddress ( dlleay, "EVP_MD_CTX_free" ) ) != NULL,
+						GetProcAddress ( dlleay, "EVP_MD_CTX_destroy" ) ) != NULL,
 						GetLastError() );
 	CCLTRYE ( ( evp_digestfinal =
 						(int (*) ( EVP_MD_CTX *, unsigned char *, unsigned int * ))
@@ -205,13 +205,13 @@ LONG libSSL :: AddRef ( void )
 						GetLastError() );
 	CCLTRYE ( ( ssl_lib_init = 
 						(int (*) ( void ))
-						GetProcAddress ( dllssl, "OPENSSL_init_ssl" ) ) != NULL,
-//						GetProcAddress ( dllssl, "SSL_library_init" ) ) != NULL,
+//						GetProcAddress ( dllssl, "OPENSSL_init_ssl" ) ) != NULL,
+						GetProcAddress ( dllssl, "SSL_library_init" ) ) != NULL,
 						GetLastError() );
 	CCLTRYE ( ( ssl_load_err = 
 						(void (*) ( void ))
-						GetProcAddress ( dllssl, "ERR_load_SSL_strings" ) ) != NULL,
-//						GetProcAddress ( dllssl, "SSL_load_error_strings" ) ) != NULL,
+//						GetProcAddress ( dllssl, "ERR_load_SSL_strings" ) ) != NULL,
+						GetProcAddress ( dllssl, "SSL_load_error_strings" ) ) != NULL,
 						GetLastError() );
 	CCLTRYE ( ( ssl_free = 
 						(void (*)	 ( SSL * ))
@@ -227,9 +227,9 @@ LONG libSSL :: AddRef ( void )
 						GetLastError() );
 	CCLTRYE ( ( ssl_v3_client = 
 						(SSL_METHOD * (*)	 ( void ))
-//						GetProcAddress ( dllssl, "SSLv3_client_method" ) ) != NULL,
+						GetProcAddress ( dllssl, "SSLv3_client_method" ) ) != NULL,
 //						GetProcAddress ( dllssl, "SSLv23_client_method" ) ) != NULL,
-						GetProcAddress ( dllssl, "TLS_client_method" ) ) != NULL,
+//						GetProcAddress ( dllssl, "TLS_client_method" ) ) != NULL,
 						GetLastError() );
 	CCLTRYE ( ( ssl_write = 
 						(int (*) ( SSL *, const void *, int ))

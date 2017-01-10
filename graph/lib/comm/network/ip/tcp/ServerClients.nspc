@@ -27,6 +27,7 @@
 	$	OnWrite				Misc.Dist {}			% Socket writable
 	$	OnConnect			Misc.Dist {}			% Socket connected
 	$	OnPortSrvr			Misc.Dist {}			% Server port
+	$	OnClose				Misc.Dist {}			% Socket closed
 
 	% DEBUG
 	$	Debug Misc.Debug {}
@@ -202,19 +203,26 @@
 	% Readable, notify parent
 	!	AvailSrvr/OnNotEqual						OnRead/Fire
 
+	%%%%%%%%
+	% Close
+	%%%%%%%%
+
 	% MISCN: Close socket on request
-	$	ValueSktRd Misc.Dist {}
-		!	Socket/OnFire							ValueSktRd/Value
-		!	Close/OnFire							ValueSktRd/Fire
+	$	ValueSktCl Misc.Dist {}
+		!	Socket/OnFire							ValueSktCl/Value
+		!	Close/OnFire							ValueSktCl/Fire
 
 	% Remove from listening in case it is a read socket to avoid continuous notifications
-	!	ValueSktRd/OnFire							AvailRd/Socket
-	!	ValueSktRd/OnFire							AvailRd/Remove
+	!	ValueSktCl/OnFire							AvailRd/Socket
+	!	ValueSktCl/OnFire							AvailRd/Remove
+
+	% Announce socket closing
+	!	ValueSktCl/OnFire							OnClose/Fire
 
 	% NETN: Shutdown socket
 	$	SocketCl Net.SocketOp {}
-		!	ValueSktRd/OnFire						SocketCl/Socket
-		!	ValueSktRd/OnFire						SocketCl/Close
+		!	ValueSktCl/OnFire						SocketCl/Socket
+		!	ValueSktCl/OnFire						SocketCl/Close
 
 	%%%%%%%%%
 	% Writes

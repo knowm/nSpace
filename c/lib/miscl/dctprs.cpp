@@ -448,6 +448,10 @@ HRESULT DictParse :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		CCLTRYE ( (pStm != NULL),		ERROR_INVALID_STATE );
 		CCLTRYE ( (pDict != NULL),		ERROR_INVALID_STATE );
 
+		// Debug
+//		if (!WCASECMP(this->strnName,L"FrmPrs"))
+//			dbgprintf(L"Hi\r\n" );
+
 		// Parse as much as possible
 		CCLTRY ( parse ( pFmt ); )
 

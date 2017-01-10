@@ -71,8 +71,9 @@ new function ()
 				return;
 
 			// To make it easier to process string
-			loc = msg["Location"].toLowerCase();
-			type = elem.nodeName.toLowerCase();
+			loc	= msg["Location"].toLowerCase();
+//			type	= elem.nodeName.toLowerCase();
+			type	= elem["type"];
 
 			//
 			// Process value based on element type
@@ -113,6 +114,13 @@ new function ()
 			var elems	= null;
 			var path		= null;
 
+			var req = 
+				{
+				verb: "Store",
+				path: "Just/Testing/The/Message",
+				count: 0
+				};
+
 			// Enumerate nSpace elements and bind them to their paths.
  
 			// Enumerate all of the elements on the page
@@ -128,10 +136,10 @@ new function ()
 					root = elems[i].getAttribute("data-nroot");
 
 				// nSpace path specified ?
-				if (elems[i].getAttribute("data-npath") != null)
+				if (elems[i].getAttribute("data-nloc") != null)
 					{
 					// Generate full bind path
-					path = root + elems[i].getAttribute("data-npath");
+					path = root + elems[i].getAttribute("data-nloc");
 
 					// Assign full path for quick reference
 					elems[i].attributes["data-nabs"] = path;
@@ -148,6 +156,12 @@ new function ()
 
 				}	// for
 
+			// Debug
+//			req["count"] = "O";
+//			ws.send(nSpaceXML.save(req));
+//			req["count"] = "Tw";
+//			ws.send(nSpaceXML.save(req));
+
 			// Debug message
 //			ws.send("<Dictionary><Value>You</Value><Value Type=\"Double\">3.14159265358979323</Value></Dictionary>");
 //			alert ( "Open!!" );
@@ -155,7 +169,7 @@ new function ()
 
 		}	// nSpace_bind
 
-	var listen = function(srcPath)
+	var listen = function(srcLoc)
 		{
 		////////////////////////////////////////////////////////////////////////
 		//
@@ -163,7 +177,7 @@ new function ()
 		//		-	Issue a 'listen' request for the specified path
 		//
 		//	PARAMETERS
-		//		-	srcPath is the path to listen to
+		//		-	srcLoc is the location to listen to
 		//
 		////////////////////////////////////////////////////////////////////////
 		var req = 
@@ -172,8 +186,8 @@ new function ()
 			path: ""
 			};
 
-		// Path for listening
-		req["path"] = srcPath;
+		// Location for listening
+		req["location"] = srcLoc;
 
 		// Send request
 		if (ws != null)
@@ -195,22 +209,42 @@ new function ()
 		//		-	event contains the event information
 		//
 		////////////////////////////////////////////////////////////////////////
-		var type = event.srcElement.nodeName.toLowerCase(); 
+		var type = event.srcElement["type"];
 		var dct  = {};
 		var xml	= null;
+		var send = true;
+
+		// Store template
+		dct["Verb"]			= "Store";
+		dct["Location"]	= event.srcElement.attributes["data-nabs"] + "Activate/Fire";
 
 		// Button
-		alert ( type );
 		if (type == "button")
 			{
-			// Send activate value
-			dct["Verb"]			= "Store";
-			dct["Location"]	= event.srcElement.attributes["data-nabs"] + "Activate/OnFire/Value";
+			// For a button, value does not matter
 			dct["Value"]		= 0;
-			xml					= nSpaceXML.save(dct);
-			ws.send ( xml );
 			}	// if
 
+		// Checkbox
+		else if (type == "checkbox")
+			{
+			// Checked state
+			dct["Value"]		= (event.srcElement.checked == true) ? true : false;
+			}	// else
+
+		// Unhandled type
+		else
+			send = false;
+
+		// Transmit store
+		if (send == true)
+			{
+			// Convert to XML
+			xml = nSpaceXML.save(dct);
+
+			// Transmit
+			ws.send ( xml );
+			}	// if
 		}	// onClickn
 
 	}	// function

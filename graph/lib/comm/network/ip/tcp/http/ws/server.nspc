@@ -179,8 +179,8 @@
 	% MISCN: Initial parse of header
 	$	FrmPrs Misc.DictParse {}
 		!	Format/ValueFrmIn/OnFire			FrmPrs/Format
-		!	CreateFrmDct/OnFire					FrmPrs/Dictionary
 		!	DemuxWs/Ontrue							FrmPrs/Stream
+		!	CreateFrmDct/OnFire					FrmPrs/Dictionary
 		!	FrmPrs/OnFire							Debug/Fire
 
 	% MISCN: Demux the opcode for the message
@@ -236,33 +236,43 @@
 		!	DemuxMask/Ontrue						FrmPrsMask/Fire
 
 	%%
-	%% Apparently some clients can send additional data beyond the specified payload length.
-	%% Truncate remaing stream to amount alreay used plus specified size.
+	%% Create/fill a stand-alone stream that just has the client data in it for the
+	%% exact amount of the payload.  This allows masking to take place and allows
+	%% multiple requests in a single stream to be received and processed.
 	%%
 
-	% ADTN: Load the final length
+	% MISCN: Create stream to use for client payload
+	$	CreateClientStm Misc.Create { Id Io.StmMemory }
+		!	Initialize/OnFire						CreateClientStm/Fire
+
+	% ADTN: Load the final computed length of the payload
 	$	LoadLength Adt.Load { Key Length }
 		!	DemuxMask/OnDefault					LoadLength/Dictionary
 		!	DemuxMask/OnDefault					LoadLength/Fire
 		!	FrmPrsMask/OnFire						LoadLength/Dictionary
 		!	FrmPrsMask/OnFire						LoadLength/Fire
 
-	% ION: Obtain the amount of the stream already used
-	$	WsStmPos Io.StreamOp { Origin Current Offset 0:int }
-		!	DemuxWs/Ontrue							WsStmPos/Stream
-		!	LoadLength/OnFire						WsStmPos/Seek
+	% ION: Reset the client stream for use
+	$	CliStmPos Io.StreamOp {}
+		!	CreateClientStm/OnFire				CliStmPos/Stream
+		!	LoadLength/OnFire						CliStmPos/Seek
 
-	% MATHN: Add payload length plus amount used
-	$	AddFrmLen Math.Binary {}
-		!	WsStmPos/OnPosition					AddFrmLen/Left
-		!	LoadLength/OnFire						AddFrmLen/Right
-		!	LoadLength/OnFire						AddFrmLen/Fire
+	% ION: Pre-size the client stream
+	$	CliStmSize Io.StreamOp {}
+		!	CreateClientStm/OnFire				CliStmSize/Stream
+		!	LoadLength/OnFire						CliStmSize/Offset
+		!	LoadLength/OnFire						CliStmSize/Size
 
-	% ION: Truncate to actual size
-	$	WsStmSize Io.StreamOp {}
-		!	DemuxWs/Ontrue							WsStmSize/Stream
-		!	AddFrmLen/OnFire						WsStmSize/Offset
-		!	AddFrmLen/OnFire						WsStmSize/Size
+	% ION: Copy payload bytes from received stream to client stream
+	$	CopyCliStm Io.StreamCopy {}
+		!	CreateClientStm/OnFire				CopyCliStm/Destination
+		!	DemuxWs/Ontrue							CopyCliStm/Source
+		!	LoadLength/OnFire						CopyCliStm/Size
+		!	LoadLength/OnFire						CopyCliStm/Fire
+		!	CopyCliStm/OnFire						Debug/Fire
+
+	% Reset the client stream for use
+	!	CopyCliStm/OnFire							CliStmPos/Seek
 
 	%% 
 	%% The remaining data is payload data (possibly masked)
@@ -276,7 +286,7 @@
 
 	% MATHN: Apply mask to remaining bytes according to RFC
 	$	MaskXor Math.Binary { Op Xor }
-		!	DemuxWs/Ontrue							MaskXor/Left
+		!	CreateClientStm/OnFire				MaskXor/Left
 		!	LoadMask/OnFire						MaskXor/Right
 
 	% MISCN: Create stream to receive unmasked hash
@@ -293,7 +303,7 @@
 
 	% MISCN: Resulting socket/stream
 	$	ValueStmRx Misc.Dist {}
-		!	DemuxWs/Ontrue							ValueStmRx/Value
+		!	CreateClientStm/OnFire				ValueStmRx/Value
 		!	CreateMaskStm/OnFire					ValueStmRx/Value
 		!	ValueStmRx/OnFire						OnReceive/Fire
 
@@ -301,19 +311,27 @@
 	!	DemuxOp/OnText								ValueStmRx/Fire
 	!	DemuxOp/OnBinary							ValueStmRx/Fire
 
+	% Latent connections, keep parsing stream until no more data
+	!	DemuxWs/Ontrue								FrmPrs/Fire
+	!	DemuxOp/OnText								FrmPrs/Fire
+	!	DemuxOp/OnBinary							FrmPrs/Fire
+
 	%%%%%%%%
 	% Close
 	%%%%%%%%
 
 	% Client is closing connection.
 	!	DemuxOp/OnClose							Debug/Fire
+	!	DemuxOp/OnClose							Io/Close/Fire
 	!	DemuxOp/OnClose							Server/Close/Fire
 
-	% Latent connections
-	!	DemuxWs/Ontrue								FrmPrs/Fire
+	% I/O subgraph stating socket should be closed
+	!	Io/OnClose/OnFire							Server/Socket/Fire
+	!	Io/OnClose/OnFire							Server/Close/Fire
 
 	% Announce closures
-	!	Io/OnClose/OnFire							OnClose/Fire
+	!	Server/OnClose/OnFire					Io/Close/Fire
+	!	Server/OnClose/OnFire					OnClose/Fire
 
 	%%%%%%%%%%%
 	% Transmit
@@ -374,4 +392,13 @@
 	% Request transmission
 	!	FrmFmt/OnFire								Io/Stream/Fire
 	!	FrmFmt/OnFire								Io/Transmit/Fire
+
+
+
+
+
+
+
+
+
 
