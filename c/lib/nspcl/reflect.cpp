@@ -82,7 +82,7 @@ HRESULT Reflect :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	////////////////////////////////////////////////////////////////////////
 	HRESULT	hr = S_OK;
 
-	// Add location
+	// Add a receptor for a location
 	if (_RCP(Add))
 		{
 		ReflectRx	*pRx	= NULL;
@@ -99,7 +99,7 @@ HRESULT Reflect :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		CCLTRYE ( strAbs.length() > 0,	ERROR_INVALID_STATE );
 
 		// Is location already reflected ?
-		CCLTRYE ( pRef->load ( strAbs, vL ) != S_OK, ERROR_INVALID_STATE );
+//		CCLTRYE ( pRef->load ( strAbs, vL ) != S_OK, ERROR_INVALID_STATE );
 
 		// Obtain location
 		CCLTRY ( pnSpc->get ( strAbs, vL, NULL ) );
@@ -110,12 +110,16 @@ HRESULT Reflect :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		CCLOK   ( pRx->AddRef(); )
 		CCLTRY  ( pRx->construct() );
 
-		// Associate location with receiver
-		CCLTRY ( pRef->store ( strAbs, adtIUnknown((IReceptor *)pRx) ) );
+		// Record that receiver was added
+		CCLTRY ( pRef->store ( adtIUnknown((IReceptor *)pRx), strAbs ) );
 
-		// Emit result before flood of reflected values start emitting
+		// Associate location with receiver
+//		CCLTRY ( pRef->store ( strAbs, adtIUnknown((IReceptor *)pRx) ) );
+
+		// Emit new receptor before flood of reflected values start emitting.
+		// This gives the outside world a chance to prepare.
 		if (hr == S_OK)
-			_EMT(Add,strAbs);
+			_EMT(Add,adtIUnknown((IReceptor *)pRx));
 		else
 			_EMT(Error,adtInt(hr));
 
@@ -129,22 +133,28 @@ HRESULT Reflect :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		_RELEASE(pLoc);
 		}	// if
 
-	// Remove location
+	// Remove a receptor from a location
 	else if (_RCP(Remove))
 		{
 		IReceptor	*pRx		= NULL;
 		adtValue		vL;
-		adtIUnknown	unkV;
+		adtIUnknown	unkV(v);
+		adtString	strRx;
 
 		// State check
-		CCLTRYE ( strRoot.length() > 0, ERROR_INVALID_STATE );
+		CCLTRY  ( _QISAFE(unkV,IID_IReceptor,&pRx) );
 
 		// Obtain recevier for location
-		CCLTRY ( pRef->load ( strRoot, vL ) );
-		CCLTRY ( _QISAFE((unkV=vL),IID_IReceptor,&pRx) );
+//		CCLTRY ( pRef->load ( strRoot, vL ) );
+//		CCLTRY ( _QISAFE((unkV=vL),IID_IReceptor,&pRx) );
+
+		// Load the location that was associated with receptor
+		CCLTRY ( pRef->load ( adtIUnknown(pRx), vL ) );
+		CCLTRYE( (strRx = vL).length() > 0, E_UNEXPECTED );
 
 		// Remove from dictionary
-		CCLOK ( pRef->remove ( strRoot ); )
+		CCLOK ( pRef->remove ( adtIUnknown(pRx) ); )
+//		CCLOK ( pRef->remove ( strRoot ); )
 
 		// Disconnect from location
 		// Do NOT use 'get' to get location since that could cause a re-instancing of a graph
@@ -153,7 +163,7 @@ HRESULT Reflect :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 		// Result
 		if (hr == S_OK)
-			_EMT(Remove,strRoot);
+			_EMT(Remove,strRx);
 		else
 			_EMT(Error,adtInt(hr));
 

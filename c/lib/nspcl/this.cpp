@@ -165,33 +165,50 @@ HRESULT This :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	// Store location
 	else if (_RCP(Store))
 		{
-		adtValue		vSt;
-		adtString	strLocAbs;
+		IReceptor			*pRecep	= NULL;
+		const ADTVALUE		*pvUse	= (adtValue::empty(vValue)) ? &v : &vValue;
+		adtString			strLocAbs,strPathSt;
+		U32					len;
+		adtValue				vR;
+		adtIUnknown			unkV;
+
+		// NOTE: Using the same logic as the NamespaceX::store function to
+		// maximize flexibility.
 
 		// State check
 		CCLTRYE ( strLoc.length() > 0,	ERROR_INVALID_STATE );
-		CCLTRYE ( strDef.length() > 0,	ERROR_INVALID_STATE );
 
 		// Ensure an absolute namespace path is used
 		CCLTRY ( nspcPathTo ( (pDctF != NULL) ? pDctF : pLocPar, strLoc, strLocAbs ) );
 
-//if (!WCASECMP(strDef,L"Editor/Visual/Node/Node/"))
-//{
-//	dbgprintf ( L"%s:%s\r\n", (LPCWSTR)strLoc, (LPCWSTR)strLocAbs );
-//	dbgprintf ( L"\r\n" );
-//}
+		// Storing is done from the root location so ignore any leading slashes
+		CCLOK ( strPathSt = (strLocAbs[0] == '/') ? &strLocAbs[1] : &strLocAbs[0]; )
 
-		// Load an instance with the given information
-		CCLTRY ( pnSpc->get ( strLocAbs, vSt, strDef ) );
+		// Ensure path is not a location
+		if (hr == S_OK && strPathSt[(len=strPathSt.length())-1] == '/')
+			strPathSt.at(--len) = '\0';
 
-		// Debug
-//		DWORD dwNow = GetTickCount();
-//		dbgprintf ( L"This::receive:Load:%s:%d ms\r\n", (LPCWSTR)strLocAbs, dwNow-dwThen );
-//		dwThen = GetTickCount();
+		// For the pending load, remove trailing '/Value' specification
+		// NOTE: Handle .../Value/Value
+		if (	hr == S_OK && 
+				(len > 6 && !WCASECMP(&strPathSt[len-6],L"/Value")) &&
+				(len > 12 && WCASECMP(&strPathSt[len-12],L"/Value/Value")) )
+			strPathSt.at(len-6) = '\0';
+
+		// Perform a 'load' first on the path before the store.  This allows any
+		// auto-instancing to occur before the store.
+		CCLTRY ( pnSpc->get ( strPathSt, vR, NULL ) );
+		CCLTRY ( _QISAFE((unkV=vR),IID_IReceptor,&pRecep) );
+
+		// Receive value into location
+		CCLTRY ( pRecep->receive ( NULL, L"Value", *pvUse ) );
+
+		// Clean up
+		_RELEASE(pRecep);
 
 		// Result
 		if (hr == S_OK)
-			_EMT(Store,vSt);
+			_EMT(Store,strPathSt);
 		else if (strLoc.length() > 0)
 			{
 			dbgprintf ( L"This::receive:store failed:0x%x:%s:%s\r\n", hr, 
@@ -393,6 +410,8 @@ HRESULT This :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		_RELEASE(pDctT);
 		hr = _QISAFE(unkV,IID_IDictionary,&pDctT);
 		}	// else if
+	else if (_RCP(Value))
+		hr = adtValue::copy ( v, vValue );
 	else if (_RCP(Location))
 		strLoc = v;
 	else if (_RCP(Definition))

@@ -19,23 +19,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="openssll.h" />
-    <ClInclude Include="openssll_.h" />
+    <ClCompile Include="Create.cpp" />
+    <ClCompile Include="ImageToCloud.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="connect.cpp" />
-    <ClCompile Include="openssll.cpp" />
-    <ClCompile Include="pem.cpp" />
-    <ClCompile Include="rsa.cpp" />
-    <ClCompile Include="sign.cpp" />
-    <ClCompile Include="verify.cpp" />
+    <ClInclude Include="pcll.h" />
+    <ClInclude Include="pcll_.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{1173DBF7-1ADA-4FA9-9068-07D6B1DBE1A6}</ProjectGuid>
+    <ProjectGuid>{C997EFDA-98EB-495E-A7BC-FD10607528B3}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>openssll2015</RootNamespace>
+    <RootNamespace>pcll2015</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
-    <ProjectName>openssll</ProjectName>
+    <ProjectName>pcll</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -104,7 +100,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SDK_OPENSSL)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SDK_PCL)\include\pcl-1.8;$(SDK_BOOST);$(SDK_EIGEN)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -137,7 +133,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SDK_OPENSSL)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SDK_PCL)\include\pcl-1.8;$(SDK_BOOST);$(SDK_EIGEN)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

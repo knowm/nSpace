@@ -791,6 +791,7 @@ class This :
 	IDictionary		*pDctF,*pDctT;						// Roots
 	IDictionary		*pLocPar;							// Parent location 
 	adtString		strLoc,strDef;						// Location/definition
+	adtValue			vValue;								// Cached value
 
 	// CCL
 	CCL_OBJECT_BEGIN(This)
@@ -811,6 +812,7 @@ class This :
 	DECLARE_EMT(Graph)
 	DECLARE_EMT(NotFound)
 	DECLARE_EMT(Source)
+	DECLARE_RCP(Value)
 	BEGIN_BEHAVIOUR()
 		DEFINE_CON(Load)
 		DEFINE_CON(Resolve)
@@ -823,6 +825,7 @@ class This :
 		DEFINE_RCP(Location)
 		DEFINE_RCP(From)
 		DEFINE_RCP(To)
+		DEFINE_RCP(Value)
 
 		DEFINE_EMT(Graph)
 		DEFINE_EMT(NotFound)

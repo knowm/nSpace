@@ -86,19 +86,13 @@
 
 	%% TODO: Load
 
-	% NSPC: Store provided value into path
-%	$	StoreValue Nspc.Reflect { Location Value }
-%		!	OnLocation/OnFire						StoreValue/Root
-%		!	OnValue/OnFire							StoreValue/Value
-%		!	DemuxVerb/OnStore						StoreValue/Store
-
 	%%%%%%%%
 	% Store
 	%%%%%%%%
 
 	% NSPC: Store provided value into path
-	$	StoreValue Nspc.Reflect { Location Value }
-		!	OnLocation/OnFire						StoreValue/Root
+	$	StoreValue Nspc.This {}
+		!	OnLocation/OnFire						StoreValue/Location
 		!	OnValue/OnFire							StoreValue/Value
 		!	DemuxVerb/OnStore						StoreValue/Store
 
@@ -113,7 +107,7 @@
 		!	OnLocation/OnFire						LoadListenDct/Key
 		!	DemuxVerb/OnListen					LoadListenDct/Fire
 
-	%% Listen dictionary does not exist yet, add it and initiate the first listen of location
+	%% Listen dictionary does not exist yet, add it 
 
 	% ADTN: Store listen dictionary under path
 	$	StoreListenDct Adt.Store {}
@@ -125,43 +119,62 @@
 		!	LoadListenDct/OnNotFound			CreateListenDct/Fire
 		!	CreateListenDct/OnFire				StoreListenDct/Fire
 
-	% ADTN: Store client connection as a listener to location
-	$	StoreListenConn Adt.Store { Value 0:int }
-		!	OnConnection/OnFire					StoreListenConn/Key
-		!	LoadListenDct/OnFire					StoreListenConn/Dictionary
-		!	LoadListenDct/OnFire					StoreListenConn/Fire
-		!	CreateListenDct/OnFire				StoreListenConn/Dictionary
-		!	CreateListenDct/OnFire				StoreListenConn/Fire
+	%% Obtain a receptor bound for the location for the client and associate client with it.
 
-	% TODO: Multiple clients, new clients must get state reflecting only to them
+	% ADTN: Is client already listening to location ?
+	$	LoadListenChk Adt.Load {}
+		!	OnConnection/OnFire					LoadListenChk/Key
+		!	LoadListenDct/OnFire					LoadListenChk/Dictionary
 
-	% NSPC: Request listen for new requests, existing values will immediately be output
+	% NSPC: Reflect location
 	$	Reflect Nspc.Reflect {}
-		!	LoadListenDct/OnNotFound			Reflect/Root
-		!	LoadListenDct/OnNotFound			Reflect/Add
+		!	OnLocation/OnFire						Reflect/Root
+		!	LoadListenChk/OnNotFound			Reflect/Add
 		!	Reflect/OnRoot							Debug/Fire
 		!	Reflect/OnLocation					Debug/Fire
 		!	Reflect/OnValue						Debug/Fire
+
+	% ADTN: Store client connection as a listener to with receptor
+	$	StoreListenConn Adt.Store {}
+		!	LoadListenDct/OnFire					StoreListenConn/Dictionary
+		!	CreateListenDct/OnFire				StoreListenConn/Dictionary
+		!	OnConnection/OnFire					StoreListenConn/Key
+		!	Relect/OnAdd							StoreListenConn/Fire
+
+	% Latent connection
+	!	CreateListenDct/OnFire					Reflect/Add
+	!	LoadListenDct/OnFire						LoadListenChk/Fire
 
 	%%%%%%%%%%%
 	% Unlisten
 	%%%%%%%%%%%
 
-	% ADTN: Load listen dictionay for path
+	% ADTN: Load listen dictionary for path
 	$	LoadUnlistenDct Adt.Load {}
 		!	CreateListensDct/OnFire				LoadUnlistenDct/Dictionary
 		!	OnLocation/OnFire						LoadUnlistenDct/Key
 		!	DemuxVerb/OnUnlisten					LoadUnlistenDct/Fire
 
-	% If not listen dictionary is found for path then there is nothing to 'unlisten'.
+	% ADTN: Is client listening to location ?
+	$	LoadUnlistenChk Adt.Load {}
+		!	OnConnection/OnFire					LoadUnlistenChk/Key
+		!	LoadUnlistenDct/OnFire				LoadUnlistenChk/Dictionary
+	
+	% If no listen dictionary is found for path then there is nothing to 'unlisten'.
 
-	% ADTN: Remove specified path from listen dictionary
+	% ADTN: Remove specified client from listen dictionary
 	$	RemoveUnlisten Adt.Remove {}
 		!	OnConnection/OnFire					RemoveUnlisten/Key
 		!	LoadUnlistenDct/OnFire				RemoveUnlisten/Container
-		!	LoadUnlistenDct/OnFire				RemoveUnlisten/Fire
+		!	LoadUnlistenChk/OnFire				RemoveUnlisten/Fire
 
-	%% If there are no more clients listening to the location, stop listening to it locally.
+	% Detach receptor for client
+	!	LoadUnlistenChk/OnFire					Reflect/Remove
+
+	% Latent connections
+	!	LoadUnlistenDct/OnFire					LoadUnlistenChk/Fire
+
+	%% If there are no more clients listening to the location, remove location
 
 	% ADTN: Count number of clients for path
 	$	CountUnlisten Adt.Stat {}
@@ -173,13 +186,6 @@
 		!	CreateListensDct/OnFire				RemoveUnlistenPath/Container
 		!	OnLocation/OnFire						RemoveUnlistenPath/Key
 		!	CountUnlisten/OnEmpty				RemoveUnlistenPath/Fire
-
-	% MISCN: If empty, unreflect location
-	$	ValueUnreflect Misc.Dist {}
-		!	OnLocation/OnFire						ValueUnreflect/Value
-		!	CountUnlisten/OnEmpty				ValueUnreflect/Fire
-		!	ValueUnreflect/OnFire				Reflect/Root
-		!	ValueUnreflect/OnFire				Reflect/Remove
 
 	%%%%%%%%
 	% Value
@@ -205,9 +211,9 @@
 		!	Initialize/OnFire						ValueVerb/Fire
 
 	% ADTN: Load the clients listening to location
-	$	LoadValueConn Adt.Load {}
-		!	CreateListensDct/OnFire				LoadValueConn/Dictionary
-		!	Reflect/OnRoot							LoadValueConn/Key
+	$	LoadValueConns Adt.Load {}
+		!	CreateListensDct/OnFire				LoadValueConns/Dictionary
+		!	Reflect/OnRoot							LoadValueConns/Key
 
 	% ADTN: Store information in dictionary
 	$	StoreDctValTx Adt.Keys { Keys ( Verb Root Location Value ) }
@@ -216,13 +222,13 @@
 		!	Reflect/OnRoot							StoreDctValTx/Root
 		!	Reflect/OnLocation					StoreDctValTx/Location
 		!	Reflect/OnValue						StoreDctValTx/Value
-		!	LoadValueConn/OnFire					StoreDctValTx/Store
+		!	LoadValueConns/OnFire				StoreDctValTx/Store
 		!	StoreDctValTx/OnStore				Debug/Fire
 
 	% ADTN: Iterate connections for root
 	$	ListenConnIt Adt.Iterate {}
-		!	LoadValueConn/OnFire					ListenConnIt/Container
-		!	LoadValueConn/OnFire					ListenConnIt/First
+		!	LoadValueConns/OnFire				ListenConnIt/Container
+		!	LoadValueConns/OnFire				ListenConnIt/First
 
 	% ADTN: Store connection 
 	$	StoreDctConnTx Adt.Store { Key Connection }
@@ -237,7 +243,7 @@
 	!	ListenConnIt/OnNext						ListenConnIt/Next
 
 	% Latent connections
-	!	Reflect/OnValue							LoadValueConn/Fire
+	!	Reflect/OnValue							LoadValueConns/Fire
 
 	%%%%%%%%
 	% Close
@@ -268,7 +274,7 @@
 		!	CloseIt/OnNext							LoadCloseChk/Dictionary
 		!	CloseIt/OnNext							LoadCloseChk/Fire
 
-	% Yes, client is listening, unlisten and restart iteration due to container changing
+	% Yes, client is listening, unlisten and restart iteration due to possible container changing
 	!	LoadCloseChk/OnFire						ValueCloseLoc/Fire
 	!	LoadCloseChk/OnFire						LoadUnlistenDct/Fire
 	!	LoadCloseChk/OnFire						CloseIt/First
