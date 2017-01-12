@@ -12,6 +12,135 @@
 // System includes
 #include "../../lib/nspcl/nspcl.h"
 
+///////////
+// Objects
+///////////
+
+// Integer version of image formats
+#define	IMGFMT_INV		-1
+#define	IMGFMT_U8X2		0
+#define	IMGFMT_S8X2		1
+#define	IMGFMT_U16X2	2
+#define	IMGFMT_S16X2	3
+#define	IMGFMT_F32X2	4
+
+//
+// Class - ImageDct.  Convience class for dealing with images stored
+//		in a dictionary.
+//
+// NOTE: Implemented in header to avoid having to link to library
+//
+
+class ImageDct
+	{
+	public :
+	ImageDct ( void )
+		{
+		pDct		= NULL;
+		pBits		= NULL;
+		pvBits	= NULL;
+		iW			= 0;
+		iH			= 0;
+		iF			= 0;	
+		}	// ImageDct
+	virtual ~ImageDct ( void )
+		{
+		_UNLOCK(pBits,pvBits);
+		_RELEASE(pBits);
+		_RELEASE(pDct);
+		}	// ~ImageDct
+
+	// Utilities
+	HRESULT	lock ( IUnknown *punkDct )
+		{
+		HRESULT			hr		= S_OK;
+		adtIUnknown		unkV(punkDct);
+		adtValue			vL;
+		adtString		strFmt;
+
+		// Container
+		CCLTRY ( _QISAFE(unkV,IID_IDictionary,&pDct) );
+
+		// Parameters
+		CCLTRY ( pDct->load ( adtString(L"Width"), vL ) );
+		CCLOK  ( iW = adtInt(vL); )
+		CCLTRY ( pDct->load ( adtString(L"Height"), vL ) );
+		CCLOK  ( iH = adtInt(vL); )
+		CCLTRY ( pDct->load ( adtString(L"Format"), vL ) );
+		CCLTRY ( adtValue::toString ( vL, strFmt ) );
+
+		// Map string format to integer for conveinance
+		if (hr == S_OK)
+			{
+			if (!WCASECMP(strFmt,L"U8X2"))
+				iF = IMGFMT_U8X2;
+			else if (!WCASECMP(strFmt,L"S8X2"))
+				iF = IMGFMT_S8X2;
+			else if (!WCASECMP(strFmt,L"U16X2"))
+				iF = IMGFMT_U16X2;
+			else if (!WCASECMP(strFmt,L"S16X2"))
+				iF = IMGFMT_S16X2;
+			else if (!WCASECMP(strFmt,L"F32x2"))
+				iF = IMGFMT_F32X2;
+			else
+				iF = IMGFMT_INV;
+			}	// if
+
+		// Get bits and lock
+		CCLTRY ( pDct->load ( adtString(L"Bits"), vL ) );
+		CCLTRY ( _QISAFE((unkV=vL),IID_IMemoryMapped,&pBits) );
+		CCLTRY ( pBits->lock ( 0, 0, &pvBits, NULL ) );
+
+		return hr;
+		}	// lock
+
+	inline
+	S32		format	( void ) { return iF; }
+	float		getFloat	( S32 x, S32 y )
+		{
+		float		fRet	= 0;
+
+		// State check
+		if (pDct == NULL || pvBits == NULL)
+			return 0;
+
+		// Based on format
+		switch (iF)
+			{
+			case	IMGFMT_U8X2		:
+				fRet = *(((U8 *)pvBits) + y*iW + x);
+				break;
+			case	IMGFMT_S8X2		:
+				fRet = *(((S8 *)pvBits) + y*iW + x);
+				break;
+			case	IMGFMT_U16X2	:
+				fRet = *(((U16 *)pvBits) + (y*iW + x)*sizeof(U16));
+				break;
+			case	IMGFMT_S16X2	:
+				fRet = *(((S16 *)pvBits) + (y*iW + x)*sizeof(S16));
+				break;
+			case	IMGFMT_F32X2	:
+				fRet = *(((float *)pvBits) + (y*iW + x)*sizeof(float));
+				break;
+			}	// switch
+
+		return fRet;
+		}
+	S32		getInt	( S32 x, S32 y ) { return (S32)getFloat(x,y); }
+	inline
+	S32		height	( void ) { return iH; }
+	inline
+	S32		width		( void ) { return iW; }
+
+	private :
+
+	// Run-time data
+	IDictionary		*pDct;								// Image dictionary
+	S32				iW,iH,iF;							// Size information
+	IMemoryMapped	*pBits;								// Memory block
+	void				*pvBits;								// Ptr. to memory
+	};
+
 //////////////
 // Interfaces
 //////////////

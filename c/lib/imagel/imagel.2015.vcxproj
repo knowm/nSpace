@@ -31,6 +31,7 @@
     <ClCompile Include="fft.cpp" />
     <ClCompile Include="flip.cpp" />
     <ClCompile Include="gradient.cpp" />
+    <ClCompile Include="imagel.cpp" />
     <ClCompile Include="match.cpp" />
     <ClCompile Include="morph.cpp" />
     <ClCompile Include="normal.cpp" />

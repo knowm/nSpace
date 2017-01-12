@@ -6,7 +6,6 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#define INITGUID
 #include "pcll_.h"
 #include <stdio.h>
 
@@ -83,17 +82,19 @@ HRESULT Create :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	// Execute
 	if (_RCP(Fire))
 		{
-		bool										bOrg = false;
-		pcl::PointCloud<pcl::PointXYZ>	cloud;
+		bool			bOrg		= false;
+		pclObjRef	*pRef		= NULL;
 
 		// State check
 		CCLTRYE ( pDct != NULL, ERROR_INVALID_STATE );
 		CCLTRYE ( (iW > 0 && iH > 0) || (iSz > 0), ERROR_INVALID_STATE );
 
-		// Access image information
+		// Reference object for cloud
+		CCLTRYE ( (pRef = new pclObjRef()) != NULL, E_OUTOFMEMORY );
 
-		// Create new cloud object
-//		cloud = new pcl::PointCloud<pcl::PointXYZ>();
+		// Cloud object
+		CCLOK		( pRef->cloud.reset ( new pcl::PointCloud<pcl::PointXYZ> ); )
+		CCLTRYE	( pRef->cloud.get() != NULL, E_OUTOFMEMORY );
 
 		// Create cloud of specified size.
 		// 'Size' means a count of the specified # of points
@@ -102,10 +103,21 @@ HRESULT Create :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		if (hr == S_OK)
 			{
 			// Assign sizes
-			cloud.width		= (bOrg) ? iW : iSz;
-			cloud.height	= (bOrg) ? iH : 1;
+			pRef->cloud->width	= (bOrg) ? iW : iSz;
+			pRef->cloud->height	= (bOrg) ? iH : 1;
 			}	// if
 
+		// Wrap in dictionary ?  Other information to pass with cloud object needed
+		// by graph ? Size ?
+
+		// Result
+		if (hr == S_OK)
+			_EMT(Fire,adtIUnknown(pRef));
+		else
+			_EMT(Error,adtInt(hr));
+
+		// Clean up
+		_RELEASE(pRef);
 		}	// else if
 
 	// State

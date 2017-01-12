@@ -10,8 +10,7 @@
 #define	PCLL__H
 
 // Includes
-#include "pcll.h"
-#include "../../lib/nspcl/nspcl.h"
+#include	"../../lib/imagel/imagel.h"
 
 // Point Cloud Library - Needs SDK_PCL defined
 #include <pcl/point_types.h>
@@ -20,44 +19,27 @@
 ///////////
 // Objects
 ///////////
-/*
+
 //
-// Class - cvMatRef.  Object to cache reference counted OpenCV matrices.
+// Class - pclObjRef.  Object reference container.
 //
 
-class cvMatRef :
+class pclObjRef :
 	public CCLObject										// Base class
 	{
 	public :
-	cvMatRef ( void );									// Constructor
-	virtual ~cvMatRef ( void );						// Destructor
+	pclObjRef ( void ) { AddRef(); }					// Constructor
 
 	// Utilities
-	bool isGPU	( void ) { return (gpumat != NULL); }
-	bool isUMat ( void ) { return (umat != NULL); }
-	S32	rows ( void )
-			{ return (mat != NULL) ? mat->rows :
-						(umat != NULL) ? umat->rows :
-						(gpumat != NULL) ? gpumat->rows : 0; }
-	S32	cols ( void )
-			{ return (mat != NULL) ? mat->cols :
-						(umat != NULL) ? umat->cols :
-						(gpumat != NULL) ? gpumat->cols : 0; }
-	S32	channels ( void )
-			{ return (mat != NULL) ? mat->channels() :
-						(umat != NULL) ? umat->channels() :
-						(gpumat != NULL) ? gpumat->channels() : 0; }
+	bool isCloud	( void ) { return (cloud != NULL); }
 
 	// Run-time data
-	cv::Mat				*mat;								// CPU matrix
-	cv::cuda::GpuMat	*gpumat;							// GPU matrix
-	cv::UMat				*umat;							// Universal/OpenCL matrix
+	pcl::PointCloud<pcl::PointXYZ>::Ptr	cloud;	// Cloud pointer
 
 	// CCL
-	CCL_OBJECT_BEGIN_INT(cvMatRef)
+	CCL_OBJECT_BEGIN_INT(pclObjRef)
 	CCL_OBJECT_END()
 	};
-*/
 
 /////////
 // Nodes
@@ -113,7 +95,8 @@ class ImageToCloud :
 	ImageToCloud ( void );								// Constructor
 
 	// Run-time data
-	IDictionary	*pDct;									// Image dictionary
+	pclObjRef	*pObj;									// Cloud object
+	IDictionary	*pImg;									// Image object
 	adtString	strX,strY,strZ;						// Axis specifications
 	IIt			*pItX,*pItY,*pItZ;					// Pre-assigned coordinates
 	
@@ -123,7 +106,7 @@ class ImageToCloud :
 	CCL_OBJECT_END()
 
 	// Connections
-	DECLARE_RCP(Dictionary)
+	DECLARE_RCP(Cloud)
 	DECLARE_CON(Fire)
 	DECLARE_RCP(Image)
 	DECLARE_EMT(Error)
@@ -131,7 +114,7 @@ class ImageToCloud :
 	DECLARE_RCP(Yaxis)
 	DECLARE_RCP(Zaxis)
 	BEGIN_BEHAVIOUR()
-		DEFINE_RCP(Dictionary)
+		DEFINE_RCP(Cloud)
 		DEFINE_CON(Fire)
 		DEFINE_RCP(Image)
 		DEFINE_EMT(Error)
@@ -139,6 +122,12 @@ class ImageToCloud :
 		DEFINE_RCP(Yaxis)
 		DEFINE_RCP(Zaxis)
 	END_BEHAVIOUR_NOTIFY()
+
+	private :
+
+	// Internal utilities
+	float getAxisPt ( U8, U32, U32, IIt * );
+
 	};
 
 #endif

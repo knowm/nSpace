@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="Create.cpp" />
     <ClCompile Include="ImageToCloud.cpp" />
+    <ClCompile Include="pcll.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pcll.h" />

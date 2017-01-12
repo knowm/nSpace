@@ -10,6 +10,7 @@
 #define	CCL_OBJ_MODULE		L"Pcl"
 
 // Library implementations
+#include "../../lib/pcll/pcll.h"
 #include "../../lib/pcll/pcll_.h"
 
 // Objects in this module
