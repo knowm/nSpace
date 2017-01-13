@@ -25,7 +25,7 @@ ImageToCloud :: ImageToCloud ( void )
 	//		-	Constructor for the object
 	//
 	////////////////////////////////////////////////////////////////////////
-	pObj	= NULL;
+	pDct	= NULL;
 	pImg	= NULL;
 	pItX	= NULL;
 	pItY	= NULL;
@@ -96,11 +96,11 @@ HRESULT ImageToCloud :: onAttach ( bool bAttach )
 		adtValue		vL;
 
 		// How to assign each axis
-		if (pnDesc->load ( adtString(L"X"), vL ) == S_OK)
+		if (pnDesc->load ( adtString(L"Xaxis"), vL ) == S_OK)
 			strX = vL;
-		if (pnDesc->load ( adtString(L"Y"), vL ) == S_OK)
+		if (pnDesc->load ( adtString(L"Yaxis"), vL ) == S_OK)
 			strY = vL;
-		if (pnDesc->load ( adtString(L"Z"), vL ) == S_OK)
+		if (pnDesc->load ( adtString(L"Zaxis"), vL ) == S_OK)
 			strZ = vL;
 
 		}	// if
@@ -113,7 +113,7 @@ HRESULT ImageToCloud :: onAttach ( bool bAttach )
 		_RELEASE(pItY);
 		_RELEASE(pItZ);
 		_RELEASE(pImg);
-		_RELEASE(pObj);
+		_RELEASE(pDct);
 		}	// else
 
 	return hr;
@@ -139,20 +139,21 @@ HRESULT ImageToCloud :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	// Execute
 	if (_RCP(Fire))
 		{
-		bool		bOrg		= false;
-		ImageDct	imgDct;
-		U8			srcX,srcY,srcZ;
+		bool			bOrg		= false;
+		pclObjRef	*pObj		= NULL;
+		ImageDct		imgDct;
+		U8				srcX,srcY,srcZ;
+		adtValue		vL;
 
 		// State check
-		CCLTRYE (	pObj != NULL					&& 
-						pObj->cloud.get() != NULL	&&
-						pObj->cloud->size() > 0		&&
-						pImg != NULL,
-						ERROR_INVALID_STATE );
+		CCLTRYE	( pDct != NULL, ERROR_INVALID_STATE );
+		CCLTRY	( pDct->load(adtString(L"pcl"),vL) );
+		CCLTRYE	( (pObj = (pclObjRef *)(IUnknown *)adtIUnknown(vL)) != NULL,
+									ERROR_INVALID_STATE );
+		CCLOK		( pObj->AddRef(); )
 
 		// Organized cloud or not
-		CCLOK ( bOrg = (	pObj->cloud->width != 1 &&
-								pObj->cloud->height != 1); )
+		CCLOK ( bOrg = (	pObj->cloud.isOrganized() == true ); )
 
 		// Source for axis information
 		if (hr == S_OK)
@@ -189,7 +190,7 @@ HRESULT ImageToCloud :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			// Add cloud point for non-zero image pixel
 			for (row = 0,cld = 0;row < imgDct.height();++row)
 				{
-				for (col = 0;col < imgDct.width() && cld < pObj->cloud->size();++col,++cld)
+				for (col = 0;col < imgDct.width() && cld < pObj->cloud.size();++col,++cld)
 					{
 					// Get pixel intensity
 					if (	fabs(imgDct.getFloat(col,row)) < 1.e-20 )
@@ -204,7 +205,11 @@ HRESULT ImageToCloud :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					if (bOrg)
 						hr = E_NOTIMPL;
 					else
-						pObj->cloud->push_back(pcl::PointXYZ(fX,fY,fZ));
+						{
+						pObj->cloud.points[cld].x = fX;
+						pObj->cloud.points[cld].y = fY;
+						pObj->cloud.points[cld].z = fZ;
+						}	// else 
 					}	// for
 
 				// Reset iterators after each run
@@ -217,19 +222,32 @@ HRESULT ImageToCloud :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				}	// for
 			}	// if
 
+		// TESTING
+//		pcl::StatisticalOutlierRemoval<pcl::PointXYZ>	sor;
+//		pcl::PointCloud<pcl::PointXYZ>::Ptr					cloud_ptr(&(pObj->cloud));
+//		pcl::PointCloud<pcl::PointXYZ>::Ptr					cloud_f_ptr(new pcl::PointCloud<pcl::PointXYZ>);
+		
+//		sor.setInputCloud(cloud_ptr);
+//		sor.setMeanK(50);
+//		sor.setStddevMulThresh(1.0);
+//		sor.filter(*cloud_f_ptr);
+
 		// Result
 		if (hr == S_OK)
 			_EMT(Fire,adtIUnknown(pObj));
 		else
 			_EMT(Error,adtInt(hr));
+
+		// Clean up
+		_RELEASE(pObj);
 		}	// else if
 
 	// State
-	else if (_RCP(Cloud))
+	else if (_RCP(Dictionary))
 		{
 		adtIUnknown	unkV(v);
-		_RELEASE(pObj);
-		_QISAFE(unkV,IID_IUnknown,&pObj);
+		_RELEASE(pDct);
+		_QISAFE(unkV,IID_IDictionary,&pDct);
 		}	// else if
 	else if (_RCP(Image))
 		{

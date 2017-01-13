@@ -105,12 +105,14 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;PCLN2015_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SDK_PCL)\include\pcl-1.8;$(SDK_BOOST);$(SDK_EIGEN)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SDK_PCL)\include\pcl-1.8;$(SDK_BOOST);$(SDK_EIGEN);$(SDK_FLANN)\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ModuleDefinitionFile>..\dll.def</ModuleDefinitionFile>
+      <AdditionalLibraryDirectories>$(SDK_PCL_LIB)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>pcl_filters_debug.lib;pcl_common_debug.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -142,7 +144,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;PCLN2015_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SDK_PCL)\include\pcl-1.8;$(SDK_BOOST);$(SDK_EIGEN)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SDK_PCL)\include\pcl-1.8;$(SDK_BOOST);$(SDK_EIGEN);$(SDK_FLANN)\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -150,6 +152,8 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ModuleDefinitionFile>..\dll.def</ModuleDefinitionFile>
+      <AdditionalLibraryDirectories>$(SDK_PCL_LIB)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>pcl_filters_release.lib;pcl_common_release.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

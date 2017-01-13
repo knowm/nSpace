@@ -521,7 +521,7 @@ HRESULT adtValue :: fromString ( const WCHAR *s, VALUETYPE type,
 			CCLTRY ( adtDate::fromString ( s, v ) );
 			break;
 		default :
-			dbgprintf ( L"adtValue::fromString:Unimplemented value type\r\n" );
+			lprintf ( LOG_WARN, L"Unimplemented value type:%d\r\n", type );
 			hr = E_NOTIMPL;
 		}	// switch
 

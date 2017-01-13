@@ -70,6 +70,7 @@ class cvMatRef :
 	// Utilities
 	bool isGPU	( void ) { return (gpumat != NULL); }
 	bool isUMat ( void ) { return (umat != NULL); }
+	bool isMat ( void ) { return (mat != NULL); }
 	S32	rows ( void )
 			{ return (mat != NULL) ? mat->rows :
 						(umat != NULL) ? umat->rows :

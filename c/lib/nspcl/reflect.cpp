@@ -215,11 +215,11 @@ HRESULT Reflect :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		// If the root received is added to the reflection dictionary then use
 		// that receptor as the 'sender' to avoid stores immediately resulting
 		// in output.
-		if (hr == S_OK && pRef->load ( strRoot, vL ) == S_OK)
-			{
+//		if (hr == S_OK && pRef->load ( strRoot, vL ) == S_OK)
+//			{
 			// Receptor for source
-			CCLTRY ( _QISAFE((unkV=vL),IID_IReceptor,&pRcpSrc) );
-			}	// if
+//			CCLTRY ( _QISAFE((unkV=vL),IID_IReceptor,&pRcpSrc) );
+//			}	// if
 
 		// Obtain location
 		if (hr == S_OK && pnSpc->get ( strRoot, vL, NULL ) == S_OK)

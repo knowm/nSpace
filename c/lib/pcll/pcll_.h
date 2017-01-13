@@ -10,11 +10,16 @@
 #define	PCLL__H
 
 // Includes
+#define	NOMINMAX											// Disable unused legacy macros
 #include	"../../lib/imagel/imagel.h"
 
 // Point Cloud Library - Needs SDK_PCL defined
+#ifdef	_WIN32
+#pragma	warning(disable:4996)							// _CRT_SECURE_NO_WARNINGS for PCL/Flann
+#endif
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
+#include <pcl/filters/statistical_outlier_removal.h>
 
 ///////////
 // Objects
@@ -31,10 +36,10 @@ class pclObjRef :
 	pclObjRef ( void ) { AddRef(); }					// Constructor
 
 	// Utilities
-	bool isCloud	( void ) { return (cloud != NULL); }
+//	bool isCloud	( void ) { return (cloud != NULL); }
 
 	// Run-time data
-	pcl::PointCloud<pcl::PointXYZ>::Ptr	cloud;	// Cloud pointer
+	pcl::PointCloud<pcl::PointXYZ>	cloud;
 
 	// CCL
 	CCL_OBJECT_BEGIN_INT(pclObjRef)
@@ -95,7 +100,7 @@ class ImageToCloud :
 	ImageToCloud ( void );								// Constructor
 
 	// Run-time data
-	pclObjRef	*pObj;									// Cloud object
+	IDictionary	*pDct;									// Target dictionary
 	IDictionary	*pImg;									// Image object
 	adtString	strX,strY,strZ;						// Axis specifications
 	IIt			*pItX,*pItY,*pItZ;					// Pre-assigned coordinates
@@ -106,7 +111,7 @@ class ImageToCloud :
 	CCL_OBJECT_END()
 
 	// Connections
-	DECLARE_RCP(Cloud)
+	DECLARE_RCP(Dictionary)
 	DECLARE_CON(Fire)
 	DECLARE_RCP(Image)
 	DECLARE_EMT(Error)
@@ -114,7 +119,7 @@ class ImageToCloud :
 	DECLARE_RCP(Yaxis)
 	DECLARE_RCP(Zaxis)
 	BEGIN_BEHAVIOUR()
-		DEFINE_RCP(Cloud)
+		DEFINE_RCP(Dictionary)
 		DEFINE_CON(Fire)
 		DEFINE_RCP(Image)
 		DEFINE_EMT(Error)

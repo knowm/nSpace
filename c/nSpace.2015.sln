@@ -262,8 +262,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3d", "3d", "{9F4DE581-0E1E-
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "math", "math", "{2B2448AD-DD4F-4361-A6EC-D605F2F8A1D0}"
 	ProjectSection(SolutionItems) = preProject
-		..\graph\lib\math\CSVToDataBlk.nspc = ..\graph\lib\math\CSVToDataBlk.nspc
-		..\graph\lib\math\DataBlkToCSV.nspc = ..\graph\lib\math\DataBlkToCSV.nspc
+		..\graph\lib\math\CSVToImage.nspc = ..\graph\lib\math\CSVToImage.nspc
+		..\graph\lib\math\ImageToCSV.nspc = ..\graph\lib\math\ImageToCSV.nspc
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "geometry", "geometry", "{6A8E82FB-5EEE-4803-B67D-10F436489674}"
@@ -648,14 +648,12 @@ Global
 		{C997EFDA-98EB-495E-A7BC-FD10607528B3}.Debug|Win32.ActiveCfg = Debug|Win32
 		{C997EFDA-98EB-495E-A7BC-FD10607528B3}.Debug|Win32.Build.0 = Debug|Win32
 		{C997EFDA-98EB-495E-A7BC-FD10607528B3}.Debug|x64.ActiveCfg = Debug|x64
-		{C997EFDA-98EB-495E-A7BC-FD10607528B3}.Debug|x64.Build.0 = Debug|x64
 		{C997EFDA-98EB-495E-A7BC-FD10607528B3}.Release|Win32.ActiveCfg = Release|Win32
 		{C997EFDA-98EB-495E-A7BC-FD10607528B3}.Release|Win32.Build.0 = Release|Win32
 		{C997EFDA-98EB-495E-A7BC-FD10607528B3}.Release|x64.ActiveCfg = Release|x64
 		{22C97401-9593-44AA-BE41-9095F898A91E}.Debug|Win32.ActiveCfg = Debug|Win32
 		{22C97401-9593-44AA-BE41-9095F898A91E}.Debug|Win32.Build.0 = Debug|Win32
 		{22C97401-9593-44AA-BE41-9095F898A91E}.Debug|x64.ActiveCfg = Debug|x64
-		{22C97401-9593-44AA-BE41-9095F898A91E}.Debug|x64.Build.0 = Debug|x64
 		{22C97401-9593-44AA-BE41-9095F898A91E}.Release|Win32.ActiveCfg = Release|Win32
 		{22C97401-9593-44AA-BE41-9095F898A91E}.Release|Win32.Build.0 = Release|Win32
 		{22C97401-9593-44AA-BE41-9095F898A91E}.Release|x64.ActiveCfg = Release|x64

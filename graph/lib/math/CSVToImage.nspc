@@ -1,8 +1,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%							CSVToDataBlk.NSPC
+%							CSVToImage.NSPC
 %
-%			Load a data block from a stream in CSV format.
+%	Load a data block from a stream in CSV format into a 
+%	matrix image
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -16,7 +17,7 @@
 	$	Load					Misc.Dist {}		% Perform load
 
 	% Notifications
-	$	OnData				Misc.Dist {}		% Resulting data block
+	$	OnLoad				Misc.Dist {}		% Resulting image
 
 	% DEBUG
 	$	Debug Misc.Debug {}
@@ -26,12 +27,9 @@
 	% Setup
 	%%%%%%%%
 
-	% MISCN: Create a dictionary to receive the datablock information
-	$	CreateDataDct Misc.Create { Id Adt.Dictionary }
-		!	Load/OnFire								CreateDataDct/Fire
-
-	% Will be fired when complete
-	!	CreateDataDct/OnFire						OnData/Value
+	% MISCN: Create a dictionary to contain the image
+	$	CreateImageDct Misc.Create { Id Adt.Dictionary }
+		!	Load/OnFire								CreateImageDct/Fire
 
 	% MISCN: Create a list that will receive the values from a line
 	$	CreateLst Misc.Create { Id Adt.List }
@@ -49,24 +47,35 @@
 	% Load
 	%%%%%%%
 
-	% MATHN: Data block access
-	$	Block Math.DataBlock { Y 1:int }
-		!	CreateDataDct/OnFire					Block/Block
-		!	CreateLst/OnFire						Block/Source
+	% IMAGEN: Create container image, keep on CPU
+	$	Create Image.Create { Format "F32x2" Width 0:int Height 0:int CPU true:bool }
+		!	CreateImageDct/OnFire				Create/Image
+		!	Load/OnFire								Create/Fire
+
+	% IMAGEN: Add row of data to the image (-1 = append)
+	$	AddRows Image.At { X 0:int Y -1:int }
+		!	CreateImageDct/OnFire				AddRows/Image
+		!	CreateLst/OnFire						AddRows/Value
 
 	% MISCN: Extract next line up to linefeed
-	$	StmToStr Misc.StringStream { Terminator "\n" }
+	$	StmToStr Misc.StringStream { Terminator "\r\n" }
 		!	Stream/OnFire							StmToStr/Stream
 		!	Load/OnFire								StmToStr/From
 %		!	StmToStr/OnFire						Debug/Fire
 
+	% MISCN: Remove trailing line terminations and spaces
+	$	StrTrail Misc.StringOp { Source " \r\n" }
+		!	StmToStr/OnFire						StrTrail/Destination
+		!	StmToStr/OnFire						StrTrail/Trailing
+%		!	StrTrail/OnFire						Debug/Fire
+
 	% New line of values
-	!	StmToStr/OnFire							ClearLst/Clear
+	!	StrTrail/OnFire							ClearLst/Clear
 
 	% MISCN: Extract values around comma
 	$	TokenIt Misc.TokenIt { Delimiter "," }
-		!	StmToStr/OnFire						TokenIt/String
-		!	StmToStr/OnFire						TokenIt/Next
+		!	StrTrail/OnFire						TokenIt/String
+		!	StrTrail/OnFire						TokenIt/Next
 %		!	TokenIt/OnNext							Debug/Fire
 
 	% MISCN: Convert to floating point
@@ -80,11 +89,17 @@
 	!	TokenIt/OnNext								TokenIt/Next
 
 	% End of string, add row to data block
-	!	TokenIt/OnEnd								Block/Add
+	!	TokenIt/OnEnd								AddRows/Store
 
 	% Next row
 	!	StmToStr/OnFire							StmToStr/From
 
+	% IMAGEN: Download image data locally
+	$	Prepare Image.Prepare {}
+		!	CreateImageDct/OnFire				Prepare/Image
+
 	% End
-	!	Load/OnFire									OnData/Fire
+	!	Load/OnFire									Prepare/Download
+	!	Prepare/OnDownload						OnLoad/Fire
+
 

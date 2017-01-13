@@ -101,7 +101,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SDK_PCL)\include\pcl-1.8;$(SDK_BOOST);$(SDK_EIGEN)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SDK_PCL)\include\pcl-1.8;$(SDK_BOOST);$(SDK_EIGEN);$(SDK_FLANN)\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -134,7 +134,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SDK_PCL)\include\pcl-1.8;$(SDK_BOOST);$(SDK_EIGEN)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SDK_PCL)\include\pcl-1.8;$(SDK_BOOST);$(SDK_EIGEN);$(SDK_FLANN)\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

@@ -93,8 +93,8 @@ HRESULT Create :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		CCLTRYE ( (pRef = new pclObjRef()) != NULL, E_OUTOFMEMORY );
 
 		// Cloud object
-		CCLOK		( pRef->cloud.reset ( new pcl::PointCloud<pcl::PointXYZ> ); )
-		CCLTRYE	( pRef->cloud.get() != NULL, E_OUTOFMEMORY );
+//		CCLOK		( pRef->cloud.reset ( new pcl::PointCloud<pcl::PointXYZ> ); )
+//		CCLTRYE	( pRef->cloud.get() != NULL, E_OUTOFMEMORY );
 
 		// Create cloud of specified size.
 		// 'Size' means a count of the specified # of points
@@ -103,16 +103,21 @@ HRESULT Create :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		if (hr == S_OK)
 			{
 			// Assign sizes
-			pRef->cloud->width	= (bOrg) ? iW : iSz;
-			pRef->cloud->height	= (bOrg) ? iH : 1;
+//			pRef->cloud->width	= (bOrg) ? iW : iSz;
+//			pRef->cloud->height	= (bOrg) ? iH : 1;
+//			pRef->cloud->points.resize ( pRef->cloud->width*pRef->cloud->height );
+			pRef->cloud.width	= (bOrg) ? iW : iSz;
+			pRef->cloud.height	= (bOrg) ? iH : 1;
+			pRef->cloud.points.resize ( pRef->cloud.width*pRef->cloud.height );
 			}	// if
 
 		// Wrap in dictionary ?  Other information to pass with cloud object needed
 		// by graph ? Size ?
+		CCLTRY ( pDct->store ( adtString(L"pcl"), adtIUnknown(pRef) ) );
 
 		// Result
 		if (hr == S_OK)
-			_EMT(Fire,adtIUnknown(pRef));
+			_EMT(Fire,adtIUnknown(pDct));
 		else
 			_EMT(Error,adtInt(hr));
 

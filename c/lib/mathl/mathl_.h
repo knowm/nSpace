@@ -137,7 +137,7 @@ class Counter :
 	private :
 
 	};
-
+/*
 //
 // Class - DataBlock.  Node to manipulate a block of data.
 //
@@ -202,6 +202,7 @@ class DataBlock :
 	// Internal utilities
 	HRESULT addRow ( IDictionary *, IDictionary *, U32 );
 	};
+*/
 
 //
 // Class - Formula.  Node for a forumla.

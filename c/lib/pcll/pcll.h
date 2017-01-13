@@ -10,6 +10,7 @@
 #define	PCLL_H
 
 // System includes
+#define	NOMINMAX											// Disable unused legacy macros
 #include "../../lib/nspcl/nspcl.h"
 
 //////////////
