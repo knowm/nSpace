@@ -139,7 +139,7 @@
 		!	LoadListenDct/OnFire					StoreListenConn/Dictionary
 		!	CreateListenDct/OnFire				StoreListenConn/Dictionary
 		!	OnConnection/OnFire					StoreListenConn/Key
-		!	Relect/OnAdd							StoreListenConn/Fire
+		!	Reflect/OnAdd							StoreListenConn/Fire
 
 	% Latent connection
 	!	CreateListenDct/OnFire					Reflect/Add

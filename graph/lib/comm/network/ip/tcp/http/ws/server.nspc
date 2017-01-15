@@ -341,7 +341,8 @@
 	!	Client/OnFire								Io/Socket/Fire
 
 	% MISCN: Transmission template TODO: When payload size > 7 bits
-	$	ValueWsTx Misc.Dist { Value { OpCodeBits 0x81:int LengthSize 1:int } }
+%	$	ValueWsTx Misc.Dist { Value { OpCodeBits 0x81:int LengthSize 1:int } }
+	$	ValueWsTx Misc.Dist { Value { OpCodeBits 0x82:int LengthSize 1:int } }
 		!	Initialize/OnFire						ValueWsTx/Fire
 
 	% MISCN: Size of outgoing stream
@@ -392,13 +393,4 @@
 	% Request transmission
 	!	FrmFmt/OnFire								Io/Stream/Fire
 	!	FrmFmt/OnFire								Io/Transmit/Fire
-
-
-
-
-
-
-
-
-
 

@@ -47,6 +47,10 @@
 	$	CreatePrsrXml Misc.Create { Id IO.StmPrsXML }
 		!	Initialize/OnFire						CreatePrsrXml/Fire
 
+	% MISCN: Create parser for binary
+	$	CreatePrsrBin Misc.Create { Id IO.StmPrsBin } 
+		!	Initialize/OnFire						CreatePrsrBin/Fire
+
 	%%%%%%%
 	% Open
 	%%%%%%%
@@ -165,7 +169,8 @@
 
 	% MISCN: Persist value to stream
 	$	ValToStm Io.Persist {}
-		!	CreatePrsrXml/OnFire					ValToStm/Parser
+%		!	CreatePrsrXml/OnFire					ValToStm/Parser
+		!	CreatePrsrBin/OnFire					ValToStm/Parser
 		!	CreateStmTx/OnFire					ValToStm/Stream
 		!	LoadValueTx/OnFire					ValToStm/Value
 		!	LoadValueTx/OnFire					ValToStm/Save

@@ -36,6 +36,7 @@ new function ()
 
 			// Establish connection to webserver
 			ws					= new WebSocket("ws://localhost:8080/nspace");
+			ws.binaryType	= "arraybuffer";
 			ws.onopen		= this.onOpen;
 			ws.onmessage	= this.onMessage;		
 			},
@@ -57,13 +58,35 @@ new function ()
 			var type		= null;
 			var value	= null;
 
-			// Extract nSpace value from incoming XML
-			parser	= new DOMParser();
-			xmlDoc	= parser.parseFromString(event.data,"text/xml");
-			msg		= nSpaceXML.load ( xmlDoc.documentElement );
+			// Type of received message
+			if (typeof event.data == "string")
+				{
+				// Extract nSpace value from incoming XML
+				parser	= new DOMParser();
+				xmlDoc	= parser.parseFromString(event.data,"text/xml");
+				msg		= nSpaceXML.load ( xmlDoc.documentElement );
 
-			// Debug
-			console.log(msg);
+				// Debug
+				console.log(msg);
+				}	// if
+
+			// Binary
+			else if (event.data instanceof ArrayBuffer)
+				{
+				var bfr	= new Uint8Array(event.data);
+				var idx	= new Uint32Array(1);
+
+				// Extract nSpace value from  ArrayBuffer
+				console.log("ArrayBuffer:"+event.data);
+				msg		= nSpaceBin.load ( bfr, idx );
+				}	// else if
+
+			// Sanity check
+			if (msg == null || !("Root" in msg) || !("Location" in msg))
+				{
+				console.log("onMessage:Missing fields:"+msg);
+				return;
+				}	// if
 
 			// Root path of value mapped to element
 			elem = nElems[msg["Root"]];
@@ -74,30 +97,65 @@ new function ()
 			loc	= msg["Location"].toLowerCase();
 //			type	= elem.nodeName.toLowerCase();
 			type	= elem["type"];
+			value	= msg["Value"];
 
 			//
 			// Process value based on element type
 			//
 			console.log("Location:"+loc+":Type:"+type);
 
+			// Remove common '/onfire/value' postfix
+			loc = loc.substring(0,loc.length-13);
+
+			// Non-type specific
+
+			// Enable
+			if (loc == "element/enable")
+				elem.disabled = !value;
+
 			// Button
-			if (type == "button")
+			else if (type == "button")
 				{
-				// Enable
-				if (loc == "element/enable/onfire/value")
-					elem.disabled = !msg["Value"];
 				}	// if
 
 			// Checkbox
 			else if (type == "checkbox")
 				{
-				// Enable
-				if (loc == "element/enable/onfire/value")
-					elem.disabled = !msg["Value"];
-
 				// Activate
-				else if (loc == "activate/onfire/value")
-					elem.checked = msg["Value"];
+				if (loc == "activate")
+					elem.checked = value;
+				}	// else if
+
+			// List box
+			else if (type == "select-one")
+				{
+				// Current list
+				if (loc == "list")
+					{
+					var str;
+
+					// Remove existing elements
+					while (elem.length > 0)
+						elem.remove(0);
+
+					// Add strings to list
+					for (idx in value)
+						{
+						var option = document.createElement("option");
+						option.text = value[idx];
+						elem.add(option);
+						}	// for
+
+					}	// if
+
+				}	// else if
+
+			// Text/edit box
+			else if (type == "text")
+				{
+				// Value
+				if (loc == "element/default")
+					elem.text = value;
 				}	// else if
 
 			},
@@ -148,7 +206,8 @@ new function ()
 					nElems[path] = elems[i];
 
 					// Set-up events
-					elems[i].onclick = onClickn;
+					elems[i].onclick	= onClickn;
+					elems[i].onchange	= onChangen;
 
 					// Send listen request for path
 					listen(path);
@@ -197,6 +256,55 @@ new function ()
 	//
 	// Events
 	//
+
+	var onChangen = function(event)
+		{
+		////////////////////////////////////////////////////////////////////////
+		//
+		//	PURPOSE
+		//		-	Called when the an option changes.
+		//
+		//	PARAMETERS
+		//		-	event contains the event information
+		//
+		////////////////////////////////////////////////////////////////////////
+		var type = event.srcElement["type"];
+		var dct  = {};
+		var xml	= null;
+		var send = true;
+
+		console.log("onChangem:"+event);
+
+		// Store template
+		dct["Verb"]			= "Store";
+		dct["Location"]	= event.srcElement.attributes["data-nabs"] + 
+									"Element/Default/Fire";
+
+		// Select
+		if (type == "select-one")
+			{
+			// Selected index
+			dct["Value"]	= event.srcElement.selectedIndex;
+			}	// if
+
+		// Text/edit
+		else if (type == "text")
+			dct["Value"]	= event.srcElement.value;
+
+		// Unhandled type
+		else
+			send = false;
+
+		// Transmit store
+		if (send == true)
+			{
+			// Convert to XML
+			xml = nSpaceXML.save(dct);
+
+			// Transmit
+			ws.send ( xml );
+			}	// if
+		}	// onChangen
 
 	var onClickn = function(event)
 		{
@@ -257,7 +365,7 @@ document.onreadystatechange = function ()
 	//	PURPOSE
 	//		-	Called when the documents ready state has changed.
 	//
-	////////////////////////////////////////////////////////////////////////
+	/////////////	///////////////////////////////////////////////////////////
 
 	// Document ready ?
 	if (document.readyState == "complete")
