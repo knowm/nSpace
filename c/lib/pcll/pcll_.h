@@ -20,6 +20,9 @@
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <pcl/filters/statistical_outlier_removal.h>
+#include <pcl/features/normal_3d.h>
+#include <pcl/kdtree/kdtree_flann.h>
+#include <pcl/surface/gp3.h>
 
 ///////////
 // Objects
@@ -133,6 +136,36 @@ class ImageToCloud :
 	// Internal utilities
 	float getAxisPt ( U8, U32, U32, IIt * );
 
+	};
+
+//
+// Class - Normal.  Compute/estimate normals for a cloud.
+//
+
+class Normal :
+	public CCLObject,										// Base class
+	public Behaviour										// Interface
+	{
+	public :
+	Normal ( void );										// Constructor
+
+	// Run-time data
+	IDictionary	*pDct;									// Target dictionary
+	
+	// CCL
+	CCL_OBJECT_BEGIN(Normal)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_RCP(Dictionary)
+	DECLARE_CON(Fire)
+	DECLARE_EMT(Error)
+	BEGIN_BEHAVIOUR()
+		DEFINE_RCP(Dictionary)
+		DEFINE_CON(Fire)
+		DEFINE_EMT(Error)
+	END_BEHAVIOUR_NOTIFY()
 	};
 
 #endif
