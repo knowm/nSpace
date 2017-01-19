@@ -93,9 +93,9 @@ HRESULT Normal :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		if (hr == S_OK)
 			{
 			pcl::NormalEstimation<pcl::PointXYZ,pcl::Normal>	n;
-			pcl::PointCloud<pcl::PointXYZ>::Ptr						cloud ( &(pObj->cloud) );
+			pcl::PointCloud<pcl::PointXYZ>::Ptr						cloud ( new pcl::PointCloud<pcl::PointXYZ> ( pObj->cloud ) );
 			pcl::PointCloud<pcl::Normal>::Ptr						normals ( new pcl::PointCloud<pcl::Normal> );
-			pcl::PointCloud<pcl::PointNormal>::Ptr					cloud_with_normals ( new pcl::PointCloud<pcl::PointNormal> );
+//			pcl::PointCloud<pcl::PointNormal>::Ptr					cloud_with_normals ( new pcl::PointCloud<pcl::PointNormal> );
 			pcl::search::KdTree<pcl::PointXYZ>::Ptr				tree ( new pcl::search::KdTree<pcl::PointXYZ>);
 
 			// Execute
@@ -105,12 +105,13 @@ HRESULT Normal :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			n.compute ( *normals );
 
 			// Concatenate the original cloud and normals
-			pcl::concatenateFields ( *cloud, *normals, *cloud_with_normals );
+			pcl::concatenateFields ( *cloud, *normals, pObj->cloudn );
+//			pcl::concatenateFields ( *cloud, *normals, *cloud_with_normals );
 			}	// if
 
 		// Result
 		if (hr == S_OK)
-			_EMT(Fire,adtIUnknown(pObj));
+			_EMT(Fire,adtIUnknown(pDct));
 		else
 			_EMT(Error,adtInt(hr));
 

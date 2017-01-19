@@ -58,46 +58,46 @@
 %	#	Server										Lib/Namespace/Remote/Inst/ {}
 
 	% Subgraph: Interface elements
-%	#	ButtonTest									State/Interface/Button/ {}
-%		!	ButtonTest/Activate/OnFire			Debug/Fire
-%	#	CheckboxTest								State/Interface/Button/ {}
-%		!	CheckboxTest/Activate/OnFire		Debug/Fire
-%	#	ListboxTest									State/Interface/List/ {}
-%	#	EditTest										State/Interface/Edit/ {}
-%		!	EditTest/Element/Default/OnFire	Debug/Fire
-%	#	ImageTest									State/Interface/Image/ {}
-%		!	ImageTest/Element/Default/OnFire	Debug/Fire
+	#	ButtonTest									State/Interface/Button/ {}
+		!	ButtonTest/Activate/OnFire			Debug/Fire
+	#	CheckboxTest								State/Interface/Button/ {}
+		!	CheckboxTest/Activate/OnFire		Debug/Fire
+	#	ListboxTest									State/Interface/List/ {}
+	#	EditTest										State/Interface/Edit/ {}
+		!	EditTest/Element/Default/OnFire	Debug/Fire
+	#	ImageTest									State/Interface/Image/ {}
+		!	ImageTest/Element/Default/OnFire	Debug/Fire
 
 	% Subgraph: List management
-%	#	IntfList										Lib/Interface/List/ {}
-%		!	IntfList/OnIndex/OnFire				Debug/Fire
-%		!	IntfList/OnValue/OnFire				Debug/Fire
+	#	IntfList										Lib/Interface/List/ {}
+		!	IntfList/OnIndex/OnFire				Debug/Fire
+		!	IntfList/OnValue/OnFire				Debug/Fire
 
 	% MISCN: Link lists in state to list management
-%	$	LinkIntfLocs Nspc.Link { Destination "./IntfList/State/"	Source "./ListboxTest/" }
-%		!	Initialize/OnFire						LinkIntfLocs/Link
+	$	LinkIntfLocs Nspc.Link { Destination "./IntfList/State/"	Source "./ListboxTest/" }
+		!	Initialize/OnFire						LinkIntfLocs/Link
 
 	% MISCN: Strings
-%	$	ValueStrs Misc.Dist { Value ( You Can Byte Me Now ) }
-%		!	Initialize/OnFire						ValueStrs/Fire
+	$	ValueStrs Misc.Dist { Value ( You Can Byte Me Now ) }
+		!	Initialize/OnFire						ValueStrs/Fire
 
 	% ADTN: Add strings
-%	$	StrsIt Adt.Iterate {}
-%		!	ValueStrs/OnFire						StrsIt/Container
-%		!	ValueStrs/OnFire						StrsIt/First
-%		!	StrsIt/OnNext							IntfList/Add/Fire
-%		!	StrsIt/OnNext							StrsIt/Next
+	$	StrsIt Adt.Iterate {}
+		!	ValueStrs/OnFire						StrsIt/Container
+		!	ValueStrs/OnFire						StrsIt/First
+		!	StrsIt/OnNext							IntfList/Add/Fire
+		!	StrsIt/OnNext							StrsIt/Next
 
 	% MISCN: Disable button
 %	$	ValueDis Misc.Dist { Value false:bool }
-%	$	ValueDis Misc.Dist { Value true:bool }
-%		!	Initialize/OnFire						ValueDis/Fire
-%		!	ValueDis/OnFire						ButtonTest/Element/Enable/Fire
+	$	ValueDis Misc.Dist { Value true:bool }
+		!	Initialize/OnFire						ValueDis/Fire
+		!	ValueDis/OnFire						ButtonTest/Element/Enable/Fire
 
 	% MISCN: Checked/unchecked
-%	$	ValueChk Misc.Dist { Value true:bool }
-%		!	Initialize/OnFire						ValueChk/Fire
-%		!	ValueChk/OnFire						CheckboxTest/Activate/Fire
+	$	ValueChk Misc.Dist { Value true:bool }
+		!	Initialize/OnFire						ValueChk/Fire
+		!	ValueChk/OnFire						CheckboxTest/Activate/Fire
 %	$	ValueUnchk Misc.Dist { Value false:bool }
 %		!	Initialize/OnFire						ValueUnchk/Fire
 %		!	ValueUnchk/OnFire						CheckboxTest/Activate/Fire
@@ -105,23 +105,24 @@
 	%% Image
 
 	% MISCN: Create a dictionary for the image
-%	$	CreateImgDct Misc.Create { Id Adt.Dictionary }
-%		!	Initialize/OnFire						CreateImgDct/Fire
+	$	CreateImgDct Misc.Create { Id Adt.Dictionary }
+		!	Initialize/OnFire						CreateImgDct/Fire
 
 	% MISCN: Image location
-%	$	ValueImgLoc Misc.Dist { Value "c:/temp/background.png" }
-%		!	Initialize/OnFire						ValueImgLoc/Fire
+	$	ValueImgLoc Misc.Dist { Value "c:/temp/test.png" }
+		!	Initialize/OnFire						ValueImgLoc/Fire
 %		!	ValueImgLoc/OnFire					Debug/Fire
 
 	% IMAGEN: Load image
-%	$	LoadImage Image.PersistImage {}
-%		!	CreateImgDct/OnFire					LoadImage/Image
-%		!	ValueImgLoc/OnFire					LoadImage/Location
-%		!	ValueImgLoc/OnFire					LoadImage/Load
+	$	LoadImage Image.PersistImage {}
+		!	CreateImgDct/OnFire					LoadImage/Image
+		!	ValueImgLoc/OnFire					LoadImage/Location
+		!	ValueImgLoc/OnFire					LoadImage/Load
 
 	% Load into value
-%	!	LoadImage/OnLoad							Debug/Fire
-%	!	LoadImage/OnLoad							Debug/Fire
+	!	LoadImage/OnLoad							Debug/Fire
+	!	LoadImage/OnLoad							Debug/Fire
+	!	LoadImage/OnLoad							ImageTest/Element/Default/Fire
 
 	%%%%%
 

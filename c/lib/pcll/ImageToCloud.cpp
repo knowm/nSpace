@@ -179,6 +179,61 @@ HRESULT ImageToCloud :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 							ERROR_INVALID_STATE );
 			}	// if
 
+		// DEBUG
+
+		// Cube test
+/*		pObj->cloud.points[0].x = -1;
+		pObj->cloud.points[0].y = -1;
+		pObj->cloud.points[0].z = -1;
+
+		pObj->cloud.points[1].x = +1;
+		pObj->cloud.points[1].y = -1;
+		pObj->cloud.points[1].z = -1;
+
+		pObj->cloud.points[2].x = -1;
+		pObj->cloud.points[2].y = +1;
+		pObj->cloud.points[2].z = -1;
+
+		pObj->cloud.points[3].x = +1;
+		pObj->cloud.points[3].y = +1;
+		pObj->cloud.points[3].z = -1;
+
+		pObj->cloud.points[4].x = -1;
+		pObj->cloud.points[4].y = -1;
+		pObj->cloud.points[4].z = -1;
+
+		pObj->cloud.points[5].x = +1;
+		pObj->cloud.points[5].y = -1;
+		pObj->cloud.points[5].z = -1;
+
+		pObj->cloud.points[6].x = -1;
+		pObj->cloud.points[6].y = +1;
+		pObj->cloud.points[6].z = -1;
+
+		pObj->cloud.points[7].x = +1;
+		pObj->cloud.points[7].y = +1;
+		pObj->cloud.points[7].z = -1;
+*/
+
+		// Plane test
+		pObj->cloud.points[0].x = -1;
+		pObj->cloud.points[0].y = -1;
+		pObj->cloud.points[0].z = -1;
+
+		pObj->cloud.points[1].x = +1;
+		pObj->cloud.points[1].y = -1;
+		pObj->cloud.points[1].z = -1;
+
+		pObj->cloud.points[2].x = -1;
+		pObj->cloud.points[2].y = +1;
+		pObj->cloud.points[2].z = -1;
+
+		pObj->cloud.points[3].x = +1;
+		pObj->cloud.points[3].y = +1;
+		pObj->cloud.points[3].z = -1;
+
+
+		/*
 		// Access image information
 		CCLTRY ( imgDct.lock ( pImg ) );
 		if (hr == S_OK)
@@ -221,6 +276,7 @@ HRESULT ImageToCloud :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					pItZ->begin();
 				}	// for
 			}	// if
+		*/
 
 		// TESTING
 //		pcl::StatisticalOutlierRemoval<pcl::PointXYZ>	sor;

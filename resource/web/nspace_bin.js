@@ -60,18 +60,25 @@ var nSpaceBin =
 			case 11 :
 				ret = (nSpaceBin.load16(bfr,idx) != 0) ? true : false;
 				break;
-			case 0 :
-				// Empty
-				ret = null;
+			case 4 :
+				ret	= bfr.getD.getFloat32(idx[0]);
+				idx[0] += 4;
+				break;
+			case 5 :
+			case 7 :
+				// Dates are doubles representing number of days since Jan 1, 2001
+				// TODO: Convert to javascript data
+				ret		= bfr.getFloat64(idx[0]);
+				idx[0] += 8;
 				break;
 
 			// Object
 			case 0xd :
 				// Read object Id string
-				var id = nSpaceBin.loadStr(bfr,idx);
+				var id = nSpaceBin.loadStr(bfr,idx).toLowerCase();
 
 				// Dictionary
-				if (id == "Adt.Dictionary")
+				if (id == "adt.dictionary")
 					{
 					// Empty dictionary
 					ret = {};
@@ -88,6 +95,46 @@ var nSpaceBin =
 						}	// for
 
 					}	// if
+
+				// List
+				else if (id == "adt.list")
+					{
+					// Empty list
+					ret = [];
+
+					// Number of values
+					var cnt = nSpaceBin.load32(bfr,idx);
+
+					// Read values
+					for (var i = 0;i < cnt;++i)
+						{
+						var val	= nSpaceBin.load(bfr,idx);
+						ret.push	= val;
+						}	// for
+					}	// else if
+
+				// Memory block
+				else if (id == "io.memoryblock")
+					{
+					// Size of region
+					var sz = nSpaceBin.load32(bfr,idx);
+
+					// Read in block of memory
+					ret		= bfr.buffer.slice(idx[0],idx[0]+sz);
+					idx[0]	+= sz;
+					}	// else if
+
+				// Unknown
+				else
+					{
+					console.log("Unhanlded object type : " + id );
+					}	// else
+				break;
+
+			// Empty values ok
+			case 0 :
+				// Empty
+				ret = null;
 				break;
 
 			default :
@@ -116,7 +163,9 @@ var nSpaceBin =
 		//		Value
 		//
 		////////////////////////////////////////////////////////////////////////
-		var ret = ((bfr[idx[0]++] << 8) | (bfr[idx[0]++] << 0));
+		ret	= bfr.getUint16(idx[0]);
+		idx[0] += 2;
+
 		return ret;
 		},	// load16
 
@@ -135,8 +184,9 @@ var nSpaceBin =
 		//		Value
 		//
 		////////////////////////////////////////////////////////////////////////
-		var ret = ( (nSpaceBin.load16(bfr,idx) << 16) |
-						nSpaceBin.load16(bfr,idx));
+		ret	= bfr.getUint32(idx[0]);
+		idx[0] += 4;
+
 		return ret;
 		},	// load32
 

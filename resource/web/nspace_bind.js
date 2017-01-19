@@ -34,8 +34,15 @@ new function ()
 			// Parser
 			nSpaceXML.init();
 
+			// URL for hosting document
+			loc	= window.location;
+
+			// Generate websocket string
+			url	= "ws://"+loc.host+"/nspace/";
+
 			// Establish connection to webserver
-			ws					= new WebSocket("ws://localhost:8080/nspace");
+			ws					= new WebSocket(url);
+//			ws					= new WebSocket("ws://localhost:8080/nspace");
 			ws.binaryType	= "arraybuffer";
 			ws.onopen		= this.onOpen;
 			ws.onmessage	= this.onMessage;		
@@ -57,6 +64,7 @@ new function ()
 			var loc		= null;
 			var type		= null;
 			var value	= null;
+			var tag		= null;
 
 			// Type of received message
 			if (typeof event.data == "string")
@@ -73,11 +81,11 @@ new function ()
 			// Binary
 			else if (event.data instanceof ArrayBuffer)
 				{
-				var bfr	= new Uint8Array(event.data);
+				var bfr	= new DataView(event.data);
 				var idx	= new Uint32Array(1);
 
 				// Extract nSpace value from  ArrayBuffer
-				console.log("ArrayBuffer:"+event.data);
+//				console.log("ArrayBuffer:"+event.data);
 				msg		= nSpaceBin.load ( bfr, idx );
 				}	// else if
 
@@ -96,13 +104,14 @@ new function ()
 			// To make it easier to process string
 			loc	= msg["Location"].toLowerCase();
 //			type	= elem.nodeName.toLowerCase();
+			tag	= elem.tagName.toLowerCase();
 			type	= elem["type"];
 			value	= msg["Value"];
 
 			//
 			// Process value based on element type
 			//
-			console.log("Location:"+loc+":Type:"+type);
+			console.log("Location:"+loc+":Tag:"+tag+":Type:"+type);
 
 			// Remove common '/onfire/value' postfix
 			loc = loc.substring(0,loc.length-13);
@@ -114,12 +123,12 @@ new function ()
 				elem.disabled = !value;
 
 			// Button
-			else if (type == "button")
+			else if (tag == "button")
 				{
 				}	// if
 
 			// Checkbox
-			else if (type == "checkbox")
+			else if (tag == "input" && type == "checkbox")
 				{
 				// Activate
 				if (loc == "activate")
@@ -127,7 +136,7 @@ new function ()
 				}	// else if
 
 			// List box
-			else if (type == "select-one")
+			else if (tag == "select")
 				{
 				// Current list
 				if (loc == "list")
@@ -151,12 +160,52 @@ new function ()
 				}	// else if
 
 			// Text/edit box
-			else if (type == "text")
+			else if (tag == "input" && type == "text")
 				{
 				// Value
 				if (loc == "element/default")
 					elem.text = value;
 				}	// else if
+
+			// Image
+			else if (tag == "canvas")
+				{
+				// A default value for images is simply a dictionary
+				// contain all of the image information
+				if (loc == "element/default")
+					{
+					// The data for an image is a dictionary with its parameters
+					if (value.hasOwnProperty("Bits"))
+						{
+						// Load bits, create a data URL and assign to image
+						var bits		= new Uint8Array(value["Bits"]);
+						var ctx		= elem.getContext("2d");
+						var width	= value["Width"];
+						var height	= value["Height"];
+elem.width	= width;
+elem.height	= height;
+						var imageD	= ctx.createImageData(width,height);
+						var data		= imageD.data;
+						var len		= bits.length;
+						for (var y = 0,srcidx = 0,dstidx = 0;y < height;++y)
+							for (var x = 0;x < width;++x)
+								{
+								data[dstidx++]	= bits[srcidx];
+								data[dstidx++]	= bits[srcidx];
+								data[dstidx++]	= bits[srcidx++];
+								data[dstidx++] = 0xff;
+								}	// for
+						ctx.putImageData(imageD,0,0);
+						}	// if
+				
+
+					}	// if
+				}	// else if
+
+			else
+				{
+				console.log ( "Unhandled type for message : " + tag + ":" + type );
+				}	// else
 
 			},
 
@@ -171,13 +220,6 @@ new function ()
 			var root		= "";
 			var elems	= null;
 			var path		= null;
-
-			var req = 
-				{
-				verb: "Store",
-				path: "Just/Testing/The/Message",
-				count: 0
-				};
 
 			// Enumerate nSpace elements and bind them to their paths.
  
@@ -210,20 +252,12 @@ new function ()
 					elems[i].onchange	= onChangen;
 
 					// Send listen request for path
+//					console.log ( "tagName:"+elems[i].tagName );
 					listen(path);
 					}	// if
 
-				}	// for
+			}	// for
 
-			// Debug
-//			req["count"] = "O";
-//			ws.send(nSpaceXML.save(req));
-//			req["count"] = "Tw";
-//			ws.send(nSpaceXML.save(req));
-
-			// Debug message
-//			ws.send("<Dictionary><Value>You</Value><Value Type=\"Double\">3.14159265358979323</Value></Dictionary>");
-//			alert ( "Open!!" );
 			},
 
 		}	// nSpace_bind
@@ -342,7 +376,10 @@ new function ()
 
 		// Unhandled type
 		else
+			{
+			console.log ( "Unhandled type for click : " + type );
 			send = false;
+			}	// else
 
 		// Transmit store
 		if (send == true)

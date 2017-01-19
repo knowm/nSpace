@@ -96,6 +96,10 @@ HRESULT Create :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 //		CCLOK		( pRef->cloud.reset ( new pcl::PointCloud<pcl::PointXYZ> ); )
 //		CCLTRYE	( pRef->cloud.get() != NULL, E_OUTOFMEMORY );
 
+// DEBUG
+//iSz = 8;
+iSz = 4;
+
 		// Create cloud of specified size.
 		// 'Size' means a count of the specified # of points
 		// 'Width' and 'Height' means organized grid.

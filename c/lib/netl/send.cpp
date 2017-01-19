@@ -24,7 +24,8 @@ Send :: Send ( void )
 	iSz		= 0;
 	pBfr		= NULL;
 	uSzBfr	= 0;
-	iTo		= 2000;
+//	iTo		= 2000;
+	iTo		= 20000;
 	}	// Send
 
 HRESULT Send :: onAttach ( bool bAttach )

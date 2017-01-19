@@ -42,7 +42,8 @@ class pclObjRef :
 //	bool isCloud	( void ) { return (cloud != NULL); }
 
 	// Run-time data
-	pcl::PointCloud<pcl::PointXYZ>	cloud;
+	pcl::PointCloud<pcl::PointXYZ>		cloud;
+	pcl::PointCloud<pcl::PointNormal>	cloudn;
 
 	// CCL
 	CCL_OBJECT_BEGIN_INT(pclObjRef)
@@ -136,6 +137,36 @@ class ImageToCloud :
 	// Internal utilities
 	float getAxisPt ( U8, U32, U32, IIt * );
 
+	};
+
+//
+// Class - Mesh.  Create triangle mesh from point cloud with normals.
+//
+
+class Mesh :
+	public CCLObject,										// Base class
+	public Behaviour										// Interface
+	{
+	public :
+	Mesh ( void );											// Constructor
+
+	// Run-time data
+	IDictionary	*pDct;									// Target dictionary
+	
+	// CCL
+	CCL_OBJECT_BEGIN(Mesh)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_RCP(Dictionary)
+	DECLARE_CON(Fire)
+	DECLARE_EMT(Error)
+	BEGIN_BEHAVIOUR()
+		DEFINE_RCP(Dictionary)
+		DEFINE_CON(Fire)
+		DEFINE_EMT(Error)
+	END_BEHAVIOUR_NOTIFY()
 	};
 
 //

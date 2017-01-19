@@ -157,7 +157,7 @@ var nSpaceXML =
 			ret = "<Value";
 
 			// String
-			console.log(typeof value);
+//			console.log(typeof value);
 			if (typeof value == "string")
 				ret += ">"+value.toString();
 
