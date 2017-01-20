@@ -471,6 +471,40 @@ class StmOnByteStm :
 /////////
 
 #if	defined(_WIN32)
+
+//
+// Class - Dispatch.  Implentation of IDispatch usage (Windows specific).
+//
+
+class Dispatch :
+	public CCLObject,										// Base class
+	public Behaviour										// Interface
+	{
+	public :
+	Dispatch ( void );									// Constructor
+
+	// Run-time data
+	IDictionary		*pDct;								// State information
+
+	// CCL
+	CCL_OBJECT_BEGIN(Dispatch)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+	virtual void		destruct	( void );			// Destruct object
+
+	// Connections
+	DECLARE_CON(Close)
+	DECLARE_RCP(Dictionary)
+	DECLARE_CON(Open)
+	DECLARE_EMT(Error)
+	BEGIN_BEHAVIOUR()
+		DEFINE_CON(Close)
+		DEFINE_RCP(Dictionary)
+		DEFINE_CON(Open)
+		DEFINE_EMT(Error)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
 //
 // Class - EnumDevices.  Node to enumerator through system devices.
 //

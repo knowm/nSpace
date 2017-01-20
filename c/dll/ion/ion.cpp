@@ -26,6 +26,7 @@ CCL_OBJLIST_BEGIN()
 
 	// Nodes
 	#ifdef	_WIN32
+	CCL_OBJLIST_ENTRY	(Dispatch)
 	CCL_OBJLIST_ENTRY	(EnumDevices)
 	CCL_OBJLIST_ENTRY	(NotifyDevices)
 	CCL_OBJLIST_ENTRY	(StmOnByteStm)

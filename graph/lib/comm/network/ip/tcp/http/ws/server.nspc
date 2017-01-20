@@ -337,6 +337,8 @@
 	% Transmit
 	%%%%%%%%%%%
 
+	%% TODO: Asynchronous transmission per client ?
+
 	% Active client
 	!	Client/OnFire								Io/Socket/Fire
 

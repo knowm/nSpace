@@ -45,12 +45,18 @@
 
 	% Subgraph: Websocket server
 	#	Ws												Lib/Namespace/Remote/Ws/Inst/ {}
-		!	Ws/State/OnValue/OnFire				OnReceive/Fire
 		!	Ws/State/OnClose/OnFire				OnClose/Fire
 
 	%%%%%%%%%%
 	% Receive
 	%%%%%%%%%%
+
+	% Subgraph: Asynchronous queue for received messages
+	#	RxQ											Lib/Sync_Value_QA/ {}
+		!	Ws/State/OnValue/OnFire				RxQ/Value/Fire
+		!	RxQ/OnValue/OnFire					OnReceive/Fire
+
+	% Subgraph: Process received messages asynchronously
 
 	% ADTN: Load the active connection string
 	$	LoadConnRx Adt.Load { Key Connection }
