@@ -14,7 +14,7 @@ static adtString strRefWidth	( L"Width" );
 static adtString strRefHeight	( L"Height" );
 static adtString strRefFormat	( L"Format" );
 static adtString strRefBits	( L"Bits" );
-/*
+
 DataBlock :: DataBlock ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -525,4 +525,4 @@ HRESULT DataBlock :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 	return hr;
 	}	// receive
-*/
+

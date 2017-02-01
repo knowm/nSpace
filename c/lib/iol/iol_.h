@@ -83,6 +83,33 @@ class ByteCache :
 	};
 
 //
+// Class - DispIntf.  Contains the information necessary to interact
+//		with an interface IDispatch object.  Can also serve as an event sink.
+//
+
+class DispIntf :
+	public CCLObject										// Base class
+	{
+	public :
+	DispIntf ( void );									// Constructor
+
+	// Run-time data
+	IDispatch	*pDisp;									// Dispatch interface
+	IDictionary	*pDctFuncs;								// Functions dictionary
+
+	// Utilities
+	HRESULT	assign	( IDispatch * );				// Assign interface
+	HRESULT	invoke	( const WCHAR *,				// Invoke function
+								IDictionary * );
+	void		unassign ( void );						// Unassign active interface
+
+	// CCL
+	CCL_OBJECT_BEGIN_INT(DispIntf)
+	CCL_OBJECT_END()
+	virtual void destruct		( void );			// Destruct object
+	};
+
+//
 // Class - Lock.  Lock synchronization object.
 //
 
@@ -485,6 +512,8 @@ class Dispatch :
 
 	// Run-time data
 	IDictionary		*pDct;								// State information
+	IDictionary		*pDctP;								// Parameters
+	adtString		strName;								// Member name
 
 	// CCL
 	CCL_OBJECT_BEGIN(Dispatch)
@@ -495,12 +524,16 @@ class Dispatch :
 	// Connections
 	DECLARE_CON(Close)
 	DECLARE_RCP(Dictionary)
+	DECLARE_CON(Fire)
 	DECLARE_CON(Open)
+	DECLARE_RCP(Parameters)
 	DECLARE_EMT(Error)
 	BEGIN_BEHAVIOUR()
 		DEFINE_CON(Close)
 		DEFINE_RCP(Dictionary)
+		DEFINE_CON(Fire)
 		DEFINE_CON(Open)
+		DEFINE_RCP(Parameters)
 		DEFINE_EMT(Error)
 	END_BEHAVIOUR_NOTIFY()
 	};
