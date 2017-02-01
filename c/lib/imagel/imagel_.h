@@ -94,6 +94,24 @@ class cvMatRef :
 	CCL_OBJECT_END()
 	};
 
+//
+// Class - libJpeg.  Object for LIBJPEG interface.
+//
+
+class libJpeg 
+	{
+	public :
+	libJpeg ( void );										// Constructor
+	virtual ~libJpeg ( void );							// Destructor
+
+	// Utilities
+
+	private :
+
+	// Run-time data
+
+	};
+
 /////////
 // Nodes
 /////////
