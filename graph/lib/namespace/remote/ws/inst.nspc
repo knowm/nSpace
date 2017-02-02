@@ -131,7 +131,7 @@
 		!	LoadConnRx/OnFire						StoreConnRx/Fire
 
 	% Value received
-%	!	StoreConnRx/OnFire						Debug/Fire
+	!	StoreConnRx/OnFire						Debug/Fire
 	!	StoreConnRx/OnFire						State/OnValue/Fire
 
 	%%%%%%%%%%%

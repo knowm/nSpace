@@ -55,6 +55,7 @@
 	#	RxQ											Lib/Sync_Value_QA/ {}
 		!	Ws/State/OnValue/OnFire				RxQ/Value/Fire
 		!	RxQ/OnValue/OnFire					OnReceive/Fire
+		!	RxQ/OnValue/OnFire					RxQ/Next/Fire
 
 	% Subgraph: Process received messages asynchronously
 

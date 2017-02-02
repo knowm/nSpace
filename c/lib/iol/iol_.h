@@ -855,7 +855,7 @@ class StreamOp :
 	};
 
 //
-// Class - StreamCopy.  Node to perform operations on a stream.
+// Class - StreamCopy.  Node to copy between streams and memory mapped bytes.
 //
 
 class StreamCopy :
@@ -866,7 +866,7 @@ class StreamCopy :
 	StreamCopy ( void );									// Constructor
 
 	// Run-time data
-	IByteStream		*pStmDst,*pStmSrc;				// Active stream
+	IUnknown			*punkDst,*punkSrc;				// Active objects
 	adtInt			iSz;									// Offset
 
 	// CCL

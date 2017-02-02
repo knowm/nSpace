@@ -61,7 +61,7 @@ var nSpaceBin =
 				ret = (nSpaceBin.load16(bfr,idx) != 0) ? true : false;
 				break;
 			case 4 :
-				ret	= bfr.getD.getFloat32(idx[0]);
+				ret	= bfr.getFloat32(idx[0]);
 				idx[0] += 4;
 				break;
 			case 5 :

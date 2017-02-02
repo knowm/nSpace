@@ -104,11 +104,19 @@ class libJpeg
 	libJpeg ( void );										// Constructor
 	virtual ~libJpeg ( void );							// Destructor
 
+	// Run-time data
+	adtInt	iQ;											// Quality setting
+	U8			*pccinfo[2],*pcjerr[2];					// JPEG library support
+	U8			*pcdstmgr[2],*pcdinfo[2];				// JPEG library support
+	U8			*pcsrcmgr[2];								// JPEG library support
+
 	// Utilities
+	HRESULT	construct	( void );					// Construct object
+	HRESULT	compress		( IDictionary * );
+	HRESULT	compress		( U32, U32, U32, U32, IMemoryMapped *,
+									IMemoryMapped * );
 
 	private :
-
-	// Run-time data
 
 	};
 
@@ -186,6 +194,42 @@ class Binary :
 		DEFINE_CON(Fire)
 		DEFINE_RCP(Left)
 		DEFINE_RCP(Right)
+		DEFINE_EMT(Error)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
+//
+// Class - Codec.  Image encoder/decoder node.
+//
+
+class Codec :
+	public CCLObject,										// Base class
+	public Behaviour										// Interface
+	{
+	public :
+	Codec ( void );										// Constructor
+
+	// Run-time data
+	IDictionary	*pDct;									// Image dictionary
+	adtString	strType;									// Image type
+	libJpeg		jpeg;										// JPEG library object
+
+	// CCL
+	CCL_OBJECT_BEGIN(Codec)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_CON(Decode)
+	DECLARE_CON(Encode)
+	DECLARE_RCP(Image)
+	DECLARE_RCP(Type)
+	DECLARE_EMT(Error)
+	BEGIN_BEHAVIOUR()
+		DEFINE_CON(Decode)
+		DEFINE_CON(Encode)
+		DEFINE_RCP(Image)
+		DEFINE_RCP(Type)
 		DEFINE_EMT(Error)
 	END_BEHAVIOUR_NOTIFY()
 	};

@@ -41,7 +41,9 @@ class ImageDct
 		pvBits	= NULL;
 		iW			= 0;
 		iH			= 0;
-		iF			= 0;	
+		iFmt		= 0;	
+		iBpp		= 0;
+		iCh		= 0;
 		}	// ImageDct
 	virtual ~ImageDct ( void )
 		{
@@ -73,17 +75,37 @@ class ImageDct
 		if (hr == S_OK)
 			{
 			if (!WCASECMP(strFmt,L"U8X2"))
-				iF = IMGFMT_U8X2;
+				{
+				iFmt	= IMGFMT_U8X2;
+				iBpp	= 8;
+				iCh	= 1;
+				}	// if
 			else if (!WCASECMP(strFmt,L"S8X2"))
-				iF = IMGFMT_S8X2;
+				{
+				iFmt	= IMGFMT_S8X2;
+				iBpp	= 8;
+				iCh	= 1;
+				}	// if
 			else if (!WCASECMP(strFmt,L"U16X2"))
-				iF = IMGFMT_U16X2;
+				{
+				iFmt	= IMGFMT_U16X2;
+				iBpp	= 16;
+				iCh	= 1;
+				}	// if
 			else if (!WCASECMP(strFmt,L"S16X2"))
-				iF = IMGFMT_S16X2;
+				{
+				iFmt	= IMGFMT_S16X2;
+				iBpp	= 16;
+				iCh	= 1;
+				}	// if
 			else if (!WCASECMP(strFmt,L"F32x2"))
-				iF = IMGFMT_F32X2;
+				{
+				iFmt	= IMGFMT_F32X2;
+				iBpp	= 32;
+				iCh	= 1;
+				}	// if
 			else
-				iF = IMGFMT_INV;
+				iFmt = IMGFMT_INV;
 			}	// if
 
 		// Get bits and lock
@@ -94,8 +116,6 @@ class ImageDct
 		return hr;
 		}	// lock
 
-	inline
-	S32		format	( void ) { return iF; }
 	float		getFloat	( S32 x, S32 y )
 		{
 		float		fRet	= 0;
@@ -105,7 +125,7 @@ class ImageDct
 			return 0;
 
 		// Based on format
-		switch (iF)
+		switch (iFmt)
 			{
 			case	IMGFMT_U8X2		:
 				fRet = *(((U8 *)pvBits) + y*iW + x);
@@ -127,16 +147,10 @@ class ImageDct
 		return fRet;
 		}
 	S32		getInt	( S32 x, S32 y ) { return (S32)getFloat(x,y); }
-	inline
-	S32		height	( void ) { return iH; }
-	inline
-	S32		width		( void ) { return iW; }
-
-	private :
 
 	// Run-time data
 	IDictionary		*pDct;								// Image dictionary
-	S32				iW,iH,iF;							// Size information
+	S32				iW,iH,iFmt,iCh,iBpp;				// Size information
 	IMemoryMapped	*pBits;								// Memory block
 	void				*pvBits;								// Ptr. to memory
 	};
@@ -153,6 +167,9 @@ DEFINE_GUID	(	CLSID_At, 0x2534d0ce, 0x8628, 0x11d2, 0x86, 0x8c,
 					0x00, 0x60, 0x08, 0xad, 0xdf, 0xed );
 
 DEFINE_GUID	(	CLSID_Binary, 0x2534d017, 0x8628, 0x11d2, 0x86, 0x8c,
+					0x00, 0x60, 0x08, 0xad, 0xdf, 0xed );
+
+DEFINE_GUID	(	CLSID_Codec, 0x2534d0db, 0x8628, 0x11d2, 0x86, 0x8c,
 					0x00, 0x60, 0x08, 0xad, 0xdf, 0xed );
 
 DEFINE_GUID	(	CLSID_Contours, 0x2534d0d6, 0x8628, 0x11d2, 0x86, 0x8c,

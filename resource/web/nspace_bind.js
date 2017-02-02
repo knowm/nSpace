@@ -172,18 +172,56 @@ new function ()
 				{
 				// A default value for images is simply a dictionary
 				// contain all of the image information
-				if (loc == "element/default")
+				if (loc == "element/default" || loc == "")
 					{
 					// The data for an image is a dictionary with its parameters
 					if (value.hasOwnProperty("Bits"))
 						{
-						// Load bits, create a data URL and assign to image
+						// Access image information
 						var bits		= new Uint8Array(value["Bits"]);
-						var ctx		= elem.getContext("2d");
 						var width	= value["Width"];
 						var height	= value["Height"];
-elem.width	= width;
-elem.height	= height;
+
+						// Context for rendering to the canvas
+						var ctx	= elem.getContext("2d");
+
+						// Create a new image object for rendering
+						var img	= new Image();
+
+						// In case blob gets created
+						var blb	= null;
+
+						// Handle required formats
+						if (value["Format"] == "JPEG")
+							{
+							// Create a blob for the image bits
+							blb = new Blob([bits], { type : 'image/jpeg' } );
+							}	// if
+
+						// If valid blob, render it to canvas
+						if (blb != null)
+							{
+							// URL for blob
+							var url	= URL.createObjectURL(blb);
+
+							// Image will be drawn when URL is loaded
+							img.onload = function ()
+								{
+								// TODO: Resize/aspect ratio options ?
+								ctx.drawImage(img,0,0,elem.width,elem.height);
+								URL.revokeObjectURL(url);
+								}	// onload
+
+							// Assign URL to image for rendering
+							img.src = url;
+							}	// if
+						}	// if
+					}	// if
+
+					// Raw pixel data
+					/*
+					elem.width	= width;
+					elem.height	= height;
 						var imageD	= ctx.createImageData(width,height);
 						var data		= imageD.data;
 						var len		= bits.length;
@@ -196,10 +234,8 @@ elem.height	= height;
 								data[dstidx++] = 0xff;
 								}	// for
 						ctx.putImageData(imageD,0,0);
-						}	// if
-				
+					*/
 
-					}	// if
 				}	// else if
 
 			else

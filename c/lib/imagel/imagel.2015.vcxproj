@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="at.cpp" />
     <ClCompile Include="binary.cpp" />
+    <ClCompile Include="codec.cpp" />
     <ClCompile Include="contours.cpp" />
     <ClCompile Include="convert.cpp" />
     <ClCompile Include="create.cpp" />
@@ -47,6 +48,11 @@
   <ItemGroup>
     <ClInclude Include="imagel.h" />
     <ClInclude Include="imagel_.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ext\libjpeg\libjpeg.2015.vcxproj">
+      <Project>{e2a9aa60-325e-403b-925e-089b49aeef38}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{44D3BD75-4549-420C-8B48-D243C02F8AB8}</ProjectGuid>

@@ -48,6 +48,7 @@
 	#	Io												Lib/Comm/Network/Ip/Tcp/Io/ {}
 		!	Server/OnRead/OnFire					Io/Socket/Fire
 		!	Server/OnRead/OnFire					Io/Read/Fire
+	#	IoTx											Lib/Comm/Network/Ip/Tcp/Io/ {}
 
 	% Subgraph: Parse stream into response
 	#	StmToResp									Lib/Comm/Network/Ip/Tcp/Http/StmRsp/ {}
@@ -340,7 +341,7 @@
 	%% TODO: Asynchronous transmission per client ?
 
 	% Active client
-	!	Client/OnFire								Io/Socket/Fire
+	!	Client/OnFire								IoTx/Socket/Fire
 
 	% MISCN: Transmission template TODO: When payload size > 7 bits
 %	$	ValueWsTx Misc.Dist { Value { OpCodeBits 0x81:int LengthSize 1:int } }
@@ -382,7 +383,7 @@
 	$	CreateTxStm Misc.Create { Id Io.StmMemory }
 		!	StoreWsTx/OnStore						CreateTxStm/Fire
 
-	% MISCN: Initial parse of header
+	% MISCN: Format header for transmission
 	$	FrmFmt Misc.DictFormat { Endian Big }
 		!	Format/ValueFrmOut/OnFire			FrmFmt/Format
 		!	CreateTxStm/OnFire					FrmFmt/Stream
@@ -393,6 +394,6 @@
 	!	FrmFmt/OnFire								StmPosTx/Seek
 
 	% Request transmission
-	!	FrmFmt/OnFire								Io/Stream/Fire
-	!	FrmFmt/OnFire								Io/Transmit/Fire
+	!	FrmFmt/OnFire								IoTx/Stream/Fire
+	!	FrmFmt/OnFire								IoTx/Transmit/Fire
 

@@ -24,7 +24,7 @@ extern "C" {
 
 // For JPEG library...
 #include <setjmp.h>
-/*
+
 //
 // Structure - CTX_JPEG.	JPEG compression/decompression context.  We
 //		want a big enough buffer for compression so that we will most likely
@@ -51,24 +51,129 @@ void		jpeg_skip_input_data			( j_decompress_ptr, long );
 void		jpeg_term_destination		( j_compress_ptr );
 void		jpeg_term_source				( j_decompress_ptr );
 
-ImgJPEG :: ImgJPEG ( void )
+libJpeg :: libJpeg ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
 	//	PURPOSE
-	//		-	Constructor for the node
+	//		-	Constructor for the object
 	//
 	////////////////////////////////////////////////////////////////////////
-	pDict	= NULL;
 	iQ		= 75;
 
 	// JPEG
 	pccinfo[0]	= pccinfo[1]	= NULL;
 	pcjerr[0]	= pcjerr[1]		= NULL;
 	pcdstmgr[0]	= pcdstmgr[1]	= NULL;
-	}	// ImgJPEG
+	}	// libJpeg
 
-HRESULT ImgJPEG :: compress ( U32 width, U32 height, U32 bpp,
+libJpeg :: ~libJpeg ( void )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Destructor for the object
+	//
+	////////////////////////////////////////////////////////////////////////
+	U32	i;
+
+	// Clean up
+	for (i = 0;i < 2;++i)
+		{
+		if (pccinfo[i] != NULL)
+			{
+			jpeg_destroy_compress ( (struct jpeg_compress_struct *) pccinfo[i] );
+			_FREEMEM(pccinfo[i]);
+			}	// if
+		if (pcdinfo[i] != NULL)
+			{
+			jpeg_destroy_decompress ( (struct jpeg_decompress_struct *) pcdinfo[i] );
+			_FREEMEM(pcdinfo[i]);
+			}	// if
+		if (pcjerr[i] != NULL)		_FREEMEM(pcjerr[i]);
+		if (pcdstmgr[i] != NULL)	_FREEMEM(pcdstmgr[i]);
+		if (pcsrcmgr[i] != NULL)	_FREEMEM(pcsrcmgr[i]);
+		}	// for
+
+	}	// destruct
+
+HRESULT libJpeg :: compress ( IDictionary *pDct )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Compresses an uncompressed image 'in-place'.  The results
+	//			replace the dictionary state.
+	//
+	//	PARAMETERS
+	//		-	pDct contains the image information.
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT			hr				= S_OK;
+	IMemoryMapped	*pBitsSrc	= NULL;
+	IMemoryMapped	*pBitsDst	= NULL;
+	adtString		strFmt;
+	adtIUnknown		unkV;
+	adtInt			iWidth,iHeight,iBpp;
+	ImageDct			dctImage;
+
+	// Image parameters
+	CCLTRY ( dctImage.lock ( pDct ) );
+
+	// Validate supported formats/bit depth
+	CCLTRYE (	dctImage.iFmt >= IMGFMT_U8X2 &&
+					dctImage.iFmt <= IMGFMT_S16X2,
+					E_NOTIMPL );
+
+	// Create destination memory
+	CCLTRY ( COCREATE ( L"Io.MemoryBlock", IID_IMemoryMapped, &pBitsDst ) );
+
+	// Compress
+	if (hr == S_OK)
+		{
+		// Debug
+		#ifdef	_WIN32
+		U32		now,then;
+		then	= 	GetTickCount();
+		#endif
+		#ifdef	__unix__
+//		struct timeval now,then;
+//		gettimeofday ( &then, NULL );
+		#endif
+
+		// Compress
+		hr = compress (	dctImage.iW, dctImage.iH, dctImage.iBpp, dctImage.iCh,
+								dctImage.pBits, pBitsDst );
+
+		// Debug
+		#ifdef	_WIN32
+		now = GetTickCount();
+		lprintf ( LOG_INFO, L"Time to compress %d ms, hr 0x%x\n", (now-then), hr );
+		#endif
+		#ifdef	__unix__
+//		gettimeofday ( &now, NULL );
+//		dbgprintf (	L"Compress %d ms\n",
+//						((now.tv_usec-then.tv_usec)/1000) + ((now.tv_sec-then.tv_sec)*1000) );
+		#endif
+		}	// if
+
+	// New format
+	CCLTRY ( pDct->store ( adtString(L"Format"), adtString(L"JPEG") ) );
+
+	// Replace bits
+	CCLTRY (	pDct->store ( adtString(L"Bits"), adtIUnknown(pBitsDst) ));
+
+	// Clean up
+	_RELEASE(pBitsDst);
+	_RELEASE(pBitsSrc);
+
+	return hr;
+	}	// compress
+
+HRESULT libJpeg :: compress ( U32 width, U32 height, U32 bpp, U32 ch,
 										IMemoryMapped *pBitsSrc,
 										IMemoryMapped *pBitsDst )
 	{
@@ -81,6 +186,7 @@ HRESULT ImgJPEG :: compress ( U32 width, U32 height, U32 bpp,
 	//		-	width,height are the dimensions of the image
 	//		-	bpp is the bits per pixel.  If bpp = 8 it is assumed the image
 	//			is gray scale.
+	//		-	ch is the number of input color channels (1 for grayscale, etc)
 	//		-	pBitsSrc is the source bit stream
 	//		-	pBitsDst is the destination bit stream
 	//
@@ -117,7 +223,7 @@ HRESULT ImgJPEG :: compress ( U32 width, U32 height, U32 bpp,
 	CCLOK	( d->free_in_buffer		= 0; )
 	CCLOK	( szRow						= width*(bpp/8); )
 	CCLOK	( pcRowBits					= pcBitsSrc; )
-	CCLOK	( c->input_components	= (bpp/8); )
+	CCLOK	( c->input_components	= ch; )
 
 	// Very ugly, because of the way the JPEG library works we cannot return
 	// after an 'jpeg_error_exit'.
@@ -146,6 +252,7 @@ HRESULT ImgJPEG :: compress ( U32 width, U32 height, U32 bpp,
 				CCLOK ( jpeg_finish_compress ( c ); )
 
 				// Set the final size of the compressed image
+//				lprintf ( LOG_INFO, L"Final size : %d", ctx.szDst );
 				CCLTRY ( ctx.pBitsDst->setSize ( ctx.szDst ) );
 
 				// Perform long jump ourselves to clean up 'setjmp'
@@ -171,7 +278,7 @@ HRESULT ImgJPEG :: compress ( U32 width, U32 height, U32 bpp,
 	return hr;
 	}	// compress
 
-HRESULT ImgJPEG :: construct ( void )
+HRESULT libJpeg :: construct ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -240,166 +347,11 @@ HRESULT ImgJPEG :: construct ( void )
 		CCLOK		( d->src							= src; )
 		}	// for
 
-	// For Windows XP, etc using GDI+ for decompression of newer JPEG files
-	#if defined(_WIN32) && !defined(UNDER_CE)
-	{
-	Gdiplus::GdiplusStartupInput	si;
-	GdiplusStartup ( &uToken, &si, NULL );
-	}
-	#endif
-
 	return hr;
 	}	// construct
+/*
 
-HRESULT ImgJPEG :: decompress (	IMemoryMapped *pBitsSrc,
-											IMemoryMapped *pBitsDst,
-											U32 *width, U32 *height, U32 *bpp )
-	{
-	////////////////////////////////////////////////////////////////////////
-	//
-	//	PURPOSE
-	//		-	Decompresses an compressed image.
-	//
-	//	PARAMETERS
-	//		-	pBitsSrc is the source bit stream
-	//		-	pBitsDst is the destination bit stream
-	//		-	width,height,bpp will receive the image parameters
-	//
-	//	RETURN VALUE
-	//		S_OK if successful
-	//
-	////////////////////////////////////////////////////////////////////////
-	HRESULT								hr				= S_OK;
-	U8										*pcBitsSrc	= NULL;
-	U8										*pcBitsDst	= NULL;
-	U8										*pcRowBits	= NULL;
-	U32									szRow			= 0;
-	struct jpeg_decompress_struct	*d	= (struct jpeg_decompress_struct *)	pcdinfo[0];
-	struct jpeg_source_mgr			*s	= (struct jpeg_source_mgr *)			pcsrcmgr[0];
-	JSAMPROW								row_ptr[1];
-	CTX_JPEG								ctx;
-	U32									idx,sz;
-
-	// Access and size source bits
-	CCLTRY( pBitsSrc->lock ( 0, 0, (VOID **) &pcBitsSrc, &sz ) );
-
-	// Initialize the source manager
-	CCLOK ( s->next_input_byte = (JOCTET *) pcBitsSrc; )
-	CCLOK ( s->bytes_in_buffer	= sz; )
-
-	// Context for own routines
-	CCLOK ( memset ( &ctx, 0, sizeof(ctx) ); )
-	CCLOK ( ctx.hr				= S_OK; )
-	CCLOK ( d->client_data	= &ctx; )
-
-	// Very ugly, because of the way the JPEG library works we cannot return
-	// after an 'jpeg_error_exit'.
-	if (hr == S_OK)
-		{
-		// Install handler
-		int sj = setjmp ( (ctx.ljenv) );
-		switch ( sj )
-			{
-			// Zero just means environment saved, continue processing
-			case 0 :
-				// Header
-				CCLOK		( jpeg_read_header ( d, TRUE ); )
-
-				// Image information
-				CCLOK		( *width		= d->image_width; )
-				CCLOK		( *height	= d->image_height; )
-				CCLOK		( *bpp		= d->num_components*8; )
-
-				// Size and access destination bits.
-				CCLOK		( szRow = (*width)*((*bpp)/8); )
-				CCLTRY	( pBitsDst->setSize ( (*height)*szRow ) );
-				CCLTRY	( pBitsDst->lock ( 0, 0, (VOID **) &pcBitsDst, NULL ) );
-				CCLOK		( pcRowBits			= pcBitsDst; )
-
-				// Decompress each row
-				CCLOK		( jpeg_start_decompress ( d ); )
-				CCLTRYE	( (ctx.hr == S_OK), hr );
-				for (idx = 0;hr == S_OK && idx < d->image_height;++idx)
-					{
-					// Decompress next row
-					CCLOK ( row_ptr[0] = pcRowBits; )
-					if (hr == S_OK && jpeg_read_scanlines ( d, row_ptr, 1 ) != 1)
-						{
-						dbgprintf ( L"ImgJPEG::decompress:jpeg_read_scanlines failed at index %d\r\n", idx );
-						hr = E_UNEXPECTED;
-						}	// if
-
-					// Next row
-					CCLTRYE	( (ctx.hr == S_OK), hr );
-					CCLOK		( pcRowBits += szRow; )
-					}	// for
-				CCLOK ( jpeg_finish_decompress ( d ); )
-
-				// Perform long jump ourselves to clean up 'setjmp'
-				longjmp ( (ctx.ljenv), 1 );
-				break;
-
-			// One means success, done
-			case 1 :
-				hr = S_OK;
-				break;
-
-			// Anything else is an error code
-			default :
-				jpeg_abort_decompress ( d );
-				hr = sj;
-				break;
-			}	// switch
-		}	// if
-
-	// Clean up
-//	jpeg_finish_decompress ( d );
-	_UNLOCK(pBitsDst,pcBitsDst);
-	_UNLOCK(pBitsSrc,pcBitsSrc);
-
-	return hr;
-	}	// decompress
-
-void ImgJPEG :: destruct ( void )
-	{
-	////////////////////////////////////////////////////////////////////////
-	//
-	//	OVERLOAD
-	//	FROM		CCLObject
-	//
-	//	PURPOSE
-	//		-	Called when the object is being destroyed
-	//
-	////////////////////////////////////////////////////////////////////////
-	U32	i;
-
-	// Clean up
-	for (i = 0;i < 2;++i)
-		{
-		if (pccinfo[i] != NULL)
-			{
-			jpeg_destroy_compress ( (struct jpeg_compress_struct *) pccinfo[i] );
-			_FREEMEM(pccinfo[i]);
-			}	// if
-		if (pcdinfo[i] != NULL)
-			{
-			jpeg_destroy_decompress ( (struct jpeg_decompress_struct *) pcdinfo[i] );
-			_FREEMEM(pcdinfo[i]);
-			}	// if
-		if (pcjerr[i] != NULL)		_FREEMEM(pcjerr[i]);
-		if (pcdstmgr[i] != NULL)	_FREEMEM(pcdstmgr[i]);
-		if (pcsrcmgr[i] != NULL)	_FREEMEM(pcsrcmgr[i]);
-		}	// for
-
-	_RELEASE(pDict);
-
-	// For Windows XP, etc using GDI+ for decompression of newer JPEG files
-	#if defined(_WIN32) && !defined(UNDER_CE)
-	Gdiplus::GdiplusShutdown(uToken);
-	#endif
-	}	// destruct
-
-HRESULT ImgJPEG :: onAttach ( bool bAttach )
+HRESULT libJpeg :: onAttach ( bool bAttach )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -423,7 +375,7 @@ HRESULT ImgJPEG :: onAttach ( bool bAttach )
 	return S_OK;
 	}	// onAttach
 
-HRESULT ImgJPEG :: receive ( IReceptor *pR, const adtValue &v )
+HRESULT libJpeg :: receive ( IReceptor *pR, const adtValue &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -488,7 +440,7 @@ HRESULT ImgJPEG :: receive ( IReceptor *pR, const adtValue &v )
 			// Debug
 			#ifdef	_WIN32
 			now = GetTickCount();
-	//		dbgprintf ( L"ImgJPEG::receiveCompress:Time to compress %d ms, hr 0x%x\n", (now-then), hr );
+	//		dbgprintf ( L"libJpeg::receiveCompress:Time to compress %d ms, hr 0x%x\n", (now-then), hr );
 			#endif
 			#ifdef	__unix__
 	//		gettimeofday ( &now, NULL );
@@ -622,7 +574,7 @@ HRESULT ImgJPEG :: receive ( IReceptor *pR, const adtValue &v )
 			// Debug
 			#ifdef	_WIN32
 			now = GetTickCount();
-	//		dbgprintf ( L"ImgJPEG::receiveDecompress:Time to decompress %d ms, hr 0x%x\n", (now-then), hr );
+	//		dbgprintf ( L"libJpeg::receiveDecompress:Time to decompress %d ms, hr 0x%x\n", (now-then), hr );
 			#endif
 			}	// if
 
@@ -665,7 +617,7 @@ HRESULT ImgJPEG :: receive ( IReceptor *pR, const adtValue &v )
 
 	return hr;
 	}	// receive
-
+*/
 //
 // JPEG support routines
 //
@@ -846,4 +798,4 @@ void jpeg_term_source ( j_decompress_ptr pd )
 	//
 	////////////////////////////////////////////////////////////////////////
 	}	// jpeg_term_source
-*/
+
