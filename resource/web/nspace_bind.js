@@ -164,7 +164,7 @@ new function ()
 				{
 				// Value
 				if (loc == "element/default")
-					elem.text = value;
+					elem.value= value;
 				}	// else if
 
 			// Image
@@ -197,6 +197,45 @@ new function ()
 							// Create a blob for the image bits
 							blb = new Blob([bits], { type : 'image/jpeg' } );
 							}	// if
+
+						// NOTE: Special case of raw pixel data.  Does not URL/blob logic below.
+						else if (value["Format"] == "R8G8B8")
+							{
+							// Must handle re-sizing to shape.  Create memory canvas and draw
+							// entire image to it, then draw resized into target canvas
+							var canvasMem	= document.createElement("canvas");
+							var ctxMem		= canvasMem.getContext("2d");
+
+							// Ensure memory canvas matches size of element for later drawing
+							canvasMem.width	= width;
+							canvasMem.height	= height;
+
+							// Get image data directly from canvas and write raw pixel data to it.
+							var imageD	= ctxMem.createImageData(width,height);
+							var data		= imageD.data;
+							var len		= bits.length;
+							for (var y = 0,srcidx = 0,dstidx = 0;y < height;++y)
+								for (var x = 0;x < width;++x)
+									{
+									data[dstidx++]	= bits[srcidx++];
+									data[dstidx++]	= bits[srcidx++];
+									data[dstidx++]	= bits[srcidx++];
+									data[dstidx++] = 0xff;
+									}	// for
+
+							// Write pixel data directly to memory canvas
+							ctxMem.putImageData(imageD,0,0);
+
+							// Draw to target canvas
+							ctx.drawImage(canvasMem,0,0,elem.width,elem.height);
+							}	// if
+
+						// Raw RGB
+//						else if (value["Format"] == "R8G8B8")
+//							{
+//							// Create a blob for the image bits
+//							blb = new Blob([bits], { type : 'image/x-rgb' } );
+//							}	// if
 
 						// If valid blob, render it to canvas
 						if (blb != null)

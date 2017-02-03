@@ -132,10 +132,14 @@ HRESULT StreamCopy :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				if (pStmDst != NULL)
 					{
 					U32	nCpy = iSz;
+					U32	nChk;
 
-					// Need size ?
-					if (nCpy == 0)
-						hr = pMemSrc->getSize(&nCpy);
+					// Size of source data
+					CCLTRY ( pMemSrc->getSize(&nChk) );
+
+					// Adjust
+					if (hr == S_OK && (nCpy == 0 || nCpy > nChk))
+						nCpy = nChk;
 
 					// Access bits
 					CCLTRY ( pMemSrc->lock ( 0, 0, &pvMemSrc, NULL ) );
@@ -149,9 +153,12 @@ HRESULT StreamCopy :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					{
 					U32	nChk,nCpy = iSz;
 
-					// Need size ?
-					if (nCpy == 0)
-						hr = pMemSrc->getSize(&nCpy);
+					// Size of source data
+					CCLTRY ( pMemSrc->getSize(&nChk) );
+
+					// Adjust
+					if (hr == S_OK && (nCpy == 0 || nCpy > nChk))
+						nCpy = nChk;
 
 					// Ensure destination has enough room
 					CCLTRY ( pMemDst->getSize ( &nChk ) );
