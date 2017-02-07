@@ -446,7 +446,7 @@ HRESULT At :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 			// Single value done or proceed to next value
 			if (bSingle)
-				bSingle = false;
+				break;
 			else
 				{
 				pIt->next();

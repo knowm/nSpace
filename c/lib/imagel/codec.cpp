@@ -48,8 +48,9 @@ HRESULT Codec :: onAttach ( bool bAttach )
 		if (pnDesc->load ( adtString(L"Type"), vL ) == S_OK)
 			adtValue::toString ( vL, strType );
 
-		// Internal object	
+		// Internal objects
 		CCLTRY ( jpeg.construct() );
+		CCLTRY ( png.construct() );
 		}	// if
 
 	// Detach
@@ -106,9 +107,26 @@ HRESULT Codec :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	// Decode
 	else if (_RCP(Decode))
 		{
+		adtValue		vL;
+		adtString	strFmt;
+
 		// State check
 		CCLTRYE ( (pDct != NULL), ERROR_INVALID_STATE );
-		CCLTRYE ( strType.length() > 0, ERROR_INVALID_STATE );
+
+		// Extract format of provided image
+		CCLTRY ( pDct->load ( adtString(L"Format"), vL ) );
+		CCLTRYE( (strFmt = vL).length() > 0, E_UNEXPECTED );
+
+		// Run appropriate decoder
+		if (hr == S_OK && (!WCASECMP(strFmt,L"JPEG") || !WCASECMP(strFmt,L"JPG")))
+			hr = jpeg.decompress(pDct);
+		else if (hr == S_OK && !WCASECMP(strFmt,L"PNG"))
+			hr = png.decompress(pDct);
+		else
+			{
+			hr = E_NOTIMPL;
+			lprintf ( LOG_WARN, L"Unable to decode format %s\r\n", (LPCWSTR)strFmt );
+			}	// else
 
 		// Result
 		if (hr == S_OK)

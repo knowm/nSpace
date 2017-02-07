@@ -35,12 +35,6 @@ adtString strRefBack		( L"Back" );
 // Currently using current default install directory, use in path instead ?
 #define	PATH_GNUPLOT	L"c:\\program files\\gnuplot\\bin\\gnuplot.exe"
 
-// Prototypes
-static void PNGAPI png_progressive_info	( png_structp, png_infop );
-static void PNGAPI png_progressive_row		( png_structp, png_bytep,
-																png_uint_32, int );
-static void PNGAPI png_progressive_end		( png_structp, png_infop );
-
 GnuPlotSrvr :: GnuPlotSrvr ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -62,7 +56,7 @@ GnuPlotSrvr :: GnuPlotSrvr ( void )
 	pTick			= NULL;
 	pDctImg		= NULL;
 	pBits			= NULL;
-	pvBits		= NULL;
+	bPngBegin	= false;
 	bPngEnd		= false;
 	}	// GnuPlotSrvr
 
@@ -103,9 +97,6 @@ void GnuPlotSrvr :: destruct ( void )
 
 	// Ensure shutdown	
 	stop();
-
-	// PNG clean up
-	png_uninit();
 
 	// Clean up
 	_RELEASE(pBits);
@@ -681,31 +672,64 @@ HRESULT GnuPlotSrvr :: png_data ( BYTE *pbBfr, U32 len )
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	HRESULT	hr	= S_OK;
+	HRESULT	hr			= S_OK;
+	U8			*pcBits	= NULL;
+	U32		i,sz;		// %PNG\r\n\x1a\n
+	BYTE		bHdr[] = { 0x89, 0x50, 0x4e, 0x47, 0xd, 0xa, 0x1a, 0x0a };
+							// IEND + CRC
+	BYTE		bFtr[] = { 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82 };
 
-	// Debug
-//	dbgprintf ( L"GnuPlotSrvr::png_data:%d bytes\r\n", len );
-
-	// Error handling
-	if (hr == S_OK && setjmp(png_jmpbuf(png_ptr)))
+	// Wait for beginning of PNG image ?  First bytes sent are image
+	// if things are synchronized.
+	if (!bPngBegin)
 		{
-		dbgprintf ( L"GnuPlotSrvr::png_data:Error!\r\n" );
-		hr = E_UNEXPECTED;
-		return hr;
+		// Valid begin ?
+		bPngBegin = (len > sizeof(bHdr) && memcmp ( bHdr, pbBfr, sizeof(bHdr)) == 0);
+
+		// If valid beginning, reset buffer
+		if (bPngBegin) 
+			hr = pBits->setSize(0);
 		}	// if
 
-	// Feed data to PNG library
-	png_process_data ( png_ptr, info_ptr, pbBfr, len );
+	// PNG has begun, incoming data
+	if (bPngBegin)
+		{
+		// Append data to end of buffer
+		CCLTRY ( pBits->getSize ( &sz ) );
+		CCLTRY ( pBits->setSize ( sz+len ) );
+		CCLTRY ( pBits->lock ( 0, 0, (void **) &pcBits, NULL ));
+		CCLOK  ( memcpy ( &pcBits[sz], pbBfr, len ); )
 
-	// Re-initialize PNG for next image after image is complete
+		// Look out for end of PNG data
+		for (i = 0;i < len;++i)
+			{
+			// First byte match ?
+			if (pbBfr[i] != bFtr[0])
+				continue;
+
+			// Check for sequence
+			if (	(len-i) >= sizeof(bFtr) && 
+					!memcmp ( bFtr, &pbBfr[i], sizeof(bFtr) ) )
+				{
+				bPngEnd = true;
+				break;
+				}	// if
+
+			}	// for
+
+		// Clean up
+		_UNLOCK(pBits,pcBits);
+		}	// if
+
+	// End of PNG data
 	if (bPngEnd)
 		{
-		// Prepare for the next image
-		CCLTRY ( png_uninit() );
-		CCLTRY ( png_init() );
+		// Using PNG images
+		pDctImg->store ( adtString(L"Format"), adtString(L"PNG") );
 
-		// New image
-		bPngEnd = false;
+		// Reset state for next image
+		bPngBegin	= false;
+		bPngEnd		= false;
 
 		// Signal plot image complete
 		evPlot.signal();
@@ -713,97 +737,6 @@ HRESULT GnuPlotSrvr :: png_data ( BYTE *pbBfr, U32 len )
 
 	return hr;
 	}	// png_data
-
-HRESULT GnuPlotSrvr :: png_end ( void )
-	{
-	////////////////////////////////////////////////////////////////////////
-	//
-	//	PURPOSE
-	//		-	Called when a PNG has finished loading.
-	//
-	//	RETURN VALUE
-	//		S_OK if successful
-	//
-	////////////////////////////////////////////////////////////////////////
-	HRESULT	hr	= S_OK;
-
-	// Debug
-//	dbgprintf ( L"GnuPlotSrvr::png_end:0x%x\r\n", hr_img );
-
-	// Error ?
-	CCLTRYE ( hr_img == S_OK, hr_img );
-
-	// End of PNG
-	bPngEnd = true;
-
-	return hr;
-	}	// png_end
-
-HRESULT GnuPlotSrvr :: png_init ( void )
-	{
-	////////////////////////////////////////////////////////////////////////
-	//
-	//	PURPOSE
-	//		-	Initialize/prepare PNG state for decoding an image.
-	//
-	//	RETURN VALUE
-	//		S_OK if successful
-	//
-	////////////////////////////////////////////////////////////////////////
-	HRESULT	hr	= S_OK;
-
-	// State check
-	if (png_ptr != NULL)
-		return S_OK;
-
-	// Prepare PNG structures for reading
-	CCLTRYE ( (png_ptr = png_create_read_struct ( PNG_LIBPNG_VER_STRING,
-					png_voidp_NULL, png_error_ptr_NULL, png_error_ptr_NULL ))
-					!= NULL, E_OUTOFMEMORY );
-	CCLTRYE ( (info_ptr = png_create_info_struct ( png_ptr )) != NULL,
-					E_OUTOFMEMORY );
-//	dbgprintf ( L"png_init:%p:%p\r\n", png_ptr, info_ptr );
-
-	// Error handling
-	if (hr == S_OK && setjmp(png_jmpbuf(png_ptr)))
-		hr = E_UNEXPECTED;
-
-	// Set up the callbacks for progressive reading
-	CCLOK ( png_set_progressive_read_fn ( png_ptr, this, png_progressive_info,
-				png_progressive_row, png_progressive_end ); )
-
-		
-	return hr;
-	}	// png_init
-
-HRESULT GnuPlotSrvr :: png_uninit ( void )
-	{
-	////////////////////////////////////////////////////////////////////////
-	//
-	//	PURPOSE
-	//		-	Free PNG state.
-	//
-	////////////////////////////////////////////////////////////////////////
-	HRESULT	hr = S_OK;
-
-	// State check
-	if (png_ptr == NULL)
-		return S_OK;
-
-	// Error handling
-	if (hr == S_OK && setjmp(png_jmpbuf(png_ptr)))
-		hr = E_UNEXPECTED;
-
-	// PNG clean up
-	if (png_ptr != NULL)
-		{
-		png_destroy_read_struct ( &png_ptr, &info_ptr, NULL );
-		png_ptr	= NULL;
-		info_ptr = NULL;
-		}	// if
-
-	return hr;
-	}	// png_uninit
 
 HRESULT GnuPlotSrvr :: run ( bool bRun )
 	{
@@ -1030,9 +963,6 @@ HRESULT GnuPlotSrvr :: stop ( void )
 		_RELEASE(pThrd);
 		_RELEASE(pTick);
 		}	// if
-
-	// PNG
-	png_uninit();
 
 	// Close process
 	if (gnuInfo.hProcess != NULL)
@@ -1307,9 +1237,6 @@ HRESULT GnuPlotSrvrt :: tickBegin ( void )
 	HRESULT	hr				= S_OK;
 	BOOL		bRet;
 
-	// Ensure object is ready to decode PNG images
-	CCLTRY ( pParent->png_init() );
-
 	// Begin by hanging read off of STDOUT
 	if (hr == S_OK)
 		{
@@ -1341,9 +1268,6 @@ HRESULT GnuPlotSrvrt :: tickEnd ( void )
 
 	// Cancel pending I/O
 	CancelIo ( pParent->hRdOut );
-
-	// Clean up
-	pParent->png_uninit();
 
 	return hr;
 	}	// tickEnd
@@ -1418,93 +1342,4 @@ HRESULT GnuPlotSrvrt :: writeStr ( const WCHAR *pwBfr )
 
 	return hr;
 	}	// writeStr
-
-//
-// PNG callbacks
-//
-
-static void PNGAPI png_progressive_info ( png_structp png_ptr, png_infop info_ptr )
-	{
-	HRESULT	hr = S_OK;
-	U32		w,h,bpp,type;
-
-	// Supplied ptr. is to owner object
-	GnuPlotSrvr *pThis = (GnuPlotSrvr *) png_get_io_ptr ( png_ptr );
-
-	// Enough has been read to know the header, prepare the image parameters.
-	w		= png_get_image_width(png_ptr,info_ptr);
-	h		= png_get_image_height(png_ptr,info_ptr);
-	bpp	= png_get_channels(png_ptr,info_ptr)*png_get_bit_depth(png_ptr,info_ptr);
-	type	= png_get_color_type(png_ptr,info_ptr);
-//	dbgprintf ( L"png_progressive_info:pThis %p:%d X %d X %d (0x%x)\r\n", pThis, w, h, bpp, type );
-
-	// Compute stride and format based on header info
-	switch (type)
-		{
-		case PNG_COLOR_TYPE_RGB :
-			pThis->uStride	= w*3;
-			CCLTRY ( pThis->pDctImg->store ( strRefFormat, strRefRGB ) );
-			break;
-		case PNG_COLOR_TYPE_RGB_ALPHA :
-			pThis->uStride	= w*4;
-			CCLTRY ( pThis->pDctImg->store ( strRefFormat, strRefRGBA ) );
-			break;
-		default :
-			hr = E_NOTIMPL;
-		}	// switch
-
-	// Update image dictionary with layout of new image
-	CCLTRY ( pThis->pDctImg->store ( strRefWidth, adtInt(w) ) );
-	CCLTRY ( pThis->pDctImg->store ( strRefHeight, adtInt(h) ) );
-
-	// Size the image bits to hold all the data
-	CCLTRY ( pThis->pBits->setSize ( pThis->uStride*h ) );
-	CCLTRY ( pThis->pBits->lock ( 0, 0, &(pThis->pvBits), NULL ));
-
-	// Update
-	pThis->hr_img = hr;
-
-	// Tell library to start reading the PNG image
-	png_start_read_image(png_ptr);
-	}	// png_progressive_info
-
-static void PNGAPI png_progressive_row ( png_structp png_ptr, png_bytep data,
-														png_uint_32 row, int pass )
-	{
-	U8	*pcBits	= NULL;
-
-	// Supplied ptr. is to owner object
-	GnuPlotSrvr *pThis = (GnuPlotSrvr *) png_get_io_ptr ( png_ptr );
-//	dbgprintf ( L"png_progressive_row:pThis %p:data %p row %d pass %d\r\n", 
-//					pThis, data, row, pass );
-
-	// Copy data to image bits
-	if (pThis->hr_img == S_OK)
-		{
-		// Compute row address
-		pcBits = ((U8 *)(pThis->pvBits)) + pThis->uStride*row;
-
-		// Copy row
-		memcpy ( pcBits, data, pThis->uStride );
-		}	// if
-
-	}	// png_progressive_row
-
-static void PNGAPI png_progressive_end ( png_structp png_ptr, png_infop info_ptr )
-	{
-	// Supplied ptr. is to owner object
-	GnuPlotSrvr *pThis = (GnuPlotSrvr *) png_get_io_ptr ( png_ptr );
-//	dbgprintf ( L"png_progressive_end:pThis %p:pvBits %p\r\n", pThis, pThis->pvBits );
-
-	// Clean up bits
-	if (pThis->pvBits != NULL)
-		{
-		pThis->pBits->unlock(pThis->pvBits);
-		pThis->pvBits = NULL;
-		}	// if
-
-	// Signal end of image
-	pThis->png_end();
-	}	// png_progressive_end
-
 

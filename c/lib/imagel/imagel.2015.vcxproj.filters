@@ -90,6 +90,9 @@
     <ClCompile Include="codec.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="png.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imagel.h">

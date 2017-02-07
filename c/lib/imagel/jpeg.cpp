@@ -349,6 +349,208 @@ HRESULT libJpeg :: construct ( void )
 
 	return hr;
 	}	// construct
+
+HRESULT libJpeg :: decompress ( IDictionary *pDct )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Decompresses a compressed image 'in-place'.  The results
+	//			replace the dictionary state.
+	//
+	//	PARAMETERS
+	//		-	pDct contain/will receive the image information.  Assumes
+	//			'Bits' and 'Format' properties are valid and contains 
+	//			compressed image.
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT			hr				= S_OK;
+	IMemoryMapped	*pBitsSrc	= NULL;
+	IMemoryMapped	*pBitsDst	= NULL;
+	adtString		strFmt;
+	adtIUnknown		unkV;
+	adtValue			vL;
+	U32				w,h,bpp,ch;
+
+	// State check
+	CCLTRYE ( pDct != NULL, ERROR_INVALID_STATE );
+
+	// Access source bits
+	CCLTRY ( pDct->load ( adtString(L"Bits"), vL ) );
+	CCLTRY ( _QISAFE((unkV=vL),IID_IMemoryMapped,&pBitsSrc) );
+
+	// Validate format
+	CCLTRY ( pDct->load ( adtString(L"Format"), vL ) );
+	CCLTRYE( (strFmt = vL).length() > 0, E_UNEXPECTED );
+	CCLTRYE( (!WCASECMP(strFmt,L"JPEG") || !WCASECMP(strFmt,L"JPG")), E_NOTIMPL );
+
+	// Create destination memory
+	CCLTRY ( COCREATE ( L"Io.MemoryBlock", IID_IMemoryMapped, &pBitsDst ) );
+
+	// Decompress
+	if (hr == S_OK)
+		{
+		// Debug
+		#ifdef	_WIN32
+		U32		now,then;
+		then	= 	GetTickCount();
+		#endif
+		#ifdef	__unix__
+//		struct timeval now,then;
+//		gettimeofday ( &then, NULL );
+		#endif
+
+		// Compress
+		hr = decompress (	pBitsSrc, pBitsDst, &w, &h, &bpp, &ch );
+
+		// Debug
+		#ifdef	_WIN32
+		now = GetTickCount();
+		lprintf ( LOG_INFO, L"Time to compress %d ms, hr 0x%x\n", (now-then), hr );
+		#endif
+		#ifdef	__unix__
+//		gettimeofday ( &now, NULL );
+//		dbgprintf (	L"Compress %d ms\n",
+//						((now.tv_usec-then.tv_usec)/1000) + ((now.tv_sec-then.tv_sec)*1000) );
+		#endif
+		}	// if
+
+	// New format (Assumption!)
+	if (hr == S_OK)
+		{
+		if (bpp == 8 && ch == 1)
+			hr = pDct->store ( adtString(L"Format"), adtString(L"U8x2") );
+		else if (bpp == 16 && ch == 1)
+			hr = pDct->store ( adtString(L"Format"), adtString(L"U16x2") );
+		else if (bpp == 24 && ch == 3)
+			hr = pDct->store ( adtString(L"Format"), adtString(L"R8G8B8") );
+		else
+			hr = E_UNEXPECTED;
+		}	// if
+
+	// Replace bits
+	CCLTRY (	pDct->store ( adtString(L"Bits"), adtIUnknown(pBitsDst) ));
+
+	// Clean up
+	_RELEASE(pBitsDst);
+	_RELEASE(pBitsSrc);
+
+	return hr;
+	}	// decompress
+
+HRESULT libJpeg :: decompress (	IMemoryMapped *pBitsSrc,
+											IMemoryMapped *pBitsDst,
+											U32 *width, U32 *height, U32 *bpp, U32 *ch )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Decompresses an compressed image.
+	//
+	//	PARAMETERS
+	//		-	pBitsSrc is the source bit stream
+	//		-	pBitsDst is the destination bit stream
+	//		-	width,height,bpp,ch will receive the image parameters
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT								hr				= S_OK;
+	U8										*pcBitsSrc	= NULL;
+	U8										*pcBitsDst	= NULL;
+	U8										*pcRowBits	= NULL;
+	U32									szRow			= 0;
+	struct jpeg_decompress_struct	*d	= (struct jpeg_decompress_struct *)	pcdinfo[0];
+	struct jpeg_source_mgr			*s	= (struct jpeg_source_mgr *)			pcsrcmgr[0];
+	JSAMPROW								row_ptr[1];
+	CTX_JPEG								ctx;
+	U32									idx,sz;
+
+	// Access and size source bits
+	CCLTRY( pBitsSrc->lock ( 0, 0, (VOID **) &pcBitsSrc, &sz ) );
+
+	// Initialize the source manager
+	CCLOK ( s->next_input_byte = (JOCTET *) pcBitsSrc; )
+	CCLOK ( s->bytes_in_buffer	= sz; )
+
+	// Context for own routines
+	CCLOK ( memset ( &ctx, 0, sizeof(ctx) ); )
+	CCLOK ( ctx.hr				= S_OK; )
+	CCLOK ( d->client_data	= &ctx; )
+
+	// Very ugly, because of the way the JPEG library works we cannot return
+	// after an 'jpeg_error_exit'.
+	if (hr == S_OK)
+		{
+		// Install handler
+		int sj = setjmp ( (ctx.ljenv) );
+		switch ( sj )
+			{
+			// Zero just means environment saved, continue processing
+			case 0 :
+				// Header
+				CCLOK		( jpeg_read_header ( d, TRUE ); )
+
+				// Image information
+				CCLOK		( *width		= d->image_width; )
+				CCLOK		( *height	= d->image_height; )
+				CCLOK		( *bpp		= d->num_components*8; )	// Correct ?
+				CCLOK		( *ch			= d->num_components; )		// Correct ?
+
+				// Size and access destination bits.
+				CCLOK		( szRow = (*width)*((*bpp)/8); )
+				CCLTRY	( pBitsDst->setSize ( (*height)*szRow ) );
+				CCLTRY	( pBitsDst->lock ( 0, 0, (VOID **) &pcBitsDst, NULL ) );
+				CCLOK		( pcRowBits			= pcBitsDst; )
+
+				// Decompress each row
+				CCLOK		( jpeg_start_decompress ( d ); )
+				CCLTRYE	( (ctx.hr == S_OK), hr );
+				for (idx = 0;hr == S_OK && idx < d->image_height;++idx)
+					{
+					// Decompress next row
+					CCLOK ( row_ptr[0] = pcRowBits; )
+					if (hr == S_OK && jpeg_read_scanlines ( d, row_ptr, 1 ) != 1)
+						{
+						dbgprintf ( L"ImgJPEG::decompress:jpeg_read_scanlines failed at index %d\r\n", idx );
+						hr = E_UNEXPECTED;
+						}	// if
+
+					// Next row
+					CCLTRYE	( (ctx.hr == S_OK), hr );
+					CCLOK		( pcRowBits += szRow; )
+					}	// for
+				CCLOK ( jpeg_finish_decompress ( d ); )
+
+				// Perform long jump ourselves to clean up 'setjmp'
+				longjmp ( (ctx.ljenv), 1 );
+				break;
+
+			// One means success, done
+			case 1 :
+				hr = S_OK;
+				break;
+
+			// Anything else is an error code
+			default :
+				jpeg_abort_decompress ( d );
+				hr = sj;
+				break;
+			}	// switch
+		}	// if
+
+	// Clean up
+//	jpeg_finish_decompress ( d );
+	_UNLOCK(pBitsDst,pcBitsDst);
+	_UNLOCK(pBitsSrc,pcBitsSrc);
+
+	return hr;
+	}	// decompress
+
 /*
 
 HRESULT libJpeg :: onAttach ( bool bAttach )

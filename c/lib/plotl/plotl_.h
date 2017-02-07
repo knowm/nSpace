@@ -13,9 +13,6 @@
 #include "plotl.h"
 #include <crtdbg.h>
 
-// GnuPlot usage outputs PNG images
-#include "../../lib/ext/libpng-1.2.7/png.h"
-
 // Defines
 #define MAX_VECTS		100								// Max plotting vectors
 
@@ -42,15 +39,13 @@ class GnuPlotSrvr :
 	PROCESS_INFORMATION	gnuInfo;						// GnuPlotSrvr process
 	GnuPlotSrvrt			*pTick;						// Worker tickable
 	IThread					*pThrd;						// Worker thread
-	png_structp				png_ptr;						// PNG Read structure
-	png_infop				info_ptr;					// PNG Info structure
 	IDictionary				*pDctImg;					// Reusable image output
 	IMemoryMapped			*pBits;						// Image bits
-	VOID						*pvBits;						// Locked image bits
 	HRESULT					hr_img;						// Image result
 	U16						uStride;						// Image stride
 	sysCS						csPlot;						// Thread safety
 	sysEvent					evPlot;						// Plot complete
+	bool						bPngBegin;					// Beginning of PNG detected
 	bool						bPngEnd;						// End of PNG detected
 
 	// Utilities
@@ -59,9 +54,6 @@ class GnuPlotSrvr :
 
 	// PNGs
 	HRESULT	png_data		( BYTE *, U32 );
-	HRESULT	png_end		( void );
-	HRESULT	png_init		( void );
-	HRESULT	png_uninit	( void );
 
 	// CCL
 	CCL_OBJECT_BEGIN_INT(GnuPlotSrvr)

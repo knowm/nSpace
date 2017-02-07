@@ -179,8 +179,6 @@ new function ()
 						{
 						// Access image information
 						var bits		= new Uint8Array(value["Bits"]);
-						var width	= value["Width"];
-						var height	= value["Height"];
 
 						// Context for rendering to the canvas
 						var ctx	= elem.getContext("2d");
@@ -197,10 +195,19 @@ new function ()
 							// Create a blob for the image bits
 							blb = new Blob([bits], { type : 'image/jpeg' } );
 							}	// if
+						else if (value["Format"] == "PNG")
+							{
+							// Create a blob for the image bits
+							blb = new Blob([bits], { type : 'image/png' } );
+							}	// if
 
 						// NOTE: Special case of raw pixel data.  Does not URL/blob logic below.
 						else if (value["Format"] == "R8G8B8")
 							{
+							// Size of image
+							var width	= value["Width"];
+							var height	= value["Height"];
+
 							// Must handle re-sizing to shape.  Create memory canvas and draw
 							// entire image to it, then draw resized into target canvas
 							var canvasMem	= document.createElement("canvas");

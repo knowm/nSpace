@@ -95,7 +95,7 @@ class cvMatRef :
 	};
 
 //
-// Class - libJpeg.  Object for LIBJPEG interface.
+// Class - libJpeg.  Object for JPEG images.
 //
 
 class libJpeg 
@@ -115,6 +115,37 @@ class libJpeg
 	HRESULT	compress		( IDictionary * );
 	HRESULT	compress		( U32, U32, U32, U32, IMemoryMapped *,
 									IMemoryMapped * );
+	HRESULT	decompress	( IDictionary * );
+	HRESULT	decompress	( IMemoryMapped *, IMemoryMapped *,
+									U32 *, U32 *, U32 *, U32 * );
+
+	private :
+
+	};
+
+//
+// Class - libPng.  Object for PNG images.
+//
+
+class libPng 
+	{
+	public :
+	libPng ( void );										// Constructor
+	virtual ~libPng ( void );							// Destructor
+
+	// Run-time data
+	HRESULT			hr_int;								// Parameters
+	U8					*pcBitsSrc;							// Decompression bits
+	U32				idxSrc,lenSrc;						// Decompression bits
+
+	// Utilities
+	HRESULT	construct	( void );					// Construct object
+//	HRESULT	compress		( IDictionary * );
+//	HRESULT	compress		( U32, U32, U32, U32, IMemoryMapped *,
+//									IMemoryMapped * );
+	HRESULT	decompress	( IDictionary * );
+	HRESULT	decompress	( IMemoryMapped *, IMemoryMapped *,
+									U32 *, U32 *, U32 *, U32 * );
 
 	private :
 
@@ -213,6 +244,7 @@ class Codec :
 	IDictionary	*pDct;									// Image dictionary
 	adtString	strType;									// Image type
 	libJpeg		jpeg;										// JPEG library object
+	libPng		png;										// PNG library object
 
 	// CCL
 	CCL_OBJECT_BEGIN(Codec)
@@ -706,11 +738,15 @@ class Normalize :
 	// Connections
 	DECLARE_EMT(Error)
 	DECLARE_CON(Fire)
+	DECLARE_RCP(From)
 	DECLARE_RCP(Image)
+	DECLARE_RCP(To)
 	BEGIN_BEHAVIOUR()
 		DEFINE_EMT(Error)
 		DEFINE_CON(Fire)
+		DEFINE_RCP(From)
 		DEFINE_RCP(Image)
+		DEFINE_RCP(To)
 	END_BEHAVIOUR_NOTIFY()
 	};
 

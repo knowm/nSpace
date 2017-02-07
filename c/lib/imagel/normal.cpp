@@ -120,6 +120,10 @@ HRESULT Normalize :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		_RELEASE(pImg);
 		_QISAFE(unkV,IID_IDictionary,&pImg);
 		}	// else if
+	else if (_RCP(From))
+		hr = adtValue::copy ( v, vFrom );
+	else if (_RCP(To))
+		hr = adtValue::copy ( v, vTo );
 	else
 		hr = ERROR_NO_MATCH;
 
