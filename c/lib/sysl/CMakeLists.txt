@@ -1,0 +1,25 @@
+cmake_minimum_required(VERSION 2.8.11 FATAL_ERROR)
+
+project("sysl")
+
+set (	SOURCES
+		cs.cpp
+		dbg.cpp
+		dl.cpp
+		event.cpp
+		log.cpp
+		memory.cpp
+		string.cpp
+		thread.cpp
+		)
+
+set (	HEADERS
+		sysl.h
+		sysl_.h )
+
+add_library (sysl STATIC ${SOURCES} ${HEADERS})
+
+target_link_libraries(sysl)
+
+set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
+
