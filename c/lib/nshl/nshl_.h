@@ -18,14 +18,6 @@
 #include "../nshxl/nshxl.h"
 #endif
 
-// Generated from IDL file
-//namespace embed
-//	{
-	#ifdef	_WIN32
-	#include "nshl_h.h"
-	#endif
-//	}
-
 // Forward dec.
 class Shell;
 class ShellX;

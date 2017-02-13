@@ -1,0 +1,3 @@
+nsh { Execute Batch Location  "/dev/nspace/resource/record/default.nspc" }
+
+Run and playback values in 'default.nspc' into temporal nSpace.

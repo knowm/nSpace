@@ -1,8 +1,8 @@
-# Solution folder
-# set_target_properties(${PROJECT_NAME} PROPERTIES USE_FOLDERS Test)
 
+# Sub-projects
 add_subdirectory(adtl)
 add_subdirectory(ccl)
+add_subdirectory(ext)
 add_subdirectory(iol)
 add_subdirectory(mathl)
 add_subdirectory(medial)
@@ -16,9 +16,10 @@ add_subdirectory(sysl)
 add_subdirectory(usbl)
 
 # External SDKs
-
-if( OPENCV_FOUND )
-add_subdirectory(imagel)
+if( OpenCV_FOUND )
+	add_subdirectory(imagel)
 endif()
 
-# add_subdirectory(openssll)
+if( OpenSSL_FOUND )
+	add_subdirectory(openssll)
+endif()

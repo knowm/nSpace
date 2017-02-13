@@ -23,10 +23,12 @@
 #include <opencv2/core/ocl.hpp>
 
 // CUDA
+//#ifdef	HAVE_CUDA
 #include <opencv2/cudafeatures2d.hpp>
 #include <opencv2/cudaimgproc.hpp>
 #include <opencv2/cudaarithm.hpp>
 #include <opencv2/cudawarping.hpp>
+//#endif
 
 // Relevant math operations from 'mathl_.h'
 

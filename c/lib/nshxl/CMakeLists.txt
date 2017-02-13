@@ -5,6 +5,7 @@ project("nshxl")
 set	(	
 		SOURCES
 		client.cpp
+#		../nshl/nshl.dir/${CMAKE_BUILD_TYPE}/nshl_i.c
 #		../nshl/nshl_i.c
 		)
 

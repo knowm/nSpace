@@ -116,3 +116,4 @@ HRESULT valToStr ( const ADTVALUE &v, adtString &str )
 
 	return hr;
 	}	// valToStr
+
