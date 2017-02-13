@@ -3,25 +3,25 @@ cmake_minimum_required(VERSION 2.8.11 FATAL_ERROR)
 project("iol")
 
 set (	SOURCES
-		bytecach.cpp
-		dispatch.cpp
-		enumdevs.cpp
-		file.cpp
-		lock.cpp
-		memblck.cpp
-		notifydevs.cpp
-		persist.cpp
-		resource.cpp
-		serial.cpp
-		stmcopy.cpp
-		stmfs.cpp
-		stmmem.cpp
-		stmprbin.cpp
-		stmprxml.cpp
-		stmsrc.cpp
-		stmsrcfs.cpp
-		stmstm.cpp
-		stream.cpp )
+		ByteCachE.cpp
+		Dispatch.cpp
+		EnumDevices.cpp
+		File.cpp
+		Lock.cpp
+		MemoryBlock.cpp
+		NotifyDevs.cpp
+		Persist.cpp
+		Resource.cpp
+		Serial.cpp
+		StreamCopy.cpp
+		StmFile.cpp
+		StmMemory.cpp
+		StmPrsBin.cpp
+		StmPrsXML.cpp
+		StreamSource.cpp
+		StmSrcFile.cpp
+		StmOnByteStm.cpp
+		StreamOp.cpp )
 
 set (	HEADERS
 		iol.h

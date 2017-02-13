@@ -3,28 +3,28 @@ cmake_minimum_required(VERSION 2.8.11 FATAL_ERROR)
 project("adtl")
 
 set (	SOURCES
-		avl.cpp
-		bool.cpp
-		date.cpp
-		dict.cpp
-		double.cpp
-		float.cpp
-		int.cpp
-		iterate.cpp
-		iunknown.cpp
-		keys.cpp
-		list.cpp
-		load.cpp
-		long.cpp
-		queue.cpp
-		remove.cpp
-		stack.cpp
-		stat.cpp
-		store.cpp
-		string.cpp
-		value.cpp
-		variant.cpp
-		write.cpp )
+		AVL.cpp
+		Bool.cpp
+		Date.cpp
+		Dictionary.cpp
+		Double.cpp
+		Float.cpp
+		Int.cpp
+		Iterate.cpp
+		IUnknown.cpp
+		Keys.cpp
+		List.cpp
+		Load.cpp
+		Long.cpp
+		Queue.cpp
+		Remove.cpp
+		Stack.cpp
+		Stat.cpp
+		Store.cpp
+		String.cpp
+		Value.cpp
+		Variant.cpp
+		Write.cpp )
 
 set (	HEADERS
 		adtl.h

@@ -200,7 +200,7 @@ HRESULT SSLConnect :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	else if (_RCP(Write))
 		{
 		SSL		*pssl		= NULL;
-		BYTE		bBfr[8192],*pb;
+		BYTE		bBfr[8192],*pb = bBfr;
 		adtValue	vL;
 		adtLong	lSsl;
 		U64		uLeft,uLeftBlk,uToDo,uIo,uBfr;

@@ -3,28 +3,28 @@ cmake_minimum_required(VERSION 2.8.11 FATAL_ERROR)
 project("miscl")
 
 set (	SOURCES
-		asynce.cpp
-		asyncq.cpp
-		clone.cpp
-		compare.cpp
-		create.cpp
-		dctfmt.cpp
-		dctprs.cpp
-		debug.cpp
-		decode.cpp
-		demux.cpp
-		dist.cpp
-		path.cpp
-		strfmt.cpp
-		string.cpp
-		strprs.cpp
-		strstm.cpp
-		time.cpp
-		timer.cpp
-		toggle.cpp
-		tokenit.cpp
-		type.cpp
-		uuid.cpp )
+		AsyncEmit.cpp
+		AsyncQ.cpp
+		Clone.cpp
+		Compare.cpp
+		Create.cpp
+		DictFormat.cpp
+		DictParse.cpp
+		Debug.cpp
+		Decode.cpp
+		Demux.cpp
+		Dist.cpp
+		Dath.cpp
+		StringFormat.cpp
+		StringOp.cpp
+		StringParse.cpp
+		StringStream.cpp
+		TimeOp.cpp
+		Timer.cpp
+		Toggle.cpp
+		TokenIt.cpp
+		Type.cpp
+		UUIDOp.cpp )
 
 set (	HEADERS
 		miscl.h
