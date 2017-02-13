@@ -14,7 +14,7 @@ set (	SOURCES
 		Decode.cpp
 		Demux.cpp
 		Dist.cpp
-		Dath.cpp
+		Path.cpp
 		StringFormat.cpp
 		StringOp.cpp
 		StringParse.cpp

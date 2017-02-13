@@ -9,7 +9,7 @@ set (	SOURCES
 		File.cpp
 		Lock.cpp
 		MemoryBlock.cpp
-		NotifyDevs.cpp
+		NotifyDevices.cpp
 		Persist.cpp
 		Resource.cpp
 		Serial.cpp
