@@ -32,3 +32,5 @@ target_link_libraries(nspcl)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
 
+# Installation
+install (FILES nspcl.h DESTINATION include/lib/nspcl)

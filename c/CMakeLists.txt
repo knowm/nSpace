@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 2.8.11 FATAL_ERROR)
 
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Configs" FORCE)
 
+# Installation.  Do not use the default of "C:\Program files\nSpace"
+# set(CMAKE_INSTALL_PREFIX "/nSpace" CACHE PATH "Install directory" FORCE)
+# MESSAGE(STATUS ${CMAKE_INSTALL_PREFIX})
+
 project("nSpace")
 
 # Use solution folders
@@ -42,3 +46,9 @@ add_subdirectory("dll")
 
 # Exes
 add_subdirectory("app")
+
+# Display all CMAKE variables
+# get_cmake_property(_variableNames VARIABLES)
+# foreach (_variableName ${_variableNames})
+#     message(STATUS "${_variableName}=${${_variableName}}")
+# endforeach()

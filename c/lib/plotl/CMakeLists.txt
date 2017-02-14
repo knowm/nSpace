@@ -17,3 +17,5 @@ target_link_libraries(plotl)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
 
+# Installation
+install (FILES plotl.h DESTINATION include/lib/plotl)

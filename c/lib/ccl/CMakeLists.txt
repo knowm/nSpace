@@ -15,3 +15,6 @@ add_library (ccl STATIC ${SOURCES} ${HEADERS})
 target_link_libraries(ccl)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
+
+# Installation
+install (FILES ccl.h DESTINATION include/lib/ccl)

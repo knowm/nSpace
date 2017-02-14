@@ -15,3 +15,5 @@ target_link_libraries(medial)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
 
+# Installation
+install (FILES medial.h DESTINATION include/lib/medial)

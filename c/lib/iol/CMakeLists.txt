@@ -33,3 +33,5 @@ target_link_libraries(iol)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
 
+# Installation
+install (FILES iol.h DESTINATION include/lib/iol)

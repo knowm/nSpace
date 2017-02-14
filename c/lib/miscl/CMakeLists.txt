@@ -36,3 +36,5 @@ target_link_libraries(miscl)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
 
+# Installation
+install (FILES miscl.h DESTINATION include/lib/miscl)

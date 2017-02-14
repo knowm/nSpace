@@ -23,3 +23,5 @@ target_link_libraries(sysl)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
 
+# Installation
+install (FILES sysl.h DESTINATION include/lib/sysl)

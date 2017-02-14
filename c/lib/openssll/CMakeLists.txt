@@ -25,3 +25,5 @@ include_directories(${OPENSSL_INCLUDE_DIR})
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
 
+# Installation
+install (FILES openssll.h DESTINATION include/lib/openssll)

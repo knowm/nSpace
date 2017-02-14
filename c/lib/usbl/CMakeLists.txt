@@ -20,3 +20,5 @@ target_link_libraries(usbl)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
 
+# Installation
+install (FILES usbl.h DESTINATION include/lib/usbl)

@@ -24,3 +24,5 @@ target_link_libraries(mathl)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
 
+# Installation
+install (FILES mathl.h DESTINATION include/lib/mathl)

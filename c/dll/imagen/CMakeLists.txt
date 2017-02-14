@@ -24,3 +24,19 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 # endif()
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER dll)
+
+# Installation
+install	(
+			TARGETS imagen 
+			RUNTIME DESTINATION bin 
+			LIBRARY DESTINATION lib 
+			ARCHIVE DESTINATION lib 
+			)
+
+if (MSVC)
+	install	(
+				FILES				${CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG}/imagen.pdb
+				DESTINATION		bin
+				CONFIGURATIONS	Debug
+				)
+endif()

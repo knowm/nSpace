@@ -25,3 +25,18 @@ target_link_libraries(nshl)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
 
+# Installation
+install (FILES nshl.h DESTINATION include/lib/nshl)
+
+if (MSVC)
+	install	(
+				FILES				${CMAKE_CURRENT_BINARY_DIR}/nshl.dir/Debug/nshl.tlb
+				DESTINATION		bin
+				CONFIGURATIONS	Debug
+				)
+	install	(
+				FILES				${CMAKE_CURRENT_BINARY_DIR}/nshl.dir/Release/nshl.tlb
+				DESTINATION		bin
+				CONFIGURATIONS	Release
+				)
+endif()

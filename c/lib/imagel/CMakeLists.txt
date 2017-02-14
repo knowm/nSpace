@@ -44,3 +44,5 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
 
+# Installation
+install (FILES imagel.h DESTINATION include/lib/imagel)

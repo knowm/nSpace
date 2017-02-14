@@ -16,3 +16,19 @@ add_library (median SHARED ${SOURCES} ${HEADERS} ../dll.def)
 target_link_libraries(median medial nspcl adtl sysl ccl)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER dll)
+
+# Installation
+install	(
+			TARGETS median 
+			RUNTIME DESTINATION bin 
+			LIBRARY DESTINATION lib 
+			ARCHIVE DESTINATION lib 
+			)
+
+if (MSVC)
+	install	(
+				FILES				${CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG}/median.pdb
+				DESTINATION		bin
+				CONFIGURATIONS	Debug
+				)
+endif()

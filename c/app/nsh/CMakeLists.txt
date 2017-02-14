@@ -21,3 +21,6 @@ if (WIN32)
 endif()
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER app)
+
+# Installation
+install (TARGETS nsh DESTINATION bin)

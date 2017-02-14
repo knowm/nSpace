@@ -35,3 +35,6 @@ add_library (adtl STATIC ${SOURCES} ${HEADERS})
 target_link_libraries(adtl)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
+
+# Installation
+install (FILES adtl.h DESTINATION include/lib/adtl)
