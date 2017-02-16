@@ -25,3 +25,19 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
 
 # Installation
 install (FILES sysl.h DESTINATION include/lib/sysl)
+
+# Installation
+install	(
+			TARGETS sysl
+			RUNTIME DESTINATION bin 
+			LIBRARY DESTINATION lib 
+			ARCHIVE DESTINATION lib 
+			)
+
+if (MSVC)
+	install	(
+				FILES				${CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG}/sysl.pdb
+				DESTINATION		lib
+				CONFIGURATIONS	Debug
+				)
+endif()

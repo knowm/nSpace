@@ -27,3 +27,19 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
 
 # Installation
 install (FILES openssll.h DESTINATION include/lib/openssll)
+
+# Installation
+install	(
+			TARGETS openssll
+			RUNTIME DESTINATION bin 
+			LIBRARY DESTINATION lib 
+			ARCHIVE DESTINATION lib 
+			)
+
+if (MSVC)
+	install	(
+				FILES				${CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG}/openssll.pdb
+				DESTINATION		lib
+				CONFIGURATIONS	Debug
+				)
+endif()

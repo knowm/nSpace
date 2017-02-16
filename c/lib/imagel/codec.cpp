@@ -83,8 +83,20 @@ HRESULT Codec :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	// Encode
 	if (_RCP(Encode))
 		{
+		IDictionary *pDctUse = pDct;
+		adtIUnknown	unkV;
+
+		// Dictionary to use
+		if (pDctUse == NULL)
+			{
+			// Use passed in value
+			hr = _QISAFE((unkV=v),IID_IDictionary,&pDctUse);
+			}	// if
+		else
+			pDctUse->AddRef();
+
 		// State check
-		CCLTRYE ( (pDct != NULL), ERROR_INVALID_STATE );
+		CCLTRYE ( (pDctUse != NULL), ERROR_INVALID_STATE );
 		CCLTRYE ( strType.length() > 0, ERROR_INVALID_STATE );
 
 		// Encode/compress based on type
@@ -92,36 +104,50 @@ HRESULT Codec :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			{
 			// JPEG library
 			if (!WCASECMP(strType,L"JPEG") || !WCASECMP(strType,L"JPG"))
-				hr = jpeg.compress(pDct);
+				hr = jpeg.compress(pDctUse);
 			else
 				hr = E_NOTIMPL;
 			}	// if
 
 		// Result
 		if (hr == S_OK)
-			_EMT(Encode,adtIUnknown(pDct));
+			_EMT(Encode,adtIUnknown(pDctUse));
 		else
 			_EMT(Error,adtInt(hr));
+
+		// Clean up
+		_RELEASE(pDctUse);
 		}	// if
 
 	// Decode
 	else if (_RCP(Decode))
 		{
+		IDictionary *pDctUse = pDct;
 		adtValue		vL;
 		adtString	strFmt;
+		adtIUnknown	unkV;
+
+		// Dictionary to use
+		if (pDctUse == NULL)
+			{
+			// Use passed in value
+			hr = _QISAFE((unkV=v),IID_IDictionary,&pDctUse);
+			}	// if
+		else
+			pDctUse->AddRef();
 
 		// State check
-		CCLTRYE ( (pDct != NULL), ERROR_INVALID_STATE );
+		CCLTRYE ( (pDctUse != NULL), ERROR_INVALID_STATE );
 
 		// Extract format of provided image
-		CCLTRY ( pDct->load ( adtString(L"Format"), vL ) );
+		CCLTRY ( pDctUse->load ( adtString(L"Format"), vL ) );
 		CCLTRYE( (strFmt = vL).length() > 0, E_UNEXPECTED );
 
 		// Run appropriate decoder
 		if (hr == S_OK && (!WCASECMP(strFmt,L"JPEG") || !WCASECMP(strFmt,L"JPG")))
-			hr = jpeg.decompress(pDct);
+			hr = jpeg.decompress(pDctUse);
 		else if (hr == S_OK && !WCASECMP(strFmt,L"PNG"))
-			hr = png.decompress(pDct);
+			hr = png.decompress(pDctUse);
 		else
 			{
 			hr = E_NOTIMPL;
@@ -130,9 +156,12 @@ HRESULT Codec :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 		// Result
 		if (hr == S_OK)
-			_EMT(Decode,adtIUnknown(pDct));
+			_EMT(Decode,adtIUnknown(pDctUse));
 		else
 			_EMT(Error,adtInt(hr));
+
+		// Clean up
+		_RELEASE(pDctUse);
 		}	// else if
 
 	// State

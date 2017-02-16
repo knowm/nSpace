@@ -22,3 +22,19 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
 
 # Installation
 install (FILES usbl.h DESTINATION include/lib/usbl)
+
+# Installation
+install	(
+			TARGETS usbl
+			RUNTIME DESTINATION bin 
+			LIBRARY DESTINATION lib 
+			ARCHIVE DESTINATION lib 
+			)
+
+if (MSVC)
+	install	(
+				FILES				${CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG}/usbl.pdb
+				DESTINATION		lib
+				CONFIGURATIONS	Debug
+				)
+endif()

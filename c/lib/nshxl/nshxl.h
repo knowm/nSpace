@@ -13,13 +13,7 @@
 #include "../../lib/nspcl/nspcl.h"
 
 // Generated .H from IDL file
-#ifdef		_WIN32
-#ifdef		_DEBUG
-#include		"../../build/lib/nshl/nshl.dir/Debug/nshl.h"
-#else
-#include		"../../build/lib/nshl/nshl.dir/Release/nshl.h"
-#endif
-#endif
+#include		"../nshl/nshl.h"
 
 // Size of byte cache for persisted values
 #define	SIZE_PERSIST_CACHE		8192

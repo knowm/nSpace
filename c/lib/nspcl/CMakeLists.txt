@@ -34,3 +34,19 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
 
 # Installation
 install (FILES nspcl.h DESTINATION include/lib/nspcl)
+
+# Installation
+install	(
+			TARGETS nspcl
+			RUNTIME DESTINATION bin 
+			LIBRARY DESTINATION lib 
+			ARCHIVE DESTINATION lib 
+			)
+
+if (MSVC)
+	install	(
+				FILES				${CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG}/nspcl.pdb
+				DESTINATION		lib
+				CONFIGURATIONS	Debug
+				)
+endif()

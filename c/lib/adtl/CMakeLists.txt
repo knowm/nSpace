@@ -38,3 +38,19 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
 
 # Installation
 install (FILES adtl.h DESTINATION include/lib/adtl)
+
+# Installation
+install	(
+			TARGETS adtl
+			RUNTIME DESTINATION bin 
+			LIBRARY DESTINATION lib 
+			ARCHIVE DESTINATION lib 
+			)
+
+if (MSVC)
+	install	(
+				FILES				${CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG}/adtl.pdb
+				DESTINATION		lib
+				CONFIGURATIONS	Debug
+				)
+endif()

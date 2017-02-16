@@ -5,8 +5,6 @@ project("nshxl")
 set	(	
 		SOURCES
 		client.cpp
-#		../nshl/nshl.dir/${CMAKE_BUILD_TYPE}/nshl_i.c
-#		../nshl/nshl_i.c
 		)
 
 set (	HEADERS
@@ -18,3 +16,19 @@ target_link_libraries(nshxl)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
 
+# Installation
+install (FILES nshxl.h DESTINATION include/lib/nshxl)
+install	(
+			TARGETS nshxl
+			RUNTIME DESTINATION bin 
+			LIBRARY DESTINATION lib 
+			ARCHIVE DESTINATION lib 
+			)
+
+if (MSVC)
+	install	(
+				FILES				${CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG}/nshxl.pdb
+				DESTINATION		lib
+				CONFIGURATIONS	Debug
+				)
+endif()

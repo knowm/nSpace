@@ -64,7 +64,7 @@ HRESULT WINAPI xMain ( IDictionary *pDctCmd )
 	CCLOK   ( pFact->AddRef(); )
 
 	// Register the class factory for the object
-	CCLTRY ( CoRegisterClassObject ( __uuidof(ShellX), (IClassFactory *) pFact, 
+	CCLTRY ( CoRegisterClassObject ( CLSID_ShellX, (IClassFactory *) pFact, 
 					CLSCTX_LOCAL_SERVER, REGCLS_MULTIPLEUSE, &dwRegCF ) );
 	CCLOK  ( bRegCF = true; )
 
@@ -72,7 +72,7 @@ HRESULT WINAPI xMain ( IDictionary *pDctCmd )
 	CCLTRY	( pFact->CreateInstance ( NULL, IID_IShellX, (void **) &pSh ) );
 
 	// Register object in global table
-	CCLTRY ( RegisterActiveObject ( pSh, __uuidof(ShellX), ACTIVEOBJECT_STRONG, &dwReg ) );
+	CCLTRY ( RegisterActiveObject ( pSh, CLSID_ShellX, ACTIVEOBJECT_STRONG, &dwReg ) );
 	CCLOK  ( bReg	= true; )
 
 	// Run until stopped by external shell object

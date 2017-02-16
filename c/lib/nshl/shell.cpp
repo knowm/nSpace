@@ -860,11 +860,7 @@ HRESULT Shell :: tickBegin ( void )
 		CCLTRY ( adtValue::toString ( vL, strLocDef ) );
 
 		// Relative location to definitions
-		#ifdef	_WIN64
 		CCLTRY ( strLocDef.append ( L"../../../graph/" ) );
-		#else
-		CCLTRY ( strLocDef.append ( L"../../graph/" ) );
-		#endif
 
 		// Scan for definitions
 		CCLTRY ( definitions ( strLocDef ) );
@@ -878,7 +874,7 @@ HRESULT Shell :: tickBegin ( void )
 	// someone wants to just drop some graphs under the binaries and make
 	// changes to just those definitions.
 	#else
-	CCLTRY ( definitions ( L"./graph/" ) );
+	CCLTRY ( definitions ( L"../graph/" ) );
 	#endif
 
 	/////////////

@@ -122,7 +122,7 @@ HRESULT nSpaceClient :: getSvc ( INamespaceX **ppSvc )
 	CCLTRYE	( dwSvc != 0, ERROR_INVALID_STATE );
 
 	// Obtain ptr.
-	CCLTRY ( pGIT->GetInterfaceFromGlobal ( dwSvc, __uuidof(INamespaceX),
+	CCLTRY ( pGIT->GetInterfaceFromGlobal ( dwSvc, IID_INamespaceX,
 														(void **) ppSvc ) );
 
 	return hr;
@@ -186,7 +186,7 @@ HRESULT nSpaceClient :: listen ( const WCHAR *szPath, BOOL bL,
 
 		// Object
 		CCLTRYE	( vL.vtype == VTYPE_UNK && vL.punk != NULL, E_UNEXPECTED );
-		CCLTRY	( _QI(vL.punk,__uuidof(IListenX),&pLstn) );
+		CCLTRY	( _QI(vL.punk,IID_IListenX,&pLstn) );
 
 		// Disable callback before unlisten
 		if (hr == S_OK)
