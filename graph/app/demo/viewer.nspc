@@ -1,0 +1,170 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%								VIEWER.NSPC
+%
+%				Small image viewer demonstration
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Actions
+	$	Initialize			Misc.Dist {}		% Initialize
+	$	Uninitialize		Misc.Dist {}		% Uninitialize
+
+	% DEBUG
+	$	Debug Misc.Debug {}
+		!	Initialize/OnFire						Debug/Fire
+		!	Uninitialize/OnFire					Debug/Fire
+
+	%%%%%%%%
+	% Setup
+	%%%%%%%%
+
+	% MISCN: Create file stream source
+	$	CreateFileSrc Misc.Create { Id Io.StmSrcFile }
+		!	Initialize/OnFire						CreateFileSrc/Fire
+
+	%%%%%%%%%%%%
+	% Interface
+	%%%%%%%%%%%%
+
+	%% Image selection
+
+	% Subgraph: Location of selected image
+	#	Location										State/Interface/Value/ {}
+
+	% Subgraph: Browse button for bring up file selection
+	#	Browse										State/Interface/Button/ {}
+
+	% Subgraph: File selection state
+%	#	Select										State/Interface/SelectLoc/ {}
+
+	%% Image
+
+	% Subgraph: Output image for display (Compressed vs Raw)
+	#	Image											State/Interface/Value/ {}
+	#	ImageRaw										State/Interface/Value/ {}
+
+	% Subgraph: Enable/disable edge detection
+	#	EdgesEn										State/Interface/Button/ {}
+
+	% Subgraph: Number of edge pixels
+	#	EdgeCount									State/Interface/Value/ {}
+
+	% Subgraph: Status
+	#	Status										State/Interface/Value/ {}
+
+	%%%%%%%%
+	% Logic
+	%%%%%%%%
+
+	%%
+	%% Image selection
+	%%
+
+	% MISCN: Value location
+	$	ValueLoc Misc.Dist { Value "c:\\temp\\psf.png" }
+		!	Initialize/OnFire						ValueLoc/Fire
+		!	ValueLoc/OnFire						Location/Element/Default/Fire
+
+	% MISCN: An image location has been selected
+	$	OnImageLoc Misc.Dist {}
+%		!	Select/...								OnImageLoc/Fire
+		!	ValueLoc/OnFire						OnImageLoc/Fire
+
+	% MISCN: Create an empty dictionary for new image
+	$	CreateImageDct Misc.Create { Id Adt.Dictionary }
+		!	Initialize/OnFire						CreateImageDct/Fire
+		!	OnImageLoc/OnFire						CreateImageDct/Fire
+
+	% Have the browse button trigger the file selection
+%	!	Browse/Activate/OnFire					Select/Activate/Fire
+
+	% MATHN: In case of error, append selected location to status string
+	$	AddLoadErr Math.Binary { Op Add Left "Unable to load : " }
+		!	OnImageLoc/OnFire						AddLoadErr/Right
+		!	AddLoadErr/OnFire						Status/Element/Default/Fire
+	$	AddLoadOk Math.Binary { Op Add Left "Image loaded successfuly from : " }
+		!	OnImageLoc/OnFire						AddLoadOk/Right
+		!	AddLoadOk/OnFire						Status/Element/Default/Fire
+
+	% IMAGEN: Attempt to load selected image
+	$	LoadImage Image.PersistImage {}
+		!	CreateImageDct/OnFire				LoadImage/Image
+		!	OnImageLoc/OnFire						LoadImage/Location
+		!	OnImageLoc/OnFire						LoadImage/Load
+
+	% Load status
+	!	LoadImage/OnError							AddLoadErr/Fire
+	!	LoadImage/OnLoad							Debug/Fire
+	!	LoadImage/OnLoad							AddLoadOk/Fire
+
+	%%
+	%% Image processing
+	%%
+
+	% MISCN: Reprocess cloned version image in order to keep original untouched
+	$	OnImage Misc.Clone {}
+		!	LoadImage/OnLoad						OnImage/Value
+
+	% MISCN: Split analysis into own asynchronous path to free up signaler
+	$	OnImageAsync Misc.AsyncEmit {}
+		!	OnImage/OnFire							OnImageAsync/Fire
+
+	% IMAGEN: Prepare image for manipulation, keep CPU bound for demo
+	$	Prepare Image.Prepare { CPU true:bool }
+		!	OnImageAsync/OnFire					Prepare/Upload
+
+	% MISCN: Edge detection enabled ?
+	$	EdgeBool Misc.Toggle { Default false:bool }
+		!	EdgesEn/Activate/OnFire				EdgeBool/Value
+		!	Prepare/OnUpload						EdgeBool/Fire
+
+	% IMAGEN: Perform canny edge detection
+	$	Edges Image.Features { Type Canny }
+		!	EdgeBool/OnTrue						Edges/Fire
+
+	% IMAGEN: Count the number of non-zero pixels (edge count)
+	$	NonZero Image.Stats { NonZero true:bool }
+		!	Edges/OnFire							NonZero/Fire
+
+	% ADTN: Load edge count and put in interface
+	$	LoadEdgeCount Adt.Load { Key NonZero }
+		!	NonZero/OnFire							LoadEdgeCount/Dictionary
+		!	NonZero/OnFire							LoadEdgeCount/Fire
+		!	LoadEdgeCount/OnFire					EdgeCount/Element/Default/Fire
+
+	% Image processing complete, download results into dictionary
+	!	Prepare/OnUpload							Prepare/Download
+
+	% Uncompressed version for interested parties
+	!	Prepare/OnDownload						ImageRaw/Element/Default/Fire
+
+	%% Compression.  Some clients do not need the raw data
+
+	% MISCN: Create a copy for compression
+	$	CloneEncode Misc.Clone {}
+		!	Prepare/OnDownload					CloneEncode/Fire
+
+	% IMAGEN: Compress the image for distribution to listeners
+	$	Compress Image.Codec { Type JPEG }
+		!	CloneEncode/OnFire					Compress/Encode
+
+	% Image data available
+	!	Compress/OnEncode							Image/Element/Default/Fire
+
+	%% Latent connections
+
+	% Re-do image processing on load or change in options
+	!	LoadImage/OnLoad							OnImage/Fire
+	!	EdgesEn/Activate/OnFire					OnImage/Fire
+
+	%%%%%%%%%%%%%%%%
+	% Remote server
+	%%%%%%%%%%%%%%%%
+
+	% Subgraph: Remote namespace server (Web sockets, etc)
+%	#	Server										Lib/Namespace/Remote/Inst/ {}
+
+
