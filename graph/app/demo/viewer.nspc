@@ -33,12 +33,10 @@
 
 	% Subgraph: Location of selected image
 	#	Location										State/Interface/Value/ {}
+		!	Location/Element/Default/OnFire	Debug/Fire
 
-	% Subgraph: Browse button for bring up file selection
-	#	Browse										State/Interface/Button/ {}
-
-	% Subgraph: File selection state
-%	#	Select										State/Interface/SelectLoc/ {}
+	% Subgraph: Load the specified image
+	#	Load											State/Interface/Button/ {}
 
 	%% Image
 
@@ -63,23 +61,19 @@
 	%% Image selection
 	%%
 
-	% MISCN: Value location
-	$	ValueLoc Misc.Dist { Value "c:\\temp\\psf.png" }
+	% MISCN: Initial value location
+	$	ValueLoc Misc.Dist { Value "c:\\temp\\images\\eye.png" }
 		!	Initialize/OnFire						ValueLoc/Fire
 		!	ValueLoc/OnFire						Location/Element/Default/Fire
 
 	% MISCN: An image location has been selected
 	$	OnImageLoc Misc.Dist {}
-%		!	Select/...								OnImageLoc/Fire
-		!	ValueLoc/OnFire						OnImageLoc/Fire
+		!	Location/Element/Default/OnFire	OnImageLoc/Fire
 
 	% MISCN: Create an empty dictionary for new image
 	$	CreateImageDct Misc.Create { Id Adt.Dictionary }
 		!	Initialize/OnFire						CreateImageDct/Fire
-		!	OnImageLoc/OnFire						CreateImageDct/Fire
-
-	% Have the browse button trigger the file selection
-%	!	Browse/Activate/OnFire					Select/Activate/Fire
+		!	Load/Activate/OnFire					CreateImageDct/Fire
 
 	% MATHN: In case of error, append selected location to status string
 	$	AddLoadErr Math.Binary { Op Add Left "Unable to load : " }
@@ -93,7 +87,7 @@
 	$	LoadImage Image.PersistImage {}
 		!	CreateImageDct/OnFire				LoadImage/Image
 		!	OnImageLoc/OnFire						LoadImage/Location
-		!	OnImageLoc/OnFire						LoadImage/Load
+		!	Load/Activate/OnFire					LoadImage/Load
 
 	% Load status
 	!	LoadImage/OnError							AddLoadErr/Fire
@@ -167,4 +161,13 @@
 	% Subgraph: Remote namespace server (Web sockets, etc)
 %	#	Server										Lib/Namespace/Remote/Inst/ {}
 
+	% Subgraph: Browse button for bring up file selection
+%	#	Browse										State/Interface/Button/ {}
+
+	% Subgraph: File selection state
+%	#	Select										State/Interface/SelectLoc/ {}
+
+	% Have the browse button trigger the file selection
+%	!	Select/...									OnImageLoc/Fire
+%	!	Browse/Activate/OnFire					Select/Activate/Fire
 
