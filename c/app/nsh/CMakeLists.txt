@@ -14,6 +14,7 @@ set	(
 
 add_executable (nsh WIN32 ${SOURCES} ${HEADERS})
 
+
 target_link_libraries(nsh adtl nshl nshxl nspcl sysl ccl)
 
 if (WIN32)

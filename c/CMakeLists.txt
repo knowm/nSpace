@@ -54,9 +54,29 @@ install	(
 			PATTERN		"*.nspc"
 			)
 
+# Add graphs to visual studio project NOT working yet
+# NOTE: Including the 'relative' tag makes cmake crash
+#file(GLOB_RECURSE GRAPH_SRCS RELATIVE "../graph/*.nspc")
+#MESSAGE(STATUS "Files:" )
+#MESSAGE(STATUS "${GRAPH_SRCS}" )
+
+# MESSAGE(STATUS ${PROJECT_SOURCE_DIR} )
+# MESSAGE(STATUS "${PROJECT_SOURCE_DIR}/../graph" )
+# file(GLOB_RECURSE GRAPH_SRCS ${PROJECT_SOURCE_DIR}/../graph *.nspc)
+# MESSAGE(STATUS "${GRAPH_SRCS}" )
+# set(GRAPH_SRCS ${PROJECT_SOURCE_DIR}/../graph/app/auto.nspc)
+# MESSAGE(STATUS "${GRAPH_SRCS}" )
+# MESSAGE(STATUS "Hi!!!")
+# SOURCE_GROUP(graph ${GRAPH_SRCS})
+# SOURCE_GROUP("${PROJECT_SOURCE_DIR}/../graph" REGULAR_EXPRESSION ${GRAPH_SRCS})
+#file(GLOB_RECURSE GRAPH_SRCS "G:\\dev\\nSpace\\graph" *.nspc)
+#MESSAGE(STATUS "${GRAPH_SRCS}" )
+#file(GLOB_RECURSE GRAPH_SRCS ${PROJECT_SOURCE_DIR}/../graph *.nspc)
+#add_custom_target ( graph SOURCES ${GRAPH_SRCS} )
+#SOURCE_GROUP(graph FILES ${PROJECT_SOURCE_DIR}/../../../graph/app/auto.nspc)
+
 # Display all CMAKE variables
 #get_cmake_property(_variableNames VARIABLES)
 #foreach (_variableName ${_variableNames})
 #    message(STATUS "${_variableName}=${${_variableName}}")
 #endforeach()
-

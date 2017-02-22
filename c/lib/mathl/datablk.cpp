@@ -23,10 +23,12 @@ DataBlock :: DataBlock ( void )
 	//		-	Constructor for the object
 	//
 	////////////////////////////////////////////////////////////////////////
-	pBlk	= NULL;
-	pSrc	= NULL;
-	iX		= 0;
-	iY		= 0;
+	pBlk		= NULL;
+	plsBits	= NULL;
+	plsfBits	= NULL;
+	pSrc		= NULL;
+	iX			= 0;
+	iY			= 0;
 	}	// DataBlock
 
 HRESULT DataBlock :: addRow ( IDictionary *pDctDst,

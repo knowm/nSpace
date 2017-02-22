@@ -26,7 +26,8 @@
 
 //
 // Class - AsyncEmit.  
-//! \brief An asynchronous emission node.
+/// \brief An asynchronous emission node.  Values sent into this node
+///		will be re-emitted on its own thread.
 //
 
 class AsyncEmit :
@@ -48,11 +49,11 @@ class AsyncEmit :
 	//@{
 	//!	\brief Asynchronously emit a value.  If no value was previously specified, the provided value is used.
 	DECLARE_CON(Fire)
-	//!	\brief Specifies the relative priority for asynchrnous emissions.
+	//!	\brief Specifies the relative priority for asynchronous emissions.  0 = Normal priority, -1 = lower than normal , +1 = higher than normal
 	DECLARE_RCP(Priority)
-	//!	\brief Specifies a value for subsequent emissions.
+	//!	\brief Specifies a value to use for subsequent emissions.
 	DECLARE_RCP(Value)
-	//!	\brief Emits error if cannot emit, such as if the node is already emitting a value.
+	//!	\brief Emits an error if cannot emit, such as if the node is already emitting a value.
 	DECLARE_EMT(Error)
 	//@}
 	BEGIN_BEHAVIOUR()
@@ -88,7 +89,7 @@ class AsyncEmit :
 
 class AsyncQ :
 	public CCLObject,										// Base class
-	public Behaviour,									// Interface
+	public Behaviour,										// Interface
 	public ITickable										// Interface
 	{
 	public :
@@ -238,7 +239,7 @@ class AsyncQ :
 
 //
 // Class - Clone.  
-//! \brief A node to clone values.
+//! \brief A node to clone (deep copy) values.
 //
 
 class Clone :

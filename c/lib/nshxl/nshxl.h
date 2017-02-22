@@ -106,6 +106,7 @@ class nSpaceClient
 	STDMETHOD(getSvc)	( INamespaceX ** );			// Obtain service ptr.
 	};
 
+/// \cond
 //
 // Class - nSpaceClientL.  Internal listening object.
 //
@@ -143,5 +144,6 @@ class nSpaceClientCB
 	// A listened path has been received
 	STDMETHOD(onReceive)	( const WCHAR *, const WCHAR *, const ADTVALUE & )	PURE;
 	};
+/// \endcond
 
 #endif

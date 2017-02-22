@@ -28,6 +28,7 @@ Endpoint :: Endpoint ( void )
 	hevRd		= NULL;
 	hevStop	= NULL;
 	bAsync	= false;
+	pThrd		= NULL;
 	}	// Endpoint
 
 HRESULT Endpoint :: onAttach ( bool bAttach )

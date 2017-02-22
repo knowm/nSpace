@@ -299,9 +299,9 @@ HRESULT nspcTokens		( const WCHAR *, const WCHAR *, IList * );
 // Classes
 ///////////
 
-//
-// Class - Behaviour.  Base class from which to derive for a behaviour.
-//
+///
+///	\brief Base class from which to derive for a behaviour for a node.
+///
 
 class Behaviour :
 	public IBehaviour										// Interface
@@ -310,11 +310,11 @@ class Behaviour :
 	Behaviour ( void );									// Constructor
 
 	// Run-time data
-	INamespace		*pnSpc;								// \brief Namespace object for which the node belongs.
-	IDictionary		*pnLoc;								// \brief Location at which the node is installed.
-	IDictionary		*pnDesc;								// \brief Descriptor for the node, that contains the node properties
- 	adtString		strnName;							// \brief Contains a cached version of the user defined node name 
-	const WCHAR		*prl;									// Latest received location
+	INamespace		*pnSpc;								///< The namespace object for which the node belongs.
+	IDictionary		*pnLoc;								///< The location at which the node is installed.
+	IDictionary		*pnDesc;								///< Descriptor for the node, that contains the node properties
+ 	adtString		strnName;							///< Contains a cached version of the user defined node name 
+	const WCHAR		*prl;									///< Latest 'onReceive'd location
 
 	// Utilities
 	STDMETHOD(onAttach)	( bool );					// Behaviour being attached/detached
