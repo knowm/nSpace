@@ -59,6 +59,10 @@ HRESULT Endpoint :: onAttach ( bool bAttach )
 			bAsync = vL;
 		if (pnDesc->load ( adtString(L"Size"), vL ) == S_OK)
 			iSzIo = adtInt(vL);
+		if (pnDesc->load ( adtString(L"Type"), vL ) == S_OK)
+			iCtlType = adtInt(vL);
+		if (pnDesc->load ( adtString(L"Request"), vL ) == S_OK)
+			iCtlReq = adtInt(vL);
 
 		// I/O events
 		CCLTRYE ( (hevWr = CreateEvent ( NULL, FALSE, FALSE, NULL )) != NULL,
@@ -132,9 +136,30 @@ HRESULT Endpoint :: pktIo  ( BOOL bWr, DWORD uIo, DWORD uTo, DWORD *puIo )
 	ov.hEvent = hevs[0];
 	if (hr == S_OK && bWr)
 		{
-		// Begin a write
-		CCLTRYE ( WinUsb_WritePipe (	hIntf, iPipe, pcBfrPkt, uIo,
-												NULL, &ov ) == TRUE, GetLastError() );
+		// If pipe Id is zero, assume control transfer
+		if (hr == S_OK && iPipe == 0)
+			{
+			WINUSB_SETUP_PACKET	pkt;
+
+			// Prepare packet information
+			pkt.RequestType	= iCtlType;
+			pkt.Request			= iCtlReq;
+			pkt.Value			= 0;
+			pkt.Index			= 0;
+			pkt.Length			= (USHORT)uIo;
+
+			// Begin transfer
+			CCLTRYE ( WinUsb_ControlTransfer ( hIntf, pkt, 
+							pcBfrPkt, uIo, NULL, &ov ) == TRUE, GetLastError() );
+			}	// if
+
+		// Endpoint
+		else
+			{
+			// Begin a write
+			CCLTRYE ( WinUsb_WritePipe (	hIntf, iPipe, pcBfrPkt, uIo,
+													NULL, &ov ) == TRUE, GetLastError() );
+			}	// else
 
 		// Debug
 		if (hr != S_OK && hr != ERROR_IO_PENDING)
@@ -143,9 +168,31 @@ HRESULT Endpoint :: pktIo  ( BOOL bWr, DWORD uIo, DWORD uTo, DWORD *puIo )
 		}	// if
 	else if (hr == S_OK)
 		{
-		// Begin a read
-		CCLTRYE ( WinUsb_ReadPipe (	hIntf, iPipe, pcBfrPkt, uIo,
-												NULL, &ov ) == TRUE, GetLastError() );
+		// If pipe Id is zero, assume control transfer
+		if (hr == S_OK && iPipe == 0)
+			{
+			WINUSB_SETUP_PACKET	pkt;
+
+			// Prepare packet information
+			pkt.RequestType	= iCtlType;
+			pkt.Request			= iCtlReq;
+			pkt.Value			= 0;
+			pkt.Index			= 0;
+			pkt.Length			= (USHORT)uIo;
+
+			// Begin transfer
+			CCLTRYE ( WinUsb_ControlTransfer ( hIntf, pkt, 
+							pcBfrPkt, uIo, NULL, &ov ) == TRUE, GetLastError() );
+			}	// if
+
+		// Endpoint
+		else
+			{
+			// Begin a read
+			CCLTRYE ( WinUsb_ReadPipe (	hIntf, iPipe, pcBfrPkt, uIo,
+													NULL, &ov ) == TRUE, GetLastError() );
+			}	// else
+
 		}	// else if
 
 	// I/O is still pending, must wait
@@ -281,8 +328,8 @@ HRESULT Endpoint :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			// Next block
 			CCLOK ( uLeft -= uXfer; )
 
-			// A short packet means end of transfer
-			if (hr == S_OK && uXfer < iSzPkt)
+			// A short packet or default endpoint means end of transfer
+			if (hr == S_OK && (iPipe == 0 || uXfer < iSzPkt))
 				break;
 			}	// while
 
@@ -307,7 +354,13 @@ HRESULT Endpoint :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		CCLTRY ( _QISAFE(unkV,IID_IDictionary,&pDev) );
 		CCLTRY ( pDev->load ( adtString(L"Interface"), vL ) );
 		CCLOK  ( hIntf = (WINUSB_INTERFACE_HANDLE)(U64)adtLong(vL); )
+		CCLTRY ( pDev->load ( adtString(L"MaximumPacketSize"), vL ) );
+		CCLOK  ( iSzPkt = vL; )
 		_RELEASE(pDev);
+
+		// Update internal state
+		if (hr == S_OK && hIntf != INVALID_HANDLE_VALUE)
+			update (NULL);
 
 		// Debug
 //		lprintf ( LOG_INFO, L"Endpoint::receive:hIntf 0x%x:hr 0x%x\r\n",
@@ -481,22 +534,33 @@ void Endpoint :: update ( IDictionary *pDesc )
 	//		-	Update internal state of node to handle new configuration.
 	//
 	//	PARAMETERS
-	//		-	pDesc contains the endpoint information
+	//		-	pDesc contains an optional endpoint descriptor
 	//
 	////////////////////////////////////////////////////////////////////////
 	HRESULT	hr = S_OK;
 	adtValue	vL;
 
 	// Previous state
-	iSzPkt = 0;
 	iPipe  = -1;
 	_FREEMEM(pcBfrPkt);
 
-	// Query the pipe information
-	CCLTRY ( pDesc->load ( adtString(L"Id"), vL ) );
-	CCLOK  ( iPipe = vL; )
-	CCLTRY ( pDesc->load ( adtString(L"MaximumPacketSize"), vL ) );
-	CCLOK  ( iSzPkt = vL; )
+	// The device should at least be valid
+	CCLTRYE ( pDesc != NULL || (hIntf != INVALID_HANDLE_VALUE && iSzPkt != 0),
+					ERROR_INVALID_STATE );
+
+	// End point descriptor ?
+	if (pDesc != NULL)
+		{
+		// Query the pipe information
+		CCLTRY ( pDesc->load ( adtString(L"Id"), vL ) );
+		CCLOK  ( iPipe = vL; )
+		CCLTRY ( pDesc->load ( adtString(L"MaximumPacketSize"), vL ) );
+		CCLOK  ( iSzPkt = vL; )
+		}	// if
+
+	// Default endpoint
+	else
+		iPipe = 0;
 
 	// Allocate enough space for a full packet
 	CCLTRYE ( iSzPkt > 0, E_UNEXPECTED );

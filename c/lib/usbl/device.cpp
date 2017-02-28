@@ -161,6 +161,7 @@ HRESULT Device :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		// Create dictionary to contain device information
 		CCLTRY ( COCREATE ( L"Adt.Dictionary", IID_IDictionary, &pDev ) );
 		CCLTRY ( pDev->store ( adtString(L"Interface"), adtLong((U64)hIntf) ) );
+		CCLTRY ( pDev->store ( adtString(L"MaximumPacketSize"), adtInt(udd.bMaxPacketSize0) ) );
 		CCLTRY ( pDev->store ( adtString(L"IdVendor"), adtInt(udd.idVendor) ) );
 		CCLTRY ( pDev->store ( adtString(L"IdProduct"), adtInt(udd.idProduct) ) );
 

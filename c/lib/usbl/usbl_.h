@@ -96,6 +96,10 @@ class Endpoint :
 	IThread		*pThrd;									// Asynchronous read thread
 	HANDLE		hevStop;									// Stop event for read thread
 
+	// For control transfers
+	adtInt		iCtlType;								// Request type
+	adtInt		iCtlReq;									// Request value
+
 	// 'ITickable' members
 	STDMETHOD(tick)		( void );
 	STDMETHOD(tickAbort)	( void );
