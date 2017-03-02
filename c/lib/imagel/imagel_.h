@@ -18,6 +18,8 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/features2d/features2d.hpp>
+#include <opencv2/objdetect.hpp>
+#include <opencv2/face.hpp>
 
 // OpenCL
 #include <opencv2/core/ocl.hpp>
@@ -246,6 +248,43 @@ class Binary :
 		DEFINE_RCP(Left)
 		DEFINE_RCP(Right)
 		DEFINE_EMT(Error)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
+//
+// Class - CascadeClassifier.  Object detection in image.
+//
+
+class CascadeClassifier :
+	public CCLObject,										// Base class
+	public Behaviour										// Interface
+	{
+	public :
+	CascadeClassifier ( void );						// Constructor
+
+	// Run-time data
+	IDictionary					*pImg;					// Image dictionary
+	adtString					strLoc;					// Filename of classifier
+	bool							bLoad;					// Classifier loaded ?
+	cv::CascadeClassifier	cc;						// Classifier object
+
+	// CCL
+	CCL_OBJECT_BEGIN(CascadeClassifier)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_EMT(Error)
+	DECLARE_CON(Load)
+	DECLARE_RCP(Location)
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Image)
+	BEGIN_BEHAVIOUR()
+		DEFINE_EMT(Error)
+		DEFINE_CON(Load)
+		DEFINE_RCP(Location)
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Image)
 	END_BEHAVIOUR_NOTIFY()
 	};
 
@@ -499,6 +538,46 @@ class Draw :
 		DEFINE_RCP(Y0)
 		DEFINE_RCP(X1)
 		DEFINE_RCP(Y1)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
+//
+// Class - FaceRecognizer.  Face recognition node.
+//
+
+class FaceRecognizer :
+	public CCLObject,										// Base class
+	public Behaviour										// Interface
+	{
+	public :
+	FaceRecognizer ( void );							// Constructor
+
+	// Run-time data
+	IDictionary	*pImg;									// Image dictionary
+	IContainer	*pImgs;									// Image list for training
+	adtString	strType;									// Algorithm type
+	cv::Ptr<cv::face::FaceRecognizer>
+					recog;									// Recognizer object
+
+	// CCL
+	CCL_OBJECT_BEGIN(FaceRecognizer)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_EMT(Error)
+	DECLARE_CON(Train)
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Image)
+	DECLARE_RCP(Images)
+	DECLARE_RCP(Type)
+	BEGIN_BEHAVIOUR()
+		DEFINE_EMT(Error)
+		DEFINE_CON(Train)
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Image)
+		DEFINE_RCP(Images)
+		DEFINE_RCP(Type)
 	END_BEHAVIOUR_NOTIFY()
 	};
 

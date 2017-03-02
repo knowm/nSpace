@@ -4,32 +4,34 @@ project("imagel")
 
 set	(
 		SOURCES
-		at.cpp
-		binary.cpp
-		codec.cpp
-		contours.cpp
-		convert.cpp
-		create.cpp
-		cvmatref.cpp
-		distance.cpp
-		draw.cpp
-		features.cpp
-		fft.cpp
-		flip.cpp
-		gradient.cpp
-		jpeg.cpp
-		match.cpp
-		morph.cpp
-		normal.cpp
+		At.cpp
+		Binary.cpp
+		CascadeClassifier.cpp
+		Codec.cpp
+		Contours.cpp
+		Convert.cpp
+		Create.cpp
+		cvMatRef.cpp
+		Distance.cpp
+		Draw.cpp
+		FaceRecognizer.cpp
+		Features.cpp
+		Fft.cpp
+		Flip.cpp
+		Gradient.cpp
+		libJpeg.cpp
+		libPng.cpp
+		Match.cpp
+		Morph.cpp
+		Normalize.cpp
 		opencv.cpp
-		persist.cpp
-		png.cpp
-		prepare.cpp
-		resize.cpp
-		roi.cpp
-		smooth.cpp
-		stats.cpp
-		thresh.cpp
+		PersistImage.cpp
+		Prepare.cpp
+		Resize.cpp
+		Roi.cpp
+		Smooth.cpp
+		Stats.cpp
+		Threshold.cpp
 		)
 
 set (	HEADERS

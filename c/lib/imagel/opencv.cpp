@@ -352,7 +352,8 @@ HRESULT image_to_mat ( IDictionary *pImg, Mat **ppM )
 		cvFmt = CV_32FC1;
 
 	// Image formats
-	else if (hr == S_OK && !WCASECMP(strFmt,L"B8G8R8"))
+	else if (hr == S_OK && 
+				(!WCASECMP(strFmt,L"R8G8B8") || !WCASECMP(strFmt,L"B8G8R8")))
 		cvFmt = CV_8UC3;
 	else 
 		hr = ERROR_NOT_SUPPORTED;

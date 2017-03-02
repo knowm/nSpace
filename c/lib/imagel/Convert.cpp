@@ -63,7 +63,9 @@ HRESULT Convert :: convertTo (	cvMatRef *pMatSrc, cvMatRef *pMatDst,
 			matCnv = *(pMatSrc->mat);
 
 		// Convert 'to' specified format.
+		lprintf ( LOG_INFO, L"BEFORE convert : %d", matCnv.type() );
 		matCnv.convertTo ( matCnv, fmt );
+		lprintf ( LOG_INFO, L"AFTER  convert : %d", matCnv.type() );
 
 		// Copy back
 		if (pMatDst->isUMat())
