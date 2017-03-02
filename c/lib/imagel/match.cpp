@@ -102,10 +102,16 @@ HRESULT Match :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		CCLTRY(Prepare::extract ( pTmp, adtValue(), &pImgT, &pMatT ));
 
 		// All images must be of the same type
-		CCLTRYE (	(pMatT->mat != NULL && pMatR->mat != NULL) ||
-						(pMatT->umat != NULL && pMatR->umat != NULL) ||
-						(pMatT->gpumat != NULL && pMatR->gpumat != NULL),
-						ERROR_INVALID_STATE );
+		if (hr == S_OK)
+			{
+			if (	(pMatT->mat != NULL && pMatR->mat != NULL) ||
+					(pMatT->umat != NULL && pMatR->umat != NULL)
+					#ifdef	WITH_CUDA
+					|| (pMatT->gpumat != NULL && pMatR->gpumat != NULL)
+					#endif
+				)
+				hr = ERROR_INVALID_STATE;
+			}	// if
 
 		// Create a matrix to receive the results
 		CCLTRY ( Create::create ( pImgO, pMatR->rows() - pMatT->rows() + 1,
@@ -126,16 +132,18 @@ try
 			// NOTE: Currently getting different results from all different methods,
 			// CPU, CUDA and OpenCL (Umat).  Until this is figured out, downshift into CPU mode.
 			//
-			if (pMatR->isGPU())
-				{
-				pMatR->gpumat->download(matR);
-				pMatT->gpumat->download(matT);
-				}	// if
-			else if (pMatR->isUMat())
+			if (pMatR->isUMat())
 				{
 				matR = pMatR->umat->getMat(cv::ACCESS_READ);
 				matT = pMatT->umat->getMat(cv::ACCESS_READ);
 				}	// else if
+			#ifdef	WITH_CUDA
+			else if (pMatR->isGPU())
+				{
+				pMatR->gpumat->download(matR);
+				pMatT->gpumat->download(matT);
+				}	// if
+			#endif
 			else
 				{
 				matR = *(pMatR->mat);
@@ -146,10 +154,12 @@ try
 			cv::matchTemplate ( matR, matT, matC, CV_TM_CCORR_NORMED );
 
 			// Copy result to destination
-			if (pMatO->isGPU())
-				pMatO->gpumat->upload(matC);
-			else if (pMatR->isUMat())
+			if (pMatR->isUMat())
 				matC.copyTo ( *(pMatO->umat) );
+			#ifdef	WITH_CUDA
+			else if (pMatO->isGPU())
+				pMatO->gpumat->upload(matC);
+			#endif
 			else
 				matC.copyTo ( *(pMatO->mat) );
 

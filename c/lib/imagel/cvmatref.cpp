@@ -17,7 +17,9 @@ cvMatRef :: cvMatRef ( void )
 	//
 	////////////////////////////////////////////////////////////////////////
 	mat		= NULL;
+	#ifdef	WITH_CUDA
 	gpumat	= NULL;
+	#endif
 	umat		= NULL;
 
 	// So creators do not have to do the initial AddRef
@@ -37,11 +39,13 @@ cvMatRef :: ~cvMatRef ( void )
 		delete mat;
 		mat = NULL;
 		}	 // if
+	#ifdef	WITH_CUDA
 	if (gpumat != NULL)
 		{
 		delete gpumat;
 		gpumat = NULL;
 		}	 // if
+	#endif
 	if (umat != NULL)
 		{
 		delete umat;

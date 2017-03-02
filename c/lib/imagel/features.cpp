@@ -90,8 +90,38 @@ HRESULT Features :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		// Perform Featuresing operation
 		if (hr == S_OK)
 			{
+			// UMat/OpenCL
+			if (pMat->isUMat())
+				{
+				if (!WCASECMP(L"HoughCircles",strType))
+					{
+					cv::UMat	matCircles;
+
+					// Perform detection
+					cv::HoughCircles ( *(pMat->umat), matCircles, CV_HOUGH_GRADIENT, 1,
+												10, 200, 100, 0, 0 );
+
+					// Replace original array
+					matCircles.copyTo(*(pMat->umat));
+					}	// if
+				else if (!WCASECMP(strType,L"Canny"))
+					{
+					cv::UMat matDst;
+
+					// Execute
+					cv::Canny ( *(pMat->umat), matDst, 100, 200 ); 
+
+					// Result
+					if (matDst.rows > 0 && matDst.cols > 0)
+						matDst.copyTo ( *(pMat->umat) );
+					}	// else if
+				else
+					hr = E_NOTIMPL;
+				}	// if
+
 			// GPU
-			if (pMat->isGPU())
+			#ifdef	WITH_CUDA
+			else if (pMat->isGPU())
 				{
 				if (!WCASECMP(L"HoughCircles",strType))
 					{
@@ -140,35 +170,7 @@ HRESULT Features :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				else
 					hr = E_NOTIMPL;
 				}	// if
-
-			// UMat/OpenCL
-			else if (pMat->isUMat())
-				{
-				if (!WCASECMP(L"HoughCircles",strType))
-					{
-					cv::UMat	matCircles;
-
-					// Perform detection
-					cv::HoughCircles ( *(pMat->umat), matCircles, CV_HOUGH_GRADIENT, 1,
-												10, 200, 100, 0, 0 );
-
-					// Replace original array
-					matCircles.copyTo(*(pMat->umat));
-					}	// if
-				else if (!WCASECMP(strType,L"Canny"))
-					{
-					cv::UMat matDst;
-
-					// Execute
-					cv::Canny ( *(pMat->umat), matDst, 100, 200 ); 
-
-					// Result
-					if (matDst.rows > 0 && matDst.cols > 0)
-						matDst.copyTo ( *(pMat->umat) );
-					}	// else if
-				else
-					hr = E_NOTIMPL;
-				}	// if
+			#endif
 
 			// CPU
 			else

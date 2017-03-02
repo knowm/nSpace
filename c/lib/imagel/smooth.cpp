@@ -93,7 +93,15 @@ HRESULT Smooth :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		// Perform smoothing operation
 		if (hr == S_OK)
 			{
-			if (pMat->isGPU())
+			if (pMat->isUMat())
+				{
+				if (!strType.length())
+					cv::blur ( *(pMat->umat), *(pMat->umat), cv::Size(iSz,iSz) );
+				else if (!WCASECMP(L"Median",strType))
+					cv::medianBlur ( *(pMat->umat), *(pMat->umat), iSz );
+				}	// if
+			#ifdef	WITH_CUDA
+			else if (pMat->isGPU())
 				{
 				cv::Mat		matNoGpu;
 
@@ -109,13 +117,7 @@ HRESULT Smooth :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				// Restore
 				pMat->gpumat->upload ( matNoGpu );
 				}	// if
-			else if (pMat->isUMat())
-				{
-				if (!strType.length())
-					cv::blur ( *(pMat->umat), *(pMat->umat), cv::Size(iSz,iSz) );
-				else if (!WCASECMP(L"Median",strType))
-					cv::medianBlur ( *(pMat->umat), *(pMat->umat), iSz );
-				}	// if
+			#endif
 			else
 				{
 				if (!WCASECMP(L"Gaussian",strType))

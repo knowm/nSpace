@@ -53,6 +53,7 @@ HRESULT Morph :: onAttach ( bool bAttach )
 	else
 		{
 		// Clean up
+		#ifdef	WITH_CUDA
 		if (pfOpen != NULL)
 			{
 			delete pfOpen;
@@ -73,6 +74,7 @@ HRESULT Morph :: onAttach ( bool bAttach )
 			delete pfDi;
 			pfDi = NULL;
 			}	// if
+		#endif
 
 		// Shutdown
 		_RELEASE(pImg);
@@ -127,7 +129,12 @@ HRESULT Morph :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		// Perform operation
 		if (hr == S_OK)
 			{
-			if (pMat->isGPU())
+			if (pMat->isUMat())
+				{
+				cv::morphologyEx ( *(pMat->umat), *(pMat->umat), op, matKer );
+				}	// else if
+			#ifdef	WITH_CUDA
+			else if (pMat->isGPU())
 				{
 				// Need filters ?
 				if (pfOpen == NULL)
@@ -162,10 +169,7 @@ HRESULT Morph :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 						hr = E_NOTIMPL;
 					}	// switch
 				}	// if
-			else if (pMat->isUMat())
-				{
-				cv::morphologyEx ( *(pMat->umat), *(pMat->umat), op, matKer );
-				}	// else if
+			#endif
 			else
 				cv::morphologyEx ( *(pMat->mat), *(pMat->mat), op, matKer );
 			}	// if

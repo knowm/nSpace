@@ -99,7 +99,11 @@ HRESULT Contours :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			try
 				{
 				// Execute (warning, findContours can be crashy)
-				if (pMat->isGPU())
+				if (pMat->isUMat())
+					cv::findContours (	*(pMat->umat), contours, CV_RETR_EXTERNAL, 
+												CV_CHAIN_APPROX_SIMPLE );
+				#ifdef	WITH_CUDA
+				else if (pMat->isGPU())
 					{
 					cv::Mat		matNoGpu;
 
@@ -113,9 +117,7 @@ HRESULT Contours :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					// No need to restore back up to GPU as purpose of function
 					// is not to modify image even if it is destructive
 					}	// if
-				else if (pMat->isUMat())
-					cv::findContours (	*(pMat->umat), contours, CV_RETR_EXTERNAL, 
-												CV_CHAIN_APPROX_SIMPLE );
+				#endif
 				else
 					cv::findContours (	*(pMat->mat), contours, CV_RETR_EXTERNAL, 
 												CV_CHAIN_APPROX_SIMPLE );

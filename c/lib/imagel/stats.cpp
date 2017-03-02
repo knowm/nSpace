@@ -103,10 +103,12 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				double		dMin,dMax;
 
 					// Values and locations of min and max
-					if (pMat->isGPU())
-						cv::cuda::minMaxLoc ( *(pMat->gpumat), &dMin, &dMax, &ptMin, &ptMax );
-					else if (pMat->isUMat())
+					if (pMat->isUMat())
 						cv::minMaxLoc ( *(pMat->umat), &dMin, &dMax, &ptMin, &ptMax );
+					#ifdef	WITH_CUDA
+					else if (pMat->isGPU())
+						cv::cuda::minMaxLoc ( *(pMat->gpumat), &dMin, &dMax, &ptMin, &ptMax );
+					#endif
 					else
 						cv::minMaxLoc ( *(pMat->mat), &dMin, &dMax, &ptMin, &ptMax );
 
@@ -126,10 +128,12 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				cv::Scalar stddev = 0;
 
 				// Perform calculation
-				if (pMat->isGPU())
-					cv::cuda::meanStdDev ( *(pMat->gpumat), mean, stddev );
-				else if (pMat->isUMat())
+				if (pMat->isUMat())
 					cv::meanStdDev ( *(pMat->umat), mean, stddev );
+				#ifdef	WITH_CUDA
+				else if (pMat->isGPU())
+					cv::cuda::meanStdDev ( *(pMat->gpumat), mean, stddev );
+				#endif
 				else
 					cv::meanStdDev ( *(pMat->mat), mean, stddev );
 
@@ -154,25 +158,7 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				float				ent			= 0.0f;
 
 				// Calculate the historgram of the image
-				if (pMat->isGPU())
-					{
-					cv::cuda::GpuMat	gpuHst,gpuLog;
-
-					// Histogram
-					cv::cuda::calcHist ( *(pMat->gpumat), gpuHst );
-
-					// Normalize
-					cv::cuda::divide ( gpuHst, cv::Scalar(pMat->gpumat->rows*pMat->gpumat->cols), gpuHst );
-
-					// Ensure no log of zeroes
-					cv::cuda::add ( gpuHst, cv::Scalar::all(1e-20), gpuHst );
-
-					// Compute entropy
-					cv::cuda::log ( gpuHst, gpuLog );
-					cv::cuda::multiply(gpuHst,gpuLog,gpuHst);
-					ent = (float)(-1*cv::cuda::sum(gpuHst).val[0]);
-					}	// if
-				else if (pMat->isUMat())
+				if (pMat->isUMat())
 					{
 					cv::Mat	matHst,matLog;
 
@@ -196,6 +182,26 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					cv::multiply(matHst,matLog,matHst);
 					ent = (float)(-1*cv::sum(matHst).val[0]);
 					}	// if
+				#ifdef	WITH_CUDA
+				else if (pMat->isGPU())
+					{
+					cv::cuda::GpuMat	gpuHst,gpuLog;
+
+					// Histogram
+					cv::cuda::calcHist ( *(pMat->gpumat), gpuHst );
+
+					// Normalize
+					cv::cuda::divide ( gpuHst, cv::Scalar(pMat->gpumat->rows*pMat->gpumat->cols), gpuHst );
+
+					// Ensure no log of zeroes
+					cv::cuda::add ( gpuHst, cv::Scalar::all(1e-20), gpuHst );
+
+					// Compute entropy
+					cv::cuda::log ( gpuHst, gpuLog );
+					cv::cuda::multiply(gpuHst,gpuLog,gpuHst);
+					ent = (float)(-1*cv::cuda::sum(gpuHst).val[0]);
+					}	// if
+				#endif
 				else
 					{
 					cv::Mat	matHst,matLog;
@@ -226,7 +232,10 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				cv::Rect rct;
 
 				// Calculate bounding rectangle, assumes array of points
-				if (pMat->isGPU())
+				if (pMat->isUMat())
+					rct = cv::boundingRect ( *(pMat->umat) );
+				#ifdef	WITH_CUDA
+				else if (pMat->isGPU())
 					{
 					cv::Mat		matNoGpu;
 
@@ -236,8 +245,7 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					// Execute
 					rct = cv::boundingRect ( matNoGpu );
 					}	// if
-				else if (pMat->isUMat())
-					rct = cv::boundingRect ( *(pMat->umat) );
+				#endif
 				else
 					rct = cv::boundingRect ( *(pMat->mat) );
 
@@ -254,10 +262,12 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				cv::Scalar	sum = 0;
 
 				// Calculate total sum of pixels
-				if (pMat->isGPU())
-					cv::cuda::sum(*(pMat->gpumat));
-				else if (pMat->isUMat())
+				if (pMat->isUMat())
 					sum = cv::sum(*(pMat->umat));
+				#ifdef	WITH_CUDA
+				else if (pMat->isGPU())
+					cv::cuda::sum(*(pMat->gpumat));
+				#endif
 				else
 					sum = cv::sum(*(pMat->mat));
 
@@ -271,10 +281,12 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				int nZ = 0;
 
 				// Perform calculation
-				if (pMat->isGPU())
-					nZ = cv::cuda::countNonZero ( *(pMat->gpumat) );
-				else if (pMat->isUMat())
+				if (pMat->isUMat())
 					nZ = cv::countNonZero ( *(pMat->umat) );
+				#ifdef	WITH_CUDA
+				else if (pMat->isGPU())
+					nZ = cv::cuda::countNonZero ( *(pMat->gpumat) );
+				#endif
 				else
 					nZ = cv::countNonZero ( *(pMat->mat) );
 
@@ -324,19 +336,7 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		// Calculate the historgram of the image
 		if (hr == S_OK)
 			{
-			if (pMat->isGPU())
-				{
-				// Calculate histogram.  Currently defaults to grayscale.
-				cv::cuda::GpuMat	matHst;
-
-				// Histogram
-				cv::cuda::calcHist ( *(pMat->gpumat), matHst );
-
-				// Copy to result
-				matHst.copyTo(*(pMatHst->gpumat));
-				}	// if
-
-			else if (pMat->isUMat())
+			if (pMat->isUMat())
 				{
 				cv::Mat	matHst,matLog;
 
@@ -350,6 +350,19 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				// Result
 				matHst.copyTo ( *(pMat->umat) );
 				}	// else if
+			#ifdef	WITH_CUDA
+			else if (pMat->isGPU())
+				{
+				// Calculate histogram.  Currently defaults to grayscale.
+				cv::cuda::GpuMat	matHst;
+
+				// Histogram
+				cv::cuda::calcHist ( *(pMat->gpumat), matHst );
+
+				// Copy to result
+				matHst.copyTo(*(pMatHst->gpumat));
+				}	// if
+			#endif
 			else
 				{
 				// Calculate histogram.  Currently defaults to grayscale.

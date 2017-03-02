@@ -24,9 +24,11 @@ Gradient :: Gradient ( void )
 	iDx			= 1;
 	iDy			= 1;
 	iSzk			= 3;
+	#ifdef	WITH_CUDA
 	pgpuSobel	= NULL;
 	pgpuScharr	= NULL;
 	pgpuLaplace	= NULL;
+	#endif
 	}	// Gradient
 
 HRESULT Gradient :: onAttach ( bool bAttach )
@@ -67,9 +69,11 @@ HRESULT Gradient :: onAttach ( bool bAttach )
 		{
 		// Shutdown
 		_RELEASE(pImg);
+		#ifdef	WITH_CUDA
 		_DELETE(pgpuSobel);
 		_DELETE(pgpuScharr);
 		_DELETE(pgpuLaplace);
+		#endif
 		}	// else
 
 	return hr;
@@ -108,7 +112,20 @@ HRESULT Gradient :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			try
 				{
 				// Execute 
-				if (pMat->isGPU())
+				if (pMat->isUMat())
+					{
+					// Perform requested type
+					if (!WCASECMP(strType,L"Laplacian"))
+						cv::Laplacian ( *(pMat->umat), *(pMat->umat), CV_16SC1, iSzk );
+					else if (!WCASECMP(strType,L"Sobel"))
+						cv::Sobel ( *(pMat->umat), *(pMat->umat), CV_16SC1, iDx, iDy, iSzk );
+					else if (!WCASECMP(strType,L"Scharr"))
+						cv::Sobel ( *(pMat->umat), *(pMat->umat), CV_16SC1, iDx, iDy, -1 );
+					else
+						hr = E_NOTIMPL;
+					}	// else if
+				#ifdef	WITH_CUDA
+				else if (pMat->isGPU())
 					{
 					// Perform requested type
 					if (!WCASECMP(strType,L"Laplacian"))
@@ -138,18 +155,7 @@ HRESULT Gradient :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					else
 						hr = E_NOTIMPL;
 					}	// if
-				else if (pMat->isUMat())
-					{
-					// Perform requested type
-					if (!WCASECMP(strType,L"Laplacian"))
-						cv::Laplacian ( *(pMat->umat), *(pMat->umat), CV_16SC1, iSzk );
-					else if (!WCASECMP(strType,L"Sobel"))
-						cv::Sobel ( *(pMat->umat), *(pMat->umat), CV_16SC1, iDx, iDy, iSzk );
-					else if (!WCASECMP(strType,L"Scharr"))
-						cv::Sobel ( *(pMat->umat), *(pMat->umat), CV_16SC1, iDx, iDy, -1 );
-					else
-						hr = E_NOTIMPL;
-					}	// else if
+				#endif
 				else
 					{
 					// Gradients want own destination

@@ -42,20 +42,23 @@ HRESULT Convert :: convertTo (	cvMatRef *pMatSrc, cvMatRef *pMatDst,
 	HRESULT	hr = S_OK;
 
 	// Special cases
-	if (pMatSrc->isGPU() && pMatDst->isGPU())
-		hr = convertTo ( pMatSrc->gpumat, pMatDst->gpumat, fmt );
-	else if (pMatSrc->isUMat() && pMatDst->isUMat())
+	if (pMatSrc->isUMat() && pMatDst->isUMat())
 		hr = convertTo ( pMatSrc->umat, pMatDst->umat, fmt );
-
+	#ifdef	WITH_CUDA
+	else if (pMatSrc->isGPU() && pMatDst->isGPU())
+		hr = convertTo ( pMatSrc->gpumat, pMatDst->gpumat, fmt );
+	#endif
 	else
 		{
 		cv::Mat	matCnv;
 
 		// Copy to CPU
-		if (pMatSrc->isGPU())
-			pMatSrc->gpumat->download ( matCnv );
-		else if (pMatSrc->isUMat())
+		if (pMatSrc->isUMat())
 			pMatSrc->umat->copyTo ( matCnv );
+		#ifdef	WITH_CUDA
+		else if (pMatSrc->isGPU())
+			pMatSrc->gpumat->download ( matCnv );
+		#endif
 		else
 			matCnv = *(pMatSrc->mat);
 
@@ -63,10 +66,12 @@ HRESULT Convert :: convertTo (	cvMatRef *pMatSrc, cvMatRef *pMatDst,
 		matCnv.convertTo ( matCnv, fmt );
 
 		// Copy back
-		if (pMatDst->isGPU())
-			pMatDst->gpumat->upload ( matCnv );
-		else if (pMatDst->isUMat())
+		if (pMatDst->isUMat())
 			matCnv.copyTo ( *(pMatDst->umat) );
+		#ifdef	WITH_CUDA
+		else if (pMatDst->isGPU())
+			pMatDst->gpumat->upload ( matCnv );
+		#endif
 		else
 			matCnv.copyTo ( *(pMatDst->mat) );
 		}	// else
@@ -99,6 +104,7 @@ HRESULT Convert :: convertTo (	cv::UMat *pMatSrc,
 	return hr;
 	}	// convertTo
 
+#ifdef	WITH_CUDA
 HRESULT Convert :: convertTo (	cv::cuda::GpuMat *pMatSrc, 
 											cv::cuda::GpuMat *pMatDst, U32 fmt )
 	{
@@ -129,6 +135,7 @@ HRESULT Convert :: convertTo (	cv::cuda::GpuMat *pMatSrc,
 
 	return hr;
 	}	// convertTo
+#endif
 
 HRESULT Convert :: onAttach ( bool bAttach )
 	{
@@ -270,10 +277,12 @@ HRESULT Convert :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			// Perform color space conversion
 			if (hr == S_OK)
 				{
-				if (pMat->isGPU())
-					cv::cuda::cvtColor ( *(pMat->gpumat), *(pMat->gpumat), spc );
-				else if (pMat->isUMat())
+				if (pMat->isUMat())
 					cv::cvtColor( *(pMat->umat), *(pMat->umat), spc );
+				#ifdef	WITH_CUDA
+				else if (pMat->isGPU())
+					cv::cuda::cvtColor ( *(pMat->gpumat), *(pMat->gpumat), spc );
+				#endif
 				else 
 					cv::cvtColor( *(pMat->mat), *(pMat->mat), spc );
 				}	// if

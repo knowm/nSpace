@@ -118,10 +118,19 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 //			CCLOK ( image_to_debug ( pMatL, L"Binary", L"c:/temp/binL.png" ); )
 
 			// All images must be of the same type
-			CCLTRYE (	(pMatL->mat != NULL && (pMatR == NULL || pMatR->mat != NULL) && pMatO->mat != NULL) ||
-							(pMatL->umat != NULL && (pMatR == NULL || pMatR->umat != NULL) && pMatO->umat != NULL) ||
-							(pMatL->gpumat != NULL && (pMatR == NULL || pMatR->gpumat != NULL) && pMatO->gpumat != NULL),
-							ERROR_INVALID_STATE );
+			if (hr == S_OK)
+				{
+				if (
+					(pMatL->mat != NULL && (pMatR == NULL || pMatR->mat != NULL) && pMatO->mat != NULL) ||
+					(pMatL->umat != NULL && (pMatR == NULL || pMatR->umat != NULL) && pMatO->umat != NULL) ||
+					#ifdef	WITH_CUDA
+					(pMatL->gpumat != NULL && (pMatR == NULL || pMatR->gpumat != NULL) && pMatO->gpumat != NULL),
+					#else
+					false
+					#endif 
+					)
+					hr = ERROR_INVALID_STATE;
+				}	// if
 
 			try
 				{
@@ -133,19 +142,23 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 						case MATHOP_ADD :
 							if (bImgR)
 								{
-								if (pMatL->isGPU())
-									cv::cuda::add ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat) );
-								else if (pMatL->isUMat())
+								if (pMatL->isUMat())
 									cv::add ( *(pMatL->umat), *(pMatR->umat), *(pMatO->umat) );
+								#ifdef	WITH_CUDA
+								else if (pMatL->isGPU())
+									cv::cuda::add ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat) );
+								#endif
 								else
 									cv::add ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
 								}	// if
 							else
 								{
-								if (pMatL->isGPU())
-									cv::cuda::add ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
-								else if (pMatL->isUMat())
+								if (pMatL->isUMat())
 									cv::add ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat) );
+								#ifdef	WITH_CUDA
+								else if (pMatL->isGPU())
+									cv::cuda::add ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
+								#endif
 								else
 									cv::add ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
 								}	// else
@@ -153,19 +166,23 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 						case MATHOP_SUB :
 							if (bImgR)
 								{
-								if (pMatL->isGPU())
-									cv::cuda::subtract ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat) );
-								else if (pMatL->isUMat())
+								if (pMatL->isUMat())
 									cv::subtract ( *(pMatL->umat), *(pMatR->umat), *(pMatO->umat) );
+								#ifdef	WITH_CUDA
+								else if (pMatL->isGPU())
+									cv::cuda::subtract ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat) );
+								#endif
 								else
 									cv::subtract ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
 								}	// if
 							else
 								{
-								if (pMatL->isGPU())
-									cv::cuda::subtract ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
-								else if (pMatL->isUMat())
+								if (pMatL->isUMat())
 									cv::subtract ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat) );
+								#ifdef	WITH_CUDA
+								else if (pMatL->isGPU())
+									cv::cuda::subtract ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
+								#endif
 								else
 									cv::subtract ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
 								}	// else
@@ -173,19 +190,23 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 						case MATHOP_MUL :
 							if (bImgR)
 								{
-								if (pMatL->isGPU())
-									cv::cuda::multiply ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat) );
-								else if (pMatL->isUMat())
+								if (pMatL->isUMat())
 									cv::multiply ( *(pMatL->umat), *(pMatR->umat), *(pMatO->umat) );
+								#ifdef	WITH_CUDA
+								else if (pMatL->isGPU())
+									cv::cuda::multiply ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat) );
+								#endif
 								else
 									cv::multiply ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
 								}	// if
 							else
 								{
-								if (pMatL->isGPU())
-									cv::cuda::multiply ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
-								else if (pMatL->isUMat())
+								if (pMatL->isUMat())
 									cv::multiply ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat) );
+								#ifdef	WITH_CUDA
+								else if (pMatL->isGPU())
+									cv::cuda::multiply ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
+								#endif
 								else
 									cv::multiply ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
 								}	// else
@@ -193,19 +214,23 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 						case MATHOP_DIV :
 							if (bImgR)
 								{
-								if (pMatL->isGPU())
-									cv::cuda::divide ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat) );
-								else if (pMatL->isUMat())
+								if (pMatL->isUMat())
 									cv::divide ( *(pMatL->umat), *(pMatR->umat), *(pMatO->umat) );
+								#ifdef	WITH_CUDA
+								else if (pMatL->isGPU())
+									cv::cuda::divide ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat) );
+								#endif
 								else
 									cv::divide ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
 								}	// if
 							else
 								{
-								if (pMatL->isGPU())
-									cv::cuda::divide ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
-								else if (pMatL->isUMat())
+								if (pMatL->isUMat())
 									cv::divide ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat) );
+								#ifdef	WITH_CUDA
+								else if (pMatL->isGPU())
+									cv::cuda::divide ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
+								#endif
 								else
 									cv::divide ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
 								}	// else
@@ -215,19 +240,23 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 						case MATHOP_AND :
 							if (bImgR)
 								{
-								if (pMatL->isGPU())
-									cv::cuda::bitwise_and ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat) );
-								else if (pMatL->isUMat())
+								if (pMatL->isUMat())
 									cv::bitwise_and ( *(pMatL->umat), *(pMatR->umat), *(pMatO->umat) );
+								#ifdef	WITH_CUDA
+								else if (pMatL->isGPU())
+									cv::cuda::bitwise_and ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat) );
+								#endif
 								else
 									cv::bitwise_and ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
 								}	// if
 							else
 								{
-								if (pMatL->isGPU())
-									cv::cuda::bitwise_and ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
-								else if (pMatL->isUMat())
+								if (pMatL->isUMat())
 									cv::bitwise_and ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat) );
+								#ifdef	WITH_CUDA
+								else if (pMatL->isGPU())
+									cv::cuda::bitwise_and ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
+								#endif
 								else
 									cv::bitwise_and ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
 								}	// else
@@ -235,19 +264,23 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 						case MATHOP_XOR :
 							if (bImgR)
 								{
-								if (pMatL->isGPU())
-									cv::cuda::bitwise_xor ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat) );
-								else if (pMatL->isUMat())
+								if (pMatL->isUMat())
 									cv::bitwise_xor ( *(pMatL->umat), *(pMatR->umat), *(pMatO->umat) );
+								#ifdef	WITH_CUDA
+								else if (pMatL->isGPU())
+									cv::cuda::bitwise_xor ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat) );
+								#endif
 								else
 									cv::bitwise_xor ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
 								}	// if
 							else
 								{
-								if (pMatL->isGPU())
-									cv::cuda::bitwise_xor ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
-								else if (pMatL->isUMat())
+								if (pMatL->isUMat())
 									cv::bitwise_xor ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat) );
+								#ifdef	WITH_CUDA
+								else if (pMatL->isGPU())
+									cv::cuda::bitwise_xor ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
+								#endif
 								else
 									cv::bitwise_xor ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
 								}	// else
@@ -255,19 +288,23 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 						case MATHOP_OR :
 							if (bImgR)
 								{
-								if (pMatL->isGPU())
-									cv::cuda::bitwise_or ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat) );
-								else if (pMatL->isUMat())
+								if (pMatL->isUMat())
 									cv::bitwise_or ( *(pMatL->umat), *(pMatR->umat), *(pMatO->umat) );
+								#ifdef	WITH_CUDA
+								else if (pMatL->isGPU())
+									cv::cuda::bitwise_or ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat) );
+								#endif
 								else
 									cv::bitwise_or ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat) );
 								}	// if
 							else
 								{
-								if (pMatL->isGPU())
-									cv::cuda::bitwise_or ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
-								else if (pMatL->isUMat())
+								if (pMatL->isUMat())
 									cv::bitwise_or ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat) );
+								#ifdef	WITH_CUDA
+								else if (pMatL->isGPU())
+									cv::cuda::bitwise_or ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
+								#endif
 								else
 									cv::bitwise_or ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
 								}	// else
@@ -292,19 +329,23 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 							// Perform comparison
 							if (bImgR)
 								{
-								if (pMatL->isGPU())
-									cv::cuda::compare ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat), cmpop );
-								else if (pMatL->isUMat())
+								if (pMatL->isUMat())
 									cv::compare ( *(pMatL->umat), *(pMatR->umat), *(pMatO->umat), cmpop );
+								#ifdef	WITH_CUDA
+								else if (pMatL->isGPU())
+									cv::cuda::compare ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat), cmpop );
+								#endif
 								else
 									cv::compare ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat), cmpop );
 								}	// if
 							else
 								{
-								if (pMatL->isGPU())
-									cv::cuda::compare ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat), cmpop );
-								else if (pMatL->isUMat())
+								if (pMatL->isUMat())
 									cv::compare ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat), cmpop );
+								#ifdef	WITH_CUDA
+								else if (pMatL->isGPU())
+									cv::cuda::compare ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat), cmpop );
+								#endif
 								else
 									cv::compare ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat), cmpop );
 								}	// else

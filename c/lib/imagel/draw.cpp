@@ -133,8 +133,10 @@ HRESULT Draw :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 		// No GPU support for drawing
 		// Download the current image into a local matrix for processing
+		#ifdef	WITH_CUDA
 		if (hr == S_OK && pMat->isGPU())
 			pMat->gpumat->download ( matNoGpu );
+		#endif
 
 		// Perform operation
 		if (hr == S_OK && !WCASECMP(strShp,L"Line"))
@@ -204,8 +206,10 @@ HRESULT Draw :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			}	// else if
 
 		// Upload changes back to GPU
+		#ifdef	WITH_CUDA
 		if (hr == S_OK && pMat->isGPU())
 			pMat->gpumat->upload ( matNoGpu );
+		#endif
 
 		// Result
 		if (hr == S_OK)

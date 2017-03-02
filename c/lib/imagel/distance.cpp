@@ -87,7 +87,10 @@ HRESULT Distance :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		// Perform operation
 		if (hr == S_OK)
 			{
-			if (pMat->isGPU())
+			if (pMat->isUMat())
+				cv::distanceTransform ( *(pMat->umat), *(pMat->umat), CV_DIST_L2, 3 );
+			#ifdef	WITH_CUDA
+			else if (pMat->isGPU())
 				{
 				cv::Mat		matNoGpu;
 
@@ -100,8 +103,7 @@ HRESULT Distance :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				// Restore
 				pMat->gpumat->upload ( matNoGpu );
 				}	// if
-			else if (pMat->isUMat())
-				cv::distanceTransform ( *(pMat->umat), *(pMat->umat), CV_DIST_L2, 3 );
+			#endif
 			else
 				cv::distanceTransform ( *(pMat->mat), *(pMat->mat), CV_DIST_L2, 3 );
 			}	// if

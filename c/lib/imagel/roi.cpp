@@ -133,19 +133,7 @@ HRESULT Roi :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		try
 			{
 			// Create a new region of interest
-			// WARNING: Generation of GPU based ROIs slow ??
-			CCLTRYE( (pMatDst = new cvMatRef()) != NULL, E_OUTOFMEMORY );
-			if (hr == S_OK && pMatSrc->isGPU())
-				{
-				// Create ROI
-				CCLTRYE((pMatDst->gpumat = new cv::cuda::GpuMat ( *(pMatSrc->gpumat), rct ))
-								!= NULL, E_OUTOFMEMORY);
-
-				// Requesting own copy of Roi ?
-				if (hr == S_OK && bCopy == true)
-					*(pMatDst->gpumat) = pMatDst->gpumat->clone();
-				}	// if
-			else if (hr == S_OK && pMatSrc->isUMat())
+			if (hr == S_OK && pMatSrc->isUMat())
 				{
 				// Create ROI
 				CCLTRYE((pMatDst->umat = new cv::UMat ( *(pMatSrc->umat), rct ))
@@ -155,6 +143,21 @@ HRESULT Roi :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				if (hr == S_OK && bCopy == true)
 					*(pMatDst->umat) = pMatDst->umat->clone();
 				}	// else if
+
+			// WARNING: Generation of GPU based ROIs slow ??
+			CCLTRYE( (pMatDst = new cvMatRef()) != NULL, E_OUTOFMEMORY );
+			#ifdef	WITH_CUDA
+			else if (hr == S_OK && pMatSrc->isGPU())
+				{
+				// Create ROI
+				CCLTRYE((pMatDst->gpumat = new cv::cuda::GpuMat ( *(pMatSrc->gpumat), rct ))
+								!= NULL, E_OUTOFMEMORY);
+
+				// Requesting own copy of Roi ?
+				if (hr == S_OK && bCopy == true)
+					*(pMatDst->gpumat) = pMatDst->gpumat->clone();
+				}	// if
+			#endif
 			else
 				{
 				// Create ROI

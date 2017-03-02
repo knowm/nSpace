@@ -94,24 +94,9 @@ HRESULT Threshold :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		if (hr == S_OK)
 			{
 			//
-			// GPU
-			//
-			if (pMat->isGPU())
-				{
-				if (!WCASECMP(strOp,L"Zero"))
-					cv::cuda::threshold ( *(pMat->gpumat), *(pMat->gpumat), adtDouble(vT), 0, cv::THRESH_TOZERO );
-				else if (!WCASECMP(strOp,L"Truncate"))
-					cv::cuda::threshold ( *(pMat->gpumat), *(pMat->gpumat), adtDouble(vT), 0, cv::THRESH_TRUNC );
-				else if (!WCASECMP(strOp,L"Binary"))
-					cv::cuda::threshold ( *(pMat->gpumat), *(pMat->gpumat), adtDouble(vT), adtDouble(vMax), cv::THRESH_BINARY );
-				else if (!WCASECMP(strOp,L"BinaryInv"))
-					cv::cuda::threshold ( *(pMat->gpumat), *(pMat->gpumat), adtDouble(vT), adtDouble(vMax), cv::THRESH_BINARY_INV );
-				}	// if
-
-			//
 			// UMat
 			//
-			else if (pMat->isUMat())
+			if (pMat->isUMat())
 				{
 				if (!WCASECMP(strOp,L"Zero"))
 					cv::threshold ( *(pMat->umat), *(pMat->umat), adtDouble(vT), 0, cv::THRESH_TOZERO );
@@ -122,6 +107,23 @@ HRESULT Threshold :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				else if (!WCASECMP(strOp,L"BinaryInv"))
 					cv::threshold ( *(pMat->umat), *(pMat->umat), adtDouble(vT), adtDouble(vMax), cv::THRESH_BINARY_INV );
 				}	// else if
+
+			//
+			// GPU
+			//
+			#ifdef	WITH_CUDA
+			else if (pMat->isGPU())
+				{
+				if (!WCASECMP(strOp,L"Zero"))
+					cv::cuda::threshold ( *(pMat->gpumat), *(pMat->gpumat), adtDouble(vT), 0, cv::THRESH_TOZERO );
+				else if (!WCASECMP(strOp,L"Truncate"))
+					cv::cuda::threshold ( *(pMat->gpumat), *(pMat->gpumat), adtDouble(vT), 0, cv::THRESH_TRUNC );
+				else if (!WCASECMP(strOp,L"Binary"))
+					cv::cuda::threshold ( *(pMat->gpumat), *(pMat->gpumat), adtDouble(vT), adtDouble(vMax), cv::THRESH_BINARY );
+				else if (!WCASECMP(strOp,L"BinaryInv"))
+					cv::cuda::threshold ( *(pMat->gpumat), *(pMat->gpumat), adtDouble(vT), adtDouble(vMax), cv::THRESH_BINARY_INV );
+				}	// if
+			#endif
 
 			//
 			// Mat

@@ -84,7 +84,6 @@ HRESULT Prepare :: gpuInit ( void )
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	int	ret;
 
 	// Since performance is not an issue when debugging default to 
 	// CPU only.  The only time to enable this in debug mode is if this 
@@ -104,6 +103,8 @@ HRESULT Prepare :: gpuInit ( void )
 
 	// Any CUDA-enabled devices ?
 	bCuda = false;
+	#ifdef	WITH_CUDA
+	int	ret;
 	if ((ret = cv::cuda::getCudaEnabledDeviceCount()) > 0)
 		{
 		// Perform some sort of GPU operation to intiailize Cuda for the
@@ -123,6 +124,7 @@ HRESULT Prepare :: gpuInit ( void )
 		bUMat = false;
 		}	// if
 	else
+	#endif
 		{
 		// Debug
 		lprintf ( LOG_INFO, L"No Cuda enabled devices\r\n" );
@@ -235,13 +237,15 @@ HRESULT Prepare :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		// Create a blank matrix type
 		CCLTRY ( Create::create ( pImgUse, mat->cols, mat->rows, mat->type(), &pMat, bCPU ) );
 
-		// GPU
-		if (hr == S_OK && pMat->isGPU())
-			pMat->gpumat->upload ( *mat );
-
 		// OCL
-		else if (hr == S_OK && pMat->isUMat())
+		if (hr == S_OK && pMat->isUMat())
 			mat->copyTo ( *(pMat->umat) );
+
+		// GPU
+		#ifdef	WITH_CUDA
+		else if (hr == S_OK && pMat->isGPU())
+			pMat->gpumat->upload ( *mat );
+		#endif
 
 		// CPU
 		else if (hr == S_OK)
@@ -285,10 +289,12 @@ HRESULT Prepare :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			cv::Mat		mat;
 
 			// Download into local matri if GPU is enabled
-			if (pMat->isGPU())
-				pMat->gpumat->download(mat);
-			else if (pMat->isUMat())
+			if (pMat->isUMat())
 				mat = pMat->umat->getMat(cv::ACCESS_READ);
+			#ifdef	WITH_CUDA
+			else if (pMat->isGPU())
+				pMat->gpumat->download(mat);
+			#endif
 			else
 				mat = *(pMat->mat);
 

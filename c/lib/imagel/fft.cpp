@@ -209,6 +209,7 @@ HRESULT FFT :: fft ( cv::UMat *pMat, cv::UMat *pWnd, bool bRows )
 	return hr;
 	}	// fft
 
+#ifdef WITH_CUDA
 HRESULT FFT :: fft ( cv::cuda::GpuMat *pMat, cv::cuda::GpuMat *pWnd, 
 							bool bRows )
 	{
@@ -324,6 +325,7 @@ HRESULT FFT :: fft ( cv::cuda::GpuMat *pMat, cv::cuda::GpuMat *pWnd,
 
 	return hr;
 	}	// fft
+#endif
 
 HRESULT FFT :: onAttach ( bool bAttach )
 	{
@@ -399,10 +401,12 @@ HRESULT FFT :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 		// Compute FFT/Magnitude
 //		CCLOK ( image_to_debug ( pMat, L"FFT", L"c:/temp/fft.png" ); )
-		if (hr == S_OK && pMat->isGPU())
-			hr = fft ( pMat->gpumat, (pWnd != NULL) ? pWnd->gpumat : NULL, bRows );
-		else if (hr == S_OK && pMat->isUMat())
+		if (hr == S_OK && pMat->isUMat())
 			hr = fft ( pMat->umat, (pWnd != NULL) ? pWnd->umat : NULL, bRows );
+		#ifdef WITH_CUDA
+		else if (hr == S_OK && pMat->isGPU())
+			hr = fft ( pMat->gpumat, (pWnd != NULL) ? pWnd->gpumat : NULL, bRows );
+		#endif
 		else
 			hr = fft ( pMat->mat, (pWnd != NULL) ? pWnd->mat : NULL, bRows );
 
@@ -468,16 +472,18 @@ HRESULT FFT :: window ( cvMatRef *pMat )
 	//
 
 	// Sizing
-	if (pMat->isGPU())
-		{
-		rows = pMat->gpumat->rows;
-		cols = pMat->gpumat->cols;
-		}	// if
-	else if (pMat->isUMat())
+	if (pMat->isUMat())
 		{
 		rows = pMat->umat->rows;
 		cols = pMat->umat->cols;
 		}	// if
+	#ifdef	WITH_CUDA
+	else if (pMat->isGPU())
+		{
+		rows = pMat->gpumat->rows;
+		cols = pMat->gpumat->cols;
+		}	// if
+	#endif
 	else
 		{
 		rows = pMat->mat->rows;
@@ -485,16 +491,18 @@ HRESULT FFT :: window ( cvMatRef *pMat )
 		}	// if
 	if (pWnd != NULL)
 		{
-		if (pWnd->isGPU())
-			{
-			wrows = pWnd->gpumat->rows;
-			wcols = pWnd->gpumat->cols;
-			}	// if
-		else if (pWnd->isUMat())
+		if (pWnd->isUMat())
 			{
 			wrows = pWnd->umat->rows;
 			wcols = pWnd->umat->cols;
 			}	// else if
+		#ifdef	WITH_CUDA
+		else if (pWnd->isGPU())
+			{
+			wrows = pWnd->gpumat->rows;
+			wcols = pWnd->gpumat->cols;
+			}	// if
+		#endif
 		else
 			{
 			wrows = pWnd->mat->rows;
@@ -557,10 +565,12 @@ HRESULT FFT :: window ( cvMatRef *pMat )
 		CCLTRY ( Create::create ( NULL, cols, rows, CV_32FC1, &pWnd ) );
 
 		// Transfer data to window object
-		if (pWnd->isGPU())
-			pWnd->gpumat->upload ( matWnd );
-		else if (pWnd->isUMat())
+		if (pWnd->isUMat())
 			matWnd.copyTo ( *(pWnd->umat) );
+		#ifdef	WITH_CUDA
+		else if (pWnd->isGPU())
+			pWnd->gpumat->upload ( matWnd );
+		#endif
 		else
 			matWnd.copyTo ( *(pWnd->mat) );
 		}	// if

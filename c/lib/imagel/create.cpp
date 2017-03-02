@@ -57,18 +57,20 @@ HRESULT Create :: create ( IDictionary *pDct, U32 w, U32 h, U32 f,
 
 	// Create a matrix based on the GPU mode
 	CCLTRYE( (pMat = new cvMatRef()) != NULL, E_OUTOFMEMORY );
-	if (!bCpu && bCuda)
-		{
-		CCLTRYE ( (pMat->gpumat = new cv::cuda::GpuMat ( h, w, f )) != NULL,
-						E_OUTOFMEMORY );
-		CCLOK ( pMat->gpumat->setTo ( cv::Scalar(0) ); )
-		}	// if
-	else if (!bCpu && bUMat)
+	if (!bCpu && bUMat)
 		{
 		CCLTRYE ( (pMat->umat = new cv::UMat ( h, w, f )) != NULL,
 						E_OUTOFMEMORY );
 		CCLOK ( pMat->umat->setTo ( cv::Scalar(0) ); )
 		}	// else if
+	#ifdef	WITH_CUDA
+	else if (!bCpu && bCuda)
+		{
+		CCLTRYE ( (pMat->gpumat = new cv::cuda::GpuMat ( h, w, f )) != NULL,
+						E_OUTOFMEMORY );
+		CCLOK ( pMat->gpumat->setTo ( cv::Scalar(0) ); )
+		}	// if
+	#endif
 	else
 		{
 		CCLTRYE ( (pMat->mat = new cv::Mat ( h, w, f )) != NULL,
@@ -197,10 +199,12 @@ HRESULT Create :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				CCLOK ( cv::mulTransposed ( matK, matK, false ); )
 
 				// Copy to blank image
-				if (pMat->isGPU())
-					pMat->gpumat->upload ( matK );
-				else if (pMat->isUMat())
+				if (pMat->isUMat())
 					matK.copyTo ( *(pMat->umat) );
+				#ifdef	WITH_CUDA
+				else if (pMat->isGPU())
+					pMat->gpumat->upload ( matK );
+				#endif
 				else
 					matK.copyTo ( *(pMat->mat) );
 				}	// if
