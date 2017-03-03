@@ -23,6 +23,7 @@
 #define	IMGFMT_U16X2	2
 #define	IMGFMT_S16X2	3
 #define	IMGFMT_F32X2	4
+#define	IMGFMT_R8G8B8	5
 
 //
 // Class - ImageDct.  Convience class for dealing with images stored
@@ -103,6 +104,12 @@ class ImageDct
 				iFmt	= IMGFMT_F32X2;
 				iBpp	= 32;
 				iCh	= 1;
+				}	// if
+			else if (!WCASECMP(strFmt,L"R8G8B8"))
+				{
+				iFmt	= IMGFMT_R8G8B8;
+				iBpp	= 24;
+				iCh	= 3;
 				}	// if
 			else
 				iFmt = IMGFMT_INV;
@@ -233,6 +240,12 @@ DEFINE_GUID	(	CLSID_Stats, 0x2534d0cd, 0x8628, 0x11d2, 0x86, 0x8c,
 					0x00, 0x60, 0x08, 0xad, 0xdf, 0xed );
 
 DEFINE_GUID	(	CLSID_Threshold, 0x2534d014, 0x8628, 0x11d2, 0x86, 0x8c,
+					0x00, 0x60, 0x08, 0xad, 0xdf, 0xed );
+
+DEFINE_GUID	(	CLSID_VideoCapture, 0x2534d0e5, 0x8628, 0x11d2, 0x86, 0x8c,
+					0x00, 0x60, 0x08, 0xad, 0xdf, 0xed );
+
+DEFINE_GUID	(	CLSID_VideoWriter, 0x2534d0e6, 0x8628, 0x11d2, 0x86, 0x8c,
 					0x00, 0x60, 0x08, 0xad, 0xdf, 0xed );
 
 #endif

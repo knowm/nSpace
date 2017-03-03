@@ -1120,6 +1120,74 @@ class Threshold :
 	END_BEHAVIOUR_NOTIFY()
 	};
 
+//
+// Class - VideoCapture.  General video capture node.
+//
+
+class VideoCapture :
+	public CCLObject,										// Base class
+	public Behaviour										// Interface
+	{
+	public :
+	VideoCapture ( void );								// Constructor
+
+	// Run-time data
+	IDictionary			*pImg;							// Image dictionary
+	cv::VideoCapture	vc;								// Video capture object
+	bool					bOpen;							// Video capture open ?
+
+	// CCL
+	CCL_OBJECT_BEGIN(VideoCapture)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_EMT(Error)
+	DECLARE_CON(Close)
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Image)
+	DECLARE_CON(Open)
+	BEGIN_BEHAVIOUR()
+		DEFINE_EMT(Error)
+		DEFINE_CON(Close)
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Image)
+		DEFINE_CON(Open)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
+//
+// Class - VideoWriter.  Node to write image frames to a video file.
+//
+
+class VideoWriter :
+	public CCLObject,										// Base class
+	public Behaviour										// Interface
+	{
+	public :
+	VideoWriter ( void );								// Constructor
+
+	// Run-time data
+	adtInt	iFps;											// Frame rate of video stream
+	adtInt	iW,iH;										// Size of video frames
+
+	// CCL
+	CCL_OBJECT_BEGIN(VideoWriter)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_EMT(Error)
+	DECLARE_RCP(Close)
+	DECLARE_CON(Fire)
+	DECLARE_CON(Open)
+	BEGIN_BEHAVIOUR()
+		DEFINE_EMT(Error)
+		DEFINE_RCP(Close)
+		DEFINE_CON(Fire)
+		DEFINE_CON(Open)
+	END_BEHAVIOUR_NOTIFY()
+	};
 
 // Prototypes
 //HRESULT image_fft			( cv::ocl::oclMat *, bool = false, bool = false );

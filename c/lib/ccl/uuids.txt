@@ -220,9 +220,9 @@
 2534d0e1-8628-11d2-868c-006008addfed				//	CLSID_Mesh (pcll)
 2534d0e2-8628-11d2-868c-006008addfed				//	CLSID_IDispatch (iol)
 2534d0e3-8628-11d2-868c-006008addfed				//	CLSID_FaceRecognizer (imagel)
-2534d0e4-8628-11d2-868c-006008addfed				//	CLSID_CascadeClassifier (image)
-2534d0e5-8628-11d2-868c-006008addfed				//	
-2534d0e6-8628-11d2-868c-006008addfed				//	
+2534d0e4-8628-11d2-868c-006008addfed				//	CLSID_CascadeClassifier (imagel)
+2534d0e5-8628-11d2-868c-006008addfed				//	CLSID_VideoCapture (imagel)
+2534d0e6-8628-11d2-868c-006008addfed				//	CLSID_VideoWriter (imagel)
 2534d0e7-8628-11d2-868c-006008addfed				//	
 2534d0e8-8628-11d2-868c-006008addfed				//	
 2534d0e9-8628-11d2-868c-006008addfed				//	

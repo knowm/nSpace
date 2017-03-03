@@ -14,6 +14,7 @@ add_subdirectory(nspcl)
 add_subdirectory(plotl)
 add_subdirectory(sysl)
 add_subdirectory(usbl)
+add_subdirectory(wmil)
 
 # External SDKs
 if( OpenCV_FOUND )

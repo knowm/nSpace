@@ -124,8 +124,11 @@ HRESULT libJpeg :: compress ( IDictionary *pDct )
 	CCLTRY ( dctImage.lock ( pDct ) );
 
 	// Validate supported formats/bit depth
-	CCLTRYE (	dctImage.iFmt >= IMGFMT_U8X2 &&
-					dctImage.iFmt <= IMGFMT_S16X2,
+	CCLTRYE (	dctImage.iFmt == IMGFMT_U8X2 ||
+					dctImage.iFmt == IMGFMT_S8X2 ||
+					dctImage.iFmt == IMGFMT_U16X2 ||
+					dctImage.iFmt == IMGFMT_S16X2 ||
+					dctImage.iFmt == IMGFMT_R8G8B8,
 					E_NOTIMPL );
 
 	// Create destination memory

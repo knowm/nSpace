@@ -11,6 +11,7 @@ add_subdirectory(nspcn)
 add_subdirectory(plotn)
 add_subdirectory(sysn)
 add_subdirectory(usbn)
+add_subdirectory(wmin)
 
 # External SDKs
 if( OpenCV_FOUND )

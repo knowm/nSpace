@@ -91,43 +91,58 @@ HRESULT Smooth :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
 
 		// Perform smoothing operation
-		if (hr == S_OK)
+		try
 			{
-			if (pMat->isUMat())
+			if (hr == S_OK)
 				{
-				if (!strType.length())
-					cv::blur ( *(pMat->umat), *(pMat->umat), cv::Size(iSz,iSz) );
-				else if (!WCASECMP(L"Median",strType))
-					cv::medianBlur ( *(pMat->umat), *(pMat->umat), iSz );
-				}	// if
-			#ifdef	WITH_CUDA
-			else if (pMat->isGPU())
-				{
-				cv::Mat		matNoGpu;
+				if (pMat->isUMat())
+					{
+					if (!strType.length())
+						cv::blur ( *(pMat->umat), *(pMat->umat), cv::Size(iSz,iSz) );
+					else if (!WCASECMP(L"Median",strType))
+						cv::medianBlur ( *(pMat->umat), *(pMat->umat), iSz );
+					}	// if
+				#ifdef	WITH_CUDA
+				else if (pMat->isGPU())
+					{
+					cv::Mat		matNoGpu;
 
-				// There must be a GPU way of doing this.  Manually convolution with kernel ?
-				pMat->gpumat->download ( matNoGpu );
+					// There must be a GPU way of doing this.  Manually convolution with kernel ?
+					pMat->gpumat->download ( matNoGpu );
 
-				// Execute
-				if (!strType.length())
-					cv::blur ( matNoGpu, matNoGpu, cv::Size(iSz,iSz) );
-				else if (!WCASECMP(L"Median",strType))
-					cv::medianBlur ( matNoGpu, matNoGpu, iSz );
+					// Execute
+					if (!strType.length())
+						cv::blur ( matNoGpu, matNoGpu, cv::Size(iSz,iSz) );
+					else if (!WCASECMP(L"Median",strType))
+						cv::medianBlur ( matNoGpu, matNoGpu, iSz );
 
-				// Restore
-				pMat->gpumat->upload ( matNoGpu );
-				}	// if
-			#endif
-			else
-				{
-				if (!WCASECMP(L"Gaussian",strType))
-					cv::GaussianBlur ( *(pMat->mat), *(pMat->mat), cv::Size(iSz,iSz), 0, 0 );
-				else if (!WCASECMP(L"Median",strType))
-					cv::medianBlur ( *(pMat->mat), *(pMat->mat), iSz );
+					// Restore
+					pMat->gpumat->upload ( matNoGpu );
+					}	// if
+				#endif
 				else
-					cv::blur ( *(pMat->mat), *(pMat->mat), cv::Size(iSz,iSz) );
-				}	// else
-			}	// if
+					{
+					// Some filters require src != dst
+					cv::Mat	matSrc;
+					pMat->mat->copyTo ( matSrc );
+
+					// Execute
+					if (!WCASECMP(L"Gaussian",strType))
+						cv::GaussianBlur ( matSrc, *(pMat->mat), cv::Size(iSz,iSz), 0, 0 );
+					else if (!WCASECMP(L"Median",strType))
+						cv::medianBlur ( matSrc, *(pMat->mat), iSz );
+					else if (!WCASECMP(L"Bilateral",strType))
+						cv::bilateralFilter( matSrc, *(pMat->mat), 10, 20, 20);
+					else
+						cv::blur ( matSrc, *(pMat->mat), cv::Size(iSz,iSz) );
+					}	// else
+				}	// if
+			}	// try
+		catch ( cv::Exception &ex )
+			{
+			lprintf ( LOG_ERR, L"%S\r\n", ex.err.c_str() );
+			hr = E_UNEXPECTED;
+			}	// catch
 
 		// Debug
 		if (hr != S_OK)

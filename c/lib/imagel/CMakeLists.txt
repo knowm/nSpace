@@ -32,6 +32,8 @@ set	(
 		Smooth.cpp
 		Stats.cpp
 		Threshold.cpp
+		VideoCapture.cpp
+		VideoWriter.cpp
 		)
 
 set (	HEADERS

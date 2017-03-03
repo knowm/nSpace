@@ -4,6 +4,8 @@
 %
 %					Debug 'auto start' graph instance
 %
+% For copy/paste into command line :
+% { Execute Batch Location  "/dev/nSpace/resource/record/default.nspc" }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 @
@@ -53,12 +55,54 @@
 	% Debug
 %	#	ImageViewer									App/Demo/Viewer/ {}
 
+	%%%%%%%%
+	% Video
+	%%%%%%%%
+
+	% Subgraph: Capture
+	#	Capture										Driver/Device/Camera/Capture/Inst/ {}
+		!	Capture/State/OnImage/OnFire		Debug/Fire
+
+	% MISCN: Open device
+	$	ValueOpen Misc.Dist { Value true:bool }
+		!	Initialize/OnFire						ValueOpen/Fire
+		!	ValueOpen/OnFire						Capture/State/Open/Fire
+	$	ValueClose Misc.Dist { Value false:bool }
+		!	ValueClose/OnFire						Capture/State/Open/Fire
+
+	% Grab an image
+	!	ValueOpen/OnFire							Capture/State/Capture/Fire
+
+	% Done
+	!	Initialize/OnFire							ValueClose/Fire
+
+	% MISCN: Create a dictionary for the image
+%	$	CreateImgDct Misc.Create { Id Adt.Dictionary }
+%		!	Initialize/OnFire						CreateImgDct/Fire
+
+	% IMAGEN: Video capture
+%	$	Capture Image.VideoCapture {}
+%		!	CreateImgDct/OnFire					Capture/Image
+%		!	Initialize/OnFire						Capture/Open
+%		!	Initialize/OnFire						Capture/Fire
+%		!	Initialize/OnFire						Capture/Close
+%		!	Capture/OnFire							Debug/Fire
+
+	% IMAGEN: Download the image for use
+%	$	Download Image.Prepare {}
+%		!	Capture/OnFire							Download/Download
+
+	% IMAGEN: Save image
+%	$	SaveImage Image.PersistImage { Location "c:\\temp\\test.jpg" }
+%		!	Download/OnDownload					SaveImage/Image
+%		!	Download/OnDownload					SaveImage/Save
+
 	%%%%%%%%%%%%%%
 	% Web sockets
 	%%%%%%%%%%%%%%
 
 	% Subgraph: Remote namespace server
-	#	Server										Lib/Namespace/Remote/Inst/ {}
+%	#	Server										Lib/Namespace/Remote/Inst/ {}
 
 	% Subgraph: Interface elements
 %	#	ButtonTest									State/Interface/Button/ {}
