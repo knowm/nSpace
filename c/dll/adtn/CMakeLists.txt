@@ -21,6 +21,8 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER dll)
 install	(
 			TARGETS adtn 
 			RUNTIME DESTINATION bin 
+			ARCHIVE DESTINATION bin 
+			LIBRARY DESTINATION bin 
 			)
 
 if (MSVC)
