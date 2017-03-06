@@ -1,0 +1,22 @@
+# Here are the steps I had to perform to get nSpace built.
+# All of these steps may or may not be needed but it doesn't hurt to run them anyway
+
+# Update the actual package information (this is needed to update the locations for where to get 'install' packages)
+sudo apt-get update
+
+# Update the apt-get installed components (this might take a while, optional ?)
+sudo apt-get upgrade
+
+# Install cmake in order to build the makefiles for nSpace/other packages
+sudo apt-get install cmake
+
+# Install OpenSSL (optional, needed for web-socket server)
+sudo apt-get install libssl-dev
+
+# UUID generation
+sudo apt-get install uuid-dev
+
+# Install nSpace source
+git clone https://github.com/nSpaceLabs/nSpace.git
+
+

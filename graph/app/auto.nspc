@@ -60,21 +60,23 @@
 	%%%%%%%%
 
 	% Subgraph: Capture
-	#	Capture										Driver/Device/Camera/Capture/Inst/ {}
-		!	Capture/State/OnImage/OnFire		Debug/Fire
+%	#	Capture										Driver/Device/Camera/Capture/Inst/ {}
+%		!	Capture/State/OnImage/OnFire		Debug/Fire
 
 	% MISCN: Open device
-	$	ValueOpen Misc.Dist { Value true:bool }
-		!	Initialize/OnFire						ValueOpen/Fire
-		!	ValueOpen/OnFire						Capture/State/Open/Fire
-	$	ValueClose Misc.Dist { Value false:bool }
-		!	ValueClose/OnFire						Capture/State/Open/Fire
+%	$	ValueOpen Misc.Dist { Value true:bool }
+%		!	Initialize/OnFire						ValueOpen/Fire
+%		!	ValueOpen/OnFire						Capture/State/Open/Fire
+%	$	ValueClose Misc.Dist { Value false:bool }
+%		!	ValueClose/OnFire						Capture/State/Open/Fire
 
 	% Grab an image
-	!	ValueOpen/OnFire							Capture/State/Capture/Fire
+%	!	ValueOpen/OnFire							Capture/State/Capture/Fire
 
 	% Done
-	!	Initialize/OnFire							ValueClose/Fire
+%	!	Initialize/OnFire							ValueClose/Fire
+
+	%%%%
 
 	% MISCN: Create a dictionary for the image
 %	$	CreateImgDct Misc.Create { Id Adt.Dictionary }

@@ -13,7 +13,7 @@
 #include "medial.h"
 
 // SAPI
-#ifdef		_WiIN32
+#ifdef	_WIN32
 #include	<sapi.h>
 #endif
 
@@ -25,7 +25,7 @@
 // Nodes
 /////////
 
-#ifdef		_WiIN32
+#ifdef	_WIN32
 //
 // Class - Speak.  Client node for generating plot Speaks.
 //								(Currently uses Speak).
