@@ -122,7 +122,53 @@ HRESULT StreamCopy :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 				// Stream to memory mapped
 				else if (pMemDst != NULL)
+					{
+					U64		nleft = iSz;
+
+					// Obtain full size of remaining bytes in stream if necessary
+					if (nleft == 0)
+						hr = pStmSrc->available(&nleft);
+
+					// Valid size ?
+					if (hr == S_OK && nleft > 0)
+						{
+						U8		*pcDst	= NULL;
+						U8		pcSrc[8192];
+						U64	ncpy;
+
+						// Preset size needed for stream and get ptr.
+						CCLTRY ( pMemDst->setSize ( (U32) nleft ) );
+						CCLTRY ( pMemDst->lock ( 0, 0, (void **) &pcDst, NULL ) );
+
+						// Copy into memory block
+						while (hr == S_OK && nleft > 0)
+							{
+							// Next amount to copy
+							ncpy = (nleft < sizeof(pcSrc)) ? nleft : sizeof(pcSrc);
+
+							// Read block
+							CCLTRY ( pStmSrc->read ( pcSrc, ncpy, &ncpy ) );
+
+							// Write to memory
+							if (hr == S_OK && ncpy > 0)
+								{
+								memcpy ( pcDst, pcSrc, ncpy );
+								pcDst += ncpy;
+								nleft -= ncpy;
+								}	// if
+
+							}	// while
+
+						// Clean up
+						_UNLOCK(pMemDst,pcDst);
+						}	// if
+
+					}	// else if
+
+				// ?
+				else
 					hr = E_NOTIMPL;
+
 				}	// if
 
 			// Source it memory mapped

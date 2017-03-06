@@ -116,63 +116,6 @@ class cvMatRef :
 	CCL_OBJECT_END()
 	};
 
-//
-// Class - libJpeg.  Object for JPEG images.
-//
-
-class libJpeg 
-	{
-	public :
-	libJpeg ( void );										// Constructor
-	virtual ~libJpeg ( void );							// Destructor
-
-	// Run-time data
-	adtInt	iQ;											// Quality setting
-	U8			*pccinfo[2],*pcjerr[2];					// JPEG library support
-	U8			*pcdstmgr[2],*pcdinfo[2];				// JPEG library support
-	U8			*pcsrcmgr[2];								// JPEG library support
-
-	// Utilities
-	HRESULT	construct	( void );					// Construct object
-	HRESULT	compress		( IDictionary * );
-	HRESULT	compress		( U32, U32, U32, U32, IMemoryMapped *,
-									IMemoryMapped * );
-	HRESULT	decompress	( IDictionary * );
-	HRESULT	decompress	( IMemoryMapped *, IMemoryMapped *,
-									U32 *, U32 *, U32 *, U32 * );
-
-	private :
-
-	};
-
-//
-// Class - libPng.  Object for PNG images.
-//
-
-class libPng 
-	{
-	public :
-	libPng ( void );										// Constructor
-	virtual ~libPng ( void );							// Destructor
-
-	// Run-time data
-	HRESULT			hr_int;								// Parameters
-	U8					*pcBitsSrc;							// Decompression bits
-	U32				idxSrc,lenSrc;						// Decompression bits
-
-	// Utilities
-	HRESULT	construct	( void );					// Construct object
-//	HRESULT	compress		( IDictionary * );
-//	HRESULT	compress		( U32, U32, U32, U32, IMemoryMapped *,
-//									IMemoryMapped * );
-	HRESULT	decompress	( IDictionary * );
-	HRESULT	decompress	( IMemoryMapped *, IMemoryMapped *,
-									U32 *, U32 *, U32 *, U32 * );
-
-	private :
-
-	};
-
 /////////
 // Nodes
 /////////

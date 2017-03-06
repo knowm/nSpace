@@ -89,3 +89,10 @@ target_link_libraries(libjpeg)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib/ext)
 
+# Installation
+install	(
+			TARGETS libjpeg
+			RUNTIME DESTINATION bin 
+			LIBRARY DESTINATION lib 
+			ARCHIVE DESTINATION lib 
+			)

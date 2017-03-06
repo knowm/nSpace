@@ -40,3 +40,10 @@ target_link_libraries(zlib)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib/ext)
 
+# Installation
+install	(
+			TARGETS zlib
+			RUNTIME DESTINATION bin 
+			LIBRARY DESTINATION lib 
+			ARCHIVE DESTINATION lib 
+			)

@@ -220,6 +220,7 @@ HRESULT Debug :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				IDictionary		*pLoc		= NULL;
 				IReceptor		*pRecep	= NULL;
 				IByteStream		*pStm		= NULL;
+				IMemoryMapped	*pMem		= NULL;
 				IDictionary		*pD		= NULL;
 				IList				*pL		= NULL;
 
@@ -328,6 +329,15 @@ HRESULT Debug :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					swprintf ( SWPF(wDbgBfr2,DBGSZ), L"Stream:Position %d/Length %d", (S32)pos, (S32)(pos+len) );
 					appendDbg ( wDbgBfr2 );
 					}	// else if
+				else if (_QI(punk,IID_IMemoryMapped,&pMem) == S_OK)
+					{
+					U32 sz = 0;
+
+					// Current size
+					CCLTRY( pMem->getSize(&sz) );
+					swprintf ( SWPF(wDbgBfr2,DBGSZ), L"Memory:Size %d bytes", sz );
+					appendDbg ( wDbgBfr2 );
+					}	// else if
 				else
 					{
 					swprintf ( SWPF(wDbgBfr2,DBGSZ), L"Object (%p)", punk );
@@ -337,6 +347,7 @@ HRESULT Debug :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				// Clean up
 				_RELEASE(pL);
 				_RELEASE(pD);
+				_RELEASE(pMem);
 				_RELEASE(pStm);
 				_RELEASE(pRecep);
 				_RELEASE(pLoc);

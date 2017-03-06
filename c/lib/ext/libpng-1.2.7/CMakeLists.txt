@@ -33,3 +33,10 @@ target_link_libraries(libpng)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib/ext)
 
+# Installation
+install	(
+			TARGETS libpng
+			RUNTIME DESTINATION bin 
+			LIBRARY DESTINATION lib 
+			ARCHIVE DESTINATION lib 
+			)

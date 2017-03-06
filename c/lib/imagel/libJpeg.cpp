@@ -412,7 +412,7 @@ HRESULT libJpeg :: decompress ( IDictionary *pDct )
 		// Debug
 		#ifdef	_WIN32
 		now = GetTickCount();
-		lprintf ( LOG_INFO, L"Time to compress %d ms, hr 0x%x\n", (now-then), hr );
+		lprintf ( LOG_INFO, L"Time to decompress %d ms, hr 0x%x\n", (now-then), hr );
 		#endif
 		#ifdef	__unix__
 //		gettimeofday ( &now, NULL );
@@ -434,7 +434,9 @@ HRESULT libJpeg :: decompress ( IDictionary *pDct )
 			hr = E_UNEXPECTED;
 		}	// if
 
-	// Replace bits
+	// Image information
+	CCLTRY ( pDct->store(adtString(L"Width"),adtInt(w)) );
+	CCLTRY ( pDct->store(adtString(L"Height"),adtInt(h)) );
 	CCLTRY (	pDct->store ( adtString(L"Bits"), adtIUnknown(pBitsDst) ));
 
 	// Clean up
@@ -554,275 +556,6 @@ HRESULT libJpeg :: decompress (	IMemoryMapped *pBitsSrc,
 	return hr;
 	}	// decompress
 
-/*
-
-HRESULT libJpeg :: onAttach ( bool bAttach )
-	{
-	////////////////////////////////////////////////////////////////////////
-	//
-	//	PURPOSE
-	//		-	Called when this behaviour is assigned to a node
-	//
-	//	PARAMETERS
-	//		-	bAttach is true for attachment, false for detachment.
-	//
-	//	RETURN VALUE
-	//		S_OK if successful
-	//
-	////////////////////////////////////////////////////////////////////////
-
-	// State check
-	if (!bAttach) return S_OK;
-
-	// Default states
-	pnAttr->load ( strRefQuality, iQ );
-
-	return S_OK;
-	}	// onAttach
-
-HRESULT libJpeg :: receive ( IReceptor *pR, const adtValue &v )
-	{
-	////////////////////////////////////////////////////////////////////////
-	//
-	//	PURPOSE
-	//		-	The node has received a value on the specified receptor.
-	//
-	//	PARAMETERS
-	//		-	pR is the receptor
-	//		-	v is the value
-	//
-	//	RETURN VALUE
-	//		S_OK if successful
-	//
-	////////////////////////////////////////////////////////////////////////
-	HRESULT	hr = S_OK;
-
-	// Compress
-	if (prC == pR)
-		{
-		IMemoryMapped	*pBitsSrc	= NULL;
-		IMemoryMapped	*pBitsDst	= NULL;
-		adtString		strFmt;
-		adtIUnknown		unkV;
-		adtInt			iWidth,iHeight,iBpp;
-
-		// State check
-		CCLTRYE	( pDict != NULL,	ERROR_INVALID_STATE );
-
-		// Validate format
-		if (hr == S_OK && pDict->load ( adtString(L"Format"), strFmt ) == S_OK)
-			hr = (!WCASECMP(L"RGB",strFmt)) ? S_OK : E_INVALIDARG;
-
-		// Image parameters
-		CCLTRY	( pDict->load ( strRefWidth, iWidth ) );
-		CCLTRY	( pDict->load ( strRefHeight, iHeight ) );
-		CCLTRY	( pDict->load ( strRefBpp, iBpp ) );
-		CCLTRY	( pDict->load ( strRefBits, unkV ) );
-		CCLTRY	( _QISAFE(unkV,IID_IMemoryMapped,&pBitsSrc) );
-
-		// JPEG library only supports 8 bit grayscale or 24 bit color
-		CCLTRYE	( (iBpp == 8 || iBpp == 24), E_INVALIDARG );
-
-		// Create destination memory
-		CCLTRY ( COCREATEINSTANCE ( CLSID_MemoryBlock, IID_IMemoryMapped, &pBitsDst ) );
-
-		// Compress
-		if (hr == S_OK)
-			{
-			// Debug
-			#ifdef	_WIN32
-			U32		now,then;
-			then	= 	GetTickCount();
-			#endif
-			#ifdef	__unix__
-	//		struct timeval now,then;
-	//		gettimeofday ( &then, NULL );
-			#endif
-
-			// Compress
-			hr = compress ( iWidth, iHeight, iBpp, pBitsSrc, pBitsDst );
-
-			// Debug
-			#ifdef	_WIN32
-			now = GetTickCount();
-	//		dbgprintf ( L"libJpeg::receiveCompress:Time to compress %d ms, hr 0x%x\n", (now-then), hr );
-			#endif
-			#ifdef	__unix__
-	//		gettimeofday ( &now, NULL );
-	//		dbgprintf (	L"Compress %d ms\n",
-	//						((now.tv_usec-then.tv_usec)/1000) + ((now.tv_sec-then.tv_sec)*1000) );
-			#endif
-			}	// if
-
-		// Format
-		CCLTRY ( pDict->store ( adtString(L"Format"), adtString(L"JPEG") ) );
-
-		// Update  image properties and emit
-		CCLTRY (	pDict->store ( adtString(L"Bits"), adtIUnknown(pBitsDst) ));
-		CCLOK	 ( peC->emit ( adtIUnknown(pDict) ); )
-
-		// Clean up
-		_RELEASE(pBitsDst);
-		_RELEASE(pBitsSrc);
-		}	// if
-
-	// Decompress
-	else if (prD == pR)
-		{
-		IMemoryMapped		*pBitsSrc	= NULL;
-		IMemoryMapped		*pBitsDst	= NULL;
-		U32					uWidth		= 0;
-		U32					uHeight		= 0;
-		U32					uStride		= 0;
-		U32					uBpp			= 0;
-		adtIUnknown			unkV;
-
-		// State check
-		CCLTRYE	( pDict != NULL,	ERROR_INVALID_STATE );
-		CCLTRY	( pDict->load ( strRefBits, unkV ) );
-		CCLTRY	( _QISAFE(unkV,IID_IMemoryMapped,&pBitsSrc) );
-
-		// Create memory block to receive the decompressed memory block
-		CCLTRY ( COCREATEINSTANCE ( CLSID_MemoryBlock, IID_IMemoryMapped, &pBitsDst ) );
-
-		// Decompress
-		if (hr == S_OK)
-			{
-			// Debug
-			#ifdef	_WIN32
-			U32		now,then;
-			then	= 	GetTickCount();
-			#endif
-
-			// The current 'jpeg6b' library cannot handle decompression of some newer libraries.
-			// So for decompression perform platform specific algorithms.
-			#if	defined(_WIN32)
-
-			// Windows NT,etc
-			#if		!defined(UNDER_CE)
-			IByteStream				*pStmByte	= NULL;
-			IStream					*pStm			= NULL;
-			IHaveValue				*pValue		= NULL;
-			void						*pvDstBits	= NULL;
-			Gdiplus::Bitmap		*jpeg			= NULL;
-			Gdiplus::BitmapData	bmp;
-
-			// Setup
-			bmp.Scan0	= NULL;
-
-			// Since GDI+ needs an 'IStream' to load an image from memory, lay a
-			// byte stream in front of the memory block then lay an IStream interface
-			// on top of that
-			CCLTRY ( COCREATEINSTANCE ( CLSID_SysStmOnByteStm, IID_IHaveValue, &pValue ) );
-			CCLTRY ( pBitsSrc->stream ( &pStmByte ) );
-			CCLTRY ( pValue->setValue ( adtIUnknown(pStmByte) ) );
-			CCLTRY ( _QI(pValue,IID_IStream,&pStm) );
-
-			// Construct a bitmap object from the provided JPEG stream
-			CCLTRYE ( (jpeg = Gdiplus::Bitmap::FromStream ( pStm, FALSE )) != NULL,
-							E_UNEXPECTED );
-
-			// Lock bits so they can be copied into the destination memory block
-			CCLOK		( uWidth		= jpeg->GetWidth(); )
-			CCLOK		( uHeight	= jpeg->GetHeight(); )
-
-			// Access image bits
-			if (hr == S_OK)
-				{
-				// Entire area
-				Gdiplus::Rect rect ( 0, 0, uWidth, uHeight );
-
-				// Lock in read-only mode
-				hr = (jpeg->LockBits ( &rect, Gdiplus::ImageLockModeRead, PixelFormat24bppRGB, &bmp ) == Gdiplus::Ok)
-						? S_OK : E_UNEXPECTED;
-
-				// Default to 24bpp
-				CCLOK ( uBpp = 24; )
-				}	// if
-			CCLTRYE ( (bmp.Scan0 != NULL),	E_UNEXPECTED );
-			CCLTRYE ( (bmp.Stride > 0),		E_UNEXPECTED );
-
-			// Set size of destination block and copy bits
-			CCLTRY ( pBitsDst->setSize ( bmp.Stride*bmp.Height ) );
-			CCLTRY ( pBitsDst->lock ( 0, 0, &pvDstBits, NULL ) );
-			if (hr == S_OK)
-				{
-				for (U32 h = 0,idx = 0;h < bmp.Height;++h,idx+=bmp.Stride)
-					memcpy ( &(((U8 *)(pvDstBits))[idx]), &(((U8 *)(bmp.Scan0))[idx]), bmp.Stride );
-				}	// if
-			CCLOK	 ( uStride = bmp.Stride; )
-
-			// Clean up
-			_UNLOCK(pBitsDst,pvDstBits);
-			if (jpeg != NULL)
-				{
-				if (bmp.Scan0 != NULL)
-					jpeg->UnlockBits ( &bmp );
-				delete jpeg;
-				}	// if
-			_RELEASE(pStm);
-			_RELEASE(pStmByte);
-			_RELEASE(pValue);
-
-			// Windows CE
-			#else
-//			#error	"Implement this"
-			// Decompress
-			hr = decompress ( pBitsSrc, pBitsDst, &uWidth, &uHeight, &uBpp );
-			#endif
-
-			#else
-			// Decompress
-			hr = decompress ( pBitsSrc, pBitsDst, &uWidth, &uHeight, &uBpp );
-			#endif
-
-			// Debug
-			#ifdef	_WIN32
-			now = GetTickCount();
-	//		dbgprintf ( L"libJpeg::receiveDecompress:Time to decompress %d ms, hr 0x%x\n", (now-then), hr );
-			#endif
-			}	// if
-
-		// Image information
-		CCLTRY ( pDict->store ( strRefWidth,	adtInt(uWidth) ) );
-		CCLTRY ( pDict->store ( strRefHeight,	adtInt(uHeight) ) );
-		CCLTRY ( pDict->store ( strRefStride,	adtInt(uStride) ) );
-		CCLTRY ( pDict->store ( strRefBpp,		adtInt(uBpp) ) );
-		CCLTRY ( pDict->store ( strRefFormat,	adtString(L"RGB") ) );
-
-		// Update image bits
-		CCLTRY ( pDict->store ( adtString(L"Bits"), adtIUnknown(pBitsDst) ));
-
-		// Result
-		if (hr == S_OK)
-			peD->emit ( adtIUnknown(pDict) );
-		else
-			peErr->emit ( adtIUnknown(pDict) );
-
-		// Clean up
-		_RELEASE(pBitsDst);
-		_RELEASE(pBitsSrc);
-		}	// else if
-
-	// State
-	else if (prImg == pR)
-		{
-		adtIUnknown	unkV(v);
-		_RELEASE(pDict);
-		hr = _QISAFE(unkV,IID_IADTDictionary,&pDict);
-		}	// else if
-	else if (prQ == pR)
-		{
-		adtValueImpl::copy ( iQ, adtInt(v) );
-
-		// Reset quality on compression structures
-		jpeg_set_quality ( (j_compress_ptr) pccinfo[0], iQ, true );
-		jpeg_set_quality ( (j_compress_ptr) pccinfo[1], iQ, true );
-		}	// else if
-
-	return hr;
-	}	// receive
-*/
 //
 // JPEG support routines
 //
@@ -881,14 +614,10 @@ void jpeg_error_exit ( j_common_ptr pc )
 	////////////////////////////////////////////////////////////////////////
 	CTX_JPEG		*ctx	= (CTX_JPEG *) (pc->client_data);
 	char			buffer[JMSG_LENGTH_MAX];
-	adtString	sBfr;
 
 	// Error message
 	pc->err->format_message ( pc, buffer );
-	dbgprintf	( L"jpeg_error_exit:" );
-	sBfr = buffer;
-	dbgprintf ( sBfr );
-	dbgprintf ( L"\n" );
+	lprintf ( LOG_ERR, L"%S", buffer );
 
 	// Exit
 	longjmp ( ctx->ljenv, E_UNEXPECTED );
