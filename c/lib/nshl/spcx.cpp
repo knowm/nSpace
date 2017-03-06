@@ -8,6 +8,8 @@
 
 #include "nshl_.h"
 
+#ifdef	_WIN32
+
 NamespaceX :: NamespaceX ( ShellX *_pShellX, IDictionary *_pDctCmd )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -719,4 +721,6 @@ HRESULT NamespaceX_t :: tickEnd ( void )
 
 	return hr;
 	}	// tickEnd
+
+#endif
 

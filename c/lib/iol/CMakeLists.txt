@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8.11 FATAL_ERROR)
 project("iol")
 
 set (	SOURCES
-		ByteCachE.cpp
+		ByteCache.cpp
 		Dispatch.cpp
 		EnumDevices.cpp
 		File.cpp

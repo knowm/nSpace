@@ -9,6 +9,8 @@
 #define INITGUID
 #include "medial_.h"
 
+#ifdef	_WIN32
+
 Speak :: Speak ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -105,4 +107,6 @@ HRESULT Speak :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 	return hr;
 	}	// receive
+
+#endif
 

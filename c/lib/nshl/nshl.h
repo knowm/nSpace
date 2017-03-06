@@ -17,6 +17,7 @@
 //////////////
 
 // Declared here for convenience, must match IDL file.
+#ifdef	_WIN32
 
 //
 // Interface - IListenX.  Callback for received values on listened emitters.
@@ -62,6 +63,8 @@ DECLARE_INTERFACE_(IShellX,IUnknown)
 	STDMETHOD(open)		( BSTR szCmdLine, BOOL bShare, 
 									INamespaceX **ppSpc )			PURE;
 	};
+
+#endif
 
 //
 // GUID

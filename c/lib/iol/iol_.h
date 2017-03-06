@@ -26,12 +26,14 @@
 #endif
 
 // XML processing flags
+#ifdef 	_WIN32
 //#define	__NOSAX__
 #if	!defined(__NOSAX__)
 #define	__USESAX__
 #include <msxml2.h>
 #else
 #undef	__USESAX__
+#endif
 #endif
 
 #define	WM_USER_DESTROY	(WM_USER+1)
@@ -82,6 +84,8 @@ class ByteCache :
 	virtual void		destruct		( void );		// Destruct object
 	};
 
+#ifdef 	_WIN32
+
 //
 // Class - DispIntf.  Contains the information necessary to interact
 //		with an interface IDispatch object.  Can also serve as an event sink.
@@ -108,6 +112,7 @@ class DispIntf :
 	CCL_OBJECT_END()
 	virtual void destruct		( void );			// Destruct object
 	};
+#endif
 
 //
 // Class - Lock.  Lock synchronization object.
@@ -445,6 +450,7 @@ class StmPrsXML :
 	HRESULT	writeAll	( IByteStream *, const void *, U32 );
 	};
 
+#ifdef	_WIN32
 //
 // Class - StmOnByteStm.  Lays an 'IStream' interface on top
 //		of our 'IByteStream'.  Useful for APIs that require 'IStream'.
@@ -492,6 +498,7 @@ class StmOnByteStm :
 	IByteStream		*pStm;								// Current stream
 
 	};
+#endif
 
 /////////
 // Nodes

@@ -9,6 +9,8 @@
 #include "nshl_.h"
 #include <stdio.h>
 
+#ifdef	_WIN32
+
 ShellFactX :: ShellFactX ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -477,3 +479,6 @@ HRESULT ShellFactX :: reg ( BOOL bReg )
 
 	return hr;
 	}	// reg
+
+#endif
+

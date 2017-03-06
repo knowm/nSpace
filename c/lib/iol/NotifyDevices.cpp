@@ -7,6 +7,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "iol_.h"
+#ifdef 	_WIN32
 #include <Dbt.h>
 #include <usbiodef.h>
 #include <stdio.h>
@@ -386,3 +387,6 @@ LRESULT CALLBACK NotifyDevices ::
 	// Default beahviour
 	return DefWindowProc ( hWnd, uMsg, wParam, lParam );
 	}	// windowProc
+
+#endif
+

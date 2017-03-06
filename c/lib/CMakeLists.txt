@@ -9,12 +9,15 @@ add_subdirectory(medial)
 add_subdirectory(miscl)
 add_subdirectory(netl)
 add_subdirectory(nshl)
-add_subdirectory(nshxl)
 add_subdirectory(nspcl)
-add_subdirectory(plotl)
 add_subdirectory(sysl)
+
+if(MSVC)
+add_subdirectory(nshxl)
+add_subdirectory(plotl)
 add_subdirectory(usbl)
 add_subdirectory(wmil)
+endif()
 
 # External SDKs
 if( OpenCV_FOUND )

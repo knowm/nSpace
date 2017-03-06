@@ -13,7 +13,9 @@
 #include "medial.h"
 
 // SAPI
+#ifdef		_WiIN32
 #include	<sapi.h>
+#endif
 
 ///////////
 // Objects
@@ -23,6 +25,7 @@
 // Nodes
 /////////
 
+#ifdef		_WiIN32
 //
 // Class - Speak.  Client node for generating plot Speaks.
 //								(Currently uses Speak).
@@ -54,5 +57,6 @@ class Speak :
 		DEFINE_RCP(Value)
 	END_BEHAVIOUR_NOTIFY()
 	};
+#endif
 
 #endif

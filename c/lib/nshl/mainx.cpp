@@ -8,6 +8,8 @@
 
 #include "nshl_.h"
 
+#ifdef 	_WIN32
+
 // Globals
 HANDLE		hevTermX	= NULL;
 
@@ -90,3 +92,6 @@ HRESULT WINAPI xMain ( IDictionary *pDctCmd )
 
 	return hr;
 	}	// xMain
+
+#endif
+

@@ -8,6 +8,8 @@
 
 #include "nshl_.h"
 
+#ifdef	_WIN32
+
 ReceptorX :: ReceptorX ( NamespaceX *_pSpc, const WCHAR *_pRoot, 
 								ILocation *_pLoc )
 	{
@@ -78,4 +80,6 @@ HRESULT ReceptorX :: receive ( IReceptor *pRcp, const WCHAR *pl,
 //	dbgprintf ( L"} ReceptorX::receive:Path %s:%s\r\n", (LPCWSTR)strRoot, pl );
 	return (pSpc != NULL) ? S_OK : ERROR_INVALID_STATE;
 	}	// receive
+
+#endif
 

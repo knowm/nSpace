@@ -9,6 +9,8 @@
 #include "iol_.h"
 #include <stdio.h>
 
+#ifdef 	_WIN32
+
 Dispatch :: Dispatch ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -478,3 +480,6 @@ void DispIntf :: unassign ( void )
 	_RELEASE(pDisp);
 	_RELEASE(pDctFuncs);
 	}	// unassign
+
+#endif
+

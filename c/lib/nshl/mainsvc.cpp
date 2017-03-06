@@ -8,6 +8,8 @@
 
 #include "nshl_.h"
 
+#ifdef	_WIN32
+
 // Prototypes
 DWORD	WINAPI	svcHandler	( DWORD, DWORD, LPVOID, LPVOID );
 HRESULT			svcReg		( IDictionary * );
@@ -301,3 +303,6 @@ HRESULT svcReg ( IDictionary *pDctCmd )
 
 	return hr;
 	}	// svcReg
+
+#endif
+

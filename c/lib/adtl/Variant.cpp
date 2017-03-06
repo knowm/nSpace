@@ -11,6 +11,8 @@
 // For persistence...
 #include "../iol/iol.h"
 
+#ifdef 	_WIN32
+
 adtVariant :: adtVariant ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -346,6 +348,8 @@ adtVariant& adtVariant::operator= ( const ADTVALUE &v )
 
 	return *this;
 	}	// operator=
+
+#endif
 
 /*
 			// Assume array of values of the same type to support safe arrays

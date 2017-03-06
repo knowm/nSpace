@@ -8,6 +8,8 @@
 
 #include "nshl_.h"
 
+#ifdef	_WIN32
+
 // Globals
 extern HANDLE	hevTermX;
 
@@ -175,4 +177,6 @@ HRESULT ShellX :: open ( BSTR szCmdLine, BOOL bShare, INamespaceX **ppSpc )
 
 	return hr;
 	}	// open
+
+#endif
 

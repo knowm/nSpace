@@ -9,6 +9,8 @@
 #include "iol_.h"
 #include <stdio.h>
 
+#ifdef	_WIN32
+
 StmOnByteStm :: StmOnByteStm ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -267,4 +269,6 @@ HRESULT StmOnByteStm :: UnlockRegion ( ULARGE_INTEGER, ULARGE_INTEGER, DWORD )
 	{
 	return E_NOTIMPL;
 	}	// UnlockRegion
+
+#endif
 

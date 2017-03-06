@@ -9,6 +9,8 @@
 #include "iol_.h"
 #include <stdio.h>
 
+#ifdef	_WIN32
+
 EnumDevices :: EnumDevices ( void ) : dl ( L"SETUPAPI.DLL" )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -325,4 +327,6 @@ HRESULT EnumDevices :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 	return hr;
 	}	// receive
+
+#endif
 
