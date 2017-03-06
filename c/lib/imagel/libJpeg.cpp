@@ -128,7 +128,8 @@ HRESULT libJpeg :: compress ( IDictionary *pDct )
 					dctImage.iFmt == IMGFMT_S8X2 ||
 					dctImage.iFmt == IMGFMT_U16X2 ||
 					dctImage.iFmt == IMGFMT_S16X2 ||
-					dctImage.iFmt == IMGFMT_R8G8B8,
+					dctImage.iFmt == IMGFMT_R8G8B8 ||
+					dctImage.iFmt == IMGFMT_B8G8R8,
 					E_NOTIMPL );
 
 	// Create destination memory
@@ -428,8 +429,10 @@ HRESULT libJpeg :: decompress ( IDictionary *pDct )
 			hr = pDct->store ( adtString(L"Format"), adtString(L"U8x2") );
 		else if (bpp == 16 && ch == 1)
 			hr = pDct->store ( adtString(L"Format"), adtString(L"U16x2") );
+
+		// NOTE: Assumed LibJPEG is configured to use BGR format (jmorecfg.h)
 		else if (bpp == 24 && ch == 3)
-			hr = pDct->store ( adtString(L"Format"), adtString(L"R8G8B8") );
+			hr = pDct->store ( adtString(L"Format"), adtString(L"B8G8R8") );
 		else
 			hr = E_UNEXPECTED;
 		}	// if

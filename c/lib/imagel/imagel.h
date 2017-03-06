@@ -24,6 +24,7 @@
 #define	IMGFMT_S16X2	3
 #define	IMGFMT_F32X2	4
 #define	IMGFMT_R8G8B8	5
+#define	IMGFMT_B8G8R8	6
 
 //
 // Class - ImageDct.  Convience class for dealing with images stored
@@ -108,6 +109,12 @@ class ImageDct
 			else if (!WCASECMP(strFmt,L"R8G8B8"))
 				{
 				iFmt	= IMGFMT_R8G8B8;
+				iBpp	= 24;
+				iCh	= 3;
+				}	// if
+			else if (!WCASECMP(strFmt,L"B8G8R8"))
+				{
+				iFmt	= IMGFMT_B8G8R8;
 				iBpp	= 24;
 				iCh	= 3;
 				}	// if

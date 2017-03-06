@@ -279,7 +279,7 @@ HRESULT image_from_mat ( Mat *pM, IDictionary *pImg )
 				switch ( (pM->type() & CV_MAT_DEPTH_MASK) )
 					{
 					case CV_8U :
-						CCLTRY ( pImg->store ( strRefFormat, adtString(L"R8G8B8") ) );
+						CCLTRY ( pImg->store ( strRefFormat, adtString(L"B8G8R8") ) );
 						break;
 					default :
 						hr = E_NOTIMPL;

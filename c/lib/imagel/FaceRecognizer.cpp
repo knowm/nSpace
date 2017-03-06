@@ -84,6 +84,8 @@ HRESULT FaceRecognizer :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		{
 		IDictionary	*pImgUse = NULL;
 		cvMatRef		*pMat		= NULL;
+		int			lbl		= 0;
+		double		conf		= 0;
 
 		// Trained ?
 		CCLTRYE ( recog != NULL, ERROR_INVALID_STATE );
@@ -107,9 +109,6 @@ HRESULT FaceRecognizer :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				#endif
 				else if (pMat->isMat())
 					{
-					int		lbl;
-					double	conf;
-
 					// Perform prediction
 					recog->predict ( *(pMat->mat), lbl, conf );
 					lprintf ( LOG_INFO, L"Label %d Distance %g\r\n", lbl, conf );
@@ -124,9 +123,13 @@ HRESULT FaceRecognizer :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 			}	// if
 
-		// Result
+		// Results
 		if (hr == S_OK)
+			{
+			_EMT(Distance,adtDouble(conf));
+			_EMT(At,adtInt(lbl));
 			_EMT(Fire,adtIUnknown(pImgUse));
+			}	// if
 		else
 			_EMT(Error,adtInt(hr));
 
@@ -198,8 +201,7 @@ HRESULT FaceRecognizer :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					pIt->next();
 					}	// while
 
- 
-				// Train
+ 				// Train
 				if (pMat->isUMat())
 					{
 					}	// if

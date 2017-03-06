@@ -116,7 +116,7 @@ HRESULT libPng :: decompress ( IDictionary *pDct )
 
 	// Read image from stream
 	CCLOK		( hr_int = S_OK; )
-	CCLOK		( png_read_png ( png_ptr, info_ptr, 0, NULL ); )
+	CCLOK		( png_read_png ( png_ptr, info_ptr, PNG_TRANSFORM_BGR, NULL ); )
 	CCLTRYE	( hr_int == S_OK, hr_int );
 
 	// Obtain row pointers for image
@@ -161,9 +161,9 @@ HRESULT libPng :: decompress ( IDictionary *pDct )
 		else if (bpp == 16 && ch == 1)
 			hr = pDct->store ( adtString(L"Format"), adtString(L"U16x2") );
 		else if (bpp == 24 && ch == 3)
-			hr = pDct->store ( adtString(L"Format"), adtString(L"R8G8B8") );
+			hr = pDct->store ( adtString(L"Format"), adtString(L"B8G8R8") );
 		else if (bpp == 32 && ch == 3)
-			hr = pDct->store ( adtString(L"Format"), adtString(L"A8R8G8B8") );
+			hr = pDct->store ( adtString(L"Format"), adtString(L"B8G8R8A8") );
 		else
 			hr = E_UNEXPECTED;
 		}	// if

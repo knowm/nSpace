@@ -20,8 +20,6 @@ adtString strRefWidth	( L"Width" );
 adtString strRefHeight	( L"Height" );
 adtString strRefFormat	( L"Format" );
 adtString strRefBits		( L"Bits" );
-adtString strRefRGBA		( L"R8G8B8A8" );
-adtString strRefRGB		( L"R8G8B8" );
 adtString strRefOnImg	( L"OnImage" );
 adtString strRefLblPt	( L"LabelPt" );
 adtString strRefTitle	( L"Title" );

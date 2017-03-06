@@ -264,6 +264,8 @@ HRESULT Convert :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				{
 				if (!WCASECMP(strTo,L"R8G8B8"))
 					spc = CV_GRAY2RGB;
+				else if (!WCASECMP(strTo,L"B8G8R8"))
+					spc = CV_GRAY2BGR;
 				}	//if
 
 			// From color
@@ -271,6 +273,11 @@ HRESULT Convert :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				{
 				if (bToG)
 					spc = CV_RGB2GRAY;
+				}	// if
+			else if (!WCASECMP(strFmt,L"B8G8R8") )
+				{
+				if (bToG)
+					spc = CV_BGR2GRAY;
 				}	// if
 
 			// Valid conversion ?

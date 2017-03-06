@@ -508,6 +508,8 @@ class FaceRecognizer :
 	CCL_OBJECT_END()
 
 	// Connections
+	DECLARE_EMT(At)
+	DECLARE_EMT(Distance)
 	DECLARE_EMT(Error)
 	DECLARE_CON(Train)
 	DECLARE_CON(Fire)
@@ -515,6 +517,8 @@ class FaceRecognizer :
 	DECLARE_RCP(Images)
 	DECLARE_RCP(Type)
 	BEGIN_BEHAVIOUR()
+		DEFINE_EMT(At)
+		DEFINE_EMT(Distance)
 		DEFINE_EMT(Error)
 		DEFINE_CON(Train)
 		DEFINE_CON(Fire)
