@@ -210,6 +210,10 @@ class CascadeClassifier :
 	adtString					strLoc;					// Filename of classifier
 	bool							bLoad;					// Classifier loaded ?
 	cv::CascadeClassifier	cc;						// Classifier object
+	IDictionary					*pRct;					// Results dictionary
+	std::vector<cv::Rect_<int>>
+									rcts;						// Latest rectangles
+	U32							idx;						// Current enumeration index
 
 	// CCL
 	CCL_OBJECT_BEGIN(CascadeClassifier)
@@ -217,16 +221,18 @@ class CascadeClassifier :
 	CCL_OBJECT_END()
 
 	// Connections
+	DECLARE_EMT(End)
 	DECLARE_EMT(Error)
-	DECLARE_CON(Load)
+	DECLARE_RCP(First)
+	DECLARE_CON(Next)
 	DECLARE_RCP(Location)
-	DECLARE_CON(Fire)
 	DECLARE_RCP(Image)
 	BEGIN_BEHAVIOUR()
+		DEFINE_EMT(End)
 		DEFINE_EMT(Error)
-		DEFINE_CON(Load)
+		DEFINE_RCP(First)
+		DEFINE_CON(Next)
 		DEFINE_RCP(Location)
-		DEFINE_CON(Fire)
 		DEFINE_RCP(Image)
 	END_BEHAVIOUR_NOTIFY()
 	};

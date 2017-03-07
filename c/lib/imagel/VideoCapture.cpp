@@ -58,7 +58,7 @@ HRESULT VideoCapture :: onAttach ( bool bAttach )
 			bOpen = false;
 			vc.release();
 			}	// if
-//		_RELEASE(pImg);
+		_RELEASE(pImg);
 		}	// else
 
 	return hr;
