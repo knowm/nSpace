@@ -41,8 +41,9 @@ HRESULT ShellFactX :: CreateInstance ( IUnknown *punkOuter, REFIID iid,
 	////////////////////////////////////////////////////////////////////////
 	HRESULT	hr = S_OK;
 
-	dbgprintf ( L"ShellFactX::CreateInstance:0x%x\r\n", iid.Data1 );
-	
+	// Debug
+	lprintf ( LOG_INFO, L"ShellFactX::CreateInstance:Request interface Data1:0x%x\r\n", iid.Data1 );
+
 	// Setup
 	(*ppv) = NULL;
 

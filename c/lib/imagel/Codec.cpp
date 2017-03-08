@@ -148,6 +148,19 @@ HRESULT Codec :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			hr = jpeg.decompress(pDctUse);
 		else if (hr == S_OK && !WCASECMP(strFmt,L"PNG"))
 			hr = png.decompress(pDctUse);
+		// Support "pass through" formats that do not require any modification to image
+		// This allows graph to just call 'decode' for anything to ensure image is ready.
+		else if (hr == S_OK && 
+					(	!WCASECMP(strFmt,L"R8G8B8") ||
+						!WCASECMP(strFmt,L"B8G8R8") ||
+						!WCASECMP(strFmt,L"U8x2") ||
+						!WCASECMP(strFmt,L"S8x2") ||
+						!WCASECMP(strFmt,L"U16x2") ||
+						!WCASECMP(strFmt,L"S16x2") ))
+			{
+			// Nothing to do
+			hr = S_OK;
+			}	// else if
 		else
 			{
 			hr = E_NOTIMPL;

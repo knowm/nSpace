@@ -96,47 +96,49 @@ HRESULT CascadeClassifier :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 			// Obtain image refence
 			CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
-
-			// OpenCV uses exceptions
-			try
+			if (hr == S_OK)
 				{
-				// Does the classifier need to be loaded ?
-				if (!bLoad)
+				// OpenCV uses exceptions
+				try
 					{
-					char *paLoc = NULL;
+					// Does the classifier need to be loaded ?
+					if (!bLoad)
+						{
+						char *paLoc = NULL;
 
-					// Attempt load
-					CCLTRY( strLoc.toAscii(&paLoc) );
-					CCLOK	( cc.load ( paLoc ); )
+						// Attempt load
+						CCLTRY( strLoc.toAscii(&paLoc) );
+						CCLOK	( cc.load ( paLoc ); )
 
-					// Clean up
-					_FREEMEM(paLoc);
-					}	// if
+						// Clean up
+						_FREEMEM(paLoc);
+						}	// if
 
-				// Perform detection
-				if (pMat->isUMat())
+					// Perform detection
+					if (pMat->isUMat())
+						{
+						}	// if
+					#ifdef	WITH_CUDA
+					else if (pMat->isGPU())
+						{
+						}	// else if
+					#endif
+					else if (pMat->isMat())
+						{
+						// Generate matching rectangles
+						cc.detectMultiScale ( *(pMat->mat), rcts );
+						lprintf ( LOG_INFO, L"Count : %d", rcts.size() );
+
+						// Reset enumeration index
+						idx = 0;
+						}	// else if
+					}	// try
+				catch ( cv::Exception &ex )
 					{
-					}	// if
-				#ifdef	WITH_CUDA
-				else if (pMat->isGPU())
-					{
-					}	// else if
-				#endif
-				else if (pMat->isMat())
-					{
-					// Generate matching rectangles
-					cc.detectMultiScale ( *(pMat->mat), rcts );
-					lprintf ( LOG_INFO, L"Count : %d", rcts.size() );
-
-					// Reset enumeration index
-					idx = 0;
-					}	// else if
-				}	// try
-			catch ( cv::Exception &ex )
-				{
-				lprintf ( LOG_WARN, L"%S\r\n", ex.err.c_str() );
-				hr = E_UNEXPECTED;
-				}	// catch
+					lprintf ( LOG_WARN, L"%S\r\n", ex.err.c_str() );
+					hr = E_UNEXPECTED;
+					}	// catch
+				}	// if
 
 			// Clean up
 			_RELEASE(pMat);
