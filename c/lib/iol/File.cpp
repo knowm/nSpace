@@ -26,6 +26,7 @@ File :: File ( void )
 	hevRd		= NULL;
 	hevStop	= NULL;
 	#endif
+	pThrd		= NULL;
 	pStmIo	= NULL;
 	iSzIo		= 0;
 	bAsync	= false;

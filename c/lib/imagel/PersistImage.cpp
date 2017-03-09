@@ -83,9 +83,6 @@ HRESULT PersistImage :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		CCLTRYE ( (pDctImg != NULL), ERROR_INVALID_STATE );
 		CCLTRYE ( strLoc.length() > 0, ERROR_INVALID_STATE );
 
-		// Necessary ?
-//		CCLOK ( strLoc.replace ( '/', '\\' ); )
-
 		// Load image from source
 		CCLTRY ( image_load ( strLoc, pDctImg ) );
 

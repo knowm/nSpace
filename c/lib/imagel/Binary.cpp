@@ -119,18 +119,12 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 			// All images must be of the same type
 			if (hr == S_OK)
-				{
-				if (
-					(pMatL->mat != NULL && (pMatR == NULL || pMatR->mat != NULL) && pMatO->mat != NULL) ||
-					(pMatL->umat != NULL && (pMatR == NULL || pMatR->umat != NULL) && pMatO->umat != NULL) ||
-					#ifdef	WITH_CUDA
-					(pMatL->gpumat != NULL && (pMatR == NULL || pMatR->gpumat != NULL) && pMatO->gpumat != NULL),
-					#else
-					false
-					#endif 
-					)
-					hr = ERROR_INVALID_STATE;
-				}	// if
+				hr = ((pMatL->mat != NULL && (pMatR == NULL || pMatR->mat != NULL) && pMatO->mat != NULL) ||
+						(pMatL->umat != NULL && (pMatR == NULL || pMatR->umat != NULL) && pMatO->umat != NULL)
+						#ifdef	WITH_CUDA
+						|| (pMatL->gpumat != NULL && (pMatR == NULL || pMatR->gpumat != NULL) && pMatO->gpumat != NULL),
+						#endif 
+						) ? S_OK : ERROR_INVALID_STATE;
 
 			try
 				{

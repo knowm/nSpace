@@ -51,6 +51,11 @@ HRESULT image_load ( const WCHAR *pwLoc, IDictionary *pImg )
 	char			*paLoc	= NULL;
 	adtString	strLoc(pwLoc);
 
+	// Using OpenCV, needs full, valid Windows path
+	#ifdef	_WIN32
+	CCLOK ( strLoc.replace ( '/', '\\' ); )
+	#endif
+
 	// OpenCV needs ASCII
 	CCLTRY ( strLoc.toAscii ( &paLoc ) );
 
@@ -108,6 +113,11 @@ HRESULT image_save ( IDictionary *pImg, const WCHAR *pwLoc )
 	adtString	strLoc(pwLoc);
 	int			ret		= 0;
 	bool			b			= false;
+
+	// Using OpenCV, needs full, valid Windows path
+	#ifdef	_WIN32
+	CCLOK ( strLoc.replace ( '/', '\\' ); )
+	#endif
 
 	// Convert image to OpenCV
 	CCLTRY ( image_to_mat ( pImg, &pmImg ) );

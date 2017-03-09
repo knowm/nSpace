@@ -10,7 +10,7 @@
 
 	% Context
 	$	Stream				Misc.Dist {}		% Outgoing stream
-	$	Data					Misc.Dist {}		% Data block to save
+	$	Image					Misc.Dist {}		% Image block to save
 
 	% Actions
 	$	Initialize			Misc.Dist {}		% Initalize graph
@@ -21,14 +21,14 @@
 	% DEBUG
 	$	Debug Misc.Debug {}
 
-	%%%%%%%%%%%%%
-	% Data block
-	%%%%%%%%%%%%%
+	%%%%%%%%
+	% Image
+	%%%%%%%%
 
 	% ADTN: Load the data block information
-	$	LoadDataKeys Adt.Keys { Keys ( Width Height ) }
-		!	Data/OnFire								LoadDataKeys/Dictionary
-		!	Save/OnFire								LoadDataKeys/Load
+	$	LoadImageKeys Adt.Keys { Keys ( Width Height ) }
+		!	Image/OnFire							LoadImageKeys/Dictionary
+		!	Save/OnFire								LoadImageKeys/Load
 
 	%%%%%%%
 	% Save
@@ -42,7 +42,7 @@
 
 	% MISCN: More columns ?
 	$	ColMore Misc.Compare { Left 0:int }
-		!	LoadDataKeys/OnWidth					ColMore/Left
+		!	LoadImageKeys/OnWidth				ColMore/Left
 
 	% MATHN: Row (column in CSV) counter
 	$	RowCnt Math.Counter { Reset 0:int }
@@ -51,11 +51,11 @@
 
 	% MISCN: More rows ?
 	$	RowMore Misc.Compare { Left 0:int }
-		!	LoadDataKeys/OnHeight				RowMore/Left
+		!	LoadImageKeys/OnHeight				RowMore/Left
 
 	% MATHN: Data block access
 	$	LoadValue Math.DataBlock {}
-		!	Data/OnFire								LoadValue/Block
+		!	Image/OnFire							LoadValue/Block
 		!	ColCnt/OnFire							LoadValue/X
 		!	RowCnt/OnFire							LoadValue/Y
 		!	RowMore/OnGreater						LoadValue/Load
@@ -95,8 +95,4 @@
 	% Latent connections
 	!	ColCnt/OnFire								ColMore/Fire
 	!	RowCnt/OnFire								RowMore/Fire
-
-
-
-
 

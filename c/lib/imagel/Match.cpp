@@ -103,15 +103,12 @@ HRESULT Match :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 		// All images must be of the same type
 		if (hr == S_OK)
-			{
-			if (	(pMatT->mat != NULL && pMatR->mat != NULL) ||
-					(pMatT->umat != NULL && pMatR->umat != NULL)
-					#ifdef	WITH_CUDA
-					|| (pMatT->gpumat != NULL && pMatR->gpumat != NULL)
-					#endif
-				)
-				hr = ERROR_INVALID_STATE;
-			}	// if
+			hr = (	(pMatT->mat != NULL && pMatR->mat != NULL) ||
+						(pMatT->umat != NULL && pMatR->umat != NULL)
+						#ifdef	WITH_CUDA
+						|| (pMatT->gpumat != NULL && pMatR->gpumat != NULL)
+						#endif
+					) ? S_OK : ERROR_INVALID_STATE;
 
 		// Create a matrix to receive the results
 		CCLTRY ( Create::create ( pImgO, pMatR->rows() - pMatT->rows() + 1,

@@ -161,9 +161,9 @@ HRESULT libPng :: decompress ( IDictionary *pDct )
 		else if (bpp == 16 && ch == 1)
 			hr = pDct->store ( adtString(L"Format"), adtString(L"U16x2") );
 		else if (bpp == 24 && ch == 3)
-			hr = pDct->store ( adtString(L"Format"), adtString(L"B8G8R8") );
+			hr = pDct->store ( adtString(L"Format"), adtString(L"R8G8B8") );
 		else if (bpp == 32 && ch == 3)
-			hr = pDct->store ( adtString(L"Format"), adtString(L"B8G8R8A8") );
+			hr = pDct->store ( adtString(L"Format"), adtString(L"R8G8B8A8") );
 		else
 			hr = E_UNEXPECTED;
 		}	// if

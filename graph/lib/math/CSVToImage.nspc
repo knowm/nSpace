@@ -2,7 +2,7 @@
 %
 %							CSVToImage.NSPC
 %
-%	Load a data block from a stream in CSV format into a 
+%	Load an image block from a stream in CSV format into a 
 %	matrix image
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -21,7 +21,7 @@
 
 	% DEBUG
 	$	Debug Misc.Debug {}
-%		!	OnData/OnFire							Debug/Fire
+%		!	OnLoad/OnFire							Debug/Fire
 
 	%%%%%%%%
 	% Setup
