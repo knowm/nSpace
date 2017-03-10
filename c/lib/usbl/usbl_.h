@@ -95,6 +95,7 @@ class Endpoint :
 	adtBool		bAsync;									// Asynchronous reads ?
 	IThread		*pThrd;									// Asynchronous read thread
 	HANDLE		hevStop;									// Stop event for read thread
+	OVERLAPPED	ovIo;										// I/O transfer
 
 	// For control transfers
 	adtInt		iCtlType;								// Request type
@@ -130,7 +131,8 @@ class Endpoint :
 	private :
 
 	// Internal utilities
-	HRESULT	pktIo  ( BOOL, DWORD, DWORD, DWORD * );
+	HRESULT	pktIo			( BOOL, DWORD );
+	HRESULT	pktIoWait	( DWORD, DWORD * );
 	void		update ( IDictionary * );					// Update internal state
 
 	};

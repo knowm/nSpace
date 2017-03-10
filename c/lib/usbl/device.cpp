@@ -252,7 +252,7 @@ HRESULT Device :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		// Process end points
 		CCLTRY ( COCREATE ( L"Adt.Dictionary", IID_IDictionary, &pEndpts ) );
 		CCLTRY ( pInfo->store ( adtString(L"Endpoints"), adtIUnknown(pEndpts) ) );
-		CCLOK ( dbgprintf ( L"Interface endpoints : %d\r\n", uid.bNumEndpoints ); )
+		CCLOK ( lprintf ( LOG_INFO, L"Interface endpoints : %d\r\n", uid.bNumEndpoints ); )
 		for (e = 0;hr == S_OK && e < uid.bNumEndpoints;++e)
 			{
 			IDictionary					*pEndpt	= NULL;
@@ -284,7 +284,7 @@ HRESULT Device :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			CCLTRY ( pEndpt->store ( adtString(L"Interval"), adtInt(pi.Interval) ) );
 
 			// Debug
-			dbgprintf ( L"Pipe %d,%s,%s,%d\r\n", pi.PipeId, (LPCWSTR)strType, (bIn) ? L"Input" : L"Output", pi.MaximumPacketSize );
+			lprintf ( LOG_INFO, L"Pipe %d,%s,%s,%d\r\n", pi.PipeId, (LPCWSTR)strType, (bIn) ? L"Input" : L"Output", pi.MaximumPacketSize );
 
 			// Clean up
 			_RELEASE(pEndpt);

@@ -106,7 +106,7 @@ HRESULT Endpoint :: onAttach ( bool bAttach )
 	return hr;
 	}	// onAttach
 
-HRESULT Endpoint :: pktIo  ( BOOL bWr, DWORD uIo, DWORD uTo, DWORD *puIo )
+HRESULT Endpoint :: pktIo  ( BOOL bWr, DWORD uIo )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -116,24 +116,19 @@ HRESULT Endpoint :: pktIo  ( BOOL bWr, DWORD uIo, DWORD uTo, DWORD *puIo )
 	//	PARAMETERS
 	//		-	bWr is TRUE to write, FALSE to read.
 	//		-	uIo is the size of the requested transfer
-	//		-	uTo is the timeout in milliseconds
-	//		-	puIo will receive the actual amount transferred.
 	//
 	//	RETURN VALUE
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	HRESULT		hr = S_OK;
-	HANDLE		hevs[2]	= { (bWr) ? hevWr : hevRd, hevStop };
-	OVERLAPPED	ov;
-	DWORD			dwRet,uXfer;
+	HRESULT	hr = S_OK;
 
 	// Debug
 //	dbgprintf ( L"Endpoint::pktIo:bWr %d:uIo %d {\r\n", bWr, uIo );
 
 	// I/O is always overlapped since that it the way USB devices are opened.
-	memset ( &ov, 0, sizeof(ov) );
-	ov.hEvent = hevs[0];
+	memset ( &ovIo, 0, sizeof(ovIo) );
+	ovIo.hEvent = (bWr) ? hevWr : hevRd;
 	if (hr == S_OK && bWr)
 		{
 		// If pipe Id is zero, assume control transfer
@@ -150,7 +145,7 @@ HRESULT Endpoint :: pktIo  ( BOOL bWr, DWORD uIo, DWORD uTo, DWORD *puIo )
 
 			// Begin transfer
 			CCLTRYE ( WinUsb_ControlTransfer ( hIntf, pkt, 
-							pcBfrPkt, uIo, NULL, &ov ) == TRUE, GetLastError() );
+							pcBfrPkt, uIo, NULL, &ovIo ) == TRUE, GetLastError() );
 			}	// if
 
 		// Endpoint
@@ -158,7 +153,7 @@ HRESULT Endpoint :: pktIo  ( BOOL bWr, DWORD uIo, DWORD uTo, DWORD *puIo )
 			{
 			// Begin a write
 			CCLTRYE ( WinUsb_WritePipe (	hIntf, iPipe, pcBfrPkt, uIo,
-													NULL, &ov ) == TRUE, GetLastError() );
+													NULL, &ovIo ) == TRUE, GetLastError() );
 			}	// else
 
 		// Debug
@@ -182,7 +177,7 @@ HRESULT Endpoint :: pktIo  ( BOOL bWr, DWORD uIo, DWORD uTo, DWORD *puIo )
 
 			// Begin transfer
 			CCLTRYE ( WinUsb_ControlTransfer ( hIntf, pkt, 
-							pcBfrPkt, uIo, NULL, &ov ) == TRUE, GetLastError() );
+							pcBfrPkt, uIo, NULL, &ovIo ) == TRUE, GetLastError() );
 			}	// if
 
 		// Endpoint
@@ -190,49 +185,62 @@ HRESULT Endpoint :: pktIo  ( BOOL bWr, DWORD uIo, DWORD uTo, DWORD *puIo )
 			{
 			// Begin a read
 			CCLTRYE ( WinUsb_ReadPipe (	hIntf, iPipe, pcBfrPkt, uIo,
-													NULL, &ov ) == TRUE, GetLastError() );
+													NULL, &ovIo ) == TRUE, GetLastError() );
 			}	// else
 
 		}	// else if
 
-	// I/O is still pending, must wait
-	if (hr == ERROR_IO_PENDING)
+	return hr;
+	}	// pktIo
+
+HRESULT Endpoint :: pktIoWait  ( DWORD uTo, DWORD *puIo )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Wait for a previously initiated I/O to complete.
+	//
+	//	PARAMETERS
+	//		-	uTo is the timeout in milliseconds
+	//		-	puIo will receive the actual amount transferred.
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT	hr = S_OK;
+	HANDLE	hevIo[2];
+	DWORD		dwRet;
+
+	// Event handles for waiting
+	hevIo[0] = ovIo.hEvent;
+	hevIo[1] = hevStop;
+
+	// Wait for completion or signal to stop
+	dwRet = WaitForMultipleObjects ( 2, hevIo, FALSE, uTo );
+
+	// Success ?
+	if (dwRet != WAIT_OBJECT_0)
 		{
-		// Wait for completion or signal to stop
-		hr		= S_OK;
-		dwRet = WaitForMultipleObjects ( 2, hevs, FALSE, uTo );
+		// Stop event detected
+		if (dwRet == WAIT_OBJECT_0+1)
+			hr = S_FALSE;
 
-		// Success ?
-		if (dwRet != WAIT_OBJECT_0)
-			{
-			// Stop event detected
-			if (dwRet == WAIT_OBJECT_0+1)
-				hr = S_FALSE;
+		// Timeout
+		else if (dwRet == WAIT_TIMEOUT)
+			hr = ERROR_TIMEOUT;
 
-			// Timeout
-			else if (dwRet == WAIT_TIMEOUT)
-				hr = ERROR_TIMEOUT;
-
-			// ??
-			else
-				hr = GetLastError();
-			}	// if
-
+		// ??
+		else
+			hr = GetLastError();
 		}	// if
 
 	// Amount transfered
-	CCLTRYE ( WinUsb_GetOverlappedResult ( hIntf, &ov, &uXfer, TRUE ) == TRUE,
+	CCLTRYE ( WinUsb_GetOverlappedResult ( hIntf, &ovIo, puIo, TRUE ) == TRUE,
 					GetLastError() );
 
-	// Result
-	if (hr == S_OK && puIo != NULL)
-		*puIo = uXfer;
-
-	// Debug
-//	dbgprintf ( L"} Endpoint::pktIo:bWr %d:uXfer %d:hr 0x%x\r\n", bWr, uXfer, hr );
-
 	return hr;
-	}	// pktIo
+	}	// pktIoWait
 
 HRESULT Endpoint :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
@@ -283,8 +291,16 @@ HRESULT Endpoint :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			CCLTRY ( pStmIo->read ( pcBfrPkt, uXfer, &uXferd ) );
 
 			// Write out endpoint
-			CCLTRY ( pktIo ( TRUE, (DWORD)uXferd, 5000, &uXfer ) );
+			if (hr == S_OK)
+				{
+				// Initiate transfer
+				hr = pktIo ( TRUE, (DWORD)uXferd );
 
+				// I/O pending is ok
+				if (hr == S_OK || hr == ERROR_IO_PENDING)
+					hr = pktIoWait ( 5000, &uXfer );
+				}	// if
+					
 			// Next block
 			CCLOK ( uLeft -= uXfer; )
 			}	// while
@@ -320,7 +336,15 @@ HRESULT Endpoint :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			uXfer = (uLeft < iSzPkt) ? uLeft : iSzPkt;
 
 			// Read from endpoint.
-			CCLTRY ( pktIo ( FALSE, uXfer, 5000, &uXfer ) );
+			if (hr == S_OK)
+				{
+				// Initiate transfer
+				hr = pktIo ( FALSE, uXfer );
+
+				// I/O pending is ok
+				if (hr == S_OK || hr == ERROR_IO_PENDING)
+					hr = pktIoWait ( 5000, &uXfer );
+				}	// if
 
 			// Write to destination stream
 			CCLTRY ( pStmIo->write ( pcBfrPkt, uXfer, NULL ) );
@@ -461,23 +485,28 @@ HRESULT Endpoint :: tick ( void )
 	uLeft = iSzIo;
 	while (hr == S_OK && uLeft > 0)
 		{
-		// Read from end point. 
-		CCLTRY (pktIo ( FALSE, iSzPkt, INFINITE, &uXfer ));
+		// Wait for previous I/O to complete
+		CCLTRY ( pktIoWait ( INFINITE, &uXfer ) );
 
 		// Valid stream ?
 		if (hr == S_OK && pStmIo != NULL)
+			hr = pStmIo->write ( pcBfrPkt, uXfer, NULL );
+
+		// Initiate the next read before emit results to ensure next packet
+		// is not missed.
+		if (hr == S_OK)
 			{
-			// Write to destination stream
-			CCLTRY ( pStmIo->write ( pcBfrPkt, uXfer, NULL ) );
-
-			// Next block
-			CCLOK ( uLeft -= uXfer; )
-
-			// A short packet means end of transfer
-			if (hr == S_OK && uXfer < iSzPkt)
-				break;
+			hr = pktIo ( FALSE, iSzPkt );
+			if (hr == ERROR_IO_PENDING)
+				hr = S_OK;
 			}	// if
 
+		// Next block
+		CCLOK ( uLeft -= uXfer; )
+
+		// A short packet means end of transfer
+		if (hr == S_OK && uXfer < iSzPkt)
+			break;
 		}	// while
 
 	// Send out read stream
@@ -506,7 +535,14 @@ HRESULT Endpoint :: tickBegin ( void )
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	return S_OK;
+	HRESULT hr = S_OK;
+
+	// Initiate first read from end point
+	hr = pktIo ( FALSE, iSzPkt );
+	if (hr == ERROR_IO_PENDING)
+		hr = S_OK;
+
+	return hr;
 	}	// tickBegin
 
 HRESULT Endpoint :: tickEnd ( void )
