@@ -380,7 +380,7 @@
 %		!	LoadImage/OnLoad						CloneImage/Value
 
 	% Subgraph: Perform OCT conversion
-%	#	ToMag											Abbott/Lib/Oct/RawToMag/ {}
+%	#	ToMag											JJ/Lib/Oct/RawToMag/ {}
 %		!	CloneImage/OnFire						ToMag/Image/Fire
 %		!	CloneImage/OnFire						ToMag/Convert/Fire
 %		!	ValueMin/OnFire						ToMag/Minimum/Fire
@@ -721,7 +721,7 @@
 	%% SP devices
 
 	% SPDN: Enumerate devices
-%	$	Enum Abbott.Spd.Enum {}
+%	$	Enum JJ.Spd.Enum {}
 %		!	Initialize/OnFire						Enum/First
 %		!	Enum/OnNext								Debug/Fire
 %		!	Enum/OnEnd								Debug/Fire
@@ -731,7 +731,7 @@
 %		!	Enum/OnNext								CreateEnumDct/Fire
 
 	% ADTN: Store the definition needed for the instance
-%	$	StoreEnumDef Adt.Store { Key Definition Value "Abbott/Driver/Oct/Spd/Inst/" }
+%	$	StoreEnumDef Adt.Store { Key Definition Value "JJ/Driver/Oct/Spd/Inst/" }
 %		!	CreateEnumDct/OnFire					StoreEnumDef/Dictionary
 %		!	CreateEnumDct/OnFire					StoreEnumDef/Fire
 
