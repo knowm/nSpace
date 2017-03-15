@@ -44,7 +44,7 @@ HRESULT FFT :: fft ( cv::Mat *pMat, cv::Mat *pWnd, bool bRows )
 	////////////////////////////////////////////////////////////////////////
 	HRESULT	hr	= S_OK;
 	cv::Mat	matPad,matDft,matPlanes[2],matCmplx,matMag;
-	int		m,n,cx,cy;
+	int		m,n,cx,cy,or,oc;
 
 	// Open CV uses exceptions
 	try
@@ -54,10 +54,14 @@ HRESULT FFT :: fft ( cv::Mat *pMat, cv::Mat *pWnd, bool bRows )
 				pWnd->cols == pMat->cols && pWnd->rows == pMat->rows)
 			cv::multiply ( *pMat, *pWnd, *pMat );
 
+		// Original number of rows and columns
+		or = pMat->rows;
+		oc = pMat->cols;
+
 		// Create a windowed version of the image
-		m = cv::getOptimalDFTSize ( pMat->rows );
-		n = cv::getOptimalDFTSize ( pMat->cols );
-		cv::copyMakeBorder ( (*pMat), matPad, 0, m - pMat->rows, 0, n - pMat->cols, 
+		m = cv::getOptimalDFTSize ( or );
+		n = cv::getOptimalDFTSize ( oc );
+		cv::copyMakeBorder ( (*pMat), matPad, 0, m - or, 0, n - oc, 
 									cv::BORDER_CONSTANT, cv::Scalar::all(0) );
 
 		// Produce a real and (zeroed) imaginary pair
@@ -100,8 +104,13 @@ HRESULT FFT :: fft ( cv::Mat *pMat, cv::Mat *pWnd, bool bRows )
 		cx = matMag.cols/2;
 		cy = matMag.rows/2;
 
-		// Just keep the positive frequencies (option ?)
-		matMag	= matMag ( cv::Rect ( 0, 0, cx, matMag.rows ) );
+		// Do not include any extra rows/cols that might have been introduced
+		// in the padding.  Just keep the positive frequencies (option ?)
+		if (bRows)
+			matMag	= matMag ( cv::Rect ( 0, 0, cx, (or < matMag.rows) ? or : matMag.rows ) );
+		else
+			matMag	= matMag ( cv::Rect ( 0, 0,	(oc < cx) ? oc : cx, 
+																(or < matMag.rows) ? or : matMag.rows ) );
 
 		// Result is new matrix
 		matMag.copyTo ( *pMat );
@@ -134,7 +143,7 @@ HRESULT FFT :: fft ( cv::UMat *pMat, cv::UMat *pWnd, bool bRows )
 	//
 	////////////////////////////////////////////////////////////////////////
 	HRESULT	hr	= S_OK;
-	int		m,n,cx,cy;
+	int		m,n,cx,cy,or,oc;
 
 	// Open CV uses exceptions
 	try
@@ -143,6 +152,10 @@ HRESULT FFT :: fft ( cv::UMat *pMat, cv::UMat *pWnd, bool bRows )
 		if (	pWnd != NULL && pWnd->type() == pMat->type() &&
 				pWnd->cols == pMat->cols && pWnd->rows == pMat->rows)
 			cv::multiply ( *pMat, *pWnd, *pMat );
+
+		// Original number of rows and columns
+		or = pMat->rows;
+		oc = pMat->cols;
 
 		// Create a windowed version of the image
 		m = cv::getOptimalDFTSize ( pMat->rows );
@@ -192,8 +205,16 @@ HRESULT FFT :: fft ( cv::UMat *pMat, cv::UMat *pWnd, bool bRows )
 		cx = umatMag.cols/2;
 		cy = umatMag.rows/2;
 
+		// Do not include any extra rows/cols that might have been introduced
+		// in the padding.  Just keep the positive frequencies (option ?)
+		if (bRows)
+			umatMag	= umatMag ( cv::Rect ( 0, 0, cx, (or < umatMag.rows) ? or : umatMag.rows ) );
+		else
+			umatMag	= umatMag ( cv::Rect ( 0, 0,	(oc < cx) ? oc : cx, 
+																(or < umatMag.rows) ? or : umatMag.rows ) );
+
 		// Just keep the positive frequencies (option ?)
-		umatMag	= umatMag ( cv::Rect ( 0, 0, cx, umatMag.rows ) );
+//		umatMag	= umatMag ( cv::Rect ( 0, 0, cx, umatMag.rows ) );
 
 		// Result is new matrix
 		umatMag.copyTo ( *pMat );
@@ -229,7 +250,7 @@ HRESULT FFT :: fft ( cv::cuda::GpuMat *pMat, cv::cuda::GpuMat *pWnd,
 	//
 	////////////////////////////////////////////////////////////////////////
 	HRESULT				hr	= S_OK;
-	int					m,n,cx,cy;
+	int					m,n,cx,cy,or,oc;
 
 	// Open CV uses exceptions
 	try
@@ -249,6 +270,10 @@ HRESULT FFT :: fft ( cv::cuda::GpuMat *pMat, cv::cuda::GpuMat *pWnd,
 //		QueryPerformanceCounter ( &lCnt );
 //		dt = ((lCnt.QuadPart-lRst.QuadPart) * 1.0) / lFreq.QuadPart;
 //		lprintf ( LOG_DBG, L"fft (GPU) : %g", dt );
+
+		// Original number of rows and columns
+		or = pMat->rows;
+		oc = pMat->cols;
 
 		// Create a windowed version of the image
 		m = cv::getOptimalDFTSize ( pMat->rows );
@@ -310,8 +335,16 @@ HRESULT FFT :: fft ( cv::cuda::GpuMat *pMat, cv::cuda::GpuMat *pWnd,
 		cx = gpuMag.cols/2;
 		cy = gpuMag.rows/2;
 
+		// Do not include any extra rows/cols that might have been introduced
+		// in the padding.  Just keep the positive frequencies (option ?)
+		if (bRows)
+			gpuMag	= gpuMag ( cv::Rect ( 0, 0, cx, (or < gpuMag.rows) ? or : gpuMag.rows ) );
+		else
+			gputMag	= gpuMag ( cv::Rect ( 0, 0,	(oc < cx) ? oc : cx, 
+																(or < gpuMag.rows) ? or : gpuMag.rows ) );
+
 		// Just keep the positive frequencies (option ?)
-		gpuMag	= gpuMag ( cv::Rect ( 0, 0, cx, gpuMag.rows ) );
+//		gpuMag	= gpuMag ( cv::Rect ( 0, 0, cx, gpuMag.rows ) );
 
 		// Result is new matrix
 		gpuMag.copyTo ( *pMat );

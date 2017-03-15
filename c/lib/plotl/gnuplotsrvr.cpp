@@ -127,6 +127,9 @@ HRESULT GnuPlotSrvr :: plot ( IDictionary *pReq )
 	adtInt			iRows,iCols;
 	adtBool			bX2(false);
 
+	// State check
+	CCLTRYE ( pTick != NULL, ERROR_INVALID_STATE );
+
 	// Thread safety in case of multiple plot clients
 	csPlot.enter();
 
