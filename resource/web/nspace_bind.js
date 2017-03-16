@@ -157,6 +157,12 @@ new function ()
 
 					}	// if
 
+				// Default value is the selected index
+				else if (loc == "element/default")
+					{
+					// nSpace indecies are 1-based
+					elem.selectedIndex = parseInt(value)-1;
+					}	// else if
 				}	// else if
 
 			// Text/edit box
@@ -190,7 +196,7 @@ new function ()
 						var blb	= null;
 
 						// Handle required formats
-						if (value["Format"] == "JPEG")
+						if (value["Format"] == "JPEG" || value["Format"] == "JPG")
 							{
 							// Create a blob for the image bits
 							blb = new Blob([bits], { type : 'image/jpeg' } );
@@ -202,11 +208,14 @@ new function ()
 							}	// if
 
 						// NOTE: Special case of raw pixel data.  Does not URL/blob logic below.
-						else if (value["Format"] == "R8G8B8")
+						else if (value["Format"] == "R8G8B8" || value["Format"] == "B8G8R8")
 							{
 							// Size of image
 							var width	= value["Width"];
 							var height	= value["Height"];
+
+							// Byte order
+							var bBGR		= (value["Format"] == "B8G8R8");
 
 							// Must handle re-sizing to shape.  Create memory canvas and draw
 							// entire image to it, then draw resized into target canvas
@@ -224,9 +233,21 @@ new function ()
 							for (var y = 0,srcidx = 0,dstidx = 0;y < height;++y)
 								for (var x = 0;x < width;++x)
 									{
-									data[dstidx++]	= bits[srcidx++];
-									data[dstidx++]	= bits[srcidx++];
-									data[dstidx++]	= bits[srcidx++];
+									if (bBGR)
+										{
+										data[dstidx+0]	= bits[srcidx+2];
+										data[dstidx+1]	= bits[srcidx+1];
+										data[dstidx+2]	= bits[srcidx+0];
+										dstidx += 3;
+										srcidx += 3;
+										}	// if
+									else
+										{
+										data[dstidx++]	= bits[srcidx++];
+										data[dstidx++]	= bits[srcidx++];
+										data[dstidx++]	= bits[srcidx++];
+										}	// else
+
 									data[dstidx++] = 0xff;
 									}	// for
 
@@ -284,10 +305,19 @@ new function ()
 
 				}	// else if
 
-			else
+			// Default handler for what is assumed to be generic text
+			// (paragraph, div, headers, etc)
+			else 
 				{
-				console.log ( "Unhandled type for message : " + tag + ":" + type );
-				}	// else
+				// Value
+				if (loc == "element/default")
+					elem.textContent = value;
+				}	// else if
+
+//			else
+//				{
+//				console.log ( "Unhandled type for message : " + tag + ":" + type );
+//				}	// else
 
 			},
 
@@ -399,8 +429,8 @@ new function ()
 		// Select
 		if (type == "select-one")
 			{
-			// Selected index
-			dct["Value"]	= event.srcElement.selectedIndex;
+			// Selected index, indexes in nSpace are 1-based
+			dct["Value"]	= event.srcElement.selectedIndex+1;
 			}	// if
 
 		// Text/edit
