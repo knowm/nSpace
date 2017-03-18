@@ -19,7 +19,11 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/objdetect.hpp>
+
+// OpenCV - Contrib
+#ifdef	HAVE_OPENCV_CONTRIB
 #include <opencv2/face.hpp>
+#endif
 
 // OpenCL
 #include <opencv2/core/ocl.hpp>
@@ -490,6 +494,7 @@ class Draw :
 	END_BEHAVIOUR_NOTIFY()
 	};
 
+#ifdef	HAVE_OPENCV_CONTRIB
 //
 // Class - FaceRecognizer.  Face recognition node.
 //
@@ -533,6 +538,8 @@ class FaceRecognizer :
 		DEFINE_RCP(Type)
 	END_BEHAVIOUR_NOTIFY()
 	};
+
+#endif
 
 //
 // Class - Features.  Feature extraction node.

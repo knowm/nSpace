@@ -48,6 +48,13 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
 
+# OpenCV contrib build detection
+# Get the first OpenCV include directory and look for a 'contrib' header
+list (GET OpenCV_INCLUDE_DIRS 0 OpenCV_INCLUDE_DIR_FIRST)
+if(EXISTS ${OpenCV_INCLUDE_DIR_FIRST}/opencv2/face/facerec.hpp)
+	add_definitions(-DHAVE_OPENCV_CONTRIB)
+endif()
+
 # Installation
 install (FILES imagel.h DESTINATION include/lib/imagel)
 
