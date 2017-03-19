@@ -102,23 +102,23 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				cv::Point	ptMin,ptMax;
 				double		dMin,dMax;
 
-					// Values and locations of min and max
-					if (pMat->isUMat())
-						cv::minMaxLoc ( *(pMat->umat), &dMin, &dMax, &ptMin, &ptMax );
-					#ifdef	WITH_CUDA
-					else if (pMat->isGPU())
-						cv::cuda::minMaxLoc ( *(pMat->gpumat), &dMin, &dMax, &ptMin, &ptMax );
-					#endif
-					else
-						cv::minMaxLoc ( *(pMat->mat), &dMin, &dMax, &ptMin, &ptMax );
+				// Values and locations of min and max
+				if (pMat->isUMat())
+					cv::minMaxLoc ( *(pMat->umat), &dMin, &dMax, &ptMin, &ptMax );
+				#ifdef	WITH_CUDA
+				else if (pMat->isGPU())
+					cv::cuda::minMaxLoc ( *(pMat->gpumat), &dMin, &dMax, &ptMin, &ptMax );
+				#endif
+				else
+					cv::minMaxLoc ( *(pMat->mat), &dMin, &dMax, &ptMin, &ptMax );
 
-					// Result
-					CCLTRY ( pImgUse->store ( adtString(L"Min"), adtDouble(dMin) ) );
-					CCLTRY ( pImgUse->store ( adtString(L"MinX"), adtInt(ptMin.x) ) );
-					CCLTRY ( pImgUse->store ( adtString(L"MinY"), adtInt(ptMin.y) ) );
-					CCLTRY ( pImgUse->store ( adtString(L"Max"), adtDouble(dMax) ) );
-					CCLTRY ( pImgUse->store ( adtString(L"MaxX"), adtInt(ptMax.x) ) );
-					CCLTRY ( pImgUse->store ( adtString(L"MaxY"), adtInt(ptMax.y) ) );
+				// Result
+				CCLTRY ( pImgUse->store ( adtString(L"Min"), adtDouble(dMin) ) );
+				CCLTRY ( pImgUse->store ( adtString(L"MinX"), adtInt(ptMin.x) ) );
+				CCLTRY ( pImgUse->store ( adtString(L"MinY"), adtInt(ptMin.y) ) );
+				CCLTRY ( pImgUse->store ( adtString(L"Max"), adtDouble(dMax) ) );
+				CCLTRY ( pImgUse->store ( adtString(L"MaxX"), adtInt(ptMax.x) ) );
+				CCLTRY ( pImgUse->store ( adtString(L"MaxY"), adtInt(ptMax.y) ) );
 				}	// if
 
 			// Mean, standard deviation
@@ -266,7 +266,7 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					sum = cv::sum(*(pMat->umat));
 				#ifdef	WITH_CUDA
 				else if (pMat->isGPU())
-					cv::cuda::sum(*(pMat->gpumat));
+					sum = cv::cuda::sum(*(pMat->gpumat));
 				#endif
 				else
 					sum = cv::sum(*(pMat->mat));

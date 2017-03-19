@@ -116,22 +116,18 @@ HRESULT CascadeClassifier :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 					// Perform detection
 					if (pMat->isUMat())
-						{
-						}	// if
+						cc.detectMultiScale ( *(pMat->umat), rcts );
 					#ifdef	WITH_CUDA
 					else if (pMat->isGPU())
 						{
 						}	// else if
 					#endif
 					else if (pMat->isMat())
-						{
-						// Generate matching rectangles
 						cc.detectMultiScale ( *(pMat->mat), rcts );
-						lprintf ( LOG_INFO, L"Count : %d", rcts.size() );
 
-						// Reset enumeration index
-						idx = 0;
-						}	// else if
+					// Reset enumeration index
+					lprintf ( LOG_INFO, L"Count : %d", rcts.size() );
+					idx = 0;
 					}	// try
 				catch ( cv::Exception &ex )
 					{
