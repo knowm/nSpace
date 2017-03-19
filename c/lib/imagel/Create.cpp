@@ -63,7 +63,7 @@ HRESULT Create :: create ( IDictionary *pDct, U32 w, U32 h, U32 f,
 						E_OUTOFMEMORY );
 		CCLOK ( pMat->umat->setTo ( cv::Scalar(0) ); )
 		}	// else if
-	#ifdef	WITH_CUDA
+	#ifdef	HAVE_OPENCV_CUDA
 	else if (!bCpu && bCuda)
 		{
 		CCLTRYE ( (pMat->gpumat = new cv::cuda::GpuMat ( h, w, f )) != NULL,
@@ -201,7 +201,7 @@ HRESULT Create :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				// Copy to blank image
 				if (pMat->isUMat())
 					matK.copyTo ( *(pMat->umat) );
-				#ifdef	WITH_CUDA
+				#ifdef	HAVE_OPENCV_CUDA
 				else if (pMat->isGPU())
 					pMat->gpumat->upload ( matK );
 				#endif

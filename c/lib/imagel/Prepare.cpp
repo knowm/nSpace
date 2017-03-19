@@ -103,7 +103,7 @@ HRESULT Prepare :: gpuInit ( void )
 
 	// Any CUDA-enabled devices ?
 	bCuda = false;
-	#ifdef	WITH_CUDA
+	#ifdef	HAVE_OPENCV_CUDA
 	int	ret;
 	if ((ret = cv::cuda::getCudaEnabledDeviceCount()) > 0)
 		{
@@ -242,7 +242,7 @@ HRESULT Prepare :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			mat->copyTo ( *(pMat->umat) );
 
 		// GPU
-		#ifdef	WITH_CUDA
+		#ifdef	HAVE_OPENCV_CUDA
 		else if (hr == S_OK && pMat->isGPU())
 			pMat->gpumat->upload ( *mat );
 		#endif
@@ -291,7 +291,7 @@ HRESULT Prepare :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			// Download into local matri if GPU is enabled
 			if (pMat->isUMat())
 				mat = pMat->umat->getMat(cv::ACCESS_READ);
-			#ifdef	WITH_CUDA
+			#ifdef	HAVE_OPENCV_CUDA
 			else if (pMat->isGPU())
 				pMat->gpumat->download(mat);
 			#endif

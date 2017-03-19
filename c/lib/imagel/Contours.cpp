@@ -102,7 +102,7 @@ HRESULT Contours :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				if (pMat->isUMat())
 					cv::findContours (	*(pMat->umat), contours, CV_RETR_EXTERNAL, 
 												CV_CHAIN_APPROX_SIMPLE );
-				#ifdef	WITH_CUDA
+				#ifdef	HAVE_OPENCV_CUDA
 				else if (pMat->isGPU())
 					{
 					cv::Mat		matNoGpu;

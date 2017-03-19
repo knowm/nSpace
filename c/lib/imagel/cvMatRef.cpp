@@ -17,7 +17,7 @@ cvMatRef :: cvMatRef ( void )
 	//
 	////////////////////////////////////////////////////////////////////////
 	mat		= NULL;
-	#ifdef	WITH_CUDA
+	#ifdef	HAVE_OPENCV_CUDA
 	gpumat	= NULL;
 	#endif
 	umat		= NULL;
@@ -39,7 +39,7 @@ cvMatRef :: ~cvMatRef ( void )
 		delete mat;
 		mat = NULL;
 		}	 // if
-	#ifdef	WITH_CUDA
+	#ifdef	HAVE_OPENCV_CUDA
 	if (gpumat != NULL)
 		{
 		delete gpumat;

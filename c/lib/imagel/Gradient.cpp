@@ -24,7 +24,7 @@ Gradient :: Gradient ( void )
 	iDx			= 1;
 	iDy			= 1;
 	iSzk			= 3;
-	#ifdef	WITH_CUDA
+	#ifdef	HAVE_OPENCV_CUDA
 	pgpuSobel	= NULL;
 	pgpuScharr	= NULL;
 	pgpuLaplace	= NULL;
@@ -69,7 +69,7 @@ HRESULT Gradient :: onAttach ( bool bAttach )
 		{
 		// Shutdown
 		_RELEASE(pImg);
-		#ifdef	WITH_CUDA
+		#ifdef	HAVE_OPENCV_CUDA
 		_DELETE(pgpuSobel);
 		_DELETE(pgpuScharr);
 		_DELETE(pgpuLaplace);
@@ -124,7 +124,7 @@ HRESULT Gradient :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					else
 						hr = E_NOTIMPL;
 					}	// else if
-				#ifdef	WITH_CUDA
+				#ifdef	HAVE_OPENCV_CUDA
 				else if (pMat->isGPU())
 					{
 					// Perform requested type

@@ -105,7 +105,7 @@ HRESULT Match :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		if (hr == S_OK)
 			hr = (	(pMatT->mat != NULL && pMatR->mat != NULL) ||
 						(pMatT->umat != NULL && pMatR->umat != NULL)
-						#ifdef	WITH_CUDA
+						#ifdef	HAVE_OPENCV_CUDA
 						|| (pMatT->gpumat != NULL && pMatR->gpumat != NULL)
 						#endif
 					) ? S_OK : ERROR_INVALID_STATE;
@@ -134,7 +134,7 @@ try
 				matR = pMatR->umat->getMat(cv::ACCESS_READ);
 				matT = pMatT->umat->getMat(cv::ACCESS_READ);
 				}	// else if
-			#ifdef	WITH_CUDA
+			#ifdef	HAVE_OPENCV_CUDA
 			else if (pMatR->isGPU())
 				{
 				pMatR->gpumat->download(matR);
@@ -153,7 +153,7 @@ try
 			// Copy result to destination
 			if (pMatR->isUMat())
 				matC.copyTo ( *(pMatO->umat) );
-			#ifdef	WITH_CUDA
+			#ifdef	HAVE_OPENCV_CUDA
 			else if (pMatO->isGPU())
 				pMatO->gpumat->upload(matC);
 			#endif

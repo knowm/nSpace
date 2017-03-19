@@ -102,7 +102,7 @@ HRESULT Smooth :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					else if (!WCASECMP(L"Median",strType))
 						cv::medianBlur ( *(pMat->umat), *(pMat->umat), iSz );
 					}	// if
-				#ifdef	WITH_CUDA
+				#ifdef	HAVE_OPENCV_CUDA
 				else if (pMat->isGPU())
 					{
 					cv::Mat		matNoGpu;

@@ -44,7 +44,7 @@ HRESULT Convert :: convertTo (	cvMatRef *pMatSrc, cvMatRef *pMatDst,
 	// Special cases
 	if (pMatSrc->isUMat() && pMatDst->isUMat())
 		hr = convertTo ( pMatSrc->umat, pMatDst->umat, fmt );
-	#ifdef	WITH_CUDA
+	#ifdef	HAVE_OPENCV_CUDA
 	else if (pMatSrc->isGPU() && pMatDst->isGPU())
 		hr = convertTo ( pMatSrc->gpumat, pMatDst->gpumat, fmt );
 	#endif
@@ -55,7 +55,7 @@ HRESULT Convert :: convertTo (	cvMatRef *pMatSrc, cvMatRef *pMatDst,
 		// Copy to CPU
 		if (pMatSrc->isUMat())
 			pMatSrc->umat->copyTo ( matCnv );
-		#ifdef	WITH_CUDA
+		#ifdef	HAVE_OPENCV_CUDA
 		else if (pMatSrc->isGPU())
 			pMatSrc->gpumat->download ( matCnv );
 		#endif
@@ -68,7 +68,7 @@ HRESULT Convert :: convertTo (	cvMatRef *pMatSrc, cvMatRef *pMatDst,
 		// Copy back
 		if (pMatDst->isUMat())
 			matCnv.copyTo ( *(pMatDst->umat) );
-		#ifdef	WITH_CUDA
+		#ifdef	HAVE_OPENCV_CUDA
 		else if (pMatDst->isGPU())
 			pMatDst->gpumat->upload ( matCnv );
 		#endif
@@ -104,7 +104,7 @@ HRESULT Convert :: convertTo (	cv::UMat *pMatSrc,
 	return hr;
 	}	// convertTo
 
-#ifdef	WITH_CUDA
+#ifdef	HAVE_OPENCV_CUDA
 HRESULT Convert :: convertTo (	cv::cuda::GpuMat *pMatSrc, 
 											cv::cuda::GpuMat *pMatDst, U32 fmt )
 	{
@@ -286,7 +286,7 @@ HRESULT Convert :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				{
 				if (pMat->isUMat())
 					cv::cvtColor( *(pMat->umat), *(pMat->umat), spc );
-				#ifdef	WITH_CUDA
+				#ifdef	HAVE_OPENCV_CUDA
 				else if (pMat->isGPU())
 					cv::cuda::cvtColor ( *(pMat->gpumat), *(pMat->gpumat), spc );
 				#endif

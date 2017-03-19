@@ -53,7 +53,7 @@ HRESULT Morph :: onAttach ( bool bAttach )
 	else
 		{
 		// Clean up
-		#ifdef	WITH_CUDA
+		#ifdef	HAVE_OPENCV_CUDA
 		if (pfOpen != NULL)
 			{
 			delete pfOpen;
@@ -133,7 +133,7 @@ HRESULT Morph :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				{
 				cv::morphologyEx ( *(pMat->umat), *(pMat->umat), op, matKer );
 				}	// else if
-			#ifdef	WITH_CUDA
+			#ifdef	HAVE_OPENCV_CUDA
 			else if (pMat->isGPU())
 				{
 				// Need filters ?

@@ -117,7 +117,7 @@ HRESULT CascadeClassifier :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					// Perform detection
 					if (pMat->isUMat())
 						cc.detectMultiScale ( *(pMat->umat), rcts );
-					#ifdef	WITH_CUDA
+					#ifdef	HAVE_OPENCV_CUDA
 					else if (pMat->isGPU())
 						{
 						}	// else if

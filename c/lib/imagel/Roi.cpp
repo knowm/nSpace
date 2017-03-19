@@ -146,7 +146,7 @@ HRESULT Roi :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 			// WARNING: Generation of GPU based ROIs slow ??
 			CCLTRYE( (pMatDst = new cvMatRef()) != NULL, E_OUTOFMEMORY );
-			#ifdef	WITH_CUDA
+			#ifdef	HAVE_OPENCV_CUDA
 			else if (hr == S_OK && pMatSrc->isGPU())
 				{
 				// Create ROI

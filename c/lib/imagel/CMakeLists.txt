@@ -55,6 +55,12 @@ if(EXISTS ${OpenCV_INCLUDE_DIR_FIRST}/opencv2/face/facerec.hpp)
 	add_definitions(-DHAVE_OPENCV_CONTRIB)
 endif()
 
+# CUDA
+list (GET OpenCV_INCLUDE_DIRS 0 OpenCV_INCLUDE_DIR_FIRST)
+if(EXISTS ${OpenCV_INCLUDE_DIR_FIRST}/opencv2/cudafeatures2d.hpp)
+	add_definitions(-DHAVE_OPENCV_CUDA)
+endif()
+
 # Installation
 install (FILES imagel.h DESTINATION include/lib/imagel)
 

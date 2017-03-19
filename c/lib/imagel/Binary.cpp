@@ -121,8 +121,8 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			if (hr == S_OK)
 				hr = ((pMatL->mat != NULL && (pMatR == NULL || pMatR->mat != NULL) && pMatO->mat != NULL) ||
 						(pMatL->umat != NULL && (pMatR == NULL || pMatR->umat != NULL) && pMatO->umat != NULL)
-						#ifdef	WITH_CUDA
-						|| (pMatL->gpumat != NULL && (pMatR == NULL || pMatR->gpumat != NULL) && pMatO->gpumat != NULL),
+						#ifdef	HAVE_OPENCV_CUDA
+						|| (pMatL->gpumat != NULL && (pMatR == NULL || pMatR->gpumat != NULL) && pMatO->gpumat != NULL)
 						#endif 
 						) ? S_OK : ERROR_INVALID_STATE;
 
@@ -138,7 +138,7 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 								{
 								if (pMatL->isUMat())
 									cv::add ( *(pMatL->umat), *(pMatR->umat), *(pMatO->umat) );
-								#ifdef	WITH_CUDA
+								#ifdef	HAVE_OPENCV_CUDA
 								else if (pMatL->isGPU())
 									cv::cuda::add ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat) );
 								#endif
@@ -149,7 +149,7 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 								{
 								if (pMatL->isUMat())
 									cv::add ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat) );
-								#ifdef	WITH_CUDA
+								#ifdef	HAVE_OPENCV_CUDA
 								else if (pMatL->isGPU())
 									cv::cuda::add ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
 								#endif
@@ -162,7 +162,7 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 								{
 								if (pMatL->isUMat())
 									cv::subtract ( *(pMatL->umat), *(pMatR->umat), *(pMatO->umat) );
-								#ifdef	WITH_CUDA
+								#ifdef	HAVE_OPENCV_CUDA
 								else if (pMatL->isGPU())
 									cv::cuda::subtract ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat) );
 								#endif
@@ -173,7 +173,7 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 								{
 								if (pMatL->isUMat())
 									cv::subtract ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat) );
-								#ifdef	WITH_CUDA
+								#ifdef	HAVE_OPENCV_CUDA
 								else if (pMatL->isGPU())
 									cv::cuda::subtract ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
 								#endif
@@ -186,7 +186,7 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 								{
 								if (pMatL->isUMat())
 									cv::multiply ( *(pMatL->umat), *(pMatR->umat), *(pMatO->umat) );
-								#ifdef	WITH_CUDA
+								#ifdef	HAVE_OPENCV_CUDA
 								else if (pMatL->isGPU())
 									cv::cuda::multiply ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat) );
 								#endif
@@ -197,7 +197,7 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 								{
 								if (pMatL->isUMat())
 									cv::multiply ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat) );
-								#ifdef	WITH_CUDA
+								#ifdef	HAVE_OPENCV_CUDA
 								else if (pMatL->isGPU())
 									cv::cuda::multiply ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
 								#endif
@@ -210,7 +210,7 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 								{
 								if (pMatL->isUMat())
 									cv::divide ( *(pMatL->umat), *(pMatR->umat), *(pMatO->umat) );
-								#ifdef	WITH_CUDA
+								#ifdef	HAVE_OPENCV_CUDA
 								else if (pMatL->isGPU())
 									cv::cuda::divide ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat) );
 								#endif
@@ -221,7 +221,7 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 								{
 								if (pMatL->isUMat())
 									cv::divide ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat) );
-								#ifdef	WITH_CUDA
+								#ifdef	HAVE_OPENCV_CUDA
 								else if (pMatL->isGPU())
 									cv::cuda::divide ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
 								#endif
@@ -236,7 +236,7 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 								{
 								if (pMatL->isUMat())
 									cv::bitwise_and ( *(pMatL->umat), *(pMatR->umat), *(pMatO->umat) );
-								#ifdef	WITH_CUDA
+								#ifdef	HAVE_OPENCV_CUDA
 								else if (pMatL->isGPU())
 									cv::cuda::bitwise_and ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat) );
 								#endif
@@ -247,7 +247,7 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 								{
 								if (pMatL->isUMat())
 									cv::bitwise_and ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat) );
-								#ifdef	WITH_CUDA
+								#ifdef	HAVE_OPENCV_CUDA
 								else if (pMatL->isGPU())
 									cv::cuda::bitwise_and ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
 								#endif
@@ -260,7 +260,7 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 								{
 								if (pMatL->isUMat())
 									cv::bitwise_xor ( *(pMatL->umat), *(pMatR->umat), *(pMatO->umat) );
-								#ifdef	WITH_CUDA
+								#ifdef	HAVE_OPENCV_CUDA
 								else if (pMatL->isGPU())
 									cv::cuda::bitwise_xor ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat) );
 								#endif
@@ -271,7 +271,7 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 								{
 								if (pMatL->isUMat())
 									cv::bitwise_xor ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat) );
-								#ifdef	WITH_CUDA
+								#ifdef	HAVE_OPENCV_CUDA
 								else if (pMatL->isGPU())
 									cv::cuda::bitwise_xor ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
 								#endif
@@ -284,7 +284,7 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 								{
 								if (pMatL->isUMat())
 									cv::bitwise_or ( *(pMatL->umat), *(pMatR->umat), *(pMatO->umat) );
-								#ifdef	WITH_CUDA
+								#ifdef	HAVE_OPENCV_CUDA
 								else if (pMatL->isGPU())
 									cv::cuda::bitwise_or ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat) );
 								#endif
@@ -295,7 +295,7 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 								{
 								if (pMatL->isUMat())
 									cv::bitwise_or ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat) );
-								#ifdef	WITH_CUDA
+								#ifdef	HAVE_OPENCV_CUDA
 								else if (pMatL->isGPU())
 									cv::cuda::bitwise_or ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat) );
 								#endif
@@ -325,7 +325,7 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 								{
 								if (pMatL->isUMat())
 									cv::compare ( *(pMatL->umat), *(pMatR->umat), *(pMatO->umat), cmpop );
-								#ifdef	WITH_CUDA
+								#ifdef	HAVE_OPENCV_CUDA
 								else if (pMatL->isGPU())
 									cv::cuda::compare ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat), cmpop );
 								#endif
@@ -336,7 +336,7 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 								{
 								if (pMatL->isUMat())
 									cv::compare ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat), cmpop );
-								#ifdef	WITH_CUDA
+								#ifdef	HAVE_OPENCV_CUDA
 								else if (pMatL->isGPU())
 									cv::cuda::compare ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat), cmpop );
 								#endif

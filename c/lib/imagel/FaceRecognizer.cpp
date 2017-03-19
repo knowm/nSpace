@@ -103,7 +103,7 @@ HRESULT FaceRecognizer :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				if (pMat->isUMat())
 					{
 					}	// if
-				#ifdef	WITH_CUDA
+				#ifdef	HAVE_OPENCV_CUDA
 				else if (pMat->isGPU())
 					{
 					}	// if
@@ -206,7 +206,7 @@ HRESULT FaceRecognizer :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				if (pMat->isUMat())
 					{
 					}	// if
-				#ifdef	WITH_CUDA
+				#ifdef	HAVE_OPENCV_CUDA
 				else if (pMat->isGPU())
 					{
 					}	// else if

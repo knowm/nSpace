@@ -96,7 +96,7 @@ HRESULT Resize :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			{
 			if (pMat->isUMat())
 				cv::resize ( *(pMat->umat), *(pMat->umat), cv::Size(iW,iH) );
-			#ifdef	WITH_CUDA
+			#ifdef	HAVE_OPENCV_CUDA
 			else if (pMat->isGPU())
 				cv::cuda::resize ( *(pMat->gpumat), *(pMat->gpumat), cv::Size(iW,iH) );
 			#endif

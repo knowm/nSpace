@@ -89,7 +89,7 @@ HRESULT Distance :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			{
 			if (pMat->isUMat())
 				cv::distanceTransform ( *(pMat->umat), *(pMat->umat), CV_DIST_L2, 3 );
-			#ifdef	WITH_CUDA
+			#ifdef	HAVE_OPENCV_CUDA
 			else if (pMat->isGPU())
 				{
 				cv::Mat		matNoGpu;

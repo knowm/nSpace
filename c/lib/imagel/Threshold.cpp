@@ -111,7 +111,7 @@ HRESULT Threshold :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			//
 			// GPU
 			//
-			#ifdef	WITH_CUDA
+			#ifdef	HAVE_OPENCV_CUDA
 			else if (pMat->isGPU())
 				{
 				if (!WCASECMP(strOp,L"Zero"))

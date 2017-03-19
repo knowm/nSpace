@@ -172,7 +172,7 @@ HRESULT image_to_debug ( cvMatRef *pMat, const WCHAR *pwCtx,
 		cv::minMaxLoc ( *(pMat->umat), &dMin, &dMax, &ptMin, &ptMax );
 		type = pMat->umat->type();
 		}	// if
-	#ifdef	WITH_CUDA
+	#ifdef	HAVE_OPENCV_CUDA
 	else if (pMat->isGPU())
 		{
 		cv::cuda::minMaxLoc ( *(pMat->gpumat), &dMin, &dMax, &ptMin, &ptMax );
@@ -194,7 +194,7 @@ HRESULT image_to_debug ( cvMatRef *pMat, const WCHAR *pwCtx,
 	// Download
 	if (pMat->isUMat())
 		pMat->umat->copyTo ( matSave );
-	#ifdef	WITH_CUDA
+	#ifdef	HAVE_OPENCV_CUDA
 	else if (pMat->isGPU())
 		pMat->gpumat->download ( matSave );
 	#endif

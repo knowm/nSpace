@@ -230,7 +230,7 @@ HRESULT FFT :: fft ( cv::UMat *pMat, cv::UMat *pWnd, bool bRows )
 	return hr;
 	}	// fft
 
-#ifdef WITH_CUDA
+#ifdef HAVE_OPENCV_CUDA
 HRESULT FFT :: fft ( cv::cuda::GpuMat *pMat, cv::cuda::GpuMat *pWnd, 
 							bool bRows )
 	{
@@ -340,7 +340,7 @@ HRESULT FFT :: fft ( cv::cuda::GpuMat *pMat, cv::cuda::GpuMat *pWnd,
 		if (bRows)
 			gpuMag	= gpuMag ( cv::Rect ( 0, 0, cx, (or < gpuMag.rows) ? or : gpuMag.rows ) );
 		else
-			gputMag	= gpuMag ( cv::Rect ( 0, 0,	(oc < cx) ? oc : cx, 
+			gpuMag	= gpuMag ( cv::Rect ( 0, 0,	(oc < cx) ? oc : cx, 
 																(or < gpuMag.rows) ? or : gpuMag.rows ) );
 
 		// Just keep the positive frequencies (option ?)
@@ -436,7 +436,7 @@ HRESULT FFT :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 //		CCLOK ( image_to_debug ( pMat, L"FFT", L"c:/temp/fft.png" ); )
 		if (hr == S_OK && pMat->isUMat())
 			hr = fft ( pMat->umat, (pWnd != NULL) ? pWnd->umat : NULL, bRows );
-		#ifdef WITH_CUDA
+		#ifdef HAVE_OPENCV_CUDA
 		else if (hr == S_OK && pMat->isGPU())
 			hr = fft ( pMat->gpumat, (pWnd != NULL) ? pWnd->gpumat : NULL, bRows );
 		#endif
@@ -510,7 +510,7 @@ HRESULT FFT :: window ( cvMatRef *pMat )
 		rows = pMat->umat->rows;
 		cols = pMat->umat->cols;
 		}	// if
-	#ifdef	WITH_CUDA
+	#ifdef	HAVE_OPENCV_CUDA
 	else if (pMat->isGPU())
 		{
 		rows = pMat->gpumat->rows;
@@ -529,7 +529,7 @@ HRESULT FFT :: window ( cvMatRef *pMat )
 			wrows = pWnd->umat->rows;
 			wcols = pWnd->umat->cols;
 			}	// else if
-		#ifdef	WITH_CUDA
+		#ifdef	HAVE_OPENCV_CUDA
 		else if (pWnd->isGPU())
 			{
 			wrows = pWnd->gpumat->rows;
@@ -600,7 +600,7 @@ HRESULT FFT :: window ( cvMatRef *pMat )
 		// Transfer data to window object
 		if (pWnd->isUMat())
 			matWnd.copyTo ( *(pWnd->umat) );
-		#ifdef	WITH_CUDA
+		#ifdef	HAVE_OPENCV_CUDA
 		else if (pWnd->isGPU())
 			pWnd->gpumat->upload ( matWnd );
 		#endif

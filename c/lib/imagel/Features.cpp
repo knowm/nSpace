@@ -120,7 +120,7 @@ HRESULT Features :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				}	// if
 
 			// GPU
-			#ifdef	WITH_CUDA
+			#ifdef	HAVE_OPENCV_CUDA
 			else if (pMat->isGPU())
 				{
 				if (!WCASECMP(L"HoughCircles",strType))

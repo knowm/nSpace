@@ -95,7 +95,7 @@ HRESULT Normalize :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			{
 			if (pMat->isUMat())
 				cv::normalize ( *(pMat->umat), *(pMat->umat), adtDouble(vFrom), adtDouble(vTo), cv::NORM_MINMAX );
-			#ifdef	WITH_CUDA
+			#ifdef	HAVE_OPENCV_CUDA
 			else if (pMat->isGPU())
 				cv::cuda::normalize ( *(pMat->gpumat), *(pMat->gpumat), adtDouble(vFrom), adtDouble(vTo), 
 												cv::NORM_MINMAX, -1 );

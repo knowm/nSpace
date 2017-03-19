@@ -95,7 +95,7 @@ HRESULT Flip :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			if (pMat->isUMat())
 				cv::flip ( *(pMat->umat), *(pMat->umat),	(bHorz && bVert)	? -1 : 
 																		(bVert)				? 0 : 1 );
-			#ifdef	WITH_CUDA
+			#ifdef	HAVE_OPENCV_CUDA
 			else if (pMat->isGPU())
 				{
 				cv::cuda::GpuMat	matFlip;
@@ -149,7 +149,7 @@ HRESULT Flip :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				pMat->umat->copyTo ( matTrans );
 				cv::transpose ( matTrans, *(pMat->umat) );
 				}	// else if
-			#ifdef	WITH_CUDA
+			#ifdef	HAVE_OPENCV_CUDA
 			else if (pMat->isGPU())
 				cv::cuda::transpose ( *(pMat->gpumat), *(pMat->gpumat) );
 			#endif

@@ -29,7 +29,7 @@
 #include <opencv2/core/ocl.hpp>
 
 // CUDA
-#ifdef	WITH_CUDA
+#ifdef	HAVE_OPENCV_CUDA
 #include <opencv2/cudafeatures2d.hpp>
 #include <opencv2/cudaimgproc.hpp>
 #include <opencv2/cudaarithm.hpp>
@@ -78,7 +78,7 @@ class cvMatRef :
 	// Utilities
 	bool isGPU	( void ) 
 		{ return 
-					#ifdef	WITH_CUDA
+					#ifdef	HAVE_OPENCV_CUDA
 					(gpumat != NULL);
 					#else
 					false;
@@ -89,28 +89,28 @@ class cvMatRef :
 	S32	rows ( void )
 			{ return (mat != NULL) ? mat->rows :
 						(umat != NULL) ? umat->rows :
-						#ifdef	WITH_CUDA
+						#ifdef	HAVE_OPENCV_CUDA
 						(gpumat != NULL) ? gpumat->rows : 
 						#endif
 						0; }
 	S32	cols ( void )
 			{ return (mat != NULL) ? mat->cols :
 						(umat != NULL) ? umat->cols :
-						#ifdef	WITH_CUDA
+						#ifdef	HAVE_OPENCV_CUDA
 						(gpumat != NULL) ? gpumat->cols : 
 						#endif
 						0; }
 	S32	channels ( void )
 			{ return (mat != NULL) ? mat->channels() :
 						(umat != NULL) ? umat->channels() :
-						#ifdef	WITH_CUDA
+						#ifdef	HAVE_OPENCV_CUDA
 						(gpumat != NULL) ? gpumat->channels() : 
 						#endif
 						0; }
 
 	// Run-time data
 	cv::Mat				*mat;								// CPU matrix
-	#ifdef	WITH_CUDA
+	#ifdef	HAVE_OPENCV_CUDA
 	cv::cuda::GpuMat	*gpumat;							// GPU matrix
 	#endif
 	cv::UMat				*umat;							// Universal/OpenCL matrix
@@ -336,7 +336,7 @@ class Convert :
 	static
 	HRESULT convertTo	( cv::UMat *, 
 								cv::UMat *, U32 );
-	#ifdef	WITH_CUDA
+	#ifdef	HAVE_OPENCV_CUDA
 	static
 	HRESULT convertTo	( cv::cuda::GpuMat *, 
 								cv::cuda::GpuMat *, U32 );
@@ -574,7 +574,7 @@ class Features :
 	private :
 
 	// Internal state
-	#ifdef	WITH_CUDA
+	#ifdef	HAVE_OPENCV_CUDA
 	cv::Ptr<cv::cuda::CannyEdgeDetector>	pgpuCanny;
 	#endif
 
@@ -653,14 +653,14 @@ class FFT :
 	// for FFTs.  If created on the stack every time it seems to 
 	// re-initialize things every time so every FFT is as slow as
 	// the first one.
-	#ifdef	WITH_CUDA
+	#ifdef	HAVE_OPENCV_CUDA
 	cv::cuda::GpuMat			gpuPad,gpuPlanes[2],gpuCmplx,gpuMag;
 	#endif
 	cv::UMat						umatPad,umatCmplx,umatMag;
 	std::vector<cv::UMat>	umatPlanes;
 
 	// Internal utilities
-	#ifdef	WITH_CUDA
+	#ifdef	HAVE_OPENCV_CUDA
 	HRESULT fft		(	cv::cuda::GpuMat *, 	cv::cuda::GpuMat *, bool );
 	#endif
 	HRESULT fft		(	cv::UMat *, cv::UMat *, bool );
@@ -703,7 +703,7 @@ class Gradient :
 	private :
 
 	// Run-time data
-	#ifdef	WITH_CUDA
+	#ifdef	HAVE_OPENCV_CUDA
 	cv::cuda::Filter					*pgpuSobel;
 	cv::cuda::Filter					*pgpuScharr;
 	cv::cuda::Filter					*pgpuLaplace;
@@ -724,7 +724,7 @@ class Match :
 	// Run-time data
 	IDictionary	*pImg;									// Reference image
 	IDictionary *pTmp;									// Template image
-	#ifdef	WITH_CUDA
+	#ifdef	HAVE_OPENCV_CUDA
 	cv::Ptr<cv::cuda::TemplateMatching>
 					pTm;										// Template matching object
 	#endif
@@ -761,7 +761,7 @@ class Morph :
 
 	// Run-time data
 	IDictionary			*pImg;							// Image dictionary
-	#ifdef	WITH_CUDA
+	#ifdef	HAVE_OPENCV_CUDA
 	cv::cuda::Filter	*pfOpen;							// Open filter
 	cv::cuda::Filter 	*pfClose;						// Close filter
 	cv::cuda::Filter	*pfDi;							// Dilate filter

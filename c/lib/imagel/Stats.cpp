@@ -105,7 +105,7 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				// Values and locations of min and max
 				if (pMat->isUMat())
 					cv::minMaxLoc ( *(pMat->umat), &dMin, &dMax, &ptMin, &ptMax );
-				#ifdef	WITH_CUDA
+				#ifdef	HAVE_OPENCV_CUDA
 				else if (pMat->isGPU())
 					cv::cuda::minMaxLoc ( *(pMat->gpumat), &dMin, &dMax, &ptMin, &ptMax );
 				#endif
@@ -130,7 +130,7 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				// Perform calculation
 				if (pMat->isUMat())
 					cv::meanStdDev ( *(pMat->umat), mean, stddev );
-				#ifdef	WITH_CUDA
+				#ifdef	HAVE_OPENCV_CUDA
 				else if (pMat->isGPU())
 					cv::cuda::meanStdDev ( *(pMat->gpumat), mean, stddev );
 				#endif
@@ -182,7 +182,7 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					cv::multiply(matHst,matLog,matHst);
 					ent = (float)(-1*cv::sum(matHst).val[0]);
 					}	// if
-				#ifdef	WITH_CUDA
+				#ifdef	HAVE_OPENCV_CUDA
 				else if (pMat->isGPU())
 					{
 					cv::cuda::GpuMat	gpuHst,gpuLog;
@@ -234,7 +234,7 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				// Calculate bounding rectangle, assumes array of points
 				if (pMat->isUMat())
 					rct = cv::boundingRect ( *(pMat->umat) );
-				#ifdef	WITH_CUDA
+				#ifdef	HAVE_OPENCV_CUDA
 				else if (pMat->isGPU())
 					{
 					cv::Mat		matNoGpu;
@@ -264,7 +264,7 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				// Calculate total sum of pixels
 				if (pMat->isUMat())
 					sum = cv::sum(*(pMat->umat));
-				#ifdef	WITH_CUDA
+				#ifdef	HAVE_OPENCV_CUDA
 				else if (pMat->isGPU())
 					sum = cv::cuda::sum(*(pMat->gpumat));
 				#endif
@@ -283,7 +283,7 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				// Perform calculation
 				if (pMat->isUMat())
 					nZ = cv::countNonZero ( *(pMat->umat) );
-				#ifdef	WITH_CUDA
+				#ifdef	HAVE_OPENCV_CUDA
 				else if (pMat->isGPU())
 					nZ = cv::cuda::countNonZero ( *(pMat->gpumat) );
 				#endif
@@ -350,7 +350,7 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				// Result
 				matHst.copyTo ( *(pMat->umat) );
 				}	// else if
-			#ifdef	WITH_CUDA
+			#ifdef	HAVE_OPENCV_CUDA
 			else if (pMat->isGPU())
 				{
 				// Calculate histogram.  Currently defaults to grayscale.
