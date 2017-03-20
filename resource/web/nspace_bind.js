@@ -350,8 +350,10 @@ new function ()
 				// nSpace path specified ?
 				if (elems[i].getAttribute("data-nloc") != null)
 					{
-					// Generate full bind path
-					path = root + elems[i].getAttribute("data-nloc");
+					// Generate full bind path if element path is relative
+					path = elems[i].getAttribute("data-nloc");
+					if (path[0] != '/')
+						path = root + path;
 
 					// Assign full path for quick reference
 					elems[i].attributes["data-nabs"] = path;

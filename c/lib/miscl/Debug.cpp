@@ -362,8 +362,8 @@ HRESULT Debug :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			}	// switch
 
 		// Done
-//		lprintf ( LOG_DBG, wDbgBfr );
-		dbgprintf ( L"%s\r\n", wDbgBfr );
+		lprintf ( LOG_DBG, L"%s\r\n", wDbgBfr );
+//		dbgprintf ( L"%s\r\n", wDbgBfr );
 		csDebug.leave();
 		}	// if
 /*
