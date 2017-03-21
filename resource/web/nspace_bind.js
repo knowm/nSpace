@@ -208,14 +208,17 @@ new function ()
 							}	// if
 
 						// NOTE: Special case of raw pixel data.  Does not URL/blob logic below.
-						else if (value["Format"] == "R8G8B8" || value["Format"] == "B8G8R8")
+						else if (value["Format"] == "R8G8B8" || value["Format"] == "B8G8R8" ||
+									value["Format"].toLowerCase() == "u8x2")
 							{
 							// Size of image
 							var width	= value["Width"];
 							var height	= value["Height"];
 
 							// Byte order
+							var bRGB		= (value["Format"] == "R8G8B8");
 							var bBGR		= (value["Format"] == "B8G8R8");
+							var bGray8	= (value["Format"].toLowerCase() == "u8x2");
 
 							// Must handle re-sizing to shape.  Create memory canvas and draw
 							// entire image to it, then draw resized into target canvas
@@ -241,13 +244,18 @@ new function ()
 										dstidx += 3;
 										srcidx += 3;
 										}	// if
-									else
+									else if (bRGB)
 										{
 										data[dstidx++]	= bits[srcidx++];
 										data[dstidx++]	= bits[srcidx++];
 										data[dstidx++]	= bits[srcidx++];
 										}	// else
-
+									else if (bGray8)
+										{
+										data[dstidx++]	= bits[srcidx];
+										data[dstidx++]	= bits[srcidx];
+										data[dstidx++]	= bits[srcidx++];
+										}	// else if
 									data[dstidx++] = 0xff;
 									}	// for
 
