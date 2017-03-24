@@ -11,6 +11,12 @@
 
 #ifdef 	_WIN32
 
+// Type information is generated for every type of IDispatch interface
+// for ease of calling.  This dictionary caches already generated
+// information for the same GUID type information.
+static IDictionary	*pDctTypeInfo	= NULL;
+static U32				uRefCnt			= 0;
+
 Dispatch :: Dispatch ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -19,7 +25,7 @@ Dispatch :: Dispatch ( void )
 	//		-	Constructor for the object
 	//
 	////////////////////////////////////////////////////////////////////////
-	pDct	= NULL;
+	pIntf	= NULL;
 	pDctP	= NULL;
 	}	// Dispatch
 
@@ -35,7 +41,7 @@ void Dispatch :: destruct ( void )
 	//
 	////////////////////////////////////////////////////////////////////////
 	_RELEASE(pDctP);
-	_RELEASE(pDct);
+	_RELEASE(pIntf);
 	}	// destruct
 
 HRESULT Dispatch :: onAttach ( bool bAttach )
@@ -63,6 +69,17 @@ HRESULT Dispatch :: onAttach ( bool bAttach )
 		// Defaults
 		if (pnDesc->load ( adtString(L"Name"), vL ) == S_OK)
 			adtValue::toString ( vL, strName );
+		if (pnDesc->load ( adtString(L"Params"), vL ) == S_OK)
+			{
+			adtIUnknown	unkV(vL);
+			_QISAFE(unkV,IID_IDictionary,&pDctP);
+			}	// if
+
+		// Type information dictionary
+		if (++uRefCnt == 1)
+			{
+			COCREATE ( L"Adt.Dictionary", IID_IDictionary, &pDctTypeInfo );
+			}	// if
 
 		}	// if
 
@@ -70,8 +87,13 @@ HRESULT Dispatch :: onAttach ( bool bAttach )
 	else
 		{
 		// Clean up
-		_RELEASE(pDct);
+		_RELEASE(pIntf);
 		_RELEASE(pDctP);
+		if (uRefCnt > 0 && --uRefCnt == 0)
+			{
+			_RELEASE(pDctTypeInfo);
+			}	// if
+		
 		}	// else
 
 	return S_OK;
@@ -97,91 +119,92 @@ HRESULT Dispatch :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	// Open/access object
 	if (_RCP(Open))
 		{
-		IDispatch	*pDsp		= NULL;
-		CLSID			clsid		= GUID_NULL;
-		DispIntf		*pIntf	= NULL;
-		adtString	strId;
+		IDispatch	*pDsp			= NULL;
+		CLSID			clsid			= GUID_NULL;
+		DispIntf		*pIntfNew	= NULL;
 		adtValue		vL;
 
-		// State check
-		CCLTRYE ( pDct != NULL, ERROR_INVALID_STATE );
-
-		// An object should not already be active
-		CCLTRYE ( pDct->load ( adtString(L"Object"), vL ) != S_OK,
-						ERROR_ALREADY_INITIALIZED );
-
-		// An "Id" is required
-		CCLTRY ( pDct->load ( adtString(L"Id"), vL ) );
-		CCLTRYE( (strId = vL).length() > 0, ERROR_INVALID_STATE );
+		// An object name ("Id") is required
+		CCLTRYE( strName.length() > 0, ERROR_INVALID_STATE);
 
 		// If a non-GUID is specified, convert it
-		if (hr == S_OK && strId[0] != '{')
-			hr = CLSIDFromProgID ( strId, &clsid );
+		if (hr == S_OK && strName[0] != '{')
+			hr = CLSIDFromProgID ( strName, &clsid );
 		else
-			hr = CLSIDFromString ( strId, &clsid );
+			hr = CLSIDFromString ( strName, &clsid );
 
 		// Attempt to create the object on an IDispatch interface
 		CCLTRY ( CoCreateInstance ( clsid, NULL, CLSCTX_ALL, IID_IDispatch, (void **) &pDsp ) );
 
 		// Create and assign interface to object
-		CCLTRYE ( (pIntf = new DispIntf()) != NULL, E_OUTOFMEMORY );
-		CCLTRY  ( pIntf->assign ( pDsp ) );
-
-		// Store results
-		CCLTRY ( pDct->store ( adtString(L"DispIntf"), adtIUnknown(pIntf) ) );
-
+		CCLTRYE ( (pIntfNew = new DispIntf()) != NULL, E_OUTOFMEMORY );
+		CCLTRY  ( pIntfNew->assign ( pDsp ) );
 
 		// Result
 		if (hr == S_OK)
-			_EMT(Open,adtIUnknown(pDct));
+			_EMT(Open,adtIUnknown(pIntfNew));
 		else
 			_EMT(Error,adtInt(hr));
 
 		// Clean up
-		_RELEASE(pIntf);
+		_RELEASE(pIntfNew);
 		_RELEASE(pDsp);
 		}	// if
 
 	// Invoke method
 	else if (_RCP(Fire))
 		{
-		DispIntf		*pIntf	= NULL;
+		IDispatch	*pDisp	= NULL;
 		adtValue		vL;
+		adtIUnknown	unkV;
 
 		// State check
-		CCLTRYE ( pDct != NULL && pDctP != NULL, ERROR_INVALID_STATE );
+		CCLTRYE ( pIntf != NULL, ERROR_INVALID_STATE );
 		CCLTRYE ( strName.length() > 0, ERROR_INVALID_STATE );
 
-		// Extract helper object	
-		CCLTRY ( pDct->load ( adtString(L"DispIntf"), vL ) );
-		CCLTRYE( (pIntf = (DispIntf *)(IUnknown *)adtIUnknown(vL)) != NULL,
-					ERROR_INVALID_STATE );
-
 		// Invoke function with parameters
-		CCLTRY ( pIntf->invoke ( strName, pDctP ) );
+		CCLTRY ( pIntf->invoke ( strName, pDctP, vL ) );
+
+		// If the result is another interface, assign an object to it
+		// so it can be used in this node to make other calls.
+		if (	hr == S_OK && 
+				(IUnknown *)(NULL) != (unkV=vL) &&
+				_QI(unkV,IID_IDispatch,&pDisp) == S_OK )
+			{
+			DispIntf		*pIntfNew	= NULL;
+
+			// Debug
+//			if (!WCASECMP(strnName,L"Tables"))
+//				dbgprintf ( L"Hi\r\n" );
+
+			// Create and assign interface to object
+			CCLTRYE ( (pIntfNew = new DispIntf()) != NULL, E_OUTOFMEMORY );
+			CCLTRY  ( pIntfNew->assign ( pDisp ) );
+
+			// Object to emit
+			CCLTRY ( adtValue::copy ( adtIUnknown(pIntfNew), vL ) );
+
+			// Clean up
+			_RELEASE(pIntfNew);
+			_RELEASE(pDisp);
+			}	// if
+
+		// Result
+		if (hr == S_OK)
+			_EMT(Fire,vL);
+		else
+			_EMT(Error,adtInt(hr));
 		}	// else if
-
-	// Close/release object
-	else if (_RCP(Close))
-		{
-		// State check
-		CCLTRYE ( pDct != NULL, ERROR_INVALID_STATE );
-
-		// Closing
-		_EMT(Close,adtIUnknown(pDct));
-
-		// Remove active object
-		CCLOK ( pDct->remove ( adtString(L"DispIntf") ); )
-		}	// if
 
 	// State
-	else if (_RCP(Dictionary))
+	else if (_RCP(Iface))
 		{
 		adtIUnknown	unkV(v);
-		_RELEASE(pDct);
-		hr = _QI(unkV,IID_IDictionary,&pDct);
+		_RELEASE(pIntf);
+		pIntf = (DispIntf *)(IUnknown *)unkV;
+		_ADDREF(pIntf);
 		}	// else if
-	else if (_RCP(Parameters))
+	else if (_RCP(Params))
 		{
 		adtIUnknown	unkV(v);
 		_RELEASE(pDctP);
@@ -226,7 +249,8 @@ HRESULT DispIntf :: assign ( IDispatch *_pDisp )
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	HRESULT			hr		= S_OK;
+	HRESULT	hr				= S_OK;
+	bool		bNeedInfo	= true;
 
 	// Previous state
 	unassign();
@@ -241,9 +265,6 @@ HRESULT DispIntf :: assign ( IDispatch *_pDisp )
 		ITypeInfo	*pInfo	= NULL;
 		TYPEATTR		*pta		= NULL;
 
-		// Create a dictionary to hold the function information
-		CCLTRY ( COCREATE ( L"Adt.Dictionary", IID_IDictionary, &pDctFuncs ) );
-
 		// Query and allocate all information needed to make the required calls.
 		// This saves time during execution and mapping provided parameters to/from object.
 		CCLTRY ( pDisp->GetTypeInfo ( 0, LOCALE_USER_DEFAULT, &pInfo ) );
@@ -251,57 +272,123 @@ HRESULT DispIntf :: assign ( IDispatch *_pDisp )
 		// Get type attributes of interface
 		CCLTRY ( pInfo->GetTypeAttr ( &pta ) );
 
-		// Iterate the number of functions
-		for (U32 f = 0;hr == S_OK && f < pta->cFuncs;++f)
+		// Check if a function dictionary already exists for this type information
+		if (hr == S_OK)
 			{
-			IDictionary	*pFunc		= NULL;
-			IDictionary	*pParams		= NULL;
-			FUNCDESC		*fd			= NULL;
-			BSTR			bstrName		= NULL;
-			UINT			uNames		= 0;
-			BSTR			bstrNames[100];
+			LPOLESTR			pId	= NULL;
+			adtValue			vL;
+			adtIUnknown		unkV;
 
-			// Function description
-			CCLTRY ( pInfo->GetFuncDesc ( f, &fd ) );
+			// Convert GUID to string for look-up
+			CCLTRY ( StringFromCLSID ( pta->guid, &pId ) );
 
-			// Function name, etc
-			CCLTRY ( pInfo->GetDocumentation ( fd->memid, &bstrName, NULL, NULL, NULL ) );
-
-			// Store a dictionary for function under its name
-			CCLTRY ( COCREATE ( L"Adt.Dictionary", IID_IDictionary, &pFunc ) );
-			CCLTRY ( pDctFuncs->store ( adtString(bstrName), adtIUnknown(pFunc) ) );
-			CCLTRY ( pFunc->store ( adtString(L"Id"), adtLong(fd->memid) ) );
-
-			// Names associated with function (parameters)
-			memset ( bstrNames, 0, sizeof(bstrNames) );
-			CCLTRY ( pInfo->GetNames ( fd->memid, bstrNames, 100, &uNames ) );
-
-			// Store a dictionary for parameters under function
-			CCLTRY ( COCREATE ( L"Adt.Dictionary", IID_IDictionary, &pParams ) );
-			CCLTRY ( pFunc->store ( adtString("Params"), adtIUnknown(pParams) ) );
-
-			// Store parameter names along with the disp Id
-			CCLOK ( lprintf ( LOG_INFO, L"%d) Function : %s,%d\r\n", f, bstrName, fd->memid ); )
-			for (UINT i = 0;hr == S_OK && i < uNames;++i)
+			// Already exists ?
+			if (hr == S_OK && pDctTypeInfo->load ( adtString(pId), vL ) == S_OK)
 				{
-				// Store parameter info, DISPID for parameters is index
-				CCLTRY ( pParams->store ( adtString(bstrNames[i]), adtLong(i) ) );
+				// Extract function dictionary
+				CCLTRY ( _QISAFE((unkV=vL),IID_IDictionary,&pDctFuncs) );
 
-				// Debug
-				CCLOK  ( lprintf ( LOG_INFO, L"%d) Parameter : %s\r\n", i, bstrNames[i] ); )
+				// Do not need to re-generate
+				CCLOK ( bNeedInfo = false; )
+				}	// if
+			else
+				{
+				// Create a new dictionary for the type information
+				CCLTRY ( COCREATE ( L"Adt.Dictionary", IID_IDictionary, &pDctFuncs ) );
+
+				// Store under its GUID
+				CCLTRY ( pDctTypeInfo->store ( adtString(pId), adtIUnknown(pDctFuncs) ) );
+				}	// else 
+
+			}	// if
+
+		// Need to generate type information ?
+		if (hr == S_OK && bNeedInfo)
+			{
+			// Iterate the number of functions
+			for (U32 f = 0;hr == S_OK && f < pta->cFuncs;++f)
+				{
+				IDictionary	*pFunc		= NULL;
+				IDictionary	*pParams		= NULL;
+				FUNCDESC		*fd			= NULL;
+				BSTR			bstrName		= NULL;
+				UINT			uNames		= 0;
+				BSTR			bstrNames[100];
+				adtString	strName;
+
+				// Function description
+				CCLTRY ( pInfo->GetFuncDesc ( f, &fd ) );
+
+				// Function name, etc
+				CCLTRY ( pInfo->GetDocumentation ( fd->memid, &bstrName, NULL, NULL, NULL ) );
+
+				// Store a dictionary for function under its name
+				CCLTRY ( COCREATE ( L"Adt.Dictionary", IID_IDictionary, &pFunc ) );
+				CCLTRY ( pFunc->store ( adtString(L"Id"), adtLong(fd->memid) ) );
+				CCLTRY ( pFunc->store ( adtString(L"Method"), adtInt (
+												(fd->invkind == INVOKE_PROPERTYGET) ?	DISPATCH_PROPERTYGET :
+												(fd->invkind == INVOKE_PROPERTYPUT) ?	DISPATCH_PROPERTYPUT :
+																									DISPATCH_METHOD ) ) );
+
+				// The same function can be used twice, once for 'put' another for 'get', 
+				// use that prefix based on the invocation kind for unambiguous use
+				if (hr == S_OK)
+					{
+					// Base name
+					strName = bstrName;
+					if (fd->invkind == INVOKE_PROPERTYGET)
+						hr = strName.prepend(L"get_");
+					else if (fd->invkind == INVOKE_PROPERTYPUT)
+						hr = strName.prepend(L"put_");
+					}	// if
+
+				// Store under generated name
+				CCLTRY ( pDctFuncs->store ( strName, adtIUnknown(pFunc) ) );
+
+				// Names associated with function (parameters)
+				memset ( bstrNames, 0, sizeof(bstrNames) );
+				CCLTRY ( pInfo->GetNames ( fd->memid, bstrNames, 100, &uNames ) );
+
+				// Store a dictionary for parameters under function
+				CCLTRY ( COCREATE ( L"Adt.Dictionary", IID_IDictionary, &pParams ) );
+				CCLTRY ( pFunc->store ( adtString("Params"), adtIUnknown(pParams) ) );
+
+				// DEBUG
+	//			if (hr == S_OK && !WCASECMP(bstrName,L"Workbooks"))
+	//			if (hr == S_OK && !WCASECMP(bstrName,L"Cells"))
+	//				dbgprintf ( L"Hi\r\n" );
+
+				// Store parameter names along with the disp Id
+				// First name is the function name so skip for parameters.
+//				CCLOK ( lprintf ( LOG_INFO, L"%d) Function : %s,%d,%d\r\n", f, (LPCWSTR)strName,
+//										fd->memid, fd->invkind ); )
+				for (UINT i = 1;hr == S_OK && i < uNames;++i)
+					{
+					// Store parameter info, DISPID for parameters is index
+					CCLTRY ( pParams->store ( adtString(bstrNames[i]), adtLong(i-1) ) );
+
+					// Debug
+//					CCLOK  ( lprintf ( LOG_INFO, L"%d) Parameter : %s\r\n", i-1, bstrNames[i] ); )
+					}	// for
+
+				// Special case.  For 'property put' methods, allow a value parameter to be specified
+				// as part of the call.
+				if (hr == S_OK && fd->invkind == INVOKE_PROPERTYPUT)
+					hr = pParams->store ( adtString(L"Value"), adtLong(0) );
+
+				// Clean up
+				for (UINT i = 0;i < uNames;++i)
+					{
+					_FREEBSTR(bstrNames[i]);
+					}	// for
+				_RELEASE(pParams);
+				_RELEASE(pFunc);
+				_FREEBSTR(bstrName);
+				if (fd != NULL)
+					pInfo->ReleaseFuncDesc(fd);
 				}	// for
 
-			// Clean up
-			for (UINT i = 0;i < uNames;++i)
-				{
-				_FREEBSTR(bstrNames[i]);
-				}	// for
-			_RELEASE(pParams);
-			_RELEASE(pFunc);
-			_FREEBSTR(bstrName);
-			if (fd != NULL)
-				pInfo->ReleaseFuncDesc(fd);
-			}	// for
+			}	// if
 
 		// Clean up
 		if (pta != NULL)
@@ -325,7 +412,8 @@ void DispIntf :: destruct ( void )
 	unassign();
 	}	// destruct
 
-HRESULT DispIntf :: invoke ( const WCHAR *pwName, IDictionary *pDctP )
+HRESULT DispIntf :: invoke ( const WCHAR *pwName,
+										IDictionary *pDctP, adtValue &vRes )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -336,6 +424,7 @@ HRESULT DispIntf :: invoke ( const WCHAR *pwName, IDictionary *pDctP )
 	//		-	pwName is the function name
 	//		-	pDctP optionally contains input parameters and will receive
 	//			output parameters.
+	//		-	vRes will receive the result.
 	//
 	//	RETURN VALUE
 	//		S_OK if successful
@@ -344,7 +433,9 @@ HRESULT DispIntf :: invoke ( const WCHAR *pwName, IDictionary *pDctP )
 	HRESULT		hr			= S_OK;
 	IDictionary	*pFunc	= NULL;
 	IDictionary	*pParam	= NULL;
+	IIt			*pItP		= NULL;
 	DISPID		id			= 0;
+	adtInt		iMethod	= 0;
 	adtIUnknown	unkV;
 	adtValue		vL;
 
@@ -356,13 +447,21 @@ HRESULT DispIntf :: invoke ( const WCHAR *pwName, IDictionary *pDctP )
 	CCLTRY ( _QISAFE((unkV=vL),IID_IDictionary,&pFunc));
 	CCLTRY ( pFunc->load ( adtString(L"Id"), vL ) );
 	CCLOK  ( id = adtInt(vL); )
+	CCLTRY ( pFunc->load ( adtString(L"Method"), vL ) );
+	CCLOK  ( iMethod = adtInt(vL); )
 	CCLTRY ( pFunc->load ( adtString(L"Params"), vL ) );
 	CCLTRY ( _QISAFE((unkV=vL),IID_IDictionary,&pParam));
+
+	// Debug
+	if (!WCASECMP(pwName,L"Add"))
+		lprintf ( LOG_INFO, L"Hi\r\n" );
+	if (!WCASECMP(pwName,L"get_Rows"))
+		lprintf ( LOG_INFO, L"Hi\r\n" );
 
 	// Invocation
 	if (hr == S_OK)
 		{
-		VARIANT		*pvVars = NULL;
+		DISPID		idPut = DISPID_PROPERTYPUT;
 		DISPPARAMS	dprms;
 		U32			sz;
 		EXCEPINFO	ei;
@@ -372,41 +471,98 @@ HRESULT DispIntf :: invoke ( const WCHAR *pwName, IDictionary *pDctP )
 		// Setup
 		memset ( &dprms, 0, sizeof(dprms) );
 
-		// Number of parameters, first one is a duplicate of the function name to skip that.
+		// Number of parameters
 		CCLTRY	( pParam->size ( &sz ) );
-		CCLOK		( sz--; )
 
 		// Allocate memory for the full number of parameters
 		if (sz > 0)
 			{
+			// Total number of arguments
 			CCLOK ( dprms.cArgs = sz; )
 
 			// Invoke array
 			CCLTRYE	( (dprms.rgvarg	= (VARIANTARG *) _ALLOCMEM ( sz*sizeof(VARIANTARG) )) 
-							!= NULL, E_OUTOFMEMORY );
-
-			// Default variants for the parameters
-			CCLTRYE	( (pvVars	= (VARIANT *) _ALLOCMEM ( sz*sizeof(VARIANT) )) 
 							!= NULL, E_OUTOFMEMORY );
 			}	// if
 
 		// Initialize all the defaults
 		for (U32 i = 0;hr == S_OK && i < sz;++i)
 			{
-			// Prepare structure
+			// This is how optional/missing IDispatch parameters are specified
 			VariantInit ( &dprms.rgvarg[i] );
-			VariantInit ( &pvVars[i] );
-
-			// Default parameter is a generic variant
-			V_VT(&(dprms.rgvarg[0]))			= VT_BYREF|VT_VARIANT;
-			V_VARIANTREF(&(dprms.rgvarg[0])) = &pvVars[i];
+			dprms.rgvarg[i].vt		= VT_ERROR;
+			dprms.rgvarg[i].scode	= DISP_E_PARAMNOTFOUND;
 			}	// for
 
+		// Iterate the provided parameters and use matching available names for function
+		if (hr == S_OK && pDctP != NULL)
+			{
+			// Iterate names
+			CCLTRY ( pDctP->keys ( &pItP ) );
+			while (hr == S_OK && pItP->read ( vL ) == S_OK)
+				{
+				adtString	strName(vL);
+
+				// See if the parameter is in the list retrieved from the type information
+				if (pParam->load ( strName, vL ) == S_OK)
+					{
+					adtLong		iIdx(vL);
+					adtVariant	varArg;
+
+					// Parameter exists, put in list under its index
+
+					// Value of provided parameter
+					CCLTRY ( pDctP->load ( strName, vL ) );
+
+					// DEBUG
+//					if (hr == S_OK && adtValue::type(vL) == VTYPE_STR &&
+//							!WCASECMP(vL.pstr,L"A95"))
+//						dbgprintf ( L"Hi\r\n" );
+
+					// Variant version of argument
+					CCLOK ( varArg = vL; )
+
+					// First parameter is function name so offset
+					// Also, arguments are specified last to first
+					CCLOK ( iIdx = (sz - iIdx) - 1; )
+
+					// Replace missing value with variant
+					CCLTRY ( VariantCopy ( &(dprms.rgvarg[iIdx]), &varArg ) );
+					}	// if
+
+				// Next parameter
+				pItP->next();
+				}	// while
+
+			// Clean up
+			_RELEASE(pItP);
+			}	// if
+
+		// Property put ?
+		if (hr == S_OK && iMethod == DISPATCH_PROPERTYPUT)
+			{
+			// This is necessary for the 'DISPATCH_PROPERTYPUT' invocation
+			dprms.rgdispidNamedArgs = &idPut;
+			dprms.cNamedArgs			= 1;
+			}	// if
+
 		// Execute
-		CCLTRY ( pDisp->Invoke ( id, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD,
+		CCLTRY ( pDisp->Invoke ( id, IID_NULL, LOCALE_USER_DEFAULT, iMethod,
 											&dprms, &varRes, &ei, &ep ) );
 
+		// Exception ?
+		if (hr == DISP_E_EXCEPTION)
+			{
+			hr = ei.scode;
+			lprintf ( LOG_ERR, L"Exception:%s:%s (Scode 0x%x)\r\n", ei.bstrSource, ei.bstrDescription, ei.scode );
+			}	// if
+
+		// Result
+		CCLOK ( vRes = varRes; )
+
 		// Clean up
+		for (U32 i = 0;i < dprms.cArgs;++i)
+			VariantClear ( &(dprms.rgvarg[i]) );
 		_FREEMEM(dprms.rgvarg);
 		}	// if
 
@@ -414,58 +570,12 @@ HRESULT DispIntf :: invoke ( const WCHAR *pwName, IDictionary *pDctP )
 	_RELEASE(pParam);
 	_RELEASE(pFunc);
 
+	// Debug
+	if (hr != S_OK)
+		lprintf ( LOG_ERR, L"%s failed:0x%x", pwName, hr );
+
 	return hr;
 	}	// invoke
-
-		// Obtain function descriptor
-//		CCLTRY ( pIntf->p)
-/*
-		LPOLESTR		pOleStr	= strName.pstr;
-		adtIUnknown	unkV;
-		adtValue		vL;
-		DISPID		id;
-
-
-		// Extract object
-		CCLTRY ( pDct->load ( adtString(L"Object"), vL ) );
-		CCLTRY ( _QISAFE((unkV=vL),IID_IDispatch,&pDsp) );
-
-		// Get the DISPID of the calling memeber
-		CCLTRY ( pDsp->GetIDsOfNames ( IID_NULL, &pOleStr, 1, 
-					LOCALE_USER_DEFAULT, &id ) );
-
-		// Debug
-		if (hr == S_OK)
-			{
-			ITypeInfo	*pInfo = NULL;
-//			long			v;
-			VARIANT		v;
-			FUNCDESC		*fd = NULL;
-
-			VariantInit(&v);
-
-			// Type information test
-			CCLTRY ( pDsp->GetTypeInfo(0,LOCALE_USER_DEFAULT,&pInfo) );
-			CCLTRY ( pInfo->GetFuncDesc ( id, &fd ) );
-if (fd != NULL)
-	pInfo->ReleaseFuncDesc(fd);
-
-			// Allocate parameter array
-
-			// Initialize variant
-			VariantInit ( &dprms.rgvarg[0] );
-//			V_VT(&(dprms.rgvarg[0])) = VT_BYREF|VT_I4;
-//			V_I4REF(&(dprms.rgvarg[0])) = &v;
-			V_VT(&(dprms.rgvarg[0])) = VT_BYREF|VT_VARIANT;
-			V_VARIANTREF(&(dprms.rgvarg[0])) = &v;
-//			V_I4REF(&(dprms.rgvarg[0])) = &v;
-			dprms.cArgs = 1;
-
-
-			dbgprintf ( L"Hi\r\n" );
-
-			}	// if
-*/
 
 void DispIntf :: unassign ( void )
 	{

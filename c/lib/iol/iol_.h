@@ -103,8 +103,9 @@ class DispIntf :
 
 	// Utilities
 	HRESULT	assign	( IDispatch * );				// Assign interface
-	HRESULT	invoke	( const WCHAR *,				// Invoke function
-								IDictionary * );
+	HRESULT	invoke	( const WCHAR *,				// Invoke method
+								IDictionary *,
+								adtValue & );
 	void		unassign ( void );						// Unassign active interface
 
 	// CCL
@@ -518,7 +519,7 @@ class Dispatch :
 	Dispatch ( void );									// Constructor
 
 	// Run-time data
-	IDictionary		*pDct;								// State information
+	DispIntf			*pIntf;								// Interface object
 	IDictionary		*pDctP;								// Parameters
 	adtString		strName;								// Member name
 
@@ -529,18 +530,16 @@ class Dispatch :
 	virtual void		destruct	( void );			// Destruct object
 
 	// Connections
-	DECLARE_CON(Close)
-	DECLARE_RCP(Dictionary)
 	DECLARE_CON(Fire)
+	DECLARE_RCP(Iface)
 	DECLARE_CON(Open)
-	DECLARE_RCP(Parameters)
+	DECLARE_RCP(Params)
 	DECLARE_EMT(Error)
 	BEGIN_BEHAVIOUR()
-		DEFINE_CON(Close)
-		DEFINE_RCP(Dictionary)
+		DEFINE_RCP(Iface)
 		DEFINE_CON(Fire)
 		DEFINE_CON(Open)
-		DEFINE_RCP(Parameters)
+		DEFINE_RCP(Params)
 		DEFINE_EMT(Error)
 	END_BEHAVIOUR_NOTIFY()
 	};
