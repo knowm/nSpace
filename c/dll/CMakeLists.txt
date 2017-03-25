@@ -8,10 +8,13 @@ add_subdirectory(median)
 add_subdirectory(miscn)
 add_subdirectory(netn)
 add_subdirectory(nspcn)
-add_subdirectory(plotn)
 add_subdirectory(sysn)
+
+if(MSVC)
+add_subdirectory(plotn)
 add_subdirectory(usbn)
 add_subdirectory(wmin)
+endif()
 
 # External SDKs
 if( OpenCV_FOUND )

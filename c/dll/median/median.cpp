@@ -14,6 +14,8 @@
 CCL_OBJLIST_BEGIN()
 
 	// Nodes
+	#ifdef	_WIN32
 	CCL_OBJLIST_ENTRY	(Speak)
+	#endif
 
 CCL_OBJLIST_END()

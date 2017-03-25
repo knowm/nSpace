@@ -16,6 +16,8 @@ CCL_OBJLIST_BEGIN()
 	// Objects
 
 	// Nodes
+	#ifdef	_WIN32
 	CCL_OBJLIST_ENTRY	(Image)
+	#endif
 
 CCL_OBJLIST_END()
