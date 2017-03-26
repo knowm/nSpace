@@ -128,12 +128,12 @@ HRESULT cclGetFactory ( const wchar_t *pId, REFIID iid, void **ppv )
 	adtValue			vL;
 
 	// State check
-//	dbgprintf ( L"CoGetClassObject : pId %s pDctFct 0x%x\r\n", pId, pDctFct );
+	dbgprintf ( L"CoGetClassObject : pId %s pDctFct 0x%x\r\n", pId, pDctFct );
 	*ppv = NULL;
 	CCLTRYE ( pDctFct != NULL, ERROR_INVALID_STATE );
 	CCLTRY  ( pDctFct->size ( &sz ) );
-//	dbgprintf ( L"cclCreateObject:%s:%d factories cached:0x%x\r\n", pId, sz, hr );
-//	dbgprintf ( L"cclCreateObject:%S\r\n", cDirProc );
+	dbgprintf ( L"cclCreateObject:%s:%d factories cached:0x%x\r\n", pId, sz, hr );
+	dbgprintf ( L"cclCreateObject:%S\r\n", cDirProc );
 
 	// Check cache for pre-existing factory
 	if (hr == S_OK && pDctFct->load ( adtString(pId), vL ) == S_OK)
@@ -142,7 +142,7 @@ HRESULT cclGetFactory ( const wchar_t *pId, REFIID iid, void **ppv )
 
 		// Factory object
 		CCLTRY ( _QISAFE(unkV,IID_IClassFactory,&pFact) );
-//		dbgprintf ( L"cclCreateObject:Factory cached:pFact:%p:0x%x\r\n", pFact, hr );
+		dbgprintf ( L"cclCreateObject:Factory cached:pFact:%p:0x%x\r\n", pFact, hr );
 		}	// if
 
 	// New factory required
@@ -167,12 +167,12 @@ HRESULT cclGetFactory ( const wchar_t *pId, REFIID iid, void **ppv )
 		CCLOK   ( strLib.toLower(); )
 
 		// Obtain factory
-//		dbgprintf ( L"cclCreateObject:Path %s\r\n", (LPCWSTR)strLib );
+		dbgprintf ( L"cclCreateObject:Path %s\r\n", (LPCWSTR)strLib );
 		CCLTRY ( cclLoadFactoryInt ( strLib, pId, &pvLib, &pFact ) );
 
 		// Cache factory under Id
 		CCLTRY ( pDctFct->store ( adtString(pId), adtIUnknown(pFact) ) );
-//		dbgprintf ( L"cclCreateObject:New factory cached:pFact:%p:0x%x\r\n", pFact, hr );
+		dbgprintf ( L"cclCreateObject:New factory cached:pFact:%p:0x%x\r\n", pFact, hr );
 		}	// else if
 
 	// Result

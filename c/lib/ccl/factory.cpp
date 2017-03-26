@@ -36,12 +36,13 @@ CCLFactory::CCLFactory ( const CLSID *pclsid )
 	unkOuter	= (IUnknown *) ((IInnerUnknown *)this);
 
 	// Search for object in table
+	dbgprintf ( L"CCLFactory::CCLFactory:this %p\r\n", this );
 	for (i = 0;cclobjlist[i].clsid != NULL && objidx == 0xffffffff;++i)
 		{
-//		dbgprintf ( L"CCLFactory::CLLFactory:0x%x,0x%x\n", ((U32 *) &(*(cclobjlist[i].clsid)))[0], ((U32 *) &clsid)[0] );
-//		dbgprintf ( L"CCLFactory::CLLFactory:0x%x,0x%x\n", ((U32 *) &(*(cclobjlist[i].clsid)))[1], ((U32 *) &clsid)[1] );
-//		dbgprintf ( L"CCLFactory::CLLFactory:0x%x,0x%x\n", ((U32 *) &(*(cclobjlist[i].clsid)))[2], ((U32 *) &clsid)[2] );
-//		dbgprintf ( L"CCLFactory::CLLFactory:0x%x,0x%x\n", ((U32 *) &(*(cclobjlist[i].clsid)))[3], ((U32 *) &clsid)[3] );
+		dbgprintf ( L"CCLFactory::CCLFactory:0x%x,0x%x\n", ((U32 *) &(*(cclobjlist[i].clsid)))[0], ((U32 *) pclsid)[0] );
+		dbgprintf ( L"CCLFactory::CCLFactory:0x%x,0x%x\n", ((U32 *) &(*(cclobjlist[i].clsid)))[1], ((U32 *) pclsid)[1] );
+		dbgprintf ( L"CCLFactory::CCLFactory:0x%x,0x%x\n", ((U32 *) &(*(cclobjlist[i].clsid)))[2], ((U32 *) pclsid)[2] );
+		dbgprintf ( L"CCLFactory::CCLFactory:0x%x,0x%x\n", ((U32 *) &(*(cclobjlist[i].clsid)))[3], ((U32 *) pclsid)[3] );
 
 		if (IsEqualGUID ( *(cclobjlist[i].clsid), *pclsid ))
 			objidx = i;
@@ -77,10 +78,11 @@ CCLFactory::CCLFactory ( const WCHAR *pwId )
 	unkOuter	= (IUnknown *) ((IInnerUnknown *)this);
 
 	// Search for object in table
-//	dbgprintf ( L"CCLFactory::CCLFactory:0x%x,0x%x\r\n", cclobjlist, cclobjlist[0].clsid );
+	dbgprintf ( L"CCLFactory::CCLFactory:%p,%p,%s\r\n", 
+					cclobjlist, cclobjlist[0].clsid, pwId );
 	for (i = 0;cclobjlist[i].clsid != NULL && objidx == 0xffffffff;++i)
 		{
-//		dbgprintf ( L"CCLFactory::CLLFactory:0x%x,0x%x\n", ((U32 *) &(*(cclobjlist[i].clsid)))[0], ((U32 *) &clsid)[0] );
+		dbgprintf ( L"CCLFactory::CCLFactory:%s\n", cclobjlist[i].progid );
 //		dbgprintf ( L"CCLFactory::CLLFactory:0x%x,0x%x\n", ((U32 *) &(*(cclobjlist[i].clsid)))[1], ((U32 *) &clsid)[1] );
 //		dbgprintf ( L"CCLFactory::CLLFactory:0x%x,0x%x\n", ((U32 *) &(*(cclobjlist[i].clsid)))[2], ((U32 *) &clsid)[2] );
 //		dbgprintf ( L"CCLFactory::CLLFactory:0x%x,0x%x\n", ((U32 *) &(*(cclobjlist[i].clsid)))[3], ((U32 *) &clsid)[3] );
