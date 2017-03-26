@@ -10,12 +10,11 @@ set	(
 		register.cpp
 		)
 
-#if(UNIX)
-#list(APPEND SOURCES ccl_impl.cpp)
-#endif()
-
 add_library (ccl STATIC ${SOURCES} ${HEADERS})
+
+if(UNIX)
 add_library (ccl_impl STATIC ccl_impl.cpp)
+endif()
 
 target_link_libraries(ccl)
 
