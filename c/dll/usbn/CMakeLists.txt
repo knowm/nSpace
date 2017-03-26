@@ -22,6 +22,11 @@ endif()
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER dll)
 
+if (UNIX)
+set_property(TARGET ${PROJECT_NAME} APPEND PROPERTY 
+			LINK_FLAGS "-Wl,--version-script=${PROJECT_SOURCE_DIR}/../../lib/ccl/ccl.version")
+endif()
+
 # Installation
 install	(
 			TARGETS usbn 
