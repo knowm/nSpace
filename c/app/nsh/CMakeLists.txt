@@ -22,14 +22,14 @@ if (WIN32)
 endif()
 
 if (UNIX)
-	target_link_libraries(nsh dl)
+	target_link_libraries(nsh ccl_impl dl)
 endif()
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER app)
 
 if (UNIX)
 set_property(TARGET ${PROJECT_NAME} APPEND PROPERTY 
-			LINK_FLAGS "-Wl,--version-script=${PROJECT_SOURCE_DIR}nsh.version")
+			LINK_FLAGS "-Wl,--version-script=${PROJECT_SOURCE_DIR}/nsh.version")
 endif()
 
 # Installation

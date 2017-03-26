@@ -18,6 +18,7 @@ target_link_libraries(miscn miscl nspcl adtl sysl ccl)
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER dll)
 
 if (UNIX)
+target_link_libraries(miscn uuid)
 set_property(TARGET ${PROJECT_NAME} APPEND PROPERTY 
 			LINK_FLAGS "-Wl,--version-script=${PROJECT_SOURCE_DIR}/../../lib/ccl/ccl.version")
 endif()

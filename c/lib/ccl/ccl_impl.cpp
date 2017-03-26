@@ -2,8 +2,8 @@
 //
 //									CCL_IMPL.CPP
 //
-//				An implementation of the COM Compatibility Layer.  Application
-//				links to libcclimpl.a.
+//				An implementation of the COM Compatibility Layer.  
+//				Application	links to libcclimpl.a.
 //
 ////////////////////////////////////////////////////////////////////////
 
@@ -51,9 +51,11 @@
 #endif
 
 // Globals
-static char				cDirProc[1024]		= "";
-static IDictionary	*pDctLib				= NULL;
-static IDictionary	*pDctFct				= NULL;
+static  	char			cDirProc[1024]		= "";
+static 	IDictionary	*pDctLib				= NULL;
+static 	IDictionary	*pDctFct				= NULL;
+
+// Prototypes
 
 extern "C"
 HRESULT cclCreateObject ( const wchar_t *pId, IUnknown *pOuter, 
@@ -100,7 +102,7 @@ HRESULT cclCreateObject ( const wchar_t *pId, IUnknown *pOuter,
 
 	// Debug
 	if (hr != S_OK)
-		dbgprintf ( L"cclCreateObject : Fail : %s : 0x%x\r\n", pId, hr );
+		lprintf ( LOG_ERR, L"cclCreateObject : Fail : %s : 0x%x", pId, hr );
 
 	return hr;
 	}	// cclCreateObject
@@ -128,12 +130,9 @@ HRESULT cclGetFactory ( const wchar_t *pId, REFIID iid, void **ppv )
 	adtValue			vL;
 
 	// State check
-	dbgprintf ( L"CoGetClassObject : pId %s pDctFct 0x%x\r\n", pId, pDctFct );
 	*ppv = NULL;
 	CCLTRYE ( pDctFct != NULL, ERROR_INVALID_STATE );
 	CCLTRY  ( pDctFct->size ( &sz ) );
-	dbgprintf ( L"cclCreateObject:%s:%d factories cached:0x%x\r\n", pId, sz, hr );
-	dbgprintf ( L"cclCreateObject:%S\r\n", cDirProc );
 
 	// Check cache for pre-existing factory
 	if (hr == S_OK && pDctFct->load ( adtString(pId), vL ) == S_OK)
@@ -142,37 +141,39 @@ HRESULT cclGetFactory ( const wchar_t *pId, REFIID iid, void **ppv )
 
 		// Factory object
 		CCLTRY ( _QISAFE(unkV,IID_IClassFactory,&pFact) );
-		dbgprintf ( L"cclCreateObject:Factory cached:pFact:%p:0x%x\r\n", pFact, hr );
+//		dbgprintf ( L"cclCreateObject:Factory cached:pFact:%p:0x%x\r\n", pFact, hr );
 		}	// if
 
 	// New factory required
 	else if (hr == S_OK)
 		{
 		void				*pvLib	= NULL;
-		adtString		strLib;
+		adtString		strLib,strDir;
 		wchar_t			*wDot;
 
 		// Object Ids are : nSpace.<Library name>.<Object name>
 		CCLTRYE ( !WCASENCMP ( pId, L"nSpace.", 7 ), E_UNEXPECTED );
 
-		// Generate full path to library
-		CCLOK ( strLib = cDirProc; )
-		CCLTRY( strLib.append ( L"lib" ) );
+		// Name of library
+		CCLOK ( strLib = L"lib"; )
 		CCLTRY( strLib.append ( pId+7 ) );
+		CCLOK ( strLib.toLower(); )
 
 		// Find dot separating module and object name and finish path
 		CCLTRYE ( (wDot = wcsrchr ( &strLib.at(), '.' )) != NULL, E_UNEXPECTED );
 		CCLOK   ( strLib.at(wDot-(LPCWSTR)strLib) = '\0'; )
 		CCLTRY  ( strLib.append ( L"n.so" ) );
-		CCLOK   ( strLib.toLower(); )
+
+		// Generate full path to library
+		CCLOK   ( strDir = cDirProc; )
+		CCLTRY  ( strLib.prepend ( (LPCWSTR) strDir ) );
 
 		// Obtain factory
-		dbgprintf ( L"cclCreateObject:Path %s\r\n", (LPCWSTR)strLib );
 		CCLTRY ( cclLoadFactoryInt ( strLib, pId, &pvLib, &pFact ) );
 
 		// Cache factory under Id
 		CCLTRY ( pDctFct->store ( adtString(pId), adtIUnknown(pFact) ) );
-		dbgprintf ( L"cclCreateObject:New factory cached:pFact:%p:0x%x\r\n", pFact, hr );
+//		dbgprintf ( L"cclCreateObject:New factory cached:pFact:%p:%s:0x%x\r\n", pFact, pId, hr );
 		}	// else if
 
 	// Result
@@ -188,7 +189,7 @@ HRESULT cclGetFactory ( const wchar_t *pId, REFIID iid, void **ppv )
 	// Debug
 //	dbgprintf ( L"cclGetFactory:%s:0x%x:0x%x\r\n", pId, (int)(pDctFct), *((int *)ppv) );
 	if (hr != S_OK)
-		dbgprintf ( L"cclGetFactory : Fail : %s : 0x%x\r\n", pId, hr );
+		lprintf ( LOG_ERR, L"cclGetFactory : Fail : %s : 0x%x", pId, hr );
 
 	return hr;
 	}	// cclGetFactory
@@ -232,12 +233,12 @@ HRESULT cclLoadFactoryInt	( const wchar_t *pwLib, const wchar_t *pwId,
 			CCLTRY ( sLib.toAscii ( &pcLib ) );
 
 			// Load
-			CCLOK 	( dbgprintf ( L"cclLoadFactoryInt : Loading '%s'\r\n", (LPCWSTR)sLib ); )
+			CCLOK 	( lprintf ( LOG_DBG, L"cclLoadFactoryInt : Loading '%s'", (LPCWSTR)sLib ); )
 			CCLTRYE 	( ((*ppvLib) = dlopen ( pcLib, RTLD_NOW|RTLD_LOCAL )) != NULL, E_UNEXPECTED );
 			if (hr != S_OK)
 				{
 				strErr = dlerror();
-				dbgprintf ( L"cclLoadFactoryInt : Load failed : %s\n", (LPCWSTR) strErr );
+				lprintf ( LOG_ERR, L"cclLoadFactoryInt : Load failed : %s", (LPCWSTR) strErr );
 				}	// if
 
 			// Cache
@@ -260,7 +261,7 @@ HRESULT cclLoadFactoryInt	( const wchar_t *pwLib, const wchar_t *pwId,
 		if (hr != S_OK)
 			{
 			strErr = dlerror();
-			dbgprintf ( L"cclLoadFactoryInt: Symbol failed : %s\n", (LPCWSTR)strErr );
+			lprintf ( LOG_ERR, L"cclLoadFactoryInt: Symbol failed : %s", (LPCWSTR)strErr );
 			}	// if
 		}	// if
 
@@ -343,7 +344,7 @@ HRESULT	CoInitialize ( void *pv )
 		}	// if
 
 	// Debug
-	dbgprintf ( L"CoInitialize : %S:0x%x\r\n", cDirProc, hr );
+//	dbgprintf ( L"CoInitialize : %S:0x%x\r\n", cDirProc, hr );
 		
 	return hr;
 	}	// CoInitialize

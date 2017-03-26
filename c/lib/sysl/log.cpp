@@ -157,18 +157,23 @@ int logPrintf ( const WCHAR *file, int line, const WCHAR *func,
 
 	// Output to debug
 	swprintf ( SWPF(wFmt,sizeof(wFmt)/sizeof(WCHAR)),
+					#ifdef	_WIN32
 					L"<%s:%s> %s",
+					#elif		__unix__ || __APPLE__
+					L"<%S:%S> %S",
+					#endif
 					(level == LOG_DBG)  ? L"DBG" :
 					(level == LOG_INFO) ? L"INF" :
 					(level == LOG_WARN) ? L"WRN" :
 					(level == LOG_ERR)  ? L"ERR" : L"FTL", func, wDbgBfr );
+
 	#ifdef	_WIN32
 	OutputDebugString ( wFmt );
 	if (wFmt[wcslen(wFmt)-1] != '\n')
 		OutputDebugString ( L"\r\n" );
 	#else
-	printf ( "%S", wDbgBfr );
-	if (wDbgBfr[wcslen(wDbgBfr)-1] != '\n')
+	printf ( "%S", wFmt );
+	if (wDbgBfr[wcslen(wFmt)-1] != '\n')
 		printf ( "\r\n" );
 	#endif
 

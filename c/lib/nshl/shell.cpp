@@ -846,7 +846,7 @@ HRESULT Shell :: tickBegin ( void )
 		strExec = vL;
 
 	// DEBUG
-	#if	defined(_DEBUG) || !defined(_WIN32)
+	#if	defined(_DEBUG)// || !defined(_WIN32)
 	// Currently the source tree is laid out such that the 'graph' directory is
 	// at the same relative location to either debug or release EXE.  Use relative
 	// directory in order to support different source trees.
