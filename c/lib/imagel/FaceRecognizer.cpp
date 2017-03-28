@@ -11,7 +11,7 @@
 
 // Globals
 
-#ifdef	HAVE_OPENCV_CONTRIB
+//#ifdef	HAVE_OPENCV_CONTRIB
 FaceRecognizer :: FaceRecognizer ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -289,4 +289,5 @@ HRESULT FaceRecognizer :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 	return hr;
 	}	// receive
-#endif
+//#endif
+

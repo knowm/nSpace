@@ -435,6 +435,33 @@ HRESULT StringParse :: parseString ( IUnknown *pSpecs,
 
 			}	// else if
 
+		// Go to substring
+		else if (hr == S_OK && pDict->load ( adtString(L"Goto"), vL ) == S_OK)
+			{
+			adtString	strGoto(vL);
+			U32			lengoto	= strGoto.length();
+			U32			match		= 0;
+
+			// Case insensitive (option ?)
+			strGoto.toUpper();
+
+			// Find next occurence of provided substring
+			while (hr == S_OK && match < lengoto && pwStr[(*stridx)+match] != WCHAR('\0'))
+				{
+				// Match ?
+				if (strGoto[match] == towupper(pwStr[(*stridx)+match]))
+					++match;
+				else
+					{
+					// Skip over any matching characters up to this point
+					(*stridx)	+= (match+1);
+					match			= 0;
+					}	// else
+
+				}	// while
+
+			}	// else if
+
 		// Clean up
 		_RELEASE(pDict);
 		pIt->next();

@@ -453,10 +453,10 @@ HRESULT DispIntf :: invoke ( const WCHAR *pwName,
 	CCLTRY ( _QISAFE((unkV=vL),IID_IDictionary,&pParam));
 
 	// Debug
-	if (!WCASECMP(pwName,L"Add"))
-		lprintf ( LOG_INFO, L"Hi\r\n" );
-	if (!WCASECMP(pwName,L"get_Rows"))
-		lprintf ( LOG_INFO, L"Hi\r\n" );
+//	if (!WCASECMP(pwName,L"Add"))
+//		lprintf ( LOG_INFO, L"Hi\r\n" );
+//	if (!WCASECMP(pwName,L"get_Rows"))
+//		lprintf ( LOG_INFO, L"Hi\r\n" );
 
 	// Invocation
 	if (hr == S_OK)

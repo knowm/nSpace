@@ -112,7 +112,7 @@ void Debug :: logCallback	( cLogEntry *e, void *p )
 	CCLTRY ( pThis->pDctLog->clear() );
 //	CCLTRY ( adtDate::fromSystemTime ( &(e->date), &(date.vdate) ) );
 //	CCLTRY ( pThis->pDctLog->store ( adtString(L"Date"), date ) );
-	CCLTRY ( pThis->pDctLog->store ( adtString(L"Function"), adtString((WCHAR *)(e->func+1)) ) );
+//	CCLTRY ( pThis->pDctLog->store ( adtString(L"Function"), adtString((WCHAR *)(e->func+1)) ) );
 	CCLTRY ( pThis->pDctLog->store ( adtString(L"File"), adtString((WCHAR *)(e->file+1)) ) );
 	CCLTRY ( pThis->pDctLog->store ( adtString(L"Line"), adtInt(e->line) ) );
 	CCLTRY ( pThis->pDctLog->store ( adtString(L"Level"), adtInt(e->level) ) );
