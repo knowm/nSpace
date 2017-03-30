@@ -228,6 +228,10 @@ HRESULT Type :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			else if (!WCASECMP(L"Boolean",sType))
 				bMatch = (pUseV->vtype == VTYPE_BOOL);
 
+			// Empty
+			else if (!WCASECMP(L"Empty",sType))
+				bMatch = adtValue::empty(*pUseV);
+
 			// Clean up
 			_RELEASE(pLoc);
 			_RELEASE(pDct);

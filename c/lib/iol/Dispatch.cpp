@@ -453,9 +453,9 @@ HRESULT DispIntf :: invoke ( const WCHAR *pwName,
 	CCLTRY ( _QISAFE((unkV=vL),IID_IDictionary,&pParam));
 
 	// Debug
-//	if (!WCASECMP(pwName,L"Add"))
+//	if (!WCASECMP(pwName,L"Open"))
 //		lprintf ( LOG_INFO, L"Hi\r\n" );
-//	if (!WCASECMP(pwName,L"get_Rows"))
+//	if (!WCASECMP(pwName,L"put_Value"))
 //		lprintf ( LOG_INFO, L"Hi\r\n" );
 
 	// Invocation
@@ -553,8 +553,9 @@ HRESULT DispIntf :: invoke ( const WCHAR *pwName,
 		// Exception ?
 		if (hr == DISP_E_EXCEPTION)
 			{
+			lprintf ( LOG_ERR, L"Exception:%s:%s (hr 0x%x Scode 0x%x)\r\n", 
+							ei.bstrSource, ei.bstrDescription, hr, ei.scode );
 			hr = ei.scode;
-			lprintf ( LOG_ERR, L"Exception:%s:%s (Scode 0x%x)\r\n", ei.bstrSource, ei.bstrDescription, ei.scode );
 			}	// if
 
 		// Result

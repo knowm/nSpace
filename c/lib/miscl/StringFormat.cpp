@@ -11,7 +11,7 @@
 
 #define	HEX2WCHAR(a)													\
 	(((a) < 10) ? ((a) + WCHAR('0')) : ((a) - 10 + WCHAR('A')))
-#define	SIZE_BFR		4096
+#define	SIZE_BFR		0x10000
 #define	COUNT_BFR	(SIZE_BFR/sizeof(WCHAR))
 
 StringFormat :: StringFormat ( void )
@@ -63,7 +63,7 @@ HRESULT StringFormat :: formatString ( IUnknown *pSpecs,
 
 	// Continue formatting string until end of tokens or a 'substring' is specified
 	CCLTRY(pIt->begin());
-	while (	hr == S_OK && pIt->read ( unkV ) == S_OK )
+	while (hr == S_OK && pIt->read ( unkV ) == S_OK )
 		{
 		// Active dictionary spec.
 		CCLTRY(_QISAFE(unkV,IID_IDictionary,&pDict));
@@ -477,6 +477,9 @@ HRESULT StringFormat :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		{
 		U32		idx	= 0;
 
+		// Debug
+//		lprintf ( LOG_DBG, L"StringFormat::onReceive:%s {\r\n", (LPCWSTR)strnName );
+
 		// State check
 		CCLTRYE ( (pDctSrc != NULL),	ERROR_INVALID_STATE );
 		CCLTRYE ( (pFmt != NULL),		ERROR_INVALID_STATE );
@@ -490,6 +493,9 @@ HRESULT StringFormat :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 		// Result.
 		_EMT(Fire,adtString(pwBfr) );
+
+		// Debug
+//		lprintf ( LOG_DBG, L"} StringFormat::onReceive:%s\r\n", (LPCWSTR)strnName );
 		}	// if
 
 	// Context
