@@ -752,9 +752,13 @@ class StringFormat :
 	IDictionary		*pDctSrc;							// Source dictionary
 	IMemoryMapped	*pBfr;								// String buffer
 	WCHAR				*pwBfr;								// String buffer
+	U32				idxBfr;								// String buffer index
+	U32				cntBfr;								// Allocated buffer character count
 
 	// Internal utilities
-	HRESULT formatString	( IUnknown *, WCHAR *, U32 * );
+	HRESULT emitChr		( WCHAR );
+	HRESULT emitStr		( const WCHAR * );
+	HRESULT formatString	( IUnknown * );
 
 	};
 

@@ -11,8 +11,6 @@
 
 #define	HEX2WCHAR(a)													\
 	(((a) < 10) ? ((a) + WCHAR('0')) : ((a) - 10 + WCHAR('A')))
-#define	SIZE_BFR		0x10000
-#define	COUNT_BFR	(SIZE_BFR/sizeof(WCHAR))
 
 StringFormat :: StringFormat ( void )
 	{
@@ -26,10 +24,77 @@ StringFormat :: StringFormat ( void )
 	pDctSrc	= NULL;
 	pBfr		= NULL;
 	pwBfr		= NULL;
+	idxBfr	= 0;
+	cntBfr	= 0;
 	}	// StringFormat
 
-HRESULT StringFormat :: formatString ( IUnknown *pSpecs, 
-													WCHAR *pwStr, U32 *stridx )
+HRESULT StringFormat :: emitChr ( WCHAR c )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Emit a character into the format string.
+	//
+	//	PARAMETERS
+	//		-	c is the character
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT hr = S_OK;
+
+	// Big enough for next character and optional null termination ?
+	if (idxBfr+1+1 >= cntBfr)
+		{
+		// Current ptr.
+		_UNLOCK(pBfr,pwBfr);
+
+		// Size to the next block up
+		cntBfr = ((cntBfr/1024)+1)*1024;
+
+		// Realloc, assumes to retain contents
+		CCLTRY(pBfr->setSize(cntBfr*sizeof(WCHAR)));
+
+		// Re-obtain ptr.
+		CCLTRY(pBfr->lock ( 0, 0, (void **) &pwBfr, NULL ));
+		}	// if
+
+	// Assign
+	CCLOK ( pwBfr[idxBfr++] = c; )
+
+	// Debug
+	if (hr != S_OK)
+		lprintf ( LOG_ERR, L"0x%x", hr );
+
+	return hr;
+	}	// emitChr
+
+HRESULT StringFormat :: emitStr ( const WCHAR *pc )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Emit a string into the format string.
+	//
+	//	PARAMETERS
+	//		-	pc is the string
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT	hr		= S_OK;
+	U32		len	= (U32)wcslen(pc);
+
+	// Emit characters
+	for (U32 i = 0;i < len && hr == S_OK;++i)
+		hr = emitChr(pc[i]);
+
+	return hr;
+	}	// emitStr
+
+HRESULT StringFormat :: formatString ( IUnknown *pSpecs )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -39,8 +104,6 @@ HRESULT StringFormat :: formatString ( IUnknown *pSpecs,
 	//
 	//	PARAMETERS
 	//		-	pSpecs is the format list
-	//		-	pwStr is the current string
-	//		-	stridx is the current position of the string index
 	//
 	//	RETURN VALUE
 	//		S_OK if successful
@@ -117,8 +180,7 @@ HRESULT StringFormat :: formatString ( IUnknown *pSpecs,
 						while (	hr == S_OK &&
 									sValue[srcidx] != WCHAR('\0') &&
 									(iSz == (U32)-1 || srcidx < iSz) )
-							pwStr[(*stridx)++] = sValue[srcidx++];
-						pwStr[(*stridx)] = WCHAR('\0');
+							emitChr(sValue[srcidx++]);
 						}	// VTYPE_BSTR	
 						break;
 					// Integer
@@ -163,8 +225,7 @@ HRESULT StringFormat :: formatString ( IUnknown *pSpecs,
 							}	// if
 
 						// Append
-						WCSCAT ( pwStr, 100, wNumBfr );
-						(*stridx) += (U32)wcslen(wNumBfr);
+						emitStr(wNumBfr);
 						}	// VTYPE_I4
 						break;
 					// Long integer
@@ -199,8 +260,7 @@ HRESULT StringFormat :: formatString ( IUnknown *pSpecs,
 							}	// if
 
 						// Append
-						WCSCAT ( pwStr, COUNT_BFR, wNumBfr );
-						(*stridx) += (U32)wcslen(wNumBfr);
+						emitStr(wNumBfr);
 						}	// VTYPE_I4
 						break;
 					case VTYPE_R4 :
@@ -217,8 +277,7 @@ HRESULT StringFormat :: formatString ( IUnknown *pSpecs,
 							swprintf ( SWPF(wNumBfr,40), L"%0*f", (U32)(iSz), vValue.vflt );
 
 						// Append
-						WCSCAT ( pwStr, COUNT_BFR, wNumBfr );
-						(*stridx) += (U32)wcslen(wNumBfr);
+						emitStr(wNumBfr);
 						}	// VTYPE_R4
 						break;
 					case VTYPE_R8 :
@@ -235,8 +294,7 @@ HRESULT StringFormat :: formatString ( IUnknown *pSpecs,
 							swprintf ( SWPF(wNumBfr,40), L"%0*f", (U32)(iSz), vValue.vdbl );
 
 						// Append
-						WCSCAT ( pwStr, COUNT_BFR, wNumBfr );
-						(*stridx) += (U32)wcslen(wNumBfr);
+						emitStr(wNumBfr);
 						}	// VTYPE_R4
 						break;
 
@@ -309,8 +367,7 @@ HRESULT StringFormat :: formatString ( IUnknown *pSpecs,
 
 									// Append
 									sRes = res;
-									WCSCAT ( pwStr, COUNT_BFR, sRes );
-									(*stridx) += (U32)sRes.length();
+									emitStr(sRes);
 									}	// if
 								}	// if
 
@@ -357,8 +414,7 @@ HRESULT StringFormat :: formatString ( IUnknown *pSpecs,
 								// Append to string
 								if (hr == S_OK)
 									{
-									WCSCAT ( pwStr, COUNT_BFR, sRes );
-									(*stridx) += (U32)sRes.length();
+									emitStr(sRes);
 									}	// if
 								}	// else if
 
@@ -381,7 +437,7 @@ HRESULT StringFormat :: formatString ( IUnknown *pSpecs,
 				if (hr == S_OK && pDictSub->load ( vValueUn, unkV ) == S_OK)
 					{
 					// Continue formatting in sub string
-					CCLTRY(formatString ( unkV, pwStr, stridx ));
+					CCLTRY(formatString ( unkV ));
 					}	// if
 
 				// Clean up
@@ -395,8 +451,7 @@ HRESULT StringFormat :: formatString ( IUnknown *pSpecs,
 			{
 			// Place constant in string
 			for (U32 i = 0;hr == S_OK && strName[i] != WCHAR('\0');++i)
-				pwStr[(*stridx)++] = strName[i];
-			pwStr[(*stridx)] = WCHAR('\0');
+				hr = emitChr(strName[i]);
 			}	// if
 
 		// Clean up
@@ -433,9 +488,10 @@ HRESULT StringFormat :: onAttach ( bool bAttach )
 		{
 		adtIUnknown	unkV;
 
-		// String buffer
+		// String buffer, initial allocation
 		CCLTRY(COCREATE(L"Io.MemoryBlock",IID_IMemoryMapped,&pBfr));
-		CCLTRY(pBfr->setSize ( SIZE_BFR ));
+		CCLOK (cntBfr = 1024;)
+		CCLTRY(pBfr->setSize ( cntBfr*sizeof(WCHAR) ));
 		CCLTRY(pBfr->lock ( 0, 0, (void **) &pwBfr, NULL ));
 
 		// Allow format to specified as a node property
@@ -484,12 +540,16 @@ HRESULT StringFormat :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		CCLTRYE ( (pDctSrc != NULL),	ERROR_INVALID_STATE );
 		CCLTRYE ( (pFmt != NULL),		ERROR_INVALID_STATE );
 
-		// Initialize initial string
-		CCLOK ( pwBfr[0] = WCHAR('\0'); )
+		// Setup
+		if (hr == S_OK)
+			{
+			idxBfr	= 0;
+			pwBfr[0] = WCHAR('\0');
+			}	// if
 
 		// Format string
-		CCLTRY	( formatString ( pFmt, pwBfr, &idx ) );
-		pwBfr[idx] = WCHAR('\0');
+		CCLTRY	( formatString ( pFmt ) );
+		CCLOK		( pwBfr[idxBfr] = '\0'; )
 
 		// Result.
 		_EMT(Fire,adtString(pwBfr) );
