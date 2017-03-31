@@ -61,14 +61,9 @@ HRESULT Draw :: onAttach ( bool bAttach )
 		if (pnDesc->load ( adtString(L"Blue"), vL ) == S_OK)
 			fB = vL;
 		if (pnDesc->load ( adtString(L"Color"), vL ) == S_OK)
-			{
-			adtInt	iClr(vL);
-
-			// Alternative way to specify a color
-			fB = (float)((iClr >> 0) & 0xff);
-			fG = (float)((iClr >> 8) & 0xff);
-			fR = (float)((iClr >> 16) & 0xff);
-			}	// if
+			onReceive ( prColor, vL );
+		if (pnDesc->load ( adtString(L"Intensity"), vL ) == S_OK)
+			onReceive ( prIntensity, vL );
 		if (pnDesc->load ( adtString(L"Thickness"), vL ) == S_OK)
 			iThick = vL;
 		if (pnDesc->load ( adtString(L"Width"), vL ) == S_OK)
@@ -233,6 +228,24 @@ HRESULT Draw :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		_RELEASE(pImg);
 		_QISAFE(unkV,IID_IDictionary,&pImg);
 		}	// else if
+	else if (_RCP(Color))
+		{
+		adtInt	iClr(v);
+
+		// Alternative way to specify a color
+		fB = (float)((iClr >> 0) & 0xff);
+		fG = (float)((iClr >> 8) & 0xff);
+		fR = (float)((iClr >> 16) & 0xff);
+		}	// if
+	else if (_RCP(Intensity))
+		{
+		adtFloat	fClr(v);
+
+		// Alternative way to specify a color
+		fB = fClr;
+		fG = fClr;
+		fR = fClr;
+		}	// if
 	else if (_RCP(X0))
 		fX0 = v;
 	else if (_RCP(X1))

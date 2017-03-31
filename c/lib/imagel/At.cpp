@@ -220,7 +220,7 @@ HRESULT At :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 			// Single value done or proceed to next value
 			if (bSingle)
-				bSingle = false;
+				break;
 			else
 				{
 				pvLst->write(vLd);
@@ -230,7 +230,12 @@ HRESULT At :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 		// Result
 		if (hr == S_OK)
-			_EMT(Load,(pvLst == NULL) ? vLd : adtIUnknown(pvLst) );
+			{
+			if (bSingle)
+				_EMT(Load,vLd);
+			else
+				_EMT(Load,adtIUnknown(pvLst));
+			}	// if
 		else
 			_EMT(Error,adtInt(hr));
 

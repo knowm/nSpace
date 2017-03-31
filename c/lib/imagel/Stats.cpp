@@ -101,18 +101,33 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				{
 				cv::Point	ptMin,ptMax;
 				double		dMin,dMax;
+				S32			w,h;
 
 				// Values and locations of min and max
 				if (pMat->isUMat())
+					{
 					cv::minMaxLoc ( *(pMat->umat), &dMin, &dMax, &ptMin, &ptMax );
+					w = pMat->umat->cols;
+					h = pMat->umat->rows;
+					}	// if
 				#ifdef	HAVE_OPENCV_CUDA
 				else if (pMat->isGPU())
+					{
 					cv::cuda::minMaxLoc ( *(pMat->gpumat), &dMin, &dMax, &ptMin, &ptMax );
+					w = pMat->gpumat->cols;
+					h = pMat->gpumat->rows;
+					}	// if
 				#endif
 				else
+					{
 					cv::minMaxLoc ( *(pMat->mat), &dMin, &dMax, &ptMin, &ptMax );
+					w = pMat->mat->cols;
+					h = pMat->mat->rows;
+					}	// if
 
 				// Result
+				CCLTRY ( pImgUse->store ( adtString(L"Width"), adtInt(w) ) );
+				CCLTRY ( pImgUse->store ( adtString(L"Height"), adtInt(h) ) );
 				CCLTRY ( pImgUse->store ( adtString(L"Min"), adtDouble(dMin) ) );
 				CCLTRY ( pImgUse->store ( adtString(L"MinX"), adtInt(ptMin.x) ) );
 				CCLTRY ( pImgUse->store ( adtString(L"MinY"), adtInt(ptMin.y) ) );

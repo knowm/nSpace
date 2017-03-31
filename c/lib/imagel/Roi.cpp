@@ -112,21 +112,28 @@ HRESULT Roi :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		// Determine area of Roi.
 		if (hr == S_OK)
 			{
-			// Special case, no dimensions specified means entire image
-			if (iL == 0 && iT == 0 && iR == 0 && iB == 0)
+			// Special case, no dimensions specified means entire dimension
+			if (iL == 0 && iR == 0)
 				{
 				rct.x			= 0;
-				rct.y			= 0;
 				rct.width	= pMatSrc->cols();
-				rct.height	= pMatSrc->rows();
 				}	// if
 			else
 				{
 				rct.x			= iL;
-				rct.y			= iT;
 				rct.width	= iR-iL;
+				}	// else
+			if (iT == 0 && iB == 0)
+				{
+				rct.y			= 0;
+				rct.height	= pMatSrc->rows();
+				}	// if
+			else
+				{
+				rct.y			= iT;
 				rct.height	= iB-iT;
 				}	// else
+
 			}	// if
 
 		// Open CV uses exceptions
@@ -174,7 +181,8 @@ HRESULT Roi :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			}	// try
 		catch ( cv::Exception ex )
 			{
-			lprintf ( LOG_ERR, L"OpenCV Exception" );
+			lprintf ( LOG_WARN, L"Exception:%S\r\n",
+							ex.err.c_str() );
 			hr = E_UNEXPECTED;
 			}	// catch
 
