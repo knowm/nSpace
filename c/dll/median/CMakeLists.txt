@@ -13,7 +13,7 @@ set	(
 
 add_library (median SHARED ${SOURCES} ${HEADERS} ../dll.def)
 
-target_link_libraries(median medial nspcl adtl sysl ccl)
+target_link_libraries(median medial nspcl adtl ccl sysl)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER dll)
 

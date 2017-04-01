@@ -12,7 +12,7 @@ set	(
 		)
 add_library (imagen SHARED ${SOURCES} ${HEADERS} ../dll.def)
 
-target_link_libraries(imagen imagel mathl nspcl adtl sysl ccl)
+target_link_libraries(imagen imagel mathl nspcl adtl ccl sysl)
 target_link_libraries(imagen libjpeg libpng zlib)
 target_link_libraries(imagen ${OpenCV_LIBS})
 

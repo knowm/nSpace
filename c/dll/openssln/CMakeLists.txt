@@ -12,7 +12,7 @@ set	(
 		)
 add_library (openssln SHARED ${SOURCES} ${HEADERS} ../dll.def)
 
-target_link_libraries(openssln openssll nspcl adtl sysl ccl)
+target_link_libraries(openssln openssll nspcl adtl ccl sysl)
 
 include_directories(${OPENSSL_INCLUDE_DIR})
 

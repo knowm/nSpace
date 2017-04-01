@@ -13,7 +13,7 @@ set	(
 
 add_library (miscn SHARED ${SOURCES} ${HEADERS} ../dll.def)
 
-target_link_libraries(miscn miscl nspcl adtl sysl ccl)
+target_link_libraries(miscn miscl nspcl adtl ccl sysl)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER dll)
 

@@ -13,7 +13,7 @@ set	(
 
 add_library (mathn SHARED ${SOURCES} ${HEADERS} ../dll.def)
 
-target_link_libraries(mathn mathl nspcl adtl sysl ccl)
+target_link_libraries(mathn mathl nspcl adtl ccl sysl)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER dll)
 

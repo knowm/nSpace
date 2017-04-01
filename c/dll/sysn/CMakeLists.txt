@@ -13,11 +13,12 @@ set	(
 
 add_library (sysn SHARED ${SOURCES} ${HEADERS} ../dll.def)
 
-target_link_libraries(sysn sysl ccl)
-
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER dll)
 
+target_link_libraries(sysn ccl sysl)
+
 if (UNIX)
+target_link_libraries(sysn pthread)
 set_property(TARGET ${PROJECT_NAME} APPEND PROPERTY 
 			LINK_FLAGS "-Wl,--version-script=${PROJECT_SOURCE_DIR}/../../lib/ccl/ccl.version")
 endif()

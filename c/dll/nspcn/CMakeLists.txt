@@ -13,7 +13,7 @@ set	(
 
 add_library (nspcn SHARED ${SOURCES} ${HEADERS} ../dll.def)
 
-target_link_libraries(nspcn nspcl adtl sysl ccl)
+target_link_libraries(nspcn nspcl adtl ccl sysl)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER dll)
 

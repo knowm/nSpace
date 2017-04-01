@@ -12,7 +12,7 @@ set	(
 		)
 add_library (netn SHARED ${SOURCES} ${HEADERS} ../dll.def)
 
-target_link_libraries(netn netl nspcl adtl sysl ccl)
+target_link_libraries(netn netl nspcl adtl ccl sysl)
 
 
 # WinSock
