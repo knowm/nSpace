@@ -21,11 +21,11 @@
 #include <opencv2/objdetect.hpp>
 
 // OpenCV - Contrib
-//#ifdef	HAVE_OPENCV_CONTRIB
+#ifdef	HAVE_OPENCV_CONTRIB
 #include <opencv2/face.hpp>
-//#endif
+#endif
 
-// OpenCL
+// OpenCL							b
 #include <opencv2/core/ocl.hpp>
 
 // CUDA
@@ -498,7 +498,7 @@ class Draw :
 	END_BEHAVIOUR_NOTIFY()
 	};
 
-//#ifdef	HAVE_OPENCV_CONTRIB
+#ifdef	HAVE_OPENCV_CONTRIB
 //
 // Class - FaceRecognizer.  Face recognition node.
 //
@@ -543,7 +543,7 @@ class FaceRecognizer :
 	END_BEHAVIOUR_NOTIFY()
 	};
 
-//#endif
+#endif
 
 //
 // Class - Features.  Feature extraction node.
