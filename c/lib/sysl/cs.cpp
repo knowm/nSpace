@@ -172,8 +172,12 @@ bool sysCS :: leave ( void )
 	if (lThrd != lOwnerThrd)
 		{
 		// Should not happen
-		dbgprintf ( L"sysCS::leave:Non-owner thread releasing critical section (0x%x,0x%x)\r\n",
-							lThrd, lOwnerThrd );
+		if (!lOwnerThrd)
+			lprintf ( LOG_WARN, L"Critical section has no owner (0x%x)\r\n",
+								lThrd );
+		else
+			lprintf ( LOG_WARN, L"Non-owner thread releasing critical section (0x%x,0x%x)\r\n",
+								lThrd, lOwnerThrd );
 		#ifdef	_WIN32
 		DebugBreak();
 		#endif

@@ -523,7 +523,7 @@ extern "C"
 #define		LOG_WIDE(x)			L## # x
 #endif
 #define		LOG_WIDE2(x)		LOG_WIDE(x)
-#define		lprintf(a,b,...)	logPrintf ( LOG_WIDE2(__FILE__), __LINE__, LOG_WIDE2(__FUNCTION__), a, b, ##__VA_ARGS__ )
+#define		lprintf(a,b,...)	logPrintf ( LOG_WIDE2(__FILE__), __LINE__, __func__, a, b, ##__VA_ARGS__ )
 
 //
 // Class - cLogEntry.  Log entry.
@@ -533,7 +533,7 @@ class cLogEntry
 	{
 	public :
 	cLogEntry ( const WCHAR *, int,					// Constructor
-					const WCHAR *, int, 
+					const char *, int, 
 					const WCHAR * );
 	virtual ~cLogEntry ( void );						// Destructor
 
@@ -574,7 +574,7 @@ class cLogInfo
 
 extern "C"
 	{
-	int	logPrintf	( const WCHAR *, int, const WCHAR *, int, const WCHAR *, ... );
+	int	logPrintf	( const WCHAR *, int, const char *, int, const WCHAR *, ... );
 	void	logSink		( logCallback, void * );
 	}
 

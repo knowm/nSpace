@@ -104,7 +104,7 @@ void logSink ( logCallback pCB, void *pvCB )
 	}	// logSink
 
 extern "C"
-int logPrintf ( const WCHAR *file, int line, const WCHAR *func, 
+int logPrintf ( const WCHAR *file, int line, const char *func, 
 						int level , const WCHAR *fmt, ... )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -158,9 +158,9 @@ int logPrintf ( const WCHAR *file, int line, const WCHAR *func,
 	// Output to debug
 	swprintf ( SWPF(wFmt,sizeof(wFmt)/sizeof(WCHAR)),
 					#ifdef	_WIN32
-					L"<%s:%s> %s",
+					L"<%s:%S> %s",
 					#elif		__unix__ || __APPLE__
-					L"<%S:%S> %S",
+					L"<%S:%s> %S",
 					#endif
 					(level == LOG_DBG)  ? L"DBG" :
 					(level == LOG_INFO) ? L"INF" :
@@ -173,7 +173,7 @@ int logPrintf ( const WCHAR *file, int line, const WCHAR *func,
 		OutputDebugString ( L"\r\n" );
 	#else
 	printf ( "%S", wFmt );
-	if (wDbgBfr[wcslen(wFmt)-1] != '\n')
+	if (wFmt[wcslen(wFmt)-1] != '\n')
 		printf ( "\r\n" );
 	#endif
 
@@ -209,7 +209,7 @@ int logPrintf ( const WCHAR *file, int line, const WCHAR *func,
 // cLogEntry
 /////////////
 
-cLogEntry :: cLogEntry ( const WCHAR *_file, int _line, const WCHAR *_func, 
+cLogEntry :: cLogEntry ( const WCHAR *_file, int _line, const char *_func, 
 									int _level , const WCHAR *_str )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -225,9 +225,26 @@ cLogEntry :: cLogEntry ( const WCHAR *_file, int _line, const WCHAR *_func,
 	//		-	str is the string to log
 	//
 	////////////////////////////////////////////////////////////////////////
+	int 	len;
+
+	// Cache speified values
 	file	= sysStringAlloc ( _file );
-	line	= _line;
-	func	= sysStringAlloc ( _func );
+	line	= _line;	
+
+	// '_func' is being treated as "char *" instead of "wchar *" because
+	// the macro "__func__" is declared as a "char *" in compilers
+	func	= sysStringAllocLen ( NULL, (len = (int)strlen(_func)) );
+	swprintf ( SWPF((WCHAR *)(func+1),len),
+					#ifdef	_WIN32
+					L"%S",
+					#elif		__unix__ || __APPLE__
+					L"%s",
+					#endif
+					_func );
+dbgprintf ( L"Hi! {\r\n" );
+dbgprintf ( L"func = %s\r\n", ((WCHAR *)(func+1)) );
+dbgprintf ( L"_func = %S\r\n", _func );
+dbgprintf ( L"} Hi!\r\n" );
 	level	= _level;
 	str	= sysStringAlloc ( _str );
 	next	= NULL;

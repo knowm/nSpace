@@ -37,7 +37,7 @@ int dbgprintf ( const WCHAR *format, ... )
 	// Thread protection
 	if (!csDbgprintf.enter())
 		return 0;
-      
+
 	// Format string
 	va_start ( args, format );
 	#ifdef	_WIN32
@@ -69,7 +69,6 @@ int dbgprintf ( const WCHAR *format, ... )
 	#elif		__unix__ || __APPLE__
 	printf ( "%S", wDbgBfr );
 	#endif
-
 
 	// DEBUG
 //	{
