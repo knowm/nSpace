@@ -115,15 +115,17 @@ HRESULT CascadeClassifier :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 						}	// if
 
 					// Perform detection
-					if (pMat->isUMat())
+					if (pMat->isMat())
+						cc.detectMultiScale ( *(pMat->mat), rcts );
+					#ifdef	HAVE_OPENCV_UMAT
+					else if (pMat->isUMat())
 						cc.detectMultiScale ( *(pMat->umat), rcts );
+					#endif
 					#ifdef	HAVE_OPENCV_CUDA
 					else if (pMat->isGPU())
 						{
 						}	// else if
 					#endif
-					else if (pMat->isMat())
-						cc.detectMultiScale ( *(pMat->mat), rcts );
 
 					// Reset enumeration index
 					lprintf ( LOG_INFO, L"Count : %d", rcts.size() );

@@ -99,9 +99,14 @@ HRESULT Contours :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			try
 				{
 				// Execute (warning, findContours can be crashy)
-				if (pMat->isUMat())
+				if (pMat->isMat())
+					cv::findContours (	*(pMat->mat), contours, CV_RETR_EXTERNAL, 
+												CV_CHAIN_APPROX_SIMPLE );
+				#ifdef	HAVE_OPENCV_UMAT
+				else if (pMat->isUMat())
 					cv::findContours (	*(pMat->umat), contours, CV_RETR_EXTERNAL, 
 												CV_CHAIN_APPROX_SIMPLE );
+				#endif
 				#ifdef	HAVE_OPENCV_CUDA
 				else if (pMat->isGPU())
 					{
@@ -118,9 +123,6 @@ HRESULT Contours :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					// is not to modify image even if it is destructive
 					}	// if
 				#endif
-				else
-					cv::findContours (	*(pMat->mat), contours, CV_RETR_EXTERNAL, 
-												CV_CHAIN_APPROX_SIMPLE );
 
 				// Debug
 				lprintf ( LOG_INFO, L"Contours size %d\r\n", contours.size() );

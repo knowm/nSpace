@@ -167,11 +167,18 @@ HRESULT image_to_debug ( cvMatRef *pMat, const WCHAR *pwCtx,
 	cv::Mat		matSave;
 
 	// Values and locations of min and max
-	if (pMat->isUMat())
+	if (pMat->isMat())
+		{
+		cv::minMaxLoc ( *(pMat->mat), &dMin, &dMax, &ptMin, &ptMax );
+		type = pMat->mat->type();
+		}	// if
+	#ifdef	HAVE_OPENCV_UMAT
+	else if (pMat->isUMat())
 		{
 		cv::minMaxLoc ( *(pMat->umat), &dMin, &dMax, &ptMin, &ptMax );
 		type = pMat->umat->type();
 		}	// if
+	#endif
 	#ifdef	HAVE_OPENCV_CUDA
 	else if (pMat->isGPU())
 		{
@@ -179,11 +186,6 @@ HRESULT image_to_debug ( cvMatRef *pMat, const WCHAR *pwCtx,
 		type = pMat->gpumat->type();
 		}	// if
 	#endif
-	else
-		{
-		cv::minMaxLoc ( *(pMat->mat), &dMin, &dMax, &ptMin, &ptMax );
-		type = pMat->mat->type();
-		}	// if
 	dbgprintf ( L"%s (%s) : Min : %g @ (%d,%d) : Max : %g @ (%d,%d) : type %d\r\n",
 						pwCtx, 
 						(pMat->isGPU()) ? L"GPU" :
@@ -192,14 +194,16 @@ HRESULT image_to_debug ( cvMatRef *pMat, const WCHAR *pwCtx,
 						type );
 
 	// Download
-	if (pMat->isUMat())
+	if (pMat->isMat())
+		pMat->mat->copyTo ( matSave );
+	#ifdef	HAVE_OPENCV_UMAT
+	else if (pMat->isUMat())
 		pMat->umat->copyTo ( matSave );
+	#endif
 	#ifdef	HAVE_OPENCV_CUDA
 	else if (pMat->isGPU())
 		pMat->gpumat->download ( matSave );
 	#endif
-	else
-		pMat->mat->copyTo ( matSave );
 
 	// Some sample point values
 	if (matSave.type() == CV_32FC1)

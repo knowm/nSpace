@@ -92,9 +92,14 @@ HRESULT Flip :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 //		CCLOK ( image_to_debug ( pMat, L"Flip", L"c:/temp/flip1.png" ); )
 		if (hr == S_OK && (bHorz || bVert))
 			{
-			if (pMat->isUMat())
+			if (pMat->isMat())
+				cv::flip ( *(pMat->mat), *(pMat->mat),	(bHorz && bVert)	? -1 : 
+																	(bVert)				? 0 : 1 );
+			#ifdef	HAVE_OPENCV_UMAT
+			else if (pMat->isUMat())
 				cv::flip ( *(pMat->umat), *(pMat->umat),	(bHorz && bVert)	? -1 : 
 																		(bVert)				? 0 : 1 );
+			#endif
 			#ifdef	HAVE_OPENCV_CUDA
 			else if (pMat->isGPU())
 				{
@@ -111,9 +116,6 @@ HRESULT Flip :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 										(bVert)				? 0 : 1 );
 				}	// if
 			#endif
-			else
-				cv::flip ( *(pMat->mat), *(pMat->mat),	(bHorz && bVert)	? -1 : 
-																	(bVert)				? 0 : 1 );
 			}	// if
 //		CCLOK ( image_to_debug ( pMat, L"Flip", L"c:/temp/flip2.png" ); )
 
@@ -141,19 +143,7 @@ HRESULT Flip :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 //		CCLOK ( image_to_debug ( pMat, L"Transpose", L"c:/temp/trans1.png" ); )
 		if (hr == S_OK)
 			{
-			if (pMat->isUMat())
-				{
-				cv::UMat	matTrans;
-
-				// NOTE: UMat does not like source and destination to be the same
-				pMat->umat->copyTo ( matTrans );
-				cv::transpose ( matTrans, *(pMat->umat) );
-				}	// else if
-			#ifdef	HAVE_OPENCV_CUDA
-			else if (pMat->isGPU())
-				cv::cuda::transpose ( *(pMat->gpumat), *(pMat->gpumat) );
-			#endif
-			else
+			if (pMat->isMat())
 				{
 				cv::Mat	matT;
 
@@ -162,6 +152,20 @@ HRESULT Flip :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				pMat->mat->copyTo ( matT );
 				cv::transpose ( matT, *(pMat->mat) );
 				}	// else
+			#ifdef	HAVE_OPENCV_UMAT
+			else if (pMat->isUMat())
+				{
+				cv::UMat	matTrans;
+
+				// NOTE: UMat does not like source and destination to be the same
+				pMat->umat->copyTo ( matTrans );
+				cv::transpose ( matTrans, *(pMat->umat) );
+				}	// else if
+			#endif
+			#ifdef	HAVE_OPENCV_CUDA
+			else if (pMat->isGPU())
+				cv::cuda::transpose ( *(pMat->gpumat), *(pMat->gpumat) );
+			#endif
 			}	// if
 //		CCLOK ( image_to_debug ( pMat, L"Transpose", L"c:/temp/trans2.png" ); )
 

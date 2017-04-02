@@ -139,8 +139,22 @@ HRESULT Roi :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		// Open CV uses exceptions
 		try
 			{
+			// WARNING: Generation of GPU based ROIs slow ??
+			CCLTRYE( (pMatDst = new cvMatRef()) != NULL, E_OUTOFMEMORY );
+
 			// Create a new region of interest
-			if (hr == S_OK && pMatSrc->isUMat())
+			if (hr == S_OK && pMatSrc->isMat())
+				{
+				// Create ROI
+				CCLTRYE((pMatDst->mat = new cv::Mat ( *(pMatSrc->mat), rct ))
+							!= NULL, E_OUTOFMEMORY);
+
+				// Requesting own copy of Roi ?
+				if (hr == S_OK && bCopy == true)
+					*(pMatDst->mat) = pMatDst->mat->clone();
+				}	// else
+			#ifdef	HAVE_OPENCV_UMAT
+			else if (hr == S_OK && pMatSrc->isUMat())
 				{
 				// Create ROI
 				CCLTRYE((pMatDst->umat = new cv::UMat ( *(pMatSrc->umat), rct ))
@@ -150,9 +164,7 @@ HRESULT Roi :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				if (hr == S_OK && bCopy == true)
 					*(pMatDst->umat) = pMatDst->umat->clone();
 				}	// else if
-
-			// WARNING: Generation of GPU based ROIs slow ??
-			CCLTRYE( (pMatDst = new cvMatRef()) != NULL, E_OUTOFMEMORY );
+			#endif
 			#ifdef	HAVE_OPENCV_CUDA
 			else if (hr == S_OK && pMatSrc->isGPU())
 				{
@@ -165,16 +177,6 @@ HRESULT Roi :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					*(pMatDst->gpumat) = pMatDst->gpumat->clone();
 				}	// if
 			#endif
-			else
-				{
-				// Create ROI
-				CCLTRYE((pMatDst->mat = new cv::Mat ( *(pMatSrc->mat), rct ))
-							!= NULL, E_OUTOFMEMORY);
-
-				// Requesting own copy of Roi ?
-				if (hr == S_OK && bCopy == true)
-					*(pMatDst->mat) = pMatDst->mat->clone();
-				}	// else
 
 			// Result
 			CCLTRY ( pDstUse->store (	adtString(L"cvMatRef"), adtIUnknown(pMatDst) ) );

@@ -95,13 +95,31 @@ HRESULT Smooth :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			{
 			if (hr == S_OK)
 				{
-				if (pMat->isUMat())
+				if (pMat->isMat())
+					{
+					// Some filters require src != dst
+					cv::Mat	matSrc;
+					pMat->mat->copyTo ( matSrc );
+
+					// Execute
+					if (!WCASECMP(L"Gaussian",strType))
+						cv::GaussianBlur ( matSrc, *(pMat->mat), cv::Size(iSz,iSz), 0, 0 );
+					else if (!WCASECMP(L"Median",strType))
+						cv::medianBlur ( matSrc, *(pMat->mat), iSz );
+					else if (!WCASECMP(L"Bilateral",strType))
+						cv::bilateralFilter( matSrc, *(pMat->mat), 10, 20, 20);
+					else
+						cv::blur ( matSrc, *(pMat->mat), cv::Size(iSz,iSz) );
+					}	// else
+				#ifdef	HAVE_OPENCV_UMAT
+				else if (pMat->isUMat())
 					{
 					if (!strType.length())
 						cv::blur ( *(pMat->umat), *(pMat->umat), cv::Size(iSz,iSz) );
 					else if (!WCASECMP(L"Median",strType))
 						cv::medianBlur ( *(pMat->umat), *(pMat->umat), iSz );
 					}	// if
+				#endif
 				#ifdef	HAVE_OPENCV_CUDA
 				else if (pMat->isGPU())
 					{
@@ -120,22 +138,6 @@ HRESULT Smooth :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					pMat->gpumat->upload ( matNoGpu );
 					}	// if
 				#endif
-				else
-					{
-					// Some filters require src != dst
-					cv::Mat	matSrc;
-					pMat->mat->copyTo ( matSrc );
-
-					// Execute
-					if (!WCASECMP(L"Gaussian",strType))
-						cv::GaussianBlur ( matSrc, *(pMat->mat), cv::Size(iSz,iSz), 0, 0 );
-					else if (!WCASECMP(L"Median",strType))
-						cv::medianBlur ( matSrc, *(pMat->mat), iSz );
-					else if (!WCASECMP(L"Bilateral",strType))
-						cv::bilateralFilter( matSrc, *(pMat->mat), 10, 20, 20);
-					else
-						cv::blur ( matSrc, *(pMat->mat), cv::Size(iSz,iSz) );
-					}	// else
 				}	// if
 			}	// try
 		catch ( cv::Exception &ex )

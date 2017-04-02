@@ -131,6 +131,7 @@ HRESULT Prepare :: gpuInit ( void )
 		bUMat = false;
 
 		// Open CV 3.X has automatic OpenCL support via the new "UMat" object
+		#ifdef	HAVE_OPENCV_UMAT
 		if (cv::ocl::haveOpenCL())
 			bUMat = true;
 
@@ -152,6 +153,7 @@ HRESULT Prepare :: gpuInit ( void )
 			cv::Mat	mat(10,10,CV_8UC1);
 			mat.copyTo ( umat );
 			}	// if
+		#endif
 
 		}	// else
 
@@ -237,23 +239,25 @@ HRESULT Prepare :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		// Create a blank matrix type
 		CCLTRY ( Create::create ( pImgUse, mat->cols, mat->rows, mat->type(), &pMat, bCPU ) );
 
+		// CPU
+		if (hr == S_OK && pMat->isMat())
+			{
+			// Since uploading to a GPU involves a copy, 'own' the pixel
+			// data for CPU in case the download goes back into the same image bits.
+			*(pMat->mat) = mat->clone();
+			}	// else
+
 		// OCL
-		if (hr == S_OK && pMat->isUMat())
+		#ifdef	HAVE_OPENCV_UMAT
+		else if (hr == S_OK && pMat->isUMat())
 			mat->copyTo ( *(pMat->umat) );
+		#endif
 
 		// GPU
 		#ifdef	HAVE_OPENCV_CUDA
 		else if (hr == S_OK && pMat->isGPU())
 			pMat->gpumat->upload ( *mat );
 		#endif
-
-		// CPU
-		else if (hr == S_OK)
-			{
-			// Since uploading to a GPU involves a copy, 'own' the pixel
-			// data for CPU in case the download goes back into the same image bits.
-			*(pMat->mat) = mat->clone();
-			}	// else
 
 		// Store 'uploaded' image in image dictionary
 		CCLTRY ( pImgUse->store (	adtString(L"cvMatRef"), adtIUnknown(pMat) ) );
@@ -289,14 +293,16 @@ HRESULT Prepare :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			cv::Mat		mat;
 
 			// Download into local matri if GPU is enabled
-			if (pMat->isUMat())
+			if (pMat->isMat())
+				mat = *(pMat->mat);
+			#ifdef	HAVE_OPENCV_UMAT
+			else if (pMat->isUMat())
 				mat = pMat->umat->getMat(cv::ACCESS_READ);
+			#endif
 			#ifdef	HAVE_OPENCV_CUDA
 			else if (pMat->isGPU())
 				pMat->gpumat->download(mat);
 			#endif
-			else
-				mat = *(pMat->mat);
 
 			// Store resulting image in dictionary
 			CCLTRY ( image_from_mat ( &mat, pImgUse ) );

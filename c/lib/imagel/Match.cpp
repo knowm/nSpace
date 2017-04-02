@@ -103,8 +103,10 @@ HRESULT Match :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 		// All images must be of the same type
 		if (hr == S_OK)
-			hr = (	(pMatT->mat != NULL && pMatR->mat != NULL) ||
-						(pMatT->umat != NULL && pMatR->umat != NULL)
+			hr = (	(pMatT->mat != NULL && pMatR->mat != NULL)
+						#ifdef	HAVE_OPENCV_UMAT
+						|| (pMatT->umat != NULL && pMatR->umat != NULL)
+						#endif
 						#ifdef	HAVE_OPENCV_CUDA
 						|| (pMatT->gpumat != NULL && pMatR->gpumat != NULL)
 						#endif
@@ -129,11 +131,18 @@ try
 			// NOTE: Currently getting different results from all different methods,
 			// CPU, CUDA and OpenCL (Umat).  Until this is figured out, downshift into CPU mode.
 			//
-			if (pMatR->isUMat())
+			if (pMatR->isMat())
+				{
+				matR = *(pMatR->mat);
+				matT = *(pMatT->mat);
+				}	// else
+			#ifdef	HAVE_OPENCV_UMAT
+			else if (pMatR->isUMat())
 				{
 				matR = pMatR->umat->getMat(cv::ACCESS_READ);
 				matT = pMatT->umat->getMat(cv::ACCESS_READ);
 				}	// else if
+			#endif
 			#ifdef	HAVE_OPENCV_CUDA
 			else if (pMatR->isGPU())
 				{
@@ -141,24 +150,21 @@ try
 				pMatT->gpumat->download(matT);
 				}	// if
 			#endif
-			else
-				{
-				matR = *(pMatR->mat);
-				matT = *(pMatT->mat);
-				}	// else
 
 			// Perform match
 			cv::matchTemplate ( matR, matT, matC, CV_TM_CCORR_NORMED );
 
 			// Copy result to destination
-			if (pMatR->isUMat())
+			if (pMatR->isMat())
+				matC.copyTo ( *(pMatO->mat) );
+			#ifdef	HAVE_OPENCV_UMAT
+			else if (pMatR->isUMat())
 				matC.copyTo ( *(pMatO->umat) );
+			#endif
 			#ifdef	HAVE_OPENCV_CUDA
 			else if (pMatO->isGPU())
 				pMatO->gpumat->upload(matC);
 			#endif
-			else
-				matC.copyTo ( *(pMatO->mat) );
 
 //image_to_debug ( pMatO, L"Match", L"c:/temp/MatchC1.png" );
 

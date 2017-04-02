@@ -20,7 +20,9 @@ cvMatRef :: cvMatRef ( void )
 	#ifdef	HAVE_OPENCV_CUDA
 	gpumat	= NULL;
 	#endif
+	#ifdef	HAVE_OPENCV_UMAT
 	umat		= NULL;
+	#endif
 
 	// So creators do not have to do the initial AddRef
 	AddRef();
@@ -46,10 +48,12 @@ cvMatRef :: ~cvMatRef ( void )
 		gpumat = NULL;
 		}	 // if
 	#endif
+	#ifdef	HAVE_OPENCV_UMAT
 	if (umat != NULL)
 		{
 		delete umat;
 		umat = NULL;
 		}	 // if
+	#endif
 	}	// ~cvMatRef
 

@@ -90,8 +90,51 @@ HRESULT Features :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		// Perform Featuresing operation
 		if (hr == S_OK)
 			{
+			// CPU
+			if (pMat->isMat())
+				{
+				if (!WCASECMP(L"HoughCircles",strType))
+					{
+					std::vector<cv::Vec3f>	circles;
+
+					// Perform detection
+					cv::HoughCircles ( *(pMat->mat), circles, CV_HOUGH_GRADIENT, 
+												2, 5, 100, 20, 0, 0 );
+
+					// Debug
+//if (circles.size()>1)
+//	DebugBreak();
+					#ifdef _DEBUG
+					for (int i = 0;i < circles.size();++i)
+						lprintf ( LOG_DBG, L"Circle %g,%g,%g\r\n",
+										(float)circles[i][0], 
+										(float)circles[i][1], 
+										(float)circles[i][2] );
+					#endif
+
+					hr = S_OK;
+
+					// Replace original array
+//					matCircles.copyTo(*(pMat->mat));
+					}	// if
+				else if (!WCASECMP(strType,L"Canny"))
+					{
+					cv::Mat matDst;
+
+					// Execute
+					cv::Canny ( *(pMat->mat), matDst, 100, 200 ); 
+
+					// Result
+					if (matDst.rows > 0 && matDst.cols > 0)
+						matDst.copyTo ( *(pMat->mat) );
+					}	// else if
+				else
+					hr = E_NOTIMPL;
+				}	// else
+
 			// UMat/OpenCL
-			if (pMat->isUMat())
+			#ifdef	HAVE_OPENCV_UMAT
+			else if (pMat->isUMat())
 				{
 				if (!WCASECMP(L"HoughCircles",strType))
 					{
@@ -118,6 +161,7 @@ HRESULT Features :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				else
 					hr = E_NOTIMPL;
 				}	// if
+			#endif
 
 			// GPU
 			#ifdef	HAVE_OPENCV_CUDA
@@ -171,48 +215,6 @@ HRESULT Features :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					hr = E_NOTIMPL;
 				}	// if
 			#endif
-
-			// CPU
-			else
-				{
-				if (!WCASECMP(L"HoughCircles",strType))
-					{
-					std::vector<cv::Vec3f>	circles;
-
-					// Perform detection
-					cv::HoughCircles ( *(pMat->mat), circles, CV_HOUGH_GRADIENT, 
-												2, 5, 100, 20, 0, 0 );
-
-					// Debug
-//if (circles.size()>1)
-//	DebugBreak();
-					#ifdef _DEBUG
-					for (int i = 0;i < circles.size();++i)
-						lprintf ( LOG_DBG, L"Circle %g,%g,%g\r\n",
-										(float)circles[i][0], 
-										(float)circles[i][1], 
-										(float)circles[i][2] );
-					#endif
-
-					hr = S_OK;
-
-					// Replace original array
-//					matCircles.copyTo(*(pMat->mat));
-					}	// if
-				else if (!WCASECMP(strType,L"Canny"))
-					{
-					cv::Mat matDst;
-
-					// Execute
-					cv::Canny ( *(pMat->mat), matDst, 100, 200 ); 
-
-					// Result
-					if (matDst.rows > 0 && matDst.cols > 0)
-						matDst.copyTo ( *(pMat->mat) );
-					}	// else if
-				else
-					hr = E_NOTIMPL;
-				}	// else
 
 			}	// if
 

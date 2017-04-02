@@ -57,12 +57,20 @@ HRESULT Create :: create ( IDictionary *pDct, U32 w, U32 h, U32 f,
 
 	// Create a matrix based on the GPU mode
 	CCLTRYE( (pMat = new cvMatRef()) != NULL, E_OUTOFMEMORY );
+	if (bCpu || (!bUMat && !bCuda))
+		{
+		CCLTRYE ( (pMat->mat = new cv::Mat ( h, w, f )) != NULL,
+						E_OUTOFMEMORY );
+		CCLOK ( pMat->mat->setTo ( cv::Scalar(0) ); )
+		}	// else
+	#ifdef	HAVE_OPENCV_UMAT
 	if (!bCpu && bUMat)
 		{
 		CCLTRYE ( (pMat->umat = new cv::UMat ( h, w, f )) != NULL,
 						E_OUTOFMEMORY );
 		CCLOK ( pMat->umat->setTo ( cv::Scalar(0) ); )
 		}	// else if
+	#endif
 	#ifdef	HAVE_OPENCV_CUDA
 	else if (!bCpu && bCuda)
 		{
@@ -71,12 +79,6 @@ HRESULT Create :: create ( IDictionary *pDct, U32 w, U32 h, U32 f,
 		CCLOK ( pMat->gpumat->setTo ( cv::Scalar(0) ); )
 		}	// if
 	#endif
-	else
-		{
-		CCLTRYE ( (pMat->mat = new cv::Mat ( h, w, f )) != NULL,
-						E_OUTOFMEMORY );
-		CCLOK ( pMat->mat->setTo ( cv::Scalar(0) ); )
-		}	// else
 
 	// Store image in image dictionary
 	if (hr == S_OK && pDct != NULL)
@@ -199,14 +201,16 @@ HRESULT Create :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				CCLOK ( cv::mulTransposed ( matK, matK, false ); )
 
 				// Copy to blank image
-				if (pMat->isUMat())
+				if (pMat->isMat())
+					matK.copyTo ( *(pMat->mat) );
+				#ifdef	HAVE_OPENCV_UMAT
+				else if (pMat->isUMat())
 					matK.copyTo ( *(pMat->umat) );
+				#endif
 				#ifdef	HAVE_OPENCV_CUDA
 				else if (pMat->isGPU())
 					pMat->gpumat->upload ( matK );
 				#endif
-				else
-					matK.copyTo ( *(pMat->mat) );
 				}	// if
 
 			}	// if

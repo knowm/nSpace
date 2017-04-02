@@ -42,43 +42,54 @@ HRESULT Convert :: convertTo (	cvMatRef *pMatSrc, cvMatRef *pMatDst,
 	HRESULT	hr = S_OK;
 
 	// Special cases
-	if (pMatSrc->isUMat() && pMatDst->isUMat())
-		hr = convertTo ( pMatSrc->umat, pMatDst->umat, fmt );
-	#ifdef	HAVE_OPENCV_CUDA
-	else if (pMatSrc->isGPU() && pMatDst->isGPU())
-		hr = convertTo ( pMatSrc->gpumat, pMatDst->gpumat, fmt );
-	#endif
-	else
+	if	(	(pMatSrc->isUMat() && !pMatDst->isUMat()) ||
+			(pMatSrc->isGPU() && !pMatDst->isGPU()) ||
+			(pMatSrc->isMat() && !pMatDst->isMat()) )
 		{
 		cv::Mat	matCnv;
 
 		// Copy to CPU
-		if (pMatSrc->isUMat())
+		if (pMatSrc->isMat())
+			matCnv = *(pMatSrc->mat);
+		#ifdef	HAVE_OPENCV_UMAT
+		else if (pMatSrc->isUMat())
 			pMatSrc->umat->copyTo ( matCnv );
+		#endif
 		#ifdef	HAVE_OPENCV_CUDA
 		else if (pMatSrc->isGPU())
 			pMatSrc->gpumat->download ( matCnv );
 		#endif
-		else
-			matCnv = *(pMatSrc->mat);
 
 		// Convert 'to' specified format.
 		matCnv.convertTo ( matCnv, fmt );
 
 		// Copy back
-		if (pMatDst->isUMat())
+		if (pMatDst->isMat())
+			matCnv.copyTo ( *(pMatDst->mat) );
+		#ifdef	HAVE_OPENCV_UMAT
+		else if (pMatDst->isUMat())
 			matCnv.copyTo ( *(pMatDst->umat) );
+		#endif
 		#ifdef	HAVE_OPENCV_CUDA
 		else if (pMatDst->isGPU())
 			pMatDst->gpumat->upload ( matCnv );
 		#endif
-		else
-			matCnv.copyTo ( *(pMatDst->mat) );
-		}	// else
+		}	// if
+	#ifdef	HAVE_OPENCV_UMAT
+	else if (pMatSrc->isUMat() && pMatDst->isUMat())
+		hr = convertTo ( pMatSrc->umat, pMatDst->umat, fmt );
+	#endif
+	#ifdef	HAVE_OPENCV_CUDA
+	else if (pMatSrc->isGPU() && pMatDst->isGPU())
+		hr = convertTo ( pMatSrc->gpumat, pMatDst->gpumat, fmt );
+	#endif
+	else
+		hr = E_NOTIMPL;
 
 	return hr;
 	}	// convertTo
 
+#ifdef	HAVE_OPENCV_UMAT
 HRESULT Convert :: convertTo (	cv::UMat *pMatSrc, 
 											cv::UMat *pMatDst, U32 fmt )
 	{
@@ -103,6 +114,7 @@ HRESULT Convert :: convertTo (	cv::UMat *pMatSrc,
 
 	return hr;
 	}	// convertTo
+#endif
 
 #ifdef	HAVE_OPENCV_CUDA
 HRESULT Convert :: convertTo (	cv::cuda::GpuMat *pMatSrc, 
@@ -284,14 +296,16 @@ HRESULT Convert :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			// Perform color space conversion
 			if (hr == S_OK)
 				{
+				if (pMat->isMat())
+					cv::cvtColor( *(pMat->mat), *(pMat->mat), spc );
+				#ifdef	HAVE_OPENCV_UMAT
 				if (pMat->isUMat())
 					cv::cvtColor( *(pMat->umat), *(pMat->umat), spc );
+				#endif
 				#ifdef	HAVE_OPENCV_CUDA
 				else if (pMat->isGPU())
 					cv::cuda::cvtColor ( *(pMat->gpumat), *(pMat->gpumat), spc );
 				#endif
-				else 
-					cv::cvtColor( *(pMat->mat), *(pMat->mat), spc );
 				}	// if
 
 			// Debug

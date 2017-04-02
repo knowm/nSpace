@@ -13,7 +13,7 @@
 #include "imagel.h"
 #include "../../lib/nspcl/nspcl.h"
 
-// OpenCV - Currently expecting 3.1+
+// OpenCV
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -25,8 +25,11 @@
 #include <opencv2/face.hpp>
 #endif
 
-// OpenCL							b
+// OpenCL
+#if		CV_VERSION_EPOCH	>= 3
+#define	HAVE_OPENCV_UMAT
 #include <opencv2/core/ocl.hpp>
+#endif
 
 // CUDA
 #ifdef	HAVE_OPENCV_CUDA
@@ -84,25 +87,38 @@ class cvMatRef :
 					false;
 					#endif
 		 }
-	bool isUMat ( void ) { return (umat != NULL); }
+	bool isUMat ( void )
+		{ return 
+					#ifdef	HAVE_OPENCV_UMAT
+					(umat != NULL);
+					#else
+					false;
+					#endif
+		 }
 	bool isMat ( void ) { return (mat != NULL); }
 	S32	rows ( void )
 			{ return (mat != NULL) ? mat->rows :
+						#ifdef	HAVE_OPENCV_UMAT
 						(umat != NULL) ? umat->rows :
+						#endif
 						#ifdef	HAVE_OPENCV_CUDA
 						(gpumat != NULL) ? gpumat->rows : 
 						#endif
 						0; }
 	S32	cols ( void )
 			{ return (mat != NULL) ? mat->cols :
+						#ifdef	HAVE_OPENCV_UMAT
 						(umat != NULL) ? umat->cols :
+						#endif
 						#ifdef	HAVE_OPENCV_CUDA
 						(gpumat != NULL) ? gpumat->cols : 
 						#endif
 						0; }
 	S32	channels ( void )
 			{ return (mat != NULL) ? mat->channels() :
+						#ifdef	HAVE_OPENCV_UMAT
 						(umat != NULL) ? umat->channels() :
+						#endif
 						#ifdef	HAVE_OPENCV_CUDA
 						(gpumat != NULL) ? gpumat->channels() : 
 						#endif
@@ -113,7 +129,9 @@ class cvMatRef :
 	#ifdef	HAVE_OPENCV_CUDA
 	cv::cuda::GpuMat	*gpumat;							// GPU matrix
 	#endif
+	#ifdef	HAVE_OPENCV_UMAT
 	cv::UMat				*umat;							// Universal/OpenCL matrix
+	#endif
 
 	// CCL
 	CCL_OBJECT_BEGIN_INT(cvMatRef)
@@ -333,9 +351,11 @@ class Convert :
 	// Utilities
 	static
 	HRESULT convertTo	( cvMatRef *, cvMatRef *, U32 );
+	#ifdef	HAVE_OPENCV_UMAT
 	static
 	HRESULT convertTo	( cv::UMat *, 
 								cv::UMat *, U32 );
+	#endif
 	#ifdef	HAVE_OPENCV_CUDA
 	static
 	HRESULT convertTo	( cv::cuda::GpuMat *, 
@@ -660,14 +680,18 @@ class FFT :
 	#ifdef	HAVE_OPENCV_CUDA
 	cv::cuda::GpuMat			gpuPad,gpuPlanes[2],gpuCmplx,gpuMag;
 	#endif
+	#ifdef	HAVE_OPENCV_UMAT
 	cv::UMat						umatPad,umatCmplx,umatMag;
 	std::vector<cv::UMat>	umatPlanes;
+	#endif
 
 	// Internal utilities
 	#ifdef	HAVE_OPENCV_CUDA
 	HRESULT fft		(	cv::cuda::GpuMat *, 	cv::cuda::GpuMat *, bool );
 	#endif
+	#ifdef	HAVE_OPENCV_UMAT
 	HRESULT fft		(	cv::UMat *, cv::UMat *, bool );
+	#endif
 	HRESULT fft		(	cv::Mat *, 	cv::Mat *, bool );
 	HRESULT window ( cvMatRef * );
 	};

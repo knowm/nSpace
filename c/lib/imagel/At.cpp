@@ -132,8 +132,40 @@ HRESULT At :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			// Open CV uses exceptions
 			try
 				{
+				// CPU
+				if (pMat->isMat())
+					{
+					switch (CV_MAT_DEPTH(pMat->mat->type()))
+						{
+						// 8-bit
+						case CV_8U :
+							hr = adtValue::copy ( adtInt(pMat->mat->at<U8>(y,x)), vLd );
+							break;
+						case CV_8S :
+							hr = adtValue::copy ( adtInt(pMat->mat->at<S8>(y,x)), vLd );
+							break;
+
+						// 16-bit
+						case CV_16U :
+							hr = adtValue::copy ( adtInt(pMat->mat->at<U16>(y,x)), vLd );
+							break;
+						case CV_16S :
+							hr = adtValue::copy ( adtInt(pMat->mat->at<S16>(y,x)), vLd );
+							break;
+
+						// 32-bit
+						case CV_32S :
+							hr = adtValue::copy ( adtInt(pMat->mat->at<S32>(y,x)), vLd );
+							break;
+						case CV_32F :
+							hr = adtValue::copy ( adtFloat(pMat->mat->at<float>(y,x)), vLd );
+							break;
+						}	// switch
+					}	// if
+
+				#ifdef	HAVE_OPENCV_CUDA
 				// GPU
-				if (pMat->isGPU())
+				else if (pMat->isGPU())
 					{
 					// Anything can be done ?
 					static bool bFirst = true;
@@ -146,8 +178,10 @@ HRESULT At :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					// Unsupported since image is in GPU memory
 					hr = E_NOTIMPL;
 					}	// if
+				#endif
 
 				// UMAT
+				#ifdef	HAVE_OPENCV_UMAT
 				else if (pMat->isUMat())
 					{
 					// Access array
@@ -179,37 +213,7 @@ HRESULT At :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 							break;
 						}	// switch
 					}	// else if
-
-				// CPU
-				else
-					{
-					switch (CV_MAT_DEPTH(pMat->mat->type()))
-						{
-						// 8-bit
-						case CV_8U :
-							hr = adtValue::copy ( adtInt(pMat->mat->at<U8>(y,x)), vLd );
-							break;
-						case CV_8S :
-							hr = adtValue::copy ( adtInt(pMat->mat->at<S8>(y,x)), vLd );
-							break;
-
-						// 16-bit
-						case CV_16U :
-							hr = adtValue::copy ( adtInt(pMat->mat->at<U16>(y,x)), vLd );
-							break;
-						case CV_16S :
-							hr = adtValue::copy ( adtInt(pMat->mat->at<S16>(y,x)), vLd );
-							break;
-
-						// 32-bit
-						case CV_32S :
-							hr = adtValue::copy ( adtInt(pMat->mat->at<S32>(y,x)), vLd );
-							break;
-						case CV_32F :
-							hr = adtValue::copy ( adtFloat(pMat->mat->at<float>(y,x)), vLd );
-							break;
-						}	// switch
-					}	// else
+				#endif
 
 				}	// try
 			catch ( cv::Exception ex )
@@ -363,8 +367,40 @@ HRESULT At :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			// Open CV uses exceptions
 			try
 				{
+				// CPU
+				if (pMat->isMat())
+					{
+					switch (CV_MAT_DEPTH(pMat->mat->type()))
+						{
+						// 8-bit
+						case CV_8U :
+							pMat->mat->at<U8>(y,x) = adtInt(vSt);
+							break;
+						case CV_8S :
+							pMat->mat->at<S8>(y,x) = adtInt(vSt);
+							break;
+
+						// 16-bit
+						case CV_16U :
+							pMat->mat->at<U16>(y,x) = adtInt(vSt);
+							break;
+						case CV_16S :
+							pMat->mat->at<S16>(y,x) = adtInt(vSt);
+							break;
+
+						// 32-bit
+						case CV_32S :
+							pMat->mat->at<S32>(y,x) = adtInt(vSt);
+							break;
+						case CV_32F :
+							pMat->mat->at<float>(y,x) = adtFloat(vSt);
+							break;
+						}	// switch
+					}	// else
+
 				// GPU
-				if (pMat->isGPU())
+				#ifdef	HAVE_OPENCV_CUDA
+				else if (pMat->isGPU())
 					{
 					// Anything can be done ?
 					static bool bFirst = true;
@@ -377,8 +413,10 @@ HRESULT At :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					// Unsupported since image is in GPU memory
 					hr = E_NOTIMPL;
 					}	// if
+				#endif
 
 				// UMAT
+				#ifdef	HAVE_OPENCV_UMAT
 				else if (pMat->isUMat())
 					{
 					// Access array
@@ -410,37 +448,7 @@ HRESULT At :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 							break;
 						}	// switch
 					}	// else if
-
-				// CPU
-				else
-					{
-					switch (CV_MAT_DEPTH(pMat->mat->type()))
-						{
-						// 8-bit
-						case CV_8U :
-							pMat->mat->at<U8>(y,x) = adtInt(vSt);
-							break;
-						case CV_8S :
-							pMat->mat->at<S8>(y,x) = adtInt(vSt);
-							break;
-
-						// 16-bit
-						case CV_16U :
-							pMat->mat->at<U16>(y,x) = adtInt(vSt);
-							break;
-						case CV_16S :
-							pMat->mat->at<S16>(y,x) = adtInt(vSt);
-							break;
-
-						// 32-bit
-						case CV_32S :
-							pMat->mat->at<S32>(y,x) = adtInt(vSt);
-							break;
-						case CV_32F :
-							pMat->mat->at<float>(y,x) = adtFloat(vSt);
-							break;
-						}	// switch
-					}	// else
+				#endif
 
 				}	// try
 			catch ( cv::Exception ex )

@@ -139,9 +139,11 @@ HRESULT Draw :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			if (pMat->isGPU())
 				cv::line ( matNoGpu, cv::Point((int)fX0,(int)fY0), 
 								cv::Point((int)fX1,(int)fY1), clr, iThick );
+			#ifdef	HAVE_OPENCV_UMAT
 			else if (pMat->isUMat())
 				cv::line ( *(pMat->umat), cv::Point((int)fX0,(int)fY0), 
 								cv::Point((int)fX1,(int)fY1), clr, iThick );
+			#endif
 			else
 				cv::line ( *(pMat->mat), cv::Point((int)fX0,(int)fY0), 
 								cv::Point((int)fX1,(int)fY1), clr, iThick );
@@ -154,8 +156,10 @@ HRESULT Draw :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			// Perform draw
 			if (pMat->isGPU())
 				cv::ellipse ( matNoGpu, rct, clr, iThick );
+			#ifdef	HAVE_OPENCV_UMAT
 			else if (pMat->isUMat())
 				cv::ellipse ( (*pMat->umat), rct, clr, iThick );
+			#endif
 			else
 				cv::ellipse ( (*pMat->mat), rct, clr, iThick );
 			}	// else if
@@ -166,10 +170,12 @@ HRESULT Draw :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				cv::ellipse ( matNoGpu, cv::Point((int)fX0,(int)fY0), 
 									cv::Size((int)fX1,(int)fY1),
 									fA, fA0, fA1, clr, iThick );
+			#ifdef	HAVE_OPENCV_UMAT
 			else if (pMat->isUMat())
 				cv::ellipse ( (*pMat->umat), cv::Point((int)fX0,(int)fY0), 
 									cv::Size((int)fX1,(int)fY1),
 									fA, fA0, fA1, clr, iThick );
+			#endif
 			else
 				cv::ellipse ( (*pMat->mat), cv::Point((int)fX0,(int)fY0), 
 									cv::Size((int)fX1,(int)fY1),
@@ -180,9 +186,11 @@ HRESULT Draw :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			if (pMat->isGPU())
 				cv::circle ( matNoGpu, cv::Point((int)(float)fX0,(int)(float)fY0), 
 									(int)(float)fRad, clr, iThick );
+			#ifdef	HAVE_OPENCV_UMAT
 			else if (pMat->isUMat())
 				cv::circle ( *(pMat->umat), cv::Point((int)(float)fX0,(int)(float)fY0), 
 									(int)(float)fRad, clr, iThick );
+			#endif
 			else
 				cv::circle ( *(pMat->mat), cv::Point((int)(float)fX0,(int)(float)fY0), 
 									(int)(float)fRad, clr, iThick );
@@ -192,9 +200,11 @@ HRESULT Draw :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			if (pMat->isGPU())
 				cv::rectangle ( matNoGpu, cv::Point((int)fX0,(int)fY0), 
 									cv::Point((int)fX1,(int)fY1), clr, iThick );
+			#ifdef	HAVE_OPENCV_UMAT
 			else if (pMat->isUMat())
 				cv::rectangle ( *(pMat->umat), cv::Point((int)fX0,(int)fY0), 
 									cv::Point((int)fX1,(int)fY1), clr, iThick );
+			#endif
 			else
 				cv::rectangle ( *(pMat->mat), cv::Point((int)fX0,(int)fY0), 
 									cv::Point((int)fX1,(int)fY1), clr, iThick );

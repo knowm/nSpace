@@ -94,14 +94,16 @@ HRESULT Resize :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		// Resize the image
 		if (hr == S_OK)
 			{
-			if (pMat->isUMat())
+			if (pMat->isMat())
+				cv::resize ( *(pMat->mat), *(pMat->mat), cv::Size(iW,iH) );
+			#ifdef	HAVE_OPENCV_UMAT
+			else if (pMat->isUMat())
 				cv::resize ( *(pMat->umat), *(pMat->umat), cv::Size(iW,iH) );
+			#endif
 			#ifdef	HAVE_OPENCV_CUDA
 			else if (pMat->isGPU())
 				cv::cuda::resize ( *(pMat->gpumat), *(pMat->gpumat), cv::Size(iW,iH) );
 			#endif
-			else
-				cv::resize ( *(pMat->mat), *(pMat->mat), cv::Size(iW,iH) );
 			}	// if
 
 		// Result

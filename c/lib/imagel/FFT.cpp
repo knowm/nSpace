@@ -12,7 +12,10 @@
 
 // Globals
 
-FFT :: FFT ( void ) : umatPlanes(2)
+FFT :: FFT ( void )
+	#ifdef	HAVE_OPENCV_UMAT
+	: umatPlanes(2)
+	#endif
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -125,6 +128,7 @@ HRESULT FFT :: fft ( cv::Mat *pMat, cv::Mat *pWnd, bool bRows )
 	return hr;
 	}	// fft
 
+#ifdef	HAVE_OPENCV_UMAT
 HRESULT FFT :: fft ( cv::UMat *pMat, cv::UMat *pWnd, bool bRows )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -229,6 +233,7 @@ HRESULT FFT :: fft ( cv::UMat *pMat, cv::UMat *pWnd, bool bRows )
 
 	return hr;
 	}	// fft
+#endif
 
 #ifdef HAVE_OPENCV_CUDA
 HRESULT FFT :: fft ( cv::cuda::GpuMat *pMat, cv::cuda::GpuMat *pWnd, 
@@ -434,14 +439,16 @@ HRESULT FFT :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 		// Compute FFT/Magnitude
 //		CCLOK ( image_to_debug ( pMat, L"FFT", L"c:/temp/fft.png" ); )
-		if (hr == S_OK && pMat->isUMat())
+		if (hr == S_OK && pMat->isMat())
+			hr = fft ( pMat->mat, (pWnd != NULL) ? pWnd->mat : NULL, bRows );
+		#ifdef	HAVE_OPENCV_UMAT
+		else if (hr == S_OK && pMat->isUMat())
 			hr = fft ( pMat->umat, (pWnd != NULL) ? pWnd->umat : NULL, bRows );
+		#endif
 		#ifdef HAVE_OPENCV_CUDA
 		else if (hr == S_OK && pMat->isGPU())
 			hr = fft ( pMat->gpumat, (pWnd != NULL) ? pWnd->gpumat : NULL, bRows );
 		#endif
-		else
-			hr = fft ( pMat->mat, (pWnd != NULL) ? pWnd->mat : NULL, bRows );
 
 		// Debug
 		if (hr != S_OK)
@@ -505,11 +512,18 @@ HRESULT FFT :: window ( cvMatRef *pMat )
 	//
 
 	// Sizing
-	if (pMat->isUMat())
+	if (pMat->isMat())
+		{
+		rows = pMat->mat->rows;
+		cols = pMat->mat->cols;
+		}	// if
+	#ifdef	HAVE_OPENCV_UMAT
+	else if (pMat->isUMat())
 		{
 		rows = pMat->umat->rows;
 		cols = pMat->umat->cols;
 		}	// if
+	#endif
 	#ifdef	HAVE_OPENCV_CUDA
 	else if (pMat->isGPU())
 		{
@@ -517,18 +531,20 @@ HRESULT FFT :: window ( cvMatRef *pMat )
 		cols = pMat->gpumat->cols;
 		}	// if
 	#endif
-	else
-		{
-		rows = pMat->mat->rows;
-		cols = pMat->mat->cols;
-		}	// if
 	if (pWnd != NULL)
 		{
-		if (pWnd->isUMat())
+		if (pWnd->isMat())
+			{
+			wrows = pWnd->mat->rows;
+			wcols = pWnd->mat->cols;
+			}	// else
+		#ifdef	HAVE_OPENCV_UMAT
+		else if (pWnd->isUMat())
 			{
 			wrows = pWnd->umat->rows;
 			wcols = pWnd->umat->cols;
 			}	// else if
+		#endif
 		#ifdef	HAVE_OPENCV_CUDA
 		else if (pWnd->isGPU())
 			{
@@ -536,11 +552,6 @@ HRESULT FFT :: window ( cvMatRef *pMat )
 			wcols = pWnd->gpumat->cols;
 			}	// if
 		#endif
-		else
-			{
-			wrows = pWnd->mat->rows;
-			wcols = pWnd->mat->cols;
-			}	// else
 		}	// if
 
 	// No window exists but one is specified
@@ -598,14 +609,16 @@ HRESULT FFT :: window ( cvMatRef *pMat )
 		CCLTRY ( Create::create ( NULL, cols, rows, CV_32FC1, &pWnd ) );
 
 		// Transfer data to window object
-		if (pWnd->isUMat())
+		if (pWnd->isMat())
+			matWnd.copyTo ( *(pWnd->mat) );
+		#ifdef	HAVE_OPENCV_UMAT
+		else if (pWnd->isUMat())
 			matWnd.copyTo ( *(pWnd->umat) );
+		#endif
 		#ifdef	HAVE_OPENCV_CUDA
 		else if (pWnd->isGPU())
 			pWnd->gpumat->upload ( matWnd );
 		#endif
-		else
-			matWnd.copyTo ( *(pWnd->mat) );
 		}	// if
 
 	return hr;

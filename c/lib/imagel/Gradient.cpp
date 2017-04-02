@@ -112,7 +112,27 @@ HRESULT Gradient :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			try
 				{
 				// Execute 
-				if (pMat->isUMat())
+				if (pMat->isMat())
+					{
+					// Gradients want own destination
+					cv::Mat matDst;
+ 
+					// Perform requested type
+					if (!WCASECMP(strType,L"Laplacian"))
+						cv::Laplacian ( *(pMat->mat), matDst, CV_16SC1, iSzk );
+					else if (!WCASECMP(strType,L"Sobel"))
+						cv::Sobel ( *(pMat->mat), matDst, CV_16SC1, iDx, iDy, iSzk );
+					else if (!WCASECMP(strType,L"Scharr"))
+						cv::Sobel ( *(pMat->mat), matDst, CV_16SC1, iDx, iDy, CV_SCHARR );
+					else
+						hr = E_NOTIMPL;
+
+					// Result
+					if (matDst.rows > 0 && matDst.cols > 0)
+						matDst.copyTo ( *(pMat->mat) );
+					}	// else
+				#ifdef	HAVE_OPENCV_UMAT
+				else if (pMat->isUMat())
 					{
 					// Perform requested type
 					if (!WCASECMP(strType,L"Laplacian"))
@@ -124,6 +144,7 @@ HRESULT Gradient :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					else
 						hr = E_NOTIMPL;
 					}	// else if
+				#endif
 				#ifdef	HAVE_OPENCV_CUDA
 				else if (pMat->isGPU())
 					{
@@ -156,25 +177,6 @@ HRESULT Gradient :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 						hr = E_NOTIMPL;
 					}	// if
 				#endif
-				else
-					{
-					// Gradients want own destination
-					cv::Mat matDst;
- 
-					// Perform requested type
-					if (!WCASECMP(strType,L"Laplacian"))
-						cv::Laplacian ( *(pMat->mat), matDst, CV_16SC1, iSzk );
-					else if (!WCASECMP(strType,L"Sobel"))
-						cv::Sobel ( *(pMat->mat), matDst, CV_16SC1, iDx, iDy, iSzk );
-					else if (!WCASECMP(strType,L"Scharr"))
-						cv::Sobel ( *(pMat->mat), matDst, CV_16SC1, iDx, iDy, CV_SCHARR );
-					else
-						hr = E_NOTIMPL;
-
-					// Result
-					if (matDst.rows > 0 && matDst.cols > 0)
-						matDst.copyTo ( *(pMat->mat) );
-					}	// else
 
 				}	// try
 			catch ( cv::Exception &ex )
