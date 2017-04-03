@@ -32,7 +32,7 @@ set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_BINARY_DIR}/Release 
 set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_BINARY_DIR}/Release )
 
 # SDKs
-find_package(OpenCV 2)
+find_package(OpenCV)
 find_package(OpenSSL)
 
 # Unicode

@@ -235,7 +235,7 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 								}	// if
 							else
 								{
-								if (pMatL->isUMat())
+								if (pMatL->isMat())
 									cv::divide ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat) );
 								#ifdef	HAVE_OPENCV_UMAT
 								else if (pMatL->isUMat())
