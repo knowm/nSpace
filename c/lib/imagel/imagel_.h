@@ -18,7 +18,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/features2d/features2d.hpp>
-#include <opencv2/objdetect.hpp>
+#include <opencv2/objdetect/objdetect.hpp>
 
 // OpenCV - Contrib
 #ifdef	HAVE_OPENCV_CONTRIB
@@ -233,7 +233,7 @@ class CascadeClassifier :
 	bool							bLoad;					// Classifier loaded ?
 	cv::CascadeClassifier	cc;						// Classifier object
 	IDictionary					*pRct;					// Results dictionary
-	std::vector<cv::Rect_<int>>
+	std::vector< cv::Rect_<int> >
 									rcts;						// Latest rectangles
 	U32							idx;						// Current enumeration index
 
@@ -309,7 +309,7 @@ class Contours :
 
 	// Run-time data
 	IDictionary	*pImg;									// Image dictionary
-	std::vector<std::vector<cv::Point>>	
+	std::vector<std::vector<cv::Point> >	
 					contours;								// Active contour list
 	U32			iIdx;										// Enumeration index
 	

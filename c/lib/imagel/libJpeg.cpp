@@ -35,7 +35,7 @@ extern "C" {
 typedef struct
 	{
 	IMemoryMapped	*pBitsDst;							// Destination bits
-	VOID				*pvBitsDst;							// Destination buffer
+	void				*pvBitsDst;							// Destination buffer
 	U32				szDst;								// Destination size
 	HRESULT			hr;									// Context result functions
 	jmp_buf			ljenv;								// Long jump environment
@@ -210,7 +210,7 @@ HRESULT libJpeg :: compress ( U32 width, U32 height, U32 bpp, U32 ch,
 	U32									sz;
 
 	// Access source bits
-	CCLTRY( pBitsSrc->lock ( 0, 0, (VOID **) &pcBitsSrc, &sz ) );
+	CCLTRY( pBitsSrc->lock ( 0, 0, (void **) &pcBitsSrc, &sz ) );
 
 	// Destinartion bits
 	CCLOK ( memset ( &ctx, 0, sizeof(ctx) ); )
@@ -479,7 +479,7 @@ HRESULT libJpeg :: decompress (	IMemoryMapped *pBitsSrc,
 	U32									idx,sz;
 
 	// Access and size source bits
-	CCLTRY( pBitsSrc->lock ( 0, 0, (VOID **) &pcBitsSrc, &sz ) );
+	CCLTRY( pBitsSrc->lock ( 0, 0, (void **) &pcBitsSrc, &sz ) );
 
 	// Initialize the source manager
 	CCLOK ( s->next_input_byte = (JOCTET *) pcBitsSrc; )
@@ -512,7 +512,7 @@ HRESULT libJpeg :: decompress (	IMemoryMapped *pBitsSrc,
 				// Size and access destination bits.
 				CCLOK		( szRow = (*width)*((*bpp)/8); )
 				CCLTRY	( pBitsDst->setSize ( (*height)*szRow ) );
-				CCLTRY	( pBitsDst->lock ( 0, 0, (VOID **) &pcBitsDst, NULL ) );
+				CCLTRY	( pBitsDst->lock ( 0, 0, (void **) &pcBitsDst, NULL ) );
 				CCLOK		( pcRowBits			= pcBitsDst; )
 
 				// Decompress each row

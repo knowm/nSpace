@@ -88,6 +88,7 @@ add_library (libjpeg STATIC ${SOURCES} ${HEADERS})
 target_link_libraries(libjpeg)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib/ext)
+set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 
 # Installation
 install	(

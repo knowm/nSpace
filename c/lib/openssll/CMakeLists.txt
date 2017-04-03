@@ -24,6 +24,7 @@ include_directories(${OPENSSL_INCLUDE_DIR})
 # MESSAGE(STATUS ${OPENSSL_INCLUDE_DIR})
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
+set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 
 # Installation
 install (FILES openssll.h DESTINATION include/lib/openssll)

@@ -19,6 +19,7 @@ endif()
 target_link_libraries(ccl)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
+set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 
 # Installation
 install (FILES ccl.h DESTINATION include/lib/ccl)

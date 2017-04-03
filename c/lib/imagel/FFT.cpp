@@ -47,7 +47,7 @@ HRESULT FFT :: fft ( cv::Mat *pMat, cv::Mat *pWnd, bool bRows )
 	////////////////////////////////////////////////////////////////////////
 	HRESULT	hr	= S_OK;
 	cv::Mat	matPad,matDft,matPlanes[2],matCmplx,matMag;
-	int		m,n,cx,cy,or,oc;
+	int		m,n,cx,cy,orows,ocols;
 
 	// Open CV uses exceptions
 	try
@@ -58,13 +58,13 @@ HRESULT FFT :: fft ( cv::Mat *pMat, cv::Mat *pWnd, bool bRows )
 			cv::multiply ( *pMat, *pWnd, *pMat );
 
 		// Original number of rows and columns
-		or = pMat->rows;
-		oc = pMat->cols;
+		orows = pMat->rows;
+		ocols = pMat->cols;
 
 		// Create a windowed version of the image
-		m = cv::getOptimalDFTSize ( or );
-		n = cv::getOptimalDFTSize ( oc );
-		cv::copyMakeBorder ( (*pMat), matPad, 0, m - or, 0, n - oc, 
+		m = cv::getOptimalDFTSize ( orows );
+		n = cv::getOptimalDFTSize ( ocols );
+		cv::copyMakeBorder ( (*pMat), matPad, 0, m - orows, 0, n - ocols, 
 									cv::BORDER_CONSTANT, cv::Scalar::all(0) );
 
 		// Produce a real and (zeroed) imaginary pair
@@ -110,10 +110,10 @@ HRESULT FFT :: fft ( cv::Mat *pMat, cv::Mat *pWnd, bool bRows )
 		// Do not include any extra rows/cols that might have been introduced
 		// in the padding.  Just keep the positive frequencies (option ?)
 		if (bRows)
-			matMag	= matMag ( cv::Rect ( 0, 0, cx, (or < matMag.rows) ? or : matMag.rows ) );
+			matMag	= matMag ( cv::Rect ( 0, 0, cx, (orows < matMag.rows) ? orows : matMag.rows ) );
 		else
-			matMag	= matMag ( cv::Rect ( 0, 0,	(oc < cx) ? oc : cx, 
-																(or < matMag.rows) ? or : matMag.rows ) );
+			matMag	= matMag ( cv::Rect ( 0, 0,	(ocols < cx) ? ocols : cx, 
+																(orows < matMag.rows) ? orows : matMag.rows ) );
 
 		// Result is new matrix
 		matMag.copyTo ( *pMat );

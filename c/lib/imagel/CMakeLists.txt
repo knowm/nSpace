@@ -16,7 +16,7 @@ set	(
 		Draw.cpp
 		FaceRecognizer.cpp
 		Features.cpp
-		Fft.cpp
+		FFT.cpp
 		Flip.cpp
 		Gradient.cpp
 		libJpeg.cpp
@@ -47,6 +47,7 @@ target_link_libraries(imagel)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
+set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 
 # OpenCV contrib build detection
 # Get the first OpenCV include directory and look for a 'contrib' header
