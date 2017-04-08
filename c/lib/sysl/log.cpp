@@ -241,10 +241,6 @@ cLogEntry :: cLogEntry ( const WCHAR *_file, int _line, const char *_func,
 					L"%s",
 					#endif
 					_func );
-dbgprintf ( L"Hi! {\r\n" );
-dbgprintf ( L"func = %s\r\n", ((WCHAR *)(func+1)) );
-dbgprintf ( L"_func = %S\r\n", _func );
-dbgprintf ( L"} Hi!\r\n" );
 	level	= _level;
 	str	= sysStringAlloc ( _str );
 	next	= NULL;
