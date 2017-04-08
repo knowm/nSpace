@@ -32,6 +32,7 @@ add_library (iol STATIC ${SOURCES} ${HEADERS})
 target_link_libraries(iol)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
+set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 
 # Installation
 install (FILES iol.h DESTINATION include/lib/iol)

@@ -132,6 +132,7 @@ typedef U32				LPARAM;
 #define	ERROR_NO_MATCH					1169
 #define	ERROR_TIMEOUT					1460L
 #define	ERROR_INVALID_STATE			5023
+#define	ERROR_NOT_SUPPORTED			50
 #define	LOCALE_USER_DEFAULT			0x00000400
 #define	MAXDWORD							0xffffffff
 #define	INFINITE							MAXDWORD

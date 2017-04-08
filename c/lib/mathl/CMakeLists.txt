@@ -23,6 +23,7 @@ add_library (mathl STATIC ${SOURCES} ${HEADERS})
 target_link_libraries(mathl)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
+set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 
 # Installation
 install (FILES mathl.h DESTINATION include/lib/mathl)

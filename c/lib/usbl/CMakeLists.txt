@@ -19,6 +19,7 @@ add_library (usbl STATIC ${SOURCES} ${HEADERS})
 target_link_libraries(usbl)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
+set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 
 # Installation
 install (FILES usbl.h DESTINATION include/lib/usbl)

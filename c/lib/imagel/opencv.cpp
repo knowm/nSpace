@@ -248,7 +248,7 @@ HRESULT image_from_mat ( Mat *pM, IDictionary *pImg )
 	////////////////////////////////////////////////////////////////////////
 	HRESULT			hr			= S_OK;
 	IMemoryMapped	*pBits	= NULL;
-	VOID				*pvBits	= NULL;
+	void				*pvBits	= NULL;
 
 	// Image information
 	CCLTRY ( pImg->store ( strRefWidth, adtInt(pM->cols) ) );
@@ -333,7 +333,7 @@ HRESULT image_to_mat ( IDictionary *pImg, Mat **ppM )
 	////////////////////////////////////////////////////////////////////////
 	HRESULT			hr			= S_OK;
 	IMemoryMapped	*pBits	= NULL;
-	VOID				*pvBits	= NULL;
+	void				*pvBits	= NULL;
 	adtValue			vL;
 	adtString		strFmt;
 	adtIUnknown		unkV;

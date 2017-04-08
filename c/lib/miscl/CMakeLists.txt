@@ -35,6 +35,7 @@ add_library (miscl STATIC ${SOURCES} ${HEADERS})
 target_link_libraries(miscl)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
+set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 
 # Installation
 install (FILES miscl.h DESTINATION include/lib/miscl)

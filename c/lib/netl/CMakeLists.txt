@@ -24,6 +24,7 @@ add_library (netl STATIC ${SOURCES} ${HEADERS})
 target_link_libraries(netl)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
+set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 
 # Installation
 install (FILES netl.h DESTINATION include/lib/netl)

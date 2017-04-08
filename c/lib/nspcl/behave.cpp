@@ -141,11 +141,14 @@ HRESULT Behaviour :: receive (	IReceptor *pr, const WCHAR *pl,
 	////////////////////////////////////////////////////////////////////////
 	HRESULT hr = S_OK;
 
-	// Block other threads into behaviour until reception on active
-	// thread is complete.
-	if (bReceive == false || !csRx.enter())
+	// Reception enabled ?
+	if (bReceive == false)
 		return E_UNEXPECTED;
 
+	// Block other threads into behaviour until reception on active
+	// thread is complete.
+	csRx.enter();
+	
 	// Receive value
 	if (csInt.enter())
 		{

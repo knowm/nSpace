@@ -24,6 +24,7 @@ add_library (nshl STATIC ${SOURCES} ${HEADERS})
 target_link_libraries(nshl)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
+set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 
 # Copy the TLB into the build directory post-build since during development
 # this directory is used/registered, not the install.  Copy from both directories
