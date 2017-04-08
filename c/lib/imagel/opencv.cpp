@@ -299,6 +299,17 @@ HRESULT image_from_mat ( Mat *pM, IDictionary *pImg )
 						hr = E_NOTIMPL;
 					}	// switch
 				break;
+			case 4 :
+				// Color
+				switch ( (pM->type() & CV_MAT_DEPTH_MASK) )
+					{
+					case CV_8U :
+						CCLTRY ( pImg->store ( strRefFormat, adtString(L"A8B8G8R8") ) );
+						break;
+					default :
+						hr = E_NOTIMPL;
+					}	// switch
+				break;
 			default :
 				lprintf ( LOG_WARN, L"Unsupported channels %d", pM->channels() );
 				hr = E_NOTIMPL;

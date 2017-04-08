@@ -141,6 +141,7 @@ typedef U32				LPARAM;
 #define	STREAM_SEEK_END				2
 #define	CP_ACP							0
 #define	INVALID_HANDLE_VALUE			MAXDWORD
+#define	WSAEWOULDBLOCK					10035
 
 //
 // COM
