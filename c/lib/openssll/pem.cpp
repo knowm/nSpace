@@ -98,7 +98,7 @@ HRESULT PEMImpl :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		CCLTRY  ( pObj->getThis ( (void **) &obj ) );
 
 		// Create a read/write BIO for output
-		CCLTRYE ( (bio = libS.bio_new ( libS.bio_s_mem() )) != NULL, E_OUTOFMEMORY );
+		CCLTRYE ( (bio = BIO_new ( BIO_s_mem() )) != NULL, E_OUTOFMEMORY );
 
 		// Write appropriate object to memory buffer
 		if (hr == S_OK && obj->rsa != NULL)
@@ -106,12 +106,12 @@ HRESULT PEMImpl :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			// Private
 			if (!WCASECMP(strType,L"RSA") && !bPub)
 				{
-				CCLTRYE ( libS.pem_wr_rsa_priv ( bio, obj->rsa, NULL, NULL, 0, NULL, NULL ) != 0,
+				CCLTRYE ( PEM_write_bio_RSAPrivateKey ( bio, obj->rsa, NULL, NULL, 0, NULL, NULL ) != 0,
 								libS.errors(L"PEMImpl::receive:Write:pem_wr_rsa_priv") );
 				}	// if
 			else if (!WCASECMP(strType,L"RSA") && bPub)
 				{
-				CCLTRYE ( libS.pem_wr_rsa_pub ( bio, obj->rsa, NULL, NULL, 0, NULL, NULL ) != 0,
+				CCLTRYE ( PEM_write_bio_RSAPublicKey ( bio, obj->rsa ) != 0,
 								libS.errors(L"PEMImpl::receive:Write:pem_wr_rsa_pub") );
 				}	// if
 			else
@@ -119,7 +119,7 @@ HRESULT PEMImpl :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			}	// if
 
 		// Access memory buffer
-		CCLTRYE ( (sz = libS.bio_ctrl ( bio, BIO_CTRL_INFO, 0, (char *)&pv )) > 0,
+		CCLTRYE ( (sz = BIO_ctrl( bio, BIO_CTRL_INFO, 0, (char *)&pv )) > 0,
 							libS.errors(L"RSAImpl::receive:Generate:bio_ctrl") );
 
 		// Write memory contents to provided stream
@@ -133,7 +133,7 @@ HRESULT PEMImpl :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 		// Clean up
 		if (bio != NULL)
-			libS.bio_free(bio);
+			BIO_free(bio);
 		}	// if
 
 	// Read
@@ -157,7 +157,7 @@ HRESULT PEMImpl :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		CCLTRY  ( pStm->read ( pv, sz, &sz ) );
 
 		// Create a read-only BIO for input
-		CCLTRYE ( (bio = libS.bio_new_mem_buf ( pv, (int)sz )) != NULL, E_OUTOFMEMORY );
+		CCLTRYE ( (bio = BIO_new_mem_buf ( pv, (int)sz )) != NULL, E_OUTOFMEMORY );
 
 		// Read object from memory buffer
 		if (hr == S_OK)
@@ -165,12 +165,12 @@ HRESULT PEMImpl :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			// Private
 			if (!WCASECMP(strType,L"RSA") && !bPub)
 				{
-				CCLTRYE ( (rsa = libS.pem_rd_rsa_priv ( bio, NULL, NULL, NULL )) != NULL,
+				CCLTRYE ( (rsa = PEM_read_bio_RSAPrivateKey ( bio, NULL, NULL, NULL )) != NULL,
 								libS.errors(L"RSAImpl::receive:Read:pem_rd_rsa_priv") );
 				}	// if
 			else if (!WCASECMP(strType,L"RSA") && bPub)
 				{
-				CCLTRYE ( (rsa = libS.pem_rd_rsa_pub ( bio, NULL, NULL, NULL )) != NULL,
+				CCLTRYE ( (rsa = PEM_read_bio_RSAPublicKey ( bio, NULL, NULL, NULL )) != NULL,
 								libS.errors(L"RSAImpl::receive:Read:pem_rd_rsa_pub") );
 				}	// if
 			else
@@ -189,7 +189,7 @@ HRESULT PEMImpl :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 		// Clean up
 		if (bio != NULL)
-			libS.bio_free(bio);
+			BIO_free(bio);
 		_FREEMEM(pv);
 		_RELEASE(obj);
 		}	// else if

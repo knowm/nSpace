@@ -16,6 +16,7 @@
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
 #include <openssl/ssl.h>
+#include <openssl/err.h>
 
 //
 // Class - libSSL.  OpenSSL library object.
@@ -30,57 +31,13 @@ class libSSL
 	bool				bValid;								// Library valid
 	S32				lcnt,lsslcnt;						// Reference counts
 	SSL_CTX			*psslctx;							// Context
-	sysDl				dlleay,dllssl;						// DLLs
 
 	// Utilities
 	virtual LONG		AddRef		();				// Add reference to library
-	virtual HRESULT	errors		( const WCHAR * );// Check for errors
+	virtual HRESULT	errors		( const WCHAR * );
 	virtual LONG		Release		();				// Remove reference from library
 	virtual LONG		sslAddRef	();				// Add reference to SSL library
 	virtual LONG		sslRelease	();				// Release reference to SSL library
-
-	// Function pts.
-	long				(*bio_ctrl)				( BIO *, int, long, void * );
-	BIO *				(*bio_new)				( BIO_METHOD * );
-	int				(*bio_free)				( BIO * );
-	BIO *				(*bio_new_mem_buf)	( void *, int );
-	BIO_METHOD *	(*bio_s_mem)			( void );
-	unsigned long	(*err_get_error)		( void );
-	char *			(*err_err_str)			( unsigned long, char *, size_t );
-	EVP_MD_CTX *	(*evp_ctx_new)			( void );
-	void				(*evp_ctx_free)		( EVP_MD_CTX * );
-	int				(*evp_digestfinal)	( EVP_MD_CTX *, unsigned char *, unsigned int * );
-	int				(*evp_digestinit)		( EVP_MD_CTX *, const EVP_MD * );
-	int				(*evp_digestup)		( EVP_MD_CTX *, const void *, unsigned int );
-	int 				(*evp_pkey_set_rsa)	( EVP_PKEY *, struct rsa_st * );
-	void				(*evp_pkey_free)		( EVP_PKEY * );
-	EVP_PKEY *		(*evp_pkey_new)		( void );
-	int				(*evp_pkey_size)		( EVP_PKEY * );
-	const EVP_MD *	(*evp_md5)				( void );
-	const EVP_MD *	(*evp_sha1)				( void );
-	int				(*evp_signfinal)		( EVP_MD_CTX *, unsigned char *, unsigned int *, EVP_PKEY * );
-	int				(*evp_verifyfinal)	( EVP_MD_CTX *, const unsigned char *, unsigned int, EVP_PKEY * );
-	RSA *				(*pem_rd_rsa_priv)	( BIO *, RSA **, pem_password_cb *, void * );
-	RSA *				(*pem_rd_rsa_pub)		( BIO *, RSA **, pem_password_cb *, void * );
-	int				(*pem_wr_rsa_priv)	( BIO *, RSA *, const EVP_CIPHER *,
-														unsigned char *, int, pem_password_cb *, void * );
-	int				(*pem_wr_rsa_pub)		( BIO *, RSA *, const EVP_CIPHER *,
-														unsigned char *, int, pem_password_cb *, void * );
-	void				(*rsa_free)				( RSA * );
-	RSA *				(*rsa_new)				( void );
-	RSA *				(*rsa_gen_key)			( int, unsigned long, void (*) ( int, int, void * ), void * );
-	int				(*ssl_lib_init)		( void );
-	void				(*ssl_load_err)		( void );
-	SSL_METHOD *	(*ssl_v3_client)		( void );	
-	int				(*ssl_connect)			( SSL * );
-	void				(*ssl_ctx_free)		( SSL_CTX * );
-	SSL_CTX *		(*ssl_ctx_new)			( const SSL_METHOD * );
-	void				(*ssl_free)				( SSL * );
-	int				(*ssl_get_error)		( const SSL *, int );
-	SSL *				(*ssl_new)				( SSL_CTX * );
-	int				(*ssl_read)				( SSL *, void *, int );
-	int				(*ssl_set_fd)			( SSL *, int );
-	int				(*ssl_write)			( SSL *, const void *, int );
 	};
 
 //

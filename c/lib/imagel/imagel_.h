@@ -26,7 +26,7 @@
 #endif
 
 // OpenCL
-#if		CV_VERSION_EPOCH	>= 3
+#if		CV_VERSION_MAJOR	>= 3
 #define	HAVE_OPENCV_UMAT
 #include <opencv2/core/ocl.hpp>
 #endif

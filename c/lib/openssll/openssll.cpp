@@ -15,14 +15,7 @@ libSSL	libS;
 // libSSL
 //
 
-libSSL :: libSSL ( void ) : 
-//	#ifdef	_WIN64
-//	dlleay ( L"libcrypto-1_1-x64.dll" ), 
-//	dllssl ( L"libssl-1_1-x64.dll" )
-//	#else
-	dlleay ( L"libeay32.dll" ), 
-	dllssl ( L"ssleay32.dll" )
-//	#endif
+libSSL :: libSSL ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -33,8 +26,6 @@ libSSL :: libSSL ( void ) :
 	bValid			= false;
 	lsslcnt			= 0;
 	lcnt				= 0;
-	rsa_gen_key		= NULL;
-	ssl_lib_init	= NULL;
 	psslctx			= NULL;
 	}	// libSSL
 
@@ -55,11 +46,7 @@ LONG libSSL :: AddRef ( void )
 	// Reference count
 	if (lcnt > 0)
 		return ++lcnt;
-
-	// Default beahaviour
-	dlleay.AddRef();
-	dllssl.AddRef();
-
+/*
 	// Need function ptrs ?
 	if ((HMODULE)NULL == dlleay || (HMODULE)NULL == dllssl)
 		return 0;
@@ -243,7 +230,7 @@ LONG libSSL :: AddRef ( void )
 						(int (*) ( SSL *, void *, int ))
 						GetProcAddress ( dllssl, "SSL_read" ) ) != NULL,
 						GetLastError() );
-
+*/
 	// Valid ?
 	CCLOK ( bValid = TRUE; )
 	if (!bValid)
@@ -271,9 +258,9 @@ HRESULT libSSL :: errors ( const wchar_t *strCtx )
 	char				bfr[1024];
 
 	// Continue until no more errors
-	while ((e = this->err_get_error()) != 0)
+	while ((e = ERR_get_error()) != 0)
 		{
-		err_err_str ( e, bfr, sizeof(bfr) );
+		ERR_error_string_n ( e, bfr, sizeof(bfr) );
 		dbgprintf ( L"%s:Error:%S:%d(0x%x)\r\n", strCtx, bfr, e, e );
 		if (hr == S_OK)
 			hr = e;
@@ -299,10 +286,6 @@ LONG libSSL :: Release ( void )
  	if (lcnt > 1)
 		return --lcnt;
 
-	// Libraries
-	dlleay.Release();
-	dllssl.Release();
-
 	// Clean up
 	bValid	= FALSE;
 
@@ -320,8 +303,8 @@ LONG libSSL :: sslAddRef ( void )
 	//		Current reference count
 	//
 	////////////////////////////////////////////////////////////////////////
-	HRESULT		hr				= S_OK;
-	SSL_METHOD	*psslmthd	= NULL;
+	HRESULT				hr				= S_OK;
+	const SSL_METHOD	*psslmthd	= NULL;
 
 	// State check
 	if (!bValid)
@@ -332,14 +315,14 @@ LONG libSSL :: sslAddRef ( void )
 		return lsslcnt;
 
 	// Initialize library
-	CCLTRYE ( ssl_lib_init() == 1, E_UNEXPECTED );
-	CCLOK   ( ssl_load_err(); )
+	CCLTRYE ( SSL_library_init() == 1, E_UNEXPECTED );
+	CCLOK   ( SSL_load_error_strings(); )
 
 	// Application state
-	CCLTRYE ( (psslmthd = ssl_v3_client()) != NULL, E_UNEXPECTED );
+	CCLTRYE ( (psslmthd = SSLv3_client_method()) != NULL, E_UNEXPECTED );
 
 	// Context
-	CCLTRYE ( (psslctx = ssl_ctx_new(psslmthd)) != NULL, E_UNEXPECTED );
+	CCLTRYE ( (psslctx = SSL_CTX_new(psslmthd)) != NULL, E_UNEXPECTED );
 
 	// Result
 	if (hr != S_OK)
@@ -367,7 +350,7 @@ LONG libSSL :: sslRelease ( void )
 		// Clean up
 		if (psslctx != NULL)
 			{
-			ssl_ctx_free ( psslctx );
+			SSL_CTX_free ( psslctx );
 			psslctx = NULL;
 			}	// if
 		}	// if
@@ -409,5 +392,5 @@ void objSSL :: destruct ( void )
 	//
 	////////////////////////////////////////////////////////////////////////
 	if (rsa != NULL)
-		libS.rsa_free(rsa);
+		RSA_free(rsa);
 	}	// destruct

@@ -57,7 +57,7 @@ HRESULT EVPSign :: onAttach ( bool bAttach )
 		// Clean up
 		if (pctx != NULL)
 			{
-			libS.evp_ctx_free ( pctx );
+			EVP_MD_CTX_destroy ( pctx );
 			pctx	= NULL;
 			}	// if
 
@@ -96,21 +96,22 @@ HRESULT EVPSign :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		// Previous context
 		if (pctx != NULL)
 			{
-			libS.evp_ctx_free ( pctx );
+			EVP_MD_CTX_destroy ( pctx );
 			pctx	= NULL;
 			}	// if
 
 		// Initialize context
-		CCLTRYE ( (pctx = libS.evp_ctx_new ()) != NULL, E_OUTOFMEMORY );
+		CCLTRYE ( (pctx = EVP_MD_CTX_create()) != NULL, E_OUTOFMEMORY );
+
 
 		// Message digest type
 		CCLTRYE ( (pt = 
-						(!WCASECMP(strType,L"SHA1"))	? libS.evp_sha1() : 
-						(!WCASECMP(strType,L"MD5"))	? libS.evp_md5() : 
+						(!WCASECMP(strType,L"SHA1"))	? EVP_sha1() : 
+						(!WCASECMP(strType,L"MD5"))	? EVP_md5() : 
 						NULL) != NULL, E_INVALIDARG );
 
 		// Initialize signing
-		CCLTRYE ( libS.evp_digestinit ( pctx, pt ) != 0, 
+		CCLTRYE ( EVP_DigestInit ( pctx, pt ) != 0, 
 						libS.errors(L"EVPSign::receive:Begin:DigestInit") );
 
 		// Result
@@ -134,7 +135,7 @@ HRESULT EVPSign :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		while (hr == S_OK && pStm->read ( cBfr, sizeof(cBfr), &sz ) == S_OK && sz > 0)
 			{
 			// Process block
-			CCLTRYE ( libS.evp_digestup ( pctx, cBfr, (unsigned int) sz ) != 0,
+			CCLTRYE ( EVP_DigestUpdate ( pctx, cBfr, (unsigned int) sz ) != 0,
 							libS.errors(L"EVPSign::receive:Update:DigestUpdate") );
 			}	// while
 
@@ -163,12 +164,12 @@ HRESULT EVPSign :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			{
 			// Obtain key object and assign to EVP key
 			CCLTRY	( pKey->getThis ( (void **) &obj ) );
-			CCLTRYE	( (key = libS.evp_pkey_new()) != NULL, E_OUTOFMEMORY );
+			CCLTRYE	( (key = EVP_PKEY_new()) != NULL, E_OUTOFMEMORY );
 			if (hr == S_OK)
 				{
 				if (obj->rsa != NULL)
 					{
-					CCLTRYE	( libS.evp_pkey_set_rsa ( key, obj->rsa ) != 0,
+					CCLTRYE	( EVP_PKEY_set1_RSA ( key, obj->rsa ) != 0,
 									libS.errors(L"EVPSign::receive:Final:SetRSA") );
 					}	// if
 				else
@@ -176,11 +177,11 @@ HRESULT EVPSign :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				}	// if
 
 			// Allocate memory for the signature
-			CCLTRYE ( (sz = libS.evp_pkey_size ( key )) > 0, E_UNEXPECTED );
+			CCLTRYE ( (sz = EVP_PKEY_size ( key )) > 0, E_UNEXPECTED );
 			CCLTRYE ( (pcsig = (unsigned char *) _ALLOCMEM(sz)) != NULL, E_OUTOFMEMORY );
 
 			// Compute signature
-			CCLTRYE ( libS.evp_signfinal ( pctx, pcsig, &sz, key ) != 0,
+			CCLTRYE ( EVP_SignFinal ( pctx, pcsig, &sz, key ) != 0,
 							libS.errors(L"EVPSign::receive:Final:SignFinal") );
 
 			// Write the signature to the stream
@@ -194,7 +195,7 @@ HRESULT EVPSign :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			unsigned int	len;
 
 			// Finialize hash
-			CCLTRYE ( libS.evp_digestfinal ( pctx, md_final, &len ) != 0,
+			CCLTRYE ( EVP_DigestFinal ( pctx, md_final, &len ) != 0,
 							libS.errors(L"EVPSign::receive:Final:DigestFinal") );
 
 			// Write the hash to the stream
@@ -209,11 +210,11 @@ HRESULT EVPSign :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 		// Clean up
 		if (key != NULL)
-			libS.evp_pkey_free(key);
+			EVP_PKEY_free(key);
 		_FREEMEM(pcsig);
 		if (pctx != NULL)
 			{
-			libS.evp_ctx_free ( pctx );
+			EVP_MD_CTX_destroy ( pctx );
 			pctx	= NULL;
 			}	// if
 		}	// else if

@@ -84,8 +84,8 @@ HRESULT RSAImpl :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		CCLTRYE ( iBits > 0,					ERROR_INVALID_STATE );
 
 		// Generate key pair
-		CCLTRYE( (r = libS.rsa_gen_key ( iBits, RSA_F4, NULL, NULL )) != NULL,
-					libS.errors(L"RSAImpl::receive:Generate") );
+		CCLTRYE( (r = RSA_generate_key ( iBits, RSA_F4, NULL, NULL )) != NULL,
+						libS.errors(L"RSAImpl::receive:Generate") );
 
 		// Result
 		if (hr == S_OK)

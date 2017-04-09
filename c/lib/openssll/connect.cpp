@@ -43,10 +43,10 @@ HRESULT SSLConnect :: connect ( SSL *pssl )
 	int		ret;
 
 	// Continue connection logic
-	while (hr == S_OK && (ret = libS.ssl_connect ( pssl )) == -1 && retry++ < 100)
+	while (hr == S_OK && (ret = SSL_connect ( pssl )) == -1 && retry++ < 100)
 		{
 		// Current error
-		int code = libS.ssl_get_error ( pssl, ret );
+		int code = SSL_get_error ( pssl, ret );
 
 		// Reads
 		// Will continue the next time a 'read' is signalled.
@@ -141,11 +141,11 @@ HRESULT SSLConnect :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			fd	= (int)adtLong(vL);
 
 		// Create a context for the descriptor
-		CCLTRYE ( (pssl = libS.ssl_new ( libS.psslctx )) != NULL,
+		CCLTRYE ( (pssl = SSL_new ( libS.psslctx )) != NULL,
 						E_OUTOFMEMORY );
 
 		// Attach to descriptor
-		CCLTRYE ( libS.ssl_set_fd ( pssl, fd ) == 1, E_UNEXPECTED );
+		CCLTRYE ( SSL_set_fd ( pssl, fd ) == 1, E_UNEXPECTED );
 
 		// Store in descriptor
 		CCLTRY ( pDsc->store ( adtString(L"SSL"), adtLong((U64)pssl) ) );
@@ -167,7 +167,7 @@ HRESULT SSLConnect :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 			// Clean up
 			if (pssl != NULL)
-				libS.ssl_free ( pssl );			
+				SSL_free ( pssl );			
 			}	// else if
 
 		}	// if
@@ -185,7 +185,7 @@ HRESULT SSLConnect :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		CCLTRYE	( (pssl = (SSL *)(U64)adtLong(vL)) != NULL, ERROR_INVALID_STATE );
 
 		// Descriptor no longer needed
-		CCLOK ( libS.ssl_free ( pssl ); )
+		CCLOK ( SSL_free ( pssl ); )
 		if (pDsc != NULL)
 			pDsc->remove ( adtString(L"SSL") );
 
@@ -229,7 +229,7 @@ HRESULT SSLConnect :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				{
 				// Write next block
 				uToDo = (uLeftBlk < uBfr) ? uLeftBlk : uBfr;
-				ret	= libS.ssl_write ( pssl, pb, (int)uToDo );
+				ret	= SSL_write ( pssl, pb, (int)uToDo );
 
 				// Process return value
 				if (ret > 0)
@@ -302,7 +302,7 @@ HRESULT SSLConnect :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		else if (hr == S_OK)
 			{
 			// Read available data into stream.
-			CCLTRYE	( (ret = libS.ssl_read ( pssl, bBfr, sizeof(bBfr) )) > 0,
+			CCLTRYE	( (ret = SSL_read ( pssl, bBfr, sizeof(bBfr) )) > 0,
 							libS.errors ( L"SSLConnect::read" ) );
 
 			// Transfer to provided stream
