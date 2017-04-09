@@ -26,10 +26,10 @@
 #endif
 
 // OpenCL
-#if		CV_VERSION_MAJOR	>= 3
-#define	HAVE_OPENCV_UMAT
-#include <opencv2/core/ocl.hpp>
-#endif
+//#if		CV_VERSION_MAJOR	>= 3
+//#define	HAVE_OPENCV_UMAT
+//#include <opencv2/core/ocl.hpp>
+//#endif
 
 // CUDA
 #ifdef	HAVE_OPENCV_CUDA
