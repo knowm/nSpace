@@ -7,6 +7,17 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "iol_.h"
+#if		defined(_WIN32)
+#include <msxml.h>
+#elif		defined(__unix__)
+#if		__GNUC__ > 3
+#include <libxml/parser.h>
+#else
+#include <libxml2/libxml/parser.h>
+#endif
+#endif
+
+#define	HDR_XML	"<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n"
 
 StmPrsXML :: StmPrsXML ( void )
 	{
@@ -16,15 +27,12 @@ StmPrsXML :: StmPrsXML ( void )
 	//		-	Constructor for the object.
 	//
 	////////////////////////////////////////////////////////////////////////
-	#ifdef	__USESAX__
-	punkRdr		= NULL;
-	pSAXStk		= NULL;
-	pSAXStkIt	= NULL;
-	tSAX			= VTYPE_EMPTY;
-	strResv		= L"___Reserved___";
-	#endif
+	pStmDoc		= NULL;
 	#ifdef		_WIN32
 	pStmStm		= NULL;
+	pXMLDocLoad	= NULL;
+	pXMLDocNode	= NULL;
+	lChild		= 0;
 	#endif
 	}	// StmPrsXML
 
@@ -39,21 +47,16 @@ HRESULT StmPrsXML :: construct ( void )
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	HRESULT	hr			= S_OK;
+	HRESULT	hr		= S_OK;
+
+	#ifdef	_WIN32
 
 	// Stream on byte stream for Win32
-	#ifdef	_WIN32
-	CCLTRY( COCREATE ( L"Io.StmOnByteStm", IID_IHaveValue, &pStmStm ));
-	#endif
+	CCLTRY(COCREATE ( L"Io.StmOnByteStm", IID_IHaveValue, &pStmStm ));
 
-	#ifdef	__USESAX__
-	// Create Simple API XML reader
-	CCLTRY(CoCreateInstance ( __uuidof(SAXXMLReader), NULL, CLSCTX_ALL,
-										__uuidof(ISAXXMLReader), (void **) &punkRdr ));
-
-	// Object stack
-	CCLTRY(COCREATE ( L"Adt.Stack", IID_IList, &pSAXStk ));
-	CCLTRY(pSAXStk->iterate ( &pSAXStkIt ));
+	// Create XML documents using during processing
+	CCLTRY(CoCreateInstance ( CLSID_DOMDocument, NULL, CLSCTX_ALL, 
+										IID_IXMLDOMDocument, (void **) &pXMLDocLoad ) );
 	#endif
 
 	return hr;
@@ -63,23 +66,18 @@ void StmPrsXML :: destruct ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
-	//	OVERLOAD
-	//	FROM		CCLObject
-	//
 	//	PURPOSE
-	//		-	Called when the object is being destroyed
+	//		-	Called when the object is being destroyed.
 	//
 	////////////////////////////////////////////////////////////////////////
-	#ifdef	__USESAX__
-	_RELEASE(pSAXStkIt);
-	_RELEASE(pSAXStk);
-	_RELEASE(punkRdr);
+	_RELEASE(pStmDoc);
+	#ifdef		_WIN32
 	_RELEASE(pStmStm);
+	_RELEASE(pXMLDocLoad);
 	#endif
 	}	// destruct
 
-HRESULT StmPrsXML :: emit ( IByteStream *pStm, const WCHAR *pwStr, 
-										bool bSpecial )
+HRESULT StmPrsXML :: emit ( const WCHAR *pwStr, bool bSpecial )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -87,7 +85,6 @@ HRESULT StmPrsXML :: emit ( IByteStream *pStm, const WCHAR *pwStr,
 	//		-	Emit a string into the document.
 	//
 	//	PARAMETERS
-	//		-	pStm is the output stream
 	//		-	pwStr is the string to emit
 	//		-	bSpecial is true to watch for special characters
 	//
@@ -99,8 +96,7 @@ HRESULT StmPrsXML :: emit ( IByteStream *pStm, const WCHAR *pwStr,
 	U32		len	= (U32)wcslen(pwStr);
 
 	// State check
-	CCLTRYE ( pStm != NULL, E_UNEXPECTED );
-//	dbgprintf ( L"StmPrsXML::emit:%s\r\n", pwStr );
+	CCLTRYE ( pStmDoc != NULL, E_UNEXPECTED );
 
 	// Output characters to document, watch for special characters
 	for (U32 i = 0;hr == S_OK && i < len;++i)
@@ -116,11 +112,10 @@ HRESULT StmPrsXML :: emit ( IByteStream *pStm, const WCHAR *pwStr,
 			U8	c = (U8)('&');
 
 			// Output an ampersand then output the rest of the string
-			hr = writeAll ( pStm, &c, 1 );
+			hr = writeAll ( pStmDoc, &c, 1 );
 
 			// Special string
-			CCLTRY ( emit(	pStm, 
-								(pwStr[i] == WCHAR('&'))	? L"amp;" :
+			CCLTRY ( emit(	(pwStr[i] == WCHAR('&'))	? L"amp;" :
 								(pwStr[i] == WCHAR('<'))	? L"lt;" :
 								(pwStr[i] == WCHAR('>'))	? L"gt;" :
 								(pwStr[i] == WCHAR('\"'))	? L"quot;" :
@@ -131,7 +126,7 @@ HRESULT StmPrsXML :: emit ( IByteStream *pStm, const WCHAR *pwStr,
 			U8	c = (U8)(pwStr[i]);
 
 			// Output byte version of char
-			hr = writeAll ( pStm, &c, 1 );
+			hr = writeAll ( pStmDoc, &c, 1 );
 			}	// else
 
 		}	// for
@@ -139,147 +134,460 @@ HRESULT StmPrsXML :: emit ( IByteStream *pStm, const WCHAR *pwStr,
 	return hr;
 	}	// emit
 
-HRESULT StmPrsXML :: load ( IByteStream *pStm, ADTVALUE &v )
+HRESULT StmPrsXML :: load ( IByteStream *pUnkStm, ADTVALUE &oVal )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
-	//	FROM	IStreamPersist
+	//	OVERLOAD
+	//	FROM		IParseStream
 	//
 	//	PURPOSE
-	//		-	Load a value from the stream.
+	//		-	Called to load an object from a stream.
 	//
 	//	PARAMETERS
-	//		-	pStm is the source stream
-	//		-	v will receive the loaded value
+	//		-	pUnkStm is the stream to load from
+	//		-	oVal will receive the loaded object.
 	//
 	//	RETURN VALUE
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	HRESULT			hr		= S_OK;
-	#ifdef	__USESAX__
-	ISAXXMLReader	*pRdr	= (ISAXXMLReader *) punkRdr;
-	VARIANT			var;
+	HRESULT		hr = S_OK;
 
-	// Error handling
-	CCLTRY ( pRdr->putErrorHandler(this) );
+	/////////////////
+	// Win32 - MSXML
+	/////////////////
+	#ifdef		_WIN32
+	IXMLDOMDocument	*pXMLDoc		= (IXMLDOMDocument *) pXMLDocLoad;
+	IXMLDOMNode			*pXMLNode	= NULL;
+	VARIANT_BOOL		b;
+	adtValue				vFrom;
 
-	// Variant version of IStream object
-	VariantInit ( &var );
-	var.vt = VT_UNKNOWN;
-	var.punkVal	= pStmStm;
-	_ADDREF(var.punkVal);
+	// Place 'IStream' interface in front of the 'IByteStream' for the 
+	// XML object to API can be used.
+	CCLTRY ( pStmStm->setValue ( adtIUnknown(pUnkStm) ) );
 
-	// 'IStream' interface in front of the 'IByteStream' for the XML object
-	CCLTRY ( pStmStm->setValue ( adtIUnknown(pStm) ) );
+	// Create and load XML document
+	CCLTRY (pXMLDoc->load ( adtVariant(pStmStm), &b ) );
+	CCLTRYE(b == VARIANT_TRUE,ERROR_INVALID_STATE);
 
-	// Parse document
-	CCLTRY(pRdr->putContentHandler(this));
-	CCLTRY(pRdr->parse(var));
-	CCLTRY(pRdr->putContentHandler(NULL));
+	// Start current node at document level
+	CCLOK ( pXMLDocNode = pXMLDoc; )
+	_ADDREF(pXMLDocNode);
+	CCLOK ( lChild = 0; )
 
-	// Result
-	CCLTRY ( adtValue::copy ( vSAXFrom, v ) );
+	// Load
+	CCLTRY ( valueLoad ( oVal ) );
 
 	// Clean up
-	if (pRdr != NULL)
-		pRdr->putErrorHandler(NULL);
-	adtValue::clear(vSAXFrom);
-	VariantClear ( &var );
+	_RELEASE(pXMLDocNode);
 
-	#else
-	hr = E_NOTIMPL;
+	////////////////////////
+	// Unix (using libxml2)
+	////////////////////////
+	#elif		__unix__
+	xmlDocPtr		pDoc		= NULL;
+	xmlNodePtr		pNode		= NULL;
+	IByteStream		*pStmSrc	= NULL;
+	IByteStream		*pStmDst	= NULL;
+	IMemoryMapped	*pMemDst	= NULL;
+	char				*pcXML	= NULL;
+	U32				sz;
+
+	// Destination stream
+	CCLTRY ( COCREATEINSTANCE ( CLSID_MemoryBlock, IID_IMemoryMapped, &pMemDst ) );
+	CCLTRY ( pMemDst->stream ( &pStmDst ) );
+
+	// Load provided stream into memory
+	CCLTRY ( pUnkStm->copyTo ( pStmDst, 0, NULL ) );
+
+	// Parse file
+	if (hr == S_OK)
+		{
+		CCLTRY 	( pMemDst->lock ( 0, 0, (void **) &pcXML, &sz ) );
+		CCLTRYE 	( (pDoc = xmlParseMemory ( pcXML, sz )) != NULL, E_INVALIDARG );
+		if (hr != S_OK) lprintf ( LOG_ERR, L"StmPrsXML::valueLoad:Parse error\n" );
+		}	// if
+
+	// Top element
+	CCLTRYE ( (pNode = xmlDocGetRootElement ( pDoc )) != NULL, E_UNEXPECTED );
+
+	// Initialize first child (root)
+	CCLOK ( pXMLDocChild	= pNode; )
+
+	// Load
+	CCLTRY ( valueLoad ( oVal ) );
+
+	// Clean up
+	if (pDoc != NULL) xmlFreeDoc ( pDoc );
+	_UNLOCK(pMemDst,pcXML);
+	_RELEASE(pStmDst);
+	_RELEASE(pMemDst);
+	_RELEASE(pStmSrc);
 	#endif
 
 	return hr;
 	}	// load
 
-HRESULT StmPrsXML :: save ( IByteStream *pStm, const ADTVALUE &v )
+HRESULT StmPrsXML :: save ( IByteStream *pUnkStm, const ADTVALUE &oVal )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
-	//	FROM	IStreamPersist
+	//	OVERLOAD
+	//	FROM		IParseStream
 	//
 	//	PURPOSE
-	//		-	Save a value to the stream.
+	//		-	Called to save an object to a stream.
 	//
 	//	PARAMETERS
-	//		-	pStm will receive the data
-	//		-	v contains the value to save
+	//		-	pUnkStm is the stream to save to.
+	//		-	oVal contains the object to save
 	//
 	//	RETURN VALUE
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	HRESULT	hr = S_OK;
+	HRESULT		hr = S_OK;
 
-	// Object ?
-	if (hr == S_OK && v.vtype == VTYPE_UNK)
+	// State check
+	CCLTRYE ( (adtValue::empty(oVal) == false), ERROR_INVALID_STATE );
+
+	// Byte stream interface
+	CCLTRY ( _QISAFE(pUnkStm,IID_IByteStream,&pStmDoc) );
+
+	// Write value to document
+	CCLTRY( valueSave ( oVal ) );
+
+	// Clean up
+	_RELEASE(pStmDoc);
+
+	return hr;
+	}	// save
+
+HRESULT StmPrsXML :: valueLoad ( ADTVALUE &oVal )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Loads next child from current node.
+	//
+	//	PARAMETERS
+	//		-	oVal will receive the loaded object.
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT				hr				= S_OK;
+	#ifdef				_WIN32
+	BSTR					name			= NULL;
+	IXMLDOMNode			*pXMLNode	= NULL;
+	IXMLDOMNode			*pChild		= NULL;
+	IXMLDOMNodeList	*pChildren	= NULL;
+	IUnknown				*pTmp;
+	LONG					lTmp,l;
+	DOMNodeType			nt;
+	#elif					__unix__
+	xmlNodePtr			pChild;
+	void					*pChildTmp;
+	adtString			name;
+	#endif
+
+	// Active node
+	#ifdef	_WIN32
+	CCLTRY ( _QISAFE(pXMLDocNode,IID_IXMLDOMNode,&pXMLNode) );
+	#endif
+
+	// Obtain current child node, skip non-element nodes
+	#ifdef	_WIN32
+	CCLTRY	( pXMLNode->get_childNodes ( &pChildren ) );
+	CCLTRY	( pChildren->get_length ( &l ) );
+	for (;hr == S_OK && lChild < l;++lChild)
+		{
+		// Child
+		CCLTRY	( pChildren->get_item ( lChild, &pChild ) );
+
+		// Process only if valid node type
+		CCLTRY	( pChild->get_nodeType ( &nt ) );
+		if (hr == S_OK && nt == NODE_ELEMENT)
+			break;
+
+		// Clean up
+		_RELEASE(pChild);
+		}	// for
+
+	// Valid child ?
+	CCLTRYE	( pChild != NULL, S_FALSE );
+	CCLOK		( ++lChild; )
+
+	#elif		__unix__
+	CCLOK		( pChild 		= (xmlNodePtr) pXMLDocChild; )
+	CCLOK		( pXMLDocChild = NULL; )
+	while (hr == S_OK && pChild != NULL)
+		{
+		// Element node ?
+		if (pChild->type == XML_ELEMENT_NODE)
+			break;
+
+		// Next child
+		pChild = pChild->next;
+		}	// while
+
+	// Valid child ?
+	CCLTRYE	( pChild != NULL, S_FALSE );
+	CCLOK		( pXMLDocChild = pChild->next; )
+	#endif
+
+	// Obtain node string to obtain value type
+	#ifdef	_WIN32
+	CCLTRY ( pChild->get_nodeName ( &name ) );
+	#elif		__unix__
+	CCLOK ( name = (const char *) pChild->name; )
+	#endif
+
+	// Dictionary ?
+	if (hr == S_OK && (!WCASECMP(name,L"DICTIONARY") || !WCASECMP(name,L"LIST")))
 		{
 		IDictionary	*pDct	= NULL;
 		IList			*pLst	= NULL;
-		IIt			*pIt	= NULL;
-		adtValue		vK,vV;
+		adtValue		vKey,vValue;
 
-		// List
-		if (hr == S_OK && v.punk != NULL && _QI(v.punk,IID_IList,&pLst) == S_OK)
+		// Create a dictionary object for the value
+		if (!WCASECMP(name,L"DICTIONARY"))
+			hr = COCREATE(L"Adt.Dictionary",IID_IDictionary,&pDct);
+		else
+			hr = COCREATE(L"Adt.List",IID_IList,&pLst);
+
+		// Backup state for current node and set new state
+		#ifdef		_WIN32
+		pTmp				= pXMLDocNode;
+		pXMLDocNode		= pChild;
+		lTmp				= lChild;
+		lChild			= 0;
+		#elif			__unix__
+		pChildTmp		= pXMLDocChild;
+		pXMLDocChild	= pChild->children;
+		#endif
+
+		// Load each key/value pair and add to container
+		if (pDct != NULL)
 			{
-			// Begin container
-			CCLTRY ( emit ( pStm, L"<List>" ) );
+			while (	hr								== S_OK &&
+						valueLoad ( vKey )		== S_OK &&
+						valueLoad ( vValue )	== S_OK )
+				hr = pDct->store ( vKey, vValue );
+			}	// if
+		else
+			{
+			while (	hr								== S_OK &&
+						valueLoad ( vValue )	== S_OK )
+				hr = pLst->write ( vValue );
+			}	// else
 
-			// Iterate and write values
-			CCLTRY ( pLst->iterate ( &pIt ) );
-			while (hr == S_OK && pIt->read ( vV ) == S_OK)
+		// Restore state
+		#ifdef		_WIN32
+		pXMLDocNode		= pTmp;
+		lChild			= lTmp;
+		#elif			__unix__
+		pXMLDocChild	= pChildTmp;
+		#endif
+
+		// Value load successful
+		if (hr == S_OK && pDct != NULL)
+			hr = adtValue::copy ( adtIUnknown(pDct), oVal );
+		else if (hr == S_OK)
+			hr = adtValue::copy ( adtIUnknown(pLst), oVal );
+
+		// Clean up
+		_RELEASE(pLst);
+		}	// if
+
+	// Primitive value ?
+	else if (hr == S_OK && !WCASECMP(name,L"VALUE"))
+		{
+		#ifdef					_WIN32
+		IXMLDOMNamedNodeMap	*pAttr		= NULL;
+		IXMLDOMNode				*pNodeType	= NULL;
+		VALUETYPE				vtype			= VTYPE_EMPTY;
+		VARIANT					vT,vS;
+
+		// Setup
+		adtValue::clear	( oVal );
+		VariantInit			( &vT );
+		VariantInit			( &vS );
+
+		// See if a data type is specified in the attribute list
+		if (	hr == S_OK &&
+				pChild->get_attributes ( &pAttr )								== S_OK &&
+				pAttr->getNamedItem ( adtVariant(L"Type"), &pNodeType )	== S_OK &&
+				pNodeType->get_nodeValue ( &vT )									== S_OK)
+			{
+			// Determine type from first letter
+			if			(vT.bstrVal[0] == 'I' || vT.bstrVal[0] == 'i')		vtype = VTYPE_I4;
+			else if	(vT.bstrVal[0] == 'L' || vT.bstrVal[0] == 'l')		vtype = VTYPE_I8;
+			else if	(vT.bstrVal[0] == 'B' || vT.bstrVal[0] == 'b')		vtype = VTYPE_BOOL;
+			else if	(vT.bstrVal[0] == 'F' || vT.bstrVal[0] == 'f')		vtype = VTYPE_R4;
+			else if	(vT.bstrVal[0] == 'D' || vT.bstrVal[0] == 'd')
 				{
-				// Write value
-				CCLTRY ( save ( pStm, vV ) );
+				if			(vT.bstrVal[1] == 'A' || vT.bstrVal[1] == 'a')	vtype = VTYPE_DATE;
+				else if	(vT.bstrVal[1] == 'O' || vT.bstrVal[1] == 'o')	vtype = VTYPE_R8;
+				else																		vtype = VTYPE_STR;
+				}	// else if
+			else if	(vT.bstrVal[0] == 'D' || vT.bstrVal[0] == 'd')		vtype = VTYPE_DATE;
+			else																			vtype = VTYPE_STR;
+			}	// if
+		else if (hr == S_OK) vtype = VTYPE_STR;
 
-				// Next key
+		// Convert value from a string
+		CCLOK  ( vS.vt = VT_BSTR; )
+		CCLTRY ( pChild->get_text ( &(vS.bstrVal) ) );
+		CCLTRY ( adtValue::fromString ( vS.bstrVal, vtype, oVal ) );
+
+		// Clean up
+		VariantClear ( &vS );
+		VariantClear ( &vT );
+		_RELEASE(pNodeType);
+		_RELEASE(pAttr);
+
+		#elif		__unix__
+		xmlChar		*type;
+		adtString	strContent;
+
+		// Value strings show up as a text node under the child value
+		CCLTRYE ( (pChild->children != NULL) && (pChild->children->type == XML_TEXT_NODE), E_UNEXPECTED );
+
+		// Is a valid type specified ?
+		if ( (type = xmlGetProp ( pChild, (const xmlChar *) "Type" )) != NULL)
+			{
+			// Determine type from first letter
+			if			(type[0] == 'I' || type[0] == 'i')		vtype = VTYPE_I4;
+			else if	(type[0] == 'L' || type[0] == 'l')		vtype = VTYPE_I8;
+			else if	(type[0] == 'B' || type[0] == 'b')		vtype = VTYPE_BOOL;
+			else if	(type[0] == 'F' || type[0] == 'f')		vtype = VTYPE_R4;
+			else if	(type[0] == 'D' || type[0] == 'd')
+				{
+				if			(type[1] == 'A' || type[1] == 'a')	vtype = VTYPE_DATE;
+				else if	(type[1] == 'O' || type[1] == 'o')	vtype = VTYPE_R8;
+				else														vtype = VTYPE_STR;
+				}	// else if
+			else if	(type[0] == 'D' || type[0] == 'd')		vtype = VTYPE_DATE;
+			else															vtype = VTYPE_STR;
+			}	// if
+		else vtype = VTYPE_STR;
+
+		// Convert value from a string
+//		CCLOK ( dbgprintf ( L"StmPrsXML::valueLoad:Value:%S\r\n", (const char *) pChild->children->content ); )
+		CCLOK  ( strContent = (const char *) pChild->children->content; )
+		CCLTRY ( adtValue::fromString ( strContent, vtype, oVal ) );
+		#endif
+		}	// else if
+
+	// ?
+	else if (hr == S_OK)
+		hr = E_UNEXPECTED;
+
+	// Clean up
+	#ifdef	_WIN32
+	_FREEBSTR(name);
+	_RELEASE(pChild);
+	_RELEASE(pChildren);
+	_RELEASE(pXMLNode);
+	#endif
+
+	return hr;
+	}	// valueLoad
+
+HRESULT StmPrsXML :: valueSave ( const ADTVALUE &oVal )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Saves next child to a new XML node.
+	//
+	//	PARAMETERS
+	//		-	oVal contains the object to save.
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT	hr			= S_OK;
+
+	// Object ?
+	if (hr == S_OK && adtValue::type(oVal) == VTYPE_UNK)
+		{
+		IDictionary			*pDict	= NULL;
+		IContainer			*pCont	= NULL;
+
+		// See if it is a supported object
+		CCLTRYE ( oVal.punk != NULL, E_UNEXPECTED );
+
+		// Dictionary ?
+		if (hr == S_OK && _QI(oVal.punk,IID_IDictionary,&pDict) == S_OK)
+			{
+			IIt		*pKeys	= NULL;
+			adtValue	vKey,vValue;
+			
+			// Begin dictionary
+			CCLTRY ( emit ( L"<Dictionary>" ) );
+
+			// Save each key/value pair
+			CCLTRY ( pDict->keys ( &pKeys ) );
+			CCLTRY ( pKeys->begin() );
+			while (hr == S_OK && pKeys->read ( vKey ) == S_OK)
+				{
+				// Save next pair
+				if (pDict->load ( vKey, vValue ) == S_OK)
+					{
+					CCLTRY ( valueSave ( vKey ) );
+					CCLTRY ( valueSave ( vValue ) );
+					}	// if
+				pKeys->next();
+				}	// while
+
+			// End dictionary
+			CCLTRY ( emit ( L"</Dictionary>" ) );
+
+			// Clean up
+			_RELEASE(pKeys);
+			_RELEASE(pDict);
+			}	// if
+
+		// List ?
+		else if (hr == S_OK && _QI(oVal.punk,IID_IContainer,&pCont) == S_OK)
+			{
+			IIt		*pIt	= NULL;
+			adtValue	v;
+
+			// Begin container
+			CCLTRY ( emit ( L"<List>" ) );
+
+			// Save each value
+			CCLTRY(pCont->iterate ( &pIt ));
+			while (hr == S_OK && pIt->read ( v ) == S_OK)
+				{
+				// Save it
+				CCLTRY(valueSave(v));
+
+				// Next
 				pIt->next();
 				}	// while
 
 			// End container
-			CCLTRY ( emit ( pStm, L"</List>" ) );
+			CCLTRY ( emit ( L"</List>" ) );
 
 			// Clean up
 			_RELEASE(pIt);
-			_RELEASE(pLst);
-			}	// if
-
-		// Dictionary ?
-		else if (hr == S_OK && v.punk != NULL && _QI(v.punk,IID_IDictionary,&pDct) == S_OK)
-			{
-			// Begin dictionary
-			CCLTRY ( emit ( pStm, L"<Dictionary>" ) );
-
-			// Iterate and write values
-			CCLTRY ( pDct->keys ( &pIt ) );
-			while (hr == S_OK && pIt->read ( vK ) == S_OK)
-				{
-				// Write value
-				if (pDct->load ( vK, vV ) == S_OK)
-					{
-					CCLTRY ( save ( pStm, vK ) );
-					CCLTRY ( save ( pStm, vV ) );
-					}	// if
-
-				// Next key
-				pIt->next();
-				}	// while
-
-			// End dictionary
-			CCLTRY ( emit ( pStm, L"</Dictionary>" ) );
-
-			// Clean up
-			_RELEASE(pIt);
-			_RELEASE(pDct);
+			_RELEASE(pCont);
 			}	// if
 
 		// Unsupported object
 		else if (hr == S_OK)
 			{
-			// Good default ?
-			CCLTRY ( emit ( pStm, L"<Object></Object>" ) );
+			// TODO: Should this be an error condition ?  Currently not since 'unsaveable' objects
+			// do not stop processing. 
+			CCLTRY ( emit ( L"<Value></Value>" ) );
+//			hr = E_NOTIMPL;
 			}	// else if
 
 		}	// if
@@ -287,40 +595,39 @@ HRESULT StmPrsXML :: save ( IByteStream *pStm, const ADTVALUE &v )
 	// Value
 	else if (hr == S_OK)
 		{
-		adtString	strVal;
+		adtString	sVal;
 
 		// If data type is not a string, must place attribute in node.
-		if (adtValue::type(v) != VTYPE_STR)
+		if ( oVal.vtype != VTYPE_STR )
 			{
 			// Begin value
-			CCLTRY ( emit ( pStm, L"<Value Type=\"" ) );
+			CCLTRY ( emit ( L"<Value Type=\"" ) );
 
 			// Name of data type
-			CCLTRY ( emit (	pStm, 
-									(v.vtype == VTYPE_I4)		? L"Integer\">" :
-									(v.vtype == VTYPE_I8)		? L"Long\">" :
-									(v.vtype == VTYPE_R4)		? L"Float\">" :
-									(v.vtype == VTYPE_R8)		? L"Double\">" :
-									(v.vtype == VTYPE_DATE)		? L"Date\">" :
-									(v.vtype == VTYPE_BOOL)		? L"Boolean\">" :
-									(v.vtype == VTYPE_EMPTY)	? L"Empty\">" : L"String\">" ) );
+			CCLTRY ( emit (	(oVal.vtype == VTYPE_I4)		? L"Integer\">" :
+									(oVal.vtype == VTYPE_I8)		? L"Long\">" :
+									(oVal.vtype == VTYPE_R4)		? L"Float\">" :
+									(oVal.vtype == VTYPE_R8)		? L"Double\">" :
+									(oVal.vtype == VTYPE_DATE)		? L"Date\">" :
+									(oVal.vtype == VTYPE_BOOL)		? L"Boolean\">" :
+									(oVal.vtype == VTYPE_EMPTY)	? L"Empty\">" : L"String\">" ) );
 			}	// if
 		else
-			hr = emit ( pStm, L"<Value>" );
+			CCLTRY ( emit ( L"<Value>" ) );
 
 		// Convert value to a string
-		if (hr == S_OK && adtValue::toString ( v, strVal ) == S_OK)
-			hr = emit ( pStm, &strVal[0], true );
+		if (hr == S_OK && adtValue::toString ( oVal, sVal ) == S_OK)
+			hr =  emit ( &sVal.at(), true );
 
 		// End value
-		CCLTRY ( emit ( pStm, L"</Value>" ) );
+		CCLTRY ( emit ( L"</Value>" ) );
 		}	// else if
 
 	return hr;
-	}	// save
+	}	// valueSave
 
 HRESULT StmPrsXML :: writeAll ( IByteStream *pStm, const void *pcvBfr,
-											U32 sz )
+												U32 sz )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -351,454 +658,3 @@ HRESULT StmPrsXML :: writeAll ( IByteStream *pStm, const void *pcvBfr,
 
 	return hr;
 	}	// writeAll
-
-//
-// SAX callbacks
-//
-
-#ifdef	__USESAX__
-
-// Routines for Simple API for XML.  Speeds up parsing as this API allows bypassing
-// of the whole document object model (DOM) which is overkill for this node.
-
-HRESULT StmPrsXML :: putDocumentLocator ( ISAXLocator *pLoc )
-	{
-	////////////////////////////////////////////////////////////////////////
-	//
-	//	OVERLOAD
-	//	FROM		ISAXContentHandler
-	//
-	//	PURPOSE
-	//		-	Interface of origin of SAX document events.
-	//
-	//	PARAMETERS
-	//		-	pLoc is a valid instance of the ISAXLocator interface
-	//
-	//	RETURN VALUE
-	//		S_OK if successful
-	//
-	////////////////////////////////////////////////////////////////////////
-	return S_OK;
-	}	// putDocumentLocator
-
-HRESULT StmPrsXML :: startDocument ( void )
-	{
-	////////////////////////////////////////////////////////////////////////
-	//
-	//	OVERLOAD
-	//	FROM		ISAXContentHandler
-	//
-	//	PURPOSE
-	//		-	Notification of beginning of document.
-	//
-	//	RETURN VALUE
-	//		S_OK if successful
-	//
-	////////////////////////////////////////////////////////////////////////
-	HRESULT	hr = S_OK;
-
-	// Prepare stack
-	CCLTRY(pSAXStk->clear());
-
-	return (hr == S_OK) ? S_OK : E_FAIL;
-	}	// startDocument
-
-HRESULT StmPrsXML :: endDocument ( void )
-	{
-	////////////////////////////////////////////////////////////////////////
-	//
-	//	OVERLOAD
-	//	FROM		ISAXContentHandler
-	//
-	//	PURPOSE
-	//		-	Notification of end of document.
-	//
-	//	RETURN VALUE
-	//		S_OK if successful
-	//
-	////////////////////////////////////////////////////////////////////////
-	return S_OK;
-	}	// endDocument
-
-HRESULT StmPrsXML ::
-	startPrefixMapping (	const wchar_t *pwchPrefix, int cchPrefix,
-								const wchar_t *pwchUri, int cchUri )
-	{
-	////////////////////////////////////////////////////////////////////////
-	//
-	//	OVERLOAD
-	//	FROM		ISAXContentHandler
-	//
-	//	PURPOSE
-	//		-	Begins the scope of the prefix-URI namespace mapping
-	//
-	//	PARAMETERS
-	//		-	pwchPrefix,cchPrefix is the prefix being mapped
-	//		-	pwchUri,cchUri is the namespace to which the prefix is mapped
-	//
-	//	RETURN VALUE
-	//		S_OK if successful
-	//
-	////////////////////////////////////////////////////////////////////////
-	return S_OK;
-	}	// startPrefixMapping
-
-HRESULT StmPrsXML ::
-	endPrefixMapping ( const wchar_t *pwchPrefix, int cchPrefix )
-	{
-	////////////////////////////////////////////////////////////////////////
-	//
-	//	OVERLOAD
-	//	FROM		ISAXContentHandler
-	//
-	//	PURPOSE
-	//		-	Ends the scope of the prefix-URI namespace mapping
-	//
-	//	PARAMETERS
-	//		-	pwchPrefix,cchPrefix is the prefix being mapped
-	//
-	//	RETURN VALUE
-	//		S_OK if successful
-	//
-	////////////////////////////////////////////////////////////////////////
-	return S_OK;
-	}	// endPrefixMapping
-
-HRESULT StmPrsXML ::
-	startElement (	const wchar_t *pwchNamespaceUri, int cchNamespaceUri,
-						const wchar_t *pwchLocalName, int cchLocalName,
-						const wchar_t *pwchQName, int cchQName,
-						ISAXAttributes *pAttr )
-	{
-	////////////////////////////////////////////////////////////////////////
-	//
-	//	OVERLOAD
-	//	FROM		ISAXContentHandler
-	//
-	//	PURPOSE
-	//		-	Notification of the beginning of an element.
-	//
-	//	PARAMETERS
-	//		-	pwchNamespaceUri,cchNamespaceUri is the namespace URI.
-	//		-	pwchLocalName,cchLocalName is the local name string.
-	//		-	pwchQName,cchQName is the QName string.
-	//		-	pAttr are the attributes attached to the element
-	//
-	//	RETURN VALUE
-	//		S_OK if successful
-	//
-	////////////////////////////////////////////////////////////////////////
-	HRESULT	hr = S_OK;
-
-	// Push previous object
-	if (vSAXFrom.vtype != VTYPE_EMPTY)
-		hr = pSAXStk->write ( vSAXFrom );
-
-	// Valid elements are : Dictionary, List, or Value
-
-	// Dictionary
-	if (!WCASENCMP(L"Dictionary",pwchLocalName,cchLocalName))
-		{
-		IDictionary	*pDict	= NULL;
-
-		// Create a dictionary object for the value
-		CCLTRY(COCREATE(L"Adt.Dictionary",IID_IDictionary,&pDict));
-
-		// New value
-		CCLTRY(adtValue::copy ( adtIUnknown(pDict), vSAXFrom ));
-
-		// Clean up
-		_RELEASE(pDict);
-		}	// if
-
-	// List
-	else if (!WCASENCMP(L"List",pwchLocalName,cchLocalName))
-		{
-		IContainer	*pCont = NULL;
-
-		// Create a list object for the value
-		CCLTRY ( COCREATE ( L"Adt.List", IID_IContainer, &pCont ) );
-
-		// New value
-		CCLTRY(adtValue::copy ( adtIUnknown(pCont), vSAXFrom ));
-
-		// Clean up
-		_RELEASE(pCont);
-		}	// if
-
-	// Value
-	else if (!WCASENCMP(L"Value",pwchLocalName,cchLocalName))
-		{
-		const wchar_t	*pwType;
-		int				tLen;
-
-		// Data type specified ?
-		if (pAttr != NULL && pAttr->getValueFromName ( L"", 0, 
-				L"Type", 4, &pwType, &tLen ) == S_OK && tLen > 1)
-			{
-			// Determine type from first letter
-			if			(pwType[0] == 'I' || pwType[0] == 'i')		tSAX = VTYPE_I4;
-			else if	(pwType[0] == 'L' || pwType[0] == 'l')		tSAX = VTYPE_I8;
-			else if	(pwType[0] == 'B' || pwType[0] == 'b')		tSAX = VTYPE_BOOL;
-			else if	(pwType[0] == 'F' || pwType[0] == 'f')		tSAX = VTYPE_R4;
-			else if	(pwType[0] == 'D' || pwType[0] == 'd')
-				{
-				if			(pwType[1] == 'A' || pwType[1] == 'a')	tSAX = VTYPE_DATE;
-				else if	(pwType[1] == 'O' || pwType[1] == 'o')	tSAX = VTYPE_R8;
-				else															tSAX = VTYPE_STR;
-				}	// else if
-			else if	(pwType[0] == 'D' || pwType[0] == 'd')		tSAX = VTYPE_DATE;
-			else																tSAX = VTYPE_STR;
-			}	// if
-		else
-			tSAX = VTYPE_STR;
-
-		// Clear current value
-		adtValue::clear(vSAXFrom);
-		}	// if
-
-	// Invalid
-	else
-		hr = E_UNEXPECTED;
-
-	return (hr == S_OK) ? S_OK : E_FAIL;
-	}	// startElement
-
-HRESULT StmPrsXML ::
-	endElement (	const wchar_t *pwchNamespaceUri, int cchNamespaceUri,
-						const wchar_t *pwchLocalName, int cchLocalName,
-						const wchar_t *pwchQName, int cchQName )
-	{
-	////////////////////////////////////////////////////////////////////////
-	//
-	//	OVERLOAD
-	//	FROM		ISAXContentHandler
-	//
-	//	PURPOSE
-	//		-	Notification of the end of an element.
-	//
-	//	PARAMETERS
-	//		-	pwchNamespaceUri,cchNamespaceUri is the namespace URI.
-	//		-	pwchLocalName,cchLocalName is the local name string.
-	//		-	pwchQName,cchQName is the QName string.
-	//		-	pAttr are the attributes attached to the element
-	//
-	//	RETURN VALUE
-	//		S_OK if successful
-	//
-	////////////////////////////////////////////////////////////////////////
-	HRESULT		hr			= S_OK;
-	IDictionary	*pDict	= NULL;
-	IList			*pCont	= NULL;
-	adtValue		vParent;
-
-	// Value
-	if (!WCASENCMP(L"Value",pwchLocalName,cchLocalName))
-		{
-		// Convert value from a string
-		CCLTRY ( adtValue::fromString ( sSAXFrom, tSAX, vSAXFrom ) );
-		sSAXFrom = L"";
-		tSAX		= VTYPE_EMPTY;
-		}	// if
-
-	// Look at next value on stack
-	if (pSAXStkIt->read ( vParent ) == S_OK)
-		{
-		// Parent type
-		if ( vParent.vtype == VTYPE_UNK && vParent.punk != NULL )
-			{
-			// Dictionary
-			if (_QI(vParent.punk,IID_IDictionary,&pDict) == S_OK)
-				{
-				adtValue	vKey;
-
-				// If key not available, current value becomes key
-				if ( pDict->load ( strResv, vKey ) != S_OK )
-					{
-					// Store key temporarily in dictionary for value later on.
-					CCLTRY(pDict->store ( strResv, vSAXFrom ));
-					}	// if
-				else
-					{
-					// Its possible to send a 'null' value, in this case the 'characters' callback
-					// will never get called and 'vSAXFrom' will be empty
-					if (vSAXFrom.vtype == VTYPE_EMPTY)
-						{
-						CCLTRY ( adtValue::fromString ( adtString(L""), tSAX, vSAXFrom ) );
-						tSAX	= VTYPE_EMPTY;
-						}	// if
-
-					// Store value under active key
-					CCLTRY(pDict->store ( vKey, vSAXFrom ));
-					CCLOK (pDict->remove ( strResv );)
-					}	// if
-
-				// Clean up
-				_RELEASE(pDict);
-				}	// if
-
-			// List
-			else if (_QI(vParent.punk,IID_IList,&pCont) == S_OK)
-				{
-				// Write active value to list
-				CCLTRY(pCont->write ( vSAXFrom ));
-
-				// Clean up
-				_RELEASE(pCont);
-				}	// else if
-
-			}	// if
-
-		// New active value
-		CCLTRY ( adtValue::copy ( vParent, vSAXFrom ) );
-
-		// Pop value off stack
-		pSAXStkIt->next();
-		}	// if
-
-	return (hr == S_OK) ? S_OK : E_FAIL;
-	}	// endElement
-
-HRESULT StmPrsXML ::
-	characters ( const wchar_t *pwchChars, int cchChars )
-	{
-	////////////////////////////////////////////////////////////////////////
-	//
-	//	OVERLOAD
-	//	FROM		ISAXContentHandler
-	//
-	//	PURPOSE
-	//		-	Receives notification of character data.
-	//
-	//	PARAMETERS
-	//		-	pwchrChars,cchChars is the character data.
-	//
-	//	RETURN VALUE
-	//		S_OK if successful
-	//
-	////////////////////////////////////////////////////////////////////////
-	HRESULT		hr = S_OK;
-	adtString	sVal;
-	size_t		lens,lena;
-
-	// Inside a value ?  The reader passes whitespace as well as valid
-	// 'in node' text, so ignore non-value characters
-	if (tSAX == VTYPE_EMPTY)
-		return S_OK;
-
-	// It's possible this function will be called repeatadly for the
-	// same text line (to handle special characters).  Must simply append
-	// until the whole string is read before conversion to a value can
-	// take place.
-	lens = sSAXFrom.length();
-	lena = lens + cchChars;
-
-	// Generate new string
-	CCLTRY( sVal.allocate ( (U32)(lens+lena) ) );
-	CCLOK ( WCSCPY ( &sVal.at(), lens + lena + 1, sSAXFrom ); )
-	CCLOK ( WCSNCPY ( &sVal.at(lens), lena + 1, pwchChars, cchChars ); )
-	CCLTRY( adtValue::copy ( sVal, sSAXFrom ) );
-
-	return (hr == S_OK) ? S_OK : E_FAIL;
-	}	// characters
-
-HRESULT StmPrsXML ::
-	ignorableWhitespace ( const wchar_t *pwchChars, int cchChars )
-	{
-	////////////////////////////////////////////////////////////////////////
-	//
-	//	OVERLOAD
-	//	FROM		ISAXContentHandler
-	//
-	//	PURPOSE
-	//		-	Not currently used in SAX.
-	//
-	//	PARAMETERS
-	//		-	pwchrChars,cchChars is the character data.
-	//
-	//	RETURN VALUE
-	//		S_OK if successful
-	//
-	////////////////////////////////////////////////////////////////////////
-	return S_OK;
-	}	// ignorableWhitespace
-
-HRESULT StmPrsXML ::
-	processingInstruction (	const wchar_t *pwchTarget, int cchTarget,
-									const wchar_t *pwchData, int cchData )
-	{
-	////////////////////////////////////////////////////////////////////////
-	//
-	//	OVERLOAD
-	//	FROM		ISAXContentHandler
-	//
-	//	PURPOSE
-	//		-	Notification of instruction processing
-	//
-	//	PARAMETERS
-	//		-	pwchTarget,cchTarget is the target for the instruction
-	//		-	pwchData,cchData is the instruction data
-	//
-	//	RETURN VALUE
-	//		S_OK if successful
-	//
-	////////////////////////////////////////////////////////////////////////
-	return S_OK;
-	}	// processingInstruction
-
-HRESULT StmPrsXML ::
-	skippedEntity ( const wchar_t *pwchName, int cchName )
-	{
-	////////////////////////////////////////////////////////////////////////
-	//
-	//	OVERLOAD
-	//	FROM		ISAXContentHandler
-	//
-	//	PURPOSE
-	//		-	Notification of a skipped entity.
-	//
-	//	PARAMETERS
-	//		-	pwchrName,cchName is the skipped entity.
-	//
-	//	RETURN VALUE
-	//		S_OK if successful
-	//
-	////////////////////////////////////////////////////////////////////////
-	return S_OK;
-	}	// skippedEntity
-
-//
-// Error handling
-//
-
-HRESULT StmPrsXML :: error	(  ISAXLocator *pLocator, 
-										const wchar_t *pwchErrorMessage, HRESULT )
-	{
-	int l,c;
-	pLocator->getLineNumber(&l);
-	pLocator->getColumnNumber(&c);
-	lprintf ( LOG_ERR, L"error : %d,%d : %s", l, c, pwchErrorMessage  );
-	return S_OK;
-	}	// error
-
-HRESULT StmPrsXML :: fatalError	(  ISAXLocator *pLocator, 
-												const wchar_t *pwchErrorMessage, HRESULT )
-	{
-	int l,c;
-	pLocator->getLineNumber(&l);
-	pLocator->getColumnNumber(&c);
-	lprintf ( LOG_ERR, L"fatalError : %d,%d : %s", l, c, pwchErrorMessage );
-	return S_OK;
-	}	// fataError
-
-HRESULT StmPrsXML :: ignorableWarning	(  ISAXLocator *pLocator, 
-														const wchar_t *pwchErrorMessage, HRESULT )
-	{
-	int l,c;
-	pLocator->getLineNumber(&l);
-	pLocator->getColumnNumber(&c);
-	lprintf ( LOG_ERR, L"ignorableWarning : %d,%d : %s", l, c, pwchErrorMessage );
-	return S_OK;
-	}	// ignorableWarning
-
-#endif

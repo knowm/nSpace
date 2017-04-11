@@ -419,6 +419,9 @@ class adtVariant : public ::tagVARIANT
 	private :
 	IUnknown			*punkPrsrL,*punkPrsrS;			// Cached parser
 	IUnknown			*punkStmL,*punkStmS;				// Cached byte stream
+
+	// Internal utilities
+	void cinit();
 	};
 
 #endif

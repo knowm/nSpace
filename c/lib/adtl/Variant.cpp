@@ -21,11 +21,7 @@ adtVariant :: adtVariant ( void )
 	//		-	Constructor for the object.
 	//
 	////////////////////////////////////////////////////////////////////////
-	VariantInit ( this );
-	punkPrsrL	= NULL;
-	punkPrsrS	= NULL;
-	punkStmL		= NULL;
-	punkStmS		= NULL;
+	cinit();
 	}	// adtVariant
 
 adtVariant :: ~adtVariant ( void )
@@ -43,6 +39,21 @@ adtVariant :: ~adtVariant ( void )
 	VariantClear(this);
 	}	// ~adtVariant
 
+void adtVariant :: cinit ( void )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Initialize internal constructor state of the object
+	//
+	////////////////////////////////////////////////////////////////////////
+	VariantInit ( this );
+	punkPrsrL	= NULL;
+	punkPrsrS	= NULL;
+	punkStmL		= NULL;
+	punkStmS		= NULL;
+	}	// cinit
+
 HRESULT adtVariant :: clear ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -58,8 +69,8 @@ HRESULT adtVariant :: clear ( void )
 	// Free up resources
 	VariantClear(this);
 
-	// Initialize fields
-	VariantInit(this);
+	// Restore to default state
+	cinit();
 
 	return S_OK;
 	}	// clear
@@ -153,7 +164,7 @@ HRESULT adtVariant :: toValue ( ADTVALUE &v )
 			// Empty values are fine
 			break;
 		default :
-			dbgprintf(L"adtVariant::toValue:Unhandled type:0x%x\r\n", vt );
+			lprintf(LOG_ERR,L"Unhandled type:0x%x\r\n", vt );
 			hr = E_NOTIMPL;
 		}	// switch
 
@@ -166,13 +177,13 @@ HRESULT adtVariant :: toValue ( ADTVALUE &v )
 
 adtVariant::adtVariant( const VARIANT *pv )
 	{
-	adtVariant::adtVariant();
+	cinit();
 	*this = pv;
 	}	// adtVariant
 
 adtVariant :: adtVariant ( IUnknown *punk )
 	{
-	adtVariant::adtVariant();
+	cinit();
 	vt			= VT_UNKNOWN;
 	punkVal	= punk;
 	if (punkVal) punkVal->AddRef();
@@ -180,42 +191,42 @@ adtVariant :: adtVariant ( IUnknown *punk )
 
 adtVariant :: adtVariant ( int val )
 	{
-	adtVariant::adtVariant();
+	cinit();
 	vt		= VT_I4;
 	lVal	= val;
 	}	// adtVariant
 
 adtVariant :: adtVariant ( long val )
 	{
-	adtVariant::adtVariant();
+	cinit();
 	vt		= VT_I8;
 	llVal	= val;
 	}	// adtVariant
 
 adtVariant :: adtVariant ( WCHAR *val )
 	{
-	adtVariant::adtVariant();
+	cinit();
 	vt			= VT_BSTR;
 	bstrVal	= SysAllocString ( val );
 	}	// adtVariant
 
 adtVariant :: adtVariant ( const WCHAR *val )
 	{
-	adtVariant::adtVariant();
+	cinit();
 	vt			= VT_BSTR;
 	bstrVal	= SysAllocString ( val );
 	}	// adtVariant
 
 adtVariant :: adtVariant ( bool val )
 	{
-	adtVariant::adtVariant();
+	cinit();
 	vt			= VT_BOOL;
 	boolVal	= (val == true) ? VARIANT_TRUE : VARIANT_FALSE;
 	}	// adtVariant
 
 adtVariant :: adtVariant ( const ADTVALUE &val )
 	{
-	adtVariant::adtVariant();
+	cinit();
 
 	// Use operator
 	*this = val;
@@ -343,7 +354,7 @@ adtVariant& adtVariant::operator= ( const ADTVALUE &v )
 			vt = VT_EMPTY;
 			break;
 		default :
-			dbgprintf ( L"adtVariant::operator =:Unhandled value type %d\r\n", v.vtype );
+			lprintf ( LOG_ERR, L"Unhandled value type %d\r\n", v.vtype );
 		}	// switch
 
 	return *this;

@@ -25,17 +25,6 @@
 #include <setupapi.h>
 #endif
 
-// XML processing flags
-#ifdef 	_WIN32
-//#define	__NOSAX__
-#if	!defined(__NOSAX__)
-#define	__USESAX__
-#include <msxml2.h>
-#else
-#undef	__USESAX__
-#endif
-#endif
-
 #define	WM_USER_DESTROY	(WM_USER+1)
 
 ///////////
@@ -90,14 +79,16 @@ class ByteCache :
 // Class - DispIntf.  Contains the information necessary to interact
 //		with an interface IDispatch object.  Can also serve as an event sink.
 //
+class Dispatch;											// Forward dec.
 
 class DispIntf :
 	public CCLObject										// Base class
 	{
 	public :
-	DispIntf ( void );									// Constructor
+	DispIntf ( Dispatch * );							// Constructor
 
 	// Run-time data
+	Dispatch		*prParent;								// Reference to parent
 	IDispatch	*pDisp;									// Dispatch interface
 	IDictionary	*pDctFuncs;								// Functions dictionary
 
@@ -379,76 +370,48 @@ class StmPrsBin :
 	};
 
 //
-// Class - StmPrsXML.  XML stream value parser.
+// Class - StmPrsXML.  XML value stream parser object.
 //
 
 class StmPrsXML :
 	public CCLObject,										// Base class
-	#ifdef	__USESAX__
-	public ISAXContentHandler,							// Interface
-	public ISAXErrorHandler,							// Interface
-	#endif
 	public IStreamPersist								// Interface
 	{
 	public :
-	StmPrsXML ( void );									// Constructor
-
-	// Run-time data
-	#ifdef	__USESAX__
-	IUnknown				*punkRdr;						// SAX reader
-	adtValue				vSAXFrom;						// SAX value
-	adtString			sSAXFrom;						// SAX string
-	IList					*pSAXStk;						// Object stack
-	IIt					*pSAXStkIt;						// Iterator
-	VALUETYPE			tSAX;								// Type
-	adtString			strResv;							// Reserved string
-	#endif
-	#ifdef				_WIN32
-	IHaveValue			*pStmStm;						// Stream on byte stream
-	#endif
+	StmPrsXML ( void );								// Constructor
 
 	// 'IStreamPersist' members
 	STDMETHOD(load)	( IByteStream *, ADTVALUE & );
 	STDMETHOD(save)	( IByteStream *, const ADTVALUE & );
 
-	#ifdef	__USESAX__
-	// 'ISAXContentHandler' members
-	STDMETHOD(putDocumentLocator)		( ISAXLocator * );
-	STDMETHOD(startDocument)			( void );
-	STDMETHOD(endDocument)				( void );
-	STDMETHOD(startPrefixMapping)		( const wchar_t *, int, const wchar_t *, int );
-	STDMETHOD(endPrefixMapping)		( const wchar_t *, int );
-	STDMETHOD(startElement)				( const wchar_t *, int, const wchar_t *, int,
-													const wchar_t *, int, ISAXAttributes * );
-	STDMETHOD(endElement)				( const wchar_t *, int, const wchar_t *, int,
-													const wchar_t *, int );
-	STDMETHOD(characters)				( const wchar_t *, int );
-	STDMETHOD(ignorableWhitespace)	( const wchar_t *, int );
-	STDMETHOD(processingInstruction)	( const wchar_t *, int, const wchar_t *, int );
-	STDMETHOD(skippedEntity)			( const wchar_t *, int );
-
-	// 'ISAXErrorHandler' members
-	STDMETHOD(error)						( ISAXLocator *, const wchar_t *, HRESULT );
-	STDMETHOD(fatalError)				( ISAXLocator *, const wchar_t *, HRESULT );
-	STDMETHOD(ignorableWarning)		( ISAXLocator *, const wchar_t *, HRESULT );
-	#endif
-
 	// CCL
 	CCL_OBJECT_BEGIN(StmPrsXML)
 		CCL_INTF(IStreamPersist)
-		#ifdef	__USESAX__
-		CCL_INTF(ISAXContentHandler)
-		CCL_INTF(ISAXErrorHandler)
-		#endif
 	CCL_OBJECT_END()
 	virtual HRESULT	construct	( void );		// Construct object
 	virtual void		destruct		( void );		// Destruct object
 
 	private :
 
+	// Run-time data
+	IByteStream			*pStmDoc;						// Document stream
+	#ifdef				_WIN32
+	IHaveValue			*pStmStm;						// Stream on byte stream
+	IUnknown				*pXMLDocLoad;					// XML load document
+	IUnknown				*pXMLDocNode;					// Active XML document node
+	LONG					lChild;							// Child index
+	#elif					__unix__
+	void					*pXMLDocChild;					// Active XML child node
+	#endif
+
 	// Internal utilities
-	HRESULT	emit		( IByteStream *, const WCHAR *, bool = false );
-	HRESULT	writeAll	( IByteStream *, const void *, U32 );
+	HRESULT	valueLoad	( ADTVALUE & );			// Load child
+	HRESULT	valueSave	( const ADTVALUE & );	// Save child
+	HRESULT	emit			( const WCHAR *,			// Emit character to output stream
+									bool = false );
+	HRESULT	writeAll		( IByteStream *,			// Write full amount
+									const void *, U32 );
+
 	};
 
 #ifdef	_WIN32
@@ -522,6 +485,7 @@ class Dispatch :
 	DispIntf			*pIntf;								// Interface object
 	IDictionary		*pDctP;								// Parameters
 	adtString		strName;								// Member name
+	IList				*pIntfs;								// Open interfaces
 
 	// CCL
 	CCL_OBJECT_BEGIN(Dispatch)
@@ -530,12 +494,14 @@ class Dispatch :
 	virtual void		destruct	( void );			// Destruct object
 
 	// Connections
+	DECLARE_CON(Close)
 	DECLARE_CON(Fire)
 	DECLARE_RCP(Iface)
 	DECLARE_CON(Open)
 	DECLARE_RCP(Params)
 	DECLARE_EMT(Error)
 	BEGIN_BEHAVIOUR()
+		DEFINE_CON(Close)
 		DEFINE_RCP(Iface)
 		DEFINE_CON(Fire)
 		DEFINE_CON(Open)

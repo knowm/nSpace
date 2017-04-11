@@ -42,6 +42,7 @@ void Dispatch :: destruct ( void )
 	////////////////////////////////////////////////////////////////////////
 	_RELEASE(pDctP);
 	_RELEASE(pIntf);
+	_RELEASE(pIntfs);
 	}	// destruct
 
 HRESULT Dispatch :: onAttach ( bool bAttach )
@@ -75,6 +76,9 @@ HRESULT Dispatch :: onAttach ( bool bAttach )
 			_QISAFE(unkV,IID_IDictionary,&pDctP);
 			}	// if
 
+		// Created interface objects are tracked in order to allow for 'close'
+		CCLTRY ( COCREATE ( L"Adt.List", IID_IList, &pIntfs ) );
+
 		// Type information dictionary
 		if (++uRefCnt == 1)
 			{
@@ -86,6 +90,9 @@ HRESULT Dispatch :: onAttach ( bool bAttach )
 	// Detaching from graph
 	else
 		{
+		// Enusre interfaces are closed
+		receive(prClose,L"",adtInt());
+
 		// Clean up
 		_RELEASE(pIntf);
 		_RELEASE(pDctP);
@@ -93,7 +100,7 @@ HRESULT Dispatch :: onAttach ( bool bAttach )
 			{
 			_RELEASE(pDctTypeInfo);
 			}	// if
-		
+		_RELEASE(pIntfs);
 		}	// else
 
 	return S_OK;
@@ -137,7 +144,8 @@ HRESULT Dispatch :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		CCLTRY ( CoCreateInstance ( clsid, NULL, CLSCTX_ALL, IID_IDispatch, (void **) &pDsp ) );
 
 		// Create and assign interface to object
-		CCLTRYE ( (pIntfNew = new DispIntf()) != NULL, E_OUTOFMEMORY );
+		CCLTRYE ( (pIntfNew = new DispIntf(this)) != NULL, E_OUTOFMEMORY );
+		CCLTRY  ( pIntfs->write ( adtIUnknown(pIntfNew) ) );
 		CCLTRY  ( pIntfNew->assign ( pDsp ) );
 
 		// Result
@@ -150,6 +158,38 @@ HRESULT Dispatch :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		_RELEASE(pIntfNew);
 		_RELEASE(pDsp);
 		}	// if
+
+	// Close all interfaces for this node
+	else if (_RCP(Close))
+		{
+		IIt		*pIt	= NULL;
+		adtValue vL;
+
+		// Parent node for interfaces ?
+		CCLTRYE( pIntfs != NULL, ERROR_INVALID_STATE );
+
+		// Close interfaces
+		CCLTRY ( pIntfs->iterate ( &pIt ) );
+		while (hr == S_OK && pIt->read ( vL ) == S_OK)
+			{
+			adtIUnknown unkV(vL);
+
+			// Unassign the interface
+			if ((IUnknown *)(NULL) != unkV)
+				((DispIntf *)(IUnknown *)unkV)->unassign();
+
+			// Next interface
+			pIt->next();
+			}	// while
+
+		// Done with interfaces
+		if (pIntfs != NULL)
+			pIntfs->clear();
+
+		// Clean up
+		_RELEASE(pIt);
+		_RELEASE(pIntf);
+		}	// else if
 
 	// Invoke method
 	else if (_RCP(Fire))
@@ -178,7 +218,9 @@ HRESULT Dispatch :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 //				dbgprintf ( L"Hi\r\n" );
 
 			// Create and assign interface to object
-			CCLTRYE ( (pIntfNew = new DispIntf()) != NULL, E_OUTOFMEMORY );
+			CCLTRYE ( (pIntfNew = new DispIntf(pIntf->prParent)) != NULL, E_OUTOFMEMORY );
+			if (hr == S_OK && pIntf->prParent != NULL)
+				hr = pIntf->prParent->pIntfs->write(adtIUnknown(pIntfNew));
 			CCLTRY  ( pIntfNew->assign ( pDisp ) );
 
 			// Object to emit
@@ -220,14 +262,18 @@ HRESULT Dispatch :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 // DispIntf object
 ///////////////////
 
-DispIntf :: DispIntf ( void )
+DispIntf :: DispIntf ( Dispatch *_prParent )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
 	//	PURPOSE
 	//		-	Constructor for the object
 	//
+	//	PARAMETERS
+	//		-	_prParent is a reference to the parent node
+	//
 	////////////////////////////////////////////////////////////////////////
+	prParent		= _prParent;
 	pDisp			= NULL;
 	pDctFuncs	= NULL;
 
