@@ -99,6 +99,34 @@
 %		!	Download/OnDownload					SaveImage/Image
 %		!	Download/OnDownload					SaveImage/Save
 
+	%%%%%%%%%%%
+	% XML test
+	%%%%%%%%%%%
+	
+	% MISCN: Create parser for XML
+%	$	CreatePrsrXml Misc.Create { Id IO.StmPrsXML }
+%		!	Initialize/OnFire						CreatePrsrXml/Fire
+	
+	% MISCN: File
+%	$	ValueXml Misc.Dist { Value "/home/hoyjm/dev/nSpace/resource/test.xml" }
+%		!	Initialize/OnFire						ValueXml/Fire
+		
+	% ION: Access an asynchronous stream for the device path
+%	$	StmSrcXML Io.StreamSource { Options { ReadOnly true:bool } }
+%		!	CreateFileSrc/OnFire					StmSrcXML/Source
+%		!	ValueXml/OnFire						StmSrcXML/Location
+%		!	ValueXml/OnFire						StmSrcXML/Open
+
+	% MISCN: Load the value
+%	$	StmToVal Io.Persist {}
+%		!	CreatePrsrXml/OnFire					StmToVal/Parser
+%		!	StmSrcXML/OnOpen						StmToVal/Stream
+%		!	StmSrcXML/OnOpen						StmToVal/Load
+%		!	StmToVal/OnLoad						Debug/Fire
+%		!	StmToVal/OnLoad						Debug/Fire
+%		!	StmToVal/OnError						Debug/Fire
+%		!	StmToVal/OnError						Debug/Fire
+
 	%%%%%%%%%%%%%%
 	% Web sockets
 	%%%%%%%%%%%%%%

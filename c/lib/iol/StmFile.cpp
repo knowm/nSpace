@@ -116,18 +116,7 @@ HRESULT StmFile :: copyTo ( IByteStream *pStmDst, U64 uSz, U64 *puSz )
 
 	// If size is not specified, assume entire stream is to be copied
 	if (hr == S_OK && uSz == 0)
-		{
-		#ifdef	_WIN32
-		DWORD		dwHigh;
-		CCLTRYE ( (uSz = GetFileSize ( *pFile, &dwHigh )) != INVALID_FILE_SIZE,
-						GetLastError() );
-
-		// 64-bit size
-		CCLOK ( uSz = (uSz | ((U64)dwHigh << 32)); )
-		#else
-		hr = E_NOTIMPL;
-		#endif
-		}	// if
+		hr = available(&uSz);
 
 	// Read/write file
 	while (hr == S_OK && uSz)
