@@ -306,7 +306,6 @@ HRESULT MemoryBlock :: stream ( IByteStream **ppStm )
 
 	// Setup
 	(*ppStm) = NULL;
-	hr			= E_NOTIMPL;
 
 	// Create new stream and assign this object as the block
 	CCLTRYE	( (pStm = new StmMemory()) != NULL, E_OUTOFMEMORY );
