@@ -31,6 +31,10 @@ add_library (iol STATIC ${SOURCES} ${HEADERS})
 
 target_link_libraries(iol)
 
+if (CMAKE_COMPILER_IS_GNUCC)
+include_directories(${LIBXML2_INCLUDE_DIR})
+endif()
+
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER lib)
 set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 

@@ -19,6 +19,9 @@ target_link_libraries(ion iol adtl nspcl adtl ccl sysl)
 if (WIN32)
 	target_link_libraries(ion msxml2)
 endif()
+if (UNIX)
+	target_link_libraries(ion xml2)
+endif()
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER dll)
 

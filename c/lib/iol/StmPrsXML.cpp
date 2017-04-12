@@ -10,11 +10,7 @@
 #if		defined(_WIN32)
 #include <msxml.h>
 #elif		defined(__unix__)
-#if		__GNUC__ > 3
-#include <libxml/parser.h>
-#else
 #include <libxml2/libxml/parser.h>
-#endif
 #endif
 
 #define	HDR_XML	"<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n"
@@ -195,8 +191,9 @@ HRESULT StmPrsXML :: load ( IByteStream *pUnkStm, ADTVALUE &oVal )
 	U32				sz;
 
 	// Destination stream
-	CCLTRY ( COCREATEINSTANCE ( CLSID_MemoryBlock, IID_IMemoryMapped, &pMemDst ) );
+	CCLTRY ( COCREATE ( L"Io.MemoryBlock", IID_IMemoryMapped, &pMemDst ) );
 	CCLTRY ( pMemDst->stream ( &pStmDst ) );
+lprintf ( LOG_DBG, L"pMemDst %p pStmDst %p\r\n", pMemDst, pStmDst );
 
 	// Load provided stream into memory
 	CCLTRY ( pUnkStm->copyTo ( pStmDst, 0, NULL ) );
@@ -405,10 +402,10 @@ HRESULT StmPrsXML :: valueLoad ( ADTVALUE &oVal )
 	// Primitive value ?
 	else if (hr == S_OK && !WCASECMP(name,L"VALUE"))
 		{
+		VALUETYPE				vtype			= VTYPE_EMPTY;
 		#ifdef					_WIN32
 		IXMLDOMNamedNodeMap	*pAttr		= NULL;
 		IXMLDOMNode				*pNodeType	= NULL;
-		VALUETYPE				vtype			= VTYPE_EMPTY;
 		VARIANT					vT,vS;
 
 		// Setup
