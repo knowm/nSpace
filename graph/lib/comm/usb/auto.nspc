@@ -14,13 +14,15 @@
 	% Actions
 	$	Initialize			Misc.Dist {}		% Initialize
 	$	Uninitialize		Misc.Dist {}		% Uninitialize
-	$	Scan					Misc.Dist {}		% Scan for devices
+	$	Start					Misc.Dist {}		% Start auto instancing
+	$	Stop					Misc.Dist {}		% Stop auto instance
 
 	% Notifications
 	$	OnInstance			Misc.Dist {}		% Graph instanced
 
 	% DEBUG
 	$	Debug Misc.Debug {}
+		!	Descriptor/OnFire						Debug/Fire
 
 	%%%%%%%%
 	% Setup
@@ -28,25 +30,119 @@
 
 	% Subgraph: Enumeration
 	#	Enum											Lib/Comm/Usb/Enum/ {}
+		!	Start/OnFire							Enum/Start/Fire
+		!	Stop/OnFire								Enum/Stop/Fire
+		!	Uninitialize/OnFire					Stop/Fire
 
-	% Enumerate devices
-	!	Scan/OnFire									Enum/First/Fire
+	%%%%%%%%%%
+	% Arrival
+	%%%%%%%%%%
+
+	%% Descriptor dictionary contains vendor, product, and instance prefix.
+
+	% MISCN: Assume missing entries
+	$	ValueEnumNone Misc.Dist { Value "" }
+		!	Enum/OnArrive/OnFire					ValueEnumNone/Fire
+
+	% MISCN: Create an empty descriptor for no matches
+	$	CreateDscNone Misc.Create { Id Adt.Dictionary }
+		!	Enum/OnArrive/OnFire					CreateDscNone/Fire
+
+	% ADTN: Load the product and vendor Id
+	$	LoadEnumKeys Adt.Keys { Keys ( IdVendor IdProduct SerialNumber ) }
+		!	Enum/OnArrive/OnFire					LoadEnumKeys/Dictionary
+		!	Enum/OnArrive/OnFire					LoadEnumKeys/Load
+%		!	LoadEnumKeys/OnIdVendor				Debug/Fire
+%		!	LoadEnumKeys/OnIdProduct			Debug/Fire
+
+	%%
+	%% Search for the best matching entry
+	%% An exact serial number match is used first, followed by
+	%% a matching vendor and product Id.
+	%%
+
+	% ADTN: Iterate the descriptor entries
+	$	SrchIt Adt.Iterate {}
+		!	Descriptor/OnFire						SrchIt/Container
+		!	Enum/OnArrive/OnFire					SrchIt/First
+%		!	SrchIt/OnNext							Debug/Fire
+
+	% MISCN: Cache descriptor in case it is used
+	$	ValueSrchDsc Misc.Dist {}
+		!	SrchIt/OnNext							ValueSrchDsc/Value
+
+	% MISCN: Assume missing entries
+	$	ValueSrchNone Misc.Dist { Value "" }
+		!	SrchIt/OnNext							ValueSrchNone/Fire
+	$	ValueSrchZero Misc.Dist { Value 0:int }
+		!	SrchIt/OnNext							ValueSrchZero/Fire
+
+	% ADTN: Keys for search entry
+	$	LoadSrchKeys Adt.Keys { Keys ( IdVendor IdProduct SerialNumber ) }
+		!	SrchIt/OnNext							LoadSrchKeys/Dictionary
+		!	SrchIt/OnNext							LoadSrchKeys/Load
+
+	% MISCN: Vendor/product Id match ?
+	$	IsVen Misc.Compare { Left 0:int }
+		!	ValueSrchZero/OnFire					IsVen/Left
+		!	LoadSrchKeys/OnIdVendor				IsVen/Left
+		!	LoadEnumKeys/OnIdVendor				IsVen/Right
+	$	IsProd Misc.Compare { Left 0:int }
+		!	ValueSrchZero/OnFire					IsProd/Left
+		!	LoadSrchKeys/OnIdProduct			IsProd/Left
+		!	LoadEnumKeys/OnIdProduct			IsProd/Right
+		!	IsVen/OnEqual							IsProd/Fire
+
+	%% Matching vendor/product, serial # specified ?
+
+	% MISCN: Serial number specified in descriptor ?
+	$	IsSrchSn Misc.Compare { Left "" }
+		!	ValueSrchNone/OnFire					IsSrchSn/Right
+		!	LoadSrchKeys/OnSerialNumber		IsSrchSn/Right
+		!	IsProd/OnEqual							IsSrchSn/Fire
+
+	% MISCN: If serial number specified, must match enumerated value
+	$	IsSn Misc.Compare { Left "" }
+		!	ValueEnumNone/OnFire					IsSn/Left
+		!	LoadEnumKeys/OnSerialNumber		IsSn/Left
+		!	LoadSrchKeys/OnSerialNumber		IsSn/Right
+		!	IsSrchSn/OnNotEqual					IsSn/Fire
+
+	% Serial number match or serial number not specified means match
+	!	IsSn/OnEqual								ValueSrchDsc/Fire
+	!	IsSrchSn/OnEqual							ValueSrchDsc/Fire
+
+	% Check entry
+	!	SrchIt/OnNext								IsVen/Fire
+
+	% Keep searching even on match in case of closer match
+	!	SrchIt/OnNext								SrchIt/Next
 
 	%%%%%%%%%%%
 	% Instance
 	%%%%%%%%%%%
 
-	%% Descriptor dictionary contains vendor, product, and instance prefix.
+	%% Create an instance of the definition for matching descriptors.
 
-	% ADTN: Load the product and vendor Id
-	$	LoadEnumKeys Adt.Keys { Keys ( IdVendor IdProduct ) }
-		!	Enum/OnNext/OnFire					LoadEnumKeys/Dictionary
-		!	Enum/OnNext/OnFire					LoadEnumKeys/Load
-		!	LoadEnumKeys/OnIdVendor				Debug/Fire
-		!	LoadEnumKeys/OnIdProduct			Debug/Fire
+	% MISCN: Load descriptor information
+	$	LoadDscKeys Adt.Keys { Keys ( Definition AutoLink Name ) }
+		!	CreateDscNone/OnFire					LoadDscKeys/Dictionary
+		!	ValueSrchDsc/OnFire					LoadDscKeys/Dictionary
+		!	SrchIt/OnLast							LoadDscKeys/Load
 
-	%% Check for a descriptor entry
+	%% Generate a full path to the required instance 
 
-	% Proceed to next device
-	!	Enum/OnNext/OnFire						Enum/Next/Fire
+	% MATHN: Append name to definition
+	$	AppendInst Math.Binary {}
+		!	LoadDscKeys/OnDefinition			AppendInst/Left
+		!	LoadDscKeys/OnName					AppendInst/Right
+		!	LoadDscKeys/OnName					AppendInst/Fire
+		!	AppendInst/OnFire						Debug/Fire
+
+	% NSPCN: Create auto-instance by loading path
+	$	LoadInst Nspc.This {}
+		!	AppendInst/OnFire						LoadInst/Location
+		!	AppendInst/OnFire						LoadInst/Load
+		!	LoadInst/OnLoad						Debug/Fire
+		!	LoadInst/OnNotFound					Debug/Fire
 

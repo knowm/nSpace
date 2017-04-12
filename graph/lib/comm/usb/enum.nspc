@@ -16,7 +16,7 @@
 	$	Initialize			Misc.Dist {}		% Initialize
 	$	Uninitialize		Misc.Dist {}		% Uninitialize
 	$	Start					Misc.Dist {}		% Start enumerating
-	$	Stop					Misc.Dist {}		% Start enumerating
+	$	Stop					Misc.Dist {}		% Stop enumerating
 
 	% Notifications
 	$	OnArrive				Misc.Dist {}		% Device arrival
@@ -29,7 +29,7 @@
 		!	OnArrive/OnFire						Debug/Fire
 		!	OnRemove/OnFire						Debug/Fire
 		!	OnRemoveName/OnFire					Debug/Fire
-		!	OnEnum/OnFire							Debug/Fire
+%		!	OnEnum/OnFire							Debug/Fire
 
 	%%%%%%%%
 	% Setup
@@ -103,59 +103,22 @@
 	% Device
 	%%%%%%%%%
 
-	%% TODO: Remove opening device/WinUSB depedency for all USB devices.
-
-	% MISCN: True if device is valid/was successfully opened
-	$	DevUsbOpened Misc.Toggle {}
-		!	OnEnum/OnFire							DevUsbOpened/False
-
 	%% Device stream
 
-	% ION: Access an asynchronous stream for the device path for querying purposes
-	$	DevStmSrc Io.StreamSource { Options { ReadOnly false:bool Async true:bool } }
-		!	CreateFileSrc/OnFire					DevStmSrc/Source
-		!	OnEnum/OnFire							DevStmSrc/Location
-
-	% USBN: Access the device to retreive vendor Id/device Id
+	% ION: Retrieve basic Id information about the device
 	$	DevUsb Usb.Device {}
-		!	DevStmSrc/OnOpen						DevUsb/Stream
-		!	DevStmSrc/OnOpen						DevUsb/Open
 
-	% USB device was opened successfully
-%	!	DevUsb/OnDevice							Debug/Fire
-	!	DevUsb/OnDevice							DevUsbOpened/True
-
-	% ION: Close stream to device
-	$	DevStmCl Io.Resource {}
-		!	DevStmSrc/OnOpen						DevStmCl/Resource
-
-	% Close device before notification so it can be used immediately
-	!	DevStmSrc/OnOpen							DevUsb/Close
-	!	DevStmSrc/OnOpen							DevStmCl/Close
-
-	%% USB Device information
-
-	% ADTN: Copy possible queried information from open
-	$	CopyOpenKeys Adt.Keys { Keys ( IdVendor IdProduct SerialNumber Manufacturer Product BlahBlah ) }
-		!	DevUsb/OnDevice						CopyOpenKeys/Dictionary
-
-	% MISCN: Create dictionary to receive device information
-	$	CreateArriveDct Misc.Create { Id Adt.Dictionary }
-		!	DevUsbOpened/OnTrue					CreateArriveDct/Fire
-		!	CreateArriveDct/OnFire				CopyOpenKeys/Copy
-
-	% ADTN: Store device path in announcement
-	$	StoreOpenPath Adt.Store { Key Name }
-		!	OnEnum/OnFire							StoreOpenPath/Value
-		!	CopyOpenKeys/OnCopy					StoreOpenPath/Dictionary
-		!	CopyOpenKeys/OnCopy					StoreOpenPath/Fire
+	% ADTN: Store device name/path in announcement
+	$	StoreDevName Adt.Store { Key Name }
+		!	OnEnum/OnFire							StoreDevName/Value
+		!	DevUsb/OnId								StoreDevName/Dictionary
+		!	DevUsb/OnId								StoreDevName/Fire
 
 	% Announce
-	!	CopyOpenKeys/OnCopy						OnArrive/Fire
+	!	StoreDevName/OnFire						OnArrive/Fire
 
 	% Process device
-	!	OnEnum/OnFire								DevStmSrc/Open
-	!	OnEnum/OnFire								DevUsbOpened/Fire
+	!	OnEnum/OnFire								DevUsb/Id
 
 	%%%%%%%%%%
 	% Monitor
@@ -167,8 +130,7 @@
 	$	Notify Io.NotifyDevices { Class "{A5DCBF10-6530-11D2-901F-00C04FB951ED}" }
 		!	Start/OnFire							Notify/Start
 		!	Stop/OnFire								Notify/Stop
-		!	Notify/OnFire							Debug/Fire
-		!	Notify/OnFire							Debug/Fire
+%		!	Notify/OnFire							Debug/Fire
 
 	% ADTN: Load unique name/path of device
 	$	LoadNotifyName Adt.Load { Key Name }

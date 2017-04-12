@@ -301,6 +301,80 @@ HRESULT Device :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		_RELEASE(pInfo);
 		}	// else if
 
+	// Identify device from location
+	else if (_RCP(Id))
+		{
+		IDictionary	*pId	= NULL;
+		const WCHAR	*pw	= NULL;
+		adtString	strId(v),strV;
+		adtValue		vId;
+
+		// Windows specific.  Parse product, vendor, serial number an unique Id from path.
+		// Example : \\?\USB#VID_1E10&PID_3103#00D73234#{a5dcbf10-6530-11d2-901f-00c04fb951ed}
+		CCLTRYE ( strId.length() > 35, E_UNEXPECTED );
+
+		// Expected prefix
+		CCLTRYE( WCASENCMP(strId,L"\\\\?\\USB#",8) == 0, E_UNEXPECTED );
+
+		// Create a dictionary to receive the Ids
+		CCLTRY ( COCREATE ( L"Adt.Dictionary", IID_IDictionary, &pId ) );
+
+		// Vendor Id
+		if (hr == S_OK && (pw = wcschr ( strId, '#' )) != NULL)
+			{
+			// VID_Hex vendor Id 4 characters
+			strV = (pw+5);
+			strV.at(4) = '\0';
+			CCLTRY ( strV.prepend(L"0x") );
+			CCLTRY ( adtValue::fromString (strV,VTYPE_I4,vId) );
+			CCLTRY ( pId->store ( adtString ( L"IdVendor" ), vId ) );
+			}	// if
+
+		// Product Id
+		if (hr == S_OK && (pw = wcschr ( pw+1, '&' )) != NULL)
+			{
+			// PID_Hex vendor Id 4 characters
+			strV = (pw+5);
+			strV.at(4) = '\0';
+			CCLTRY ( strV.prepend(L"0x") );
+			CCLTRY ( adtValue::fromString (strV,VTYPE_I4,vId) );
+			CCLTRY ( pId->store ( adtString ( L"IdProduct" ), vId ) );
+			}	// if
+
+		// Serial number
+		if (hr == S_OK && (pw = wcschr ( pw+1, '#' )) != NULL)
+			{
+			U32	idx;
+
+			// Beginning of serial number
+			strV = (pw+1);
+
+			// Serial number goes until next '#'
+			if ((idx = strV.indexOf('#')) != -1)
+				strV.at(idx) = '\0';
+
+			// Store in dictionary
+			CCLTRY ( pId->store ( adtString ( L"SerialNumber" ), strV ) );
+			}	// if
+
+		// Interface GUID
+		if (hr == S_OK && (pw = wcschr ( pw+1, '#' )) != NULL)
+			{
+			// Remaining string is interface GUID
+			strV = (pw+1);
+			CCLTRY ( pId->store ( adtString ( L"IdIntferface" ), strV ) );
+			}	// if
+
+		// Result
+		if (hr == S_OK)
+			_EMT(Id,adtIUnknown(pId));
+		else
+			_EMT(Error,adtInt(hr));
+
+		// Clean up
+		_RELEASE(pId);
+		}	// else if
+
 	// IResource is required to get system Id (Handle, file descriptor, etc) for stream
 	else if (_RCP(Stream))
 		{
