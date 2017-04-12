@@ -302,14 +302,14 @@ HRESULT MemoryBlock :: stream ( IByteStream **ppStm )
 	//
 	////////////////////////////////////////////////////////////////////////
 	HRESULT			hr		= S_OK;
-//	MemoryStream	*pStm	= NULL;
+	StmMemory		*pStm	= NULL;
 
 	// Setup
 	(*ppStm) = NULL;
 	hr			= E_NOTIMPL;
-/*
+
 	// Create new stream and assign this object as the block
-	CCLTRYE	( (pStm = new MemoryStream()) != NULL, E_OUTOFMEMORY );
+	CCLTRYE	( (pStm = new StmMemory()) != NULL, E_OUTOFMEMORY );
 	CCLOK		( pStm->AddRef(); )
 	CCLOK		( pStm->pBlock = this; )
 	CCLTRY	( pStm->construct(); )
@@ -323,7 +323,7 @@ HRESULT MemoryBlock :: stream ( IByteStream **ppStm )
 
 	// Clean up
 	_RELEASE(pStm);
-*/
+
 	return hr;
 	}	// stream
 
