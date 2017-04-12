@@ -193,7 +193,6 @@ HRESULT StmPrsXML :: load ( IByteStream *pUnkStm, ADTVALUE &oVal )
 	// Destination stream
 	CCLTRY ( COCREATE ( L"Io.MemoryBlock", IID_IMemoryMapped, &pMemDst ) );
 	CCLTRY ( pMemDst->stream ( &pStmDst ) );
-lprintf ( LOG_DBG, L"pMemDst %p pStmDst %p\r\n", pMemDst, pStmDst );
 
 	// Load provided stream into memory
 	CCLTRY ( pUnkStm->copyTo ( pStmDst, 0, NULL ) );
@@ -369,14 +368,14 @@ HRESULT StmPrsXML :: valueLoad ( ADTVALUE &oVal )
 		// Load each key/value pair and add to container
 		if (pDct != NULL)
 			{
-			while (	hr								== S_OK &&
-						valueLoad ( vKey )		== S_OK &&
+			while (	hr							== S_OK &&
+						valueLoad ( vKey )	== S_OK &&
 						valueLoad ( vValue )	== S_OK )
 				hr = pDct->store ( vKey, vValue );
 			}	// if
 		else
 			{
-			while (	hr								== S_OK &&
+			while (	hr							== S_OK &&
 						valueLoad ( vValue )	== S_OK )
 				hr = pLst->write ( vValue );
 			}	// else
