@@ -35,8 +35,9 @@ set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_BINARY_DIR}/Release 
 find_package(OpenCV)
 find_package(OpenSSL)
 
-if (CMAKE_COMPILER_IS_GNUCC)
+if (UNIX)
 find_package(LibXml2)
+find_package(ZLIB)
 endif()
 
 # Unicode

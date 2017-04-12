@@ -13,7 +13,13 @@ set	(
 add_library (imagen SHARED ${SOURCES} ${HEADERS} ../dll.def)
 
 target_link_libraries(imagen imagel mathl nspcl adtl ccl sysl)
+if (MSVC)
 target_link_libraries(imagen libjpeg libpng zlib)
+endif()
+if (UNIX)
+target_link_libraries(imagen jpeg png)
+target_link_libraries(imagen ${ZLIB_LIBRARIES})
+endif()
 target_link_libraries(imagen ${OpenCV_LIBS})
 
 include_directories(${OpenCV_INCLUDE_DIRS})
