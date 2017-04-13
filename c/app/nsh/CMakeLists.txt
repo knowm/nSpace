@@ -25,10 +25,6 @@ if (UNIX)
 	target_link_libraries(nsh ccl_impl dl pthread)
 endif()
 
-#if (UNIX AND NOT APPLE)
-#	target_link_libraries(nsh p
-#endif()
-
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER app)
 
 if (UNIX)
