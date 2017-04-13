@@ -77,7 +77,9 @@ bool sysEvent :: reset ()
 	#ifdef	_WIN32
 	if (hEv != NULL) ResetEvent ( hEv );
 	#elif		__unix__ || __APPLE__
+	pthread_mutex_lock ( &mtx );
 	sig = false;
+	pthread_mutex_unlock ( &mtx );
 	#endif
 	return 1;
 	}	// reset
@@ -93,6 +95,9 @@ bool sysEvent :: signal ()
 	#ifdef	_WIN32
 	if (hEv != NULL) SetEvent ( hEv );
 	#elif		__unix__ || __APPLE__
+	pthread_mutex_lock ( &mtx );
+	sig = true;
+	pthread_mutex_unlock ( &mtx );
 	pthread_cond_signal ( &cnd );
 	#endif
 	return 1;
@@ -113,13 +118,13 @@ bool sysEvent :: wait ( U32 to )
 	else
 		return FALSE;
 	#elif		__unix__ || __APPLE__
-	BOOL	bRet = 0;
+	BOOL	bRet = 1;
 
 	// Perform pthread equivalent for signal waiting
 	if (pthread_mutex_lock ( &mtx ) == 0)
 		{
 		// Wait for signal
-		while (!sig)
+		while (bRet && !sig)
 			{
 			// Wait
 			if (to == (U32)-1)
@@ -149,9 +154,6 @@ bool sysEvent :: wait ( U32 to )
 				bRet = ((ret = pthread_cond_timedwait ( &cnd, &mtx, &ts )) == 0);
 				}	// else
 
-			// On error, exit
-			if (!bRet)
-				break;
 			}	// while
 
 		// If success and not manual reset, clear signal
