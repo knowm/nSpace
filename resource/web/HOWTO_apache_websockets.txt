@@ -1,0 +1,32 @@
+Apache setup for nSpace Web Sockets
+-----------------------------------
+
+Windows:
+--------
+NOTE: On Windows do everything below inside the single httpd.conf file.
+
+Linux:
+------
+
+Apache configuration under /etc/apache2/
+
+- OPTIONAL: In ports.conf change listen port to 8080. This is used to avoid conflicting with an already running web server.
+
+- In ports.conf (Best place ?) add web sockets redirect to nSpace.  This will make the URL "http://<ip address>:8080/nspace redirect to the nSpace web socket server running on port 8443 (or whatever address/port the nSpace server is running on)
+
+<Location "/nspace">
+	ProxyPass "ws://localhost:8443/nspace/"
+</Location>
+
+- Enable required modules
+
+sudo a2enmod ssl
+sudo a2enmod proxy
+sudo ae2nmod proxy_wstunnel
+
+- Restart server with new configuration
+
+sudo service apache2 restart
+
+NOTE: Be sure to copy the nSpace javascript files (and all other content) into wherever they are needed/loaded from the web pages.  On Linux this is stored in "/var/www/html/".
+
