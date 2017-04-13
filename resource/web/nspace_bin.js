@@ -216,7 +216,7 @@ var nSpaceBin =
 		// Read string bytes
 		switch (szw)
 			{
-			// 2 bytes per char
+			// 2 bytes per char (Windows)
 			case 2 :
 				ret = "";
 				for (var i = 0;i < len;++i)
@@ -226,6 +226,17 @@ var nSpaceBin =
 					ret += String.fromCharCode(c);
 					}	// for
 				break;
+			// 4 bytes per char (Linux)
+			case 4 :
+				ret = "";
+				for (var i = 0;i < len;++i)
+					{
+					var c = nSpaceBin.load32(bfr,idx);
+					c = ( ((c >> 24) & 0xff) | ((c >> 8) & 0xff00) );
+					ret += String.fromCharCode(c);
+					}	// for
+				break;
+
 			default :
 				console.log("Unhandled WCHAR size:"+szw);
 				break;
