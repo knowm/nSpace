@@ -24,6 +24,7 @@
 #include <pthread.h>
 #include <memory.h>
 #include <errno.h>
+#include <semaphore.h>
 #endif
 
 // Portable data types
@@ -436,7 +437,7 @@ class sysEvent
 	~sysEvent ( void );									// Destructor
 
 	// Utilities
-	bool init 	( BOOL = false );						// Initialize event
+	bool init 	( void );								// Initialize event
 	bool reset	( void );								// Reset event
 	bool signal	( void );								// Signal event
 	bool wait 	( U32 );									// Wait for signal
@@ -445,8 +446,9 @@ class sysEvent
 	#ifdef	_WIN32
 	HANDLE				hEv;								// Event handle
 	#elif		__unix__ || __APPLE__
-	pthread_mutex_t	mtx;								// Event mutex
-	pthread_cond_t		cnd;								// Event condition variable
+	sem_t					sem;								// Event semaphore
+//	pthread_mutex_t	mtx;								// Event mutex
+//	pthread_cond_t		cnd;								// Event condition variable
 	#endif
 	};
 
