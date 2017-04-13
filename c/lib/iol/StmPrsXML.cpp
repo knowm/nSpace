@@ -449,9 +449,6 @@ HRESULT StmPrsXML :: valueLoad ( ADTVALUE &oVal )
 		xmlChar		*type;
 		adtString	strContent;
 
-		// Value strings show up as a text node under the child value
-		CCLTRYE ( (pChild->children != NULL) && (pChild->children->type == XML_TEXT_NODE), E_UNEXPECTED );
-
 		// Is a valid type specified ?
 		if ( (type = xmlGetProp ( pChild, (const xmlChar *) "Type" )) != NULL)
 			{
@@ -471,9 +468,19 @@ HRESULT StmPrsXML :: valueLoad ( ADTVALUE &oVal )
 			}	// if
 		else vtype = VTYPE_STR;
 
+		// Value strings show up as a text node under the child value
+		if (pChild->children != NULL)
+			strContent = (const char *) pChild->children->content;
+		
+		// Apparently a null ("") string results in no child data
+		else
+			{
+			strContent 	= "";
+			vtype 		= VTYPE_STR;
+			}	// else
+		
 		// Convert value from a string
 //		CCLOK ( dbgprintf ( L"StmPrsXML::valueLoad:Value:%S\r\n", (const char *) pChild->children->content ); )
-		CCLOK  ( strContent = (const char *) pChild->children->content; )
 		CCLTRY ( adtValue::fromString ( strContent, vtype, oVal ) );
 		#endif
 		}	// else if

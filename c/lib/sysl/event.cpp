@@ -22,8 +22,8 @@ sysEvent :: sysEvent ()
 	// Wait until 'init' for creation to save resources
 	hEv	= NULL;
 	#elif		__unix__ || __APPLE__
-	pthread_mutex_init ( &mtx, NULL );
-	pthread_cond_init ( &cnd, NULL );
+//	pthread_mutex_init ( &mtx, NULL );
+//	pthread_cond_init ( &cnd, NULL );
 	#endif
 	}	// sysEvent
 
@@ -37,18 +37,17 @@ sysEvent :: ~sysEvent ()
 	#ifdef	_WIN32
 	if (hEv != NULL) CloseHandle ( hEv );
 	#elif		__unix__ || __APPLE__
-	pthread_mutex_destroy ( &mtx );
-	pthread_cond_destroy ( &cnd );
+	sem_destroy ( &sem );
+//	pthread_mutex_destroy ( &mtx );
+//	pthread_cond_destroy ( &cnd );
 	#endif
 	}	// ~sysEvent
 
-bool sysEvent :: init ( BOOL bManRst )
+bool sysEvent :: init ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
 	//! \brief Initialize the event for use
-	//! \param bManRst is true for a manually reset, false for automatic 
-	//				reset (default)
 	//! \return true if successful
 	//
 	////////////////////////////////////////////////////////////////////////
@@ -56,9 +55,9 @@ bool sysEvent :: init ( BOOL bManRst )
 	if (hEv != NULL)
 		return TRUE;
 	else
-		return ( (hEv = CreateEvent ( NULL, bManRst, FALSE, NULL )) != NULL );
+		return ( (hEv = CreateEvent ( NULL, FALSE, FALSE, NULL )) != NULL );
 	#elif		__unix__ || __APPLE__
-	return 1;
+	return (sem_init ( &sem, 0, 0 ) == 0);
 	#else
 	return FALSE;
 	#endif
@@ -75,9 +74,10 @@ bool sysEvent :: reset ()
 	#ifdef	_WIN32
 	if (hEv != NULL) ResetEvent ( hEv );
 	#elif		__unix__ || __APPLE__
-	// Simulate reset
-	signal();
-	wait(0);
+	
+	// Reduce count of semaphore to zero by waiting until it would block
+	while (wait(0) == true)
+		{}
 	#endif
 	return 1;
 	}	// reset
@@ -93,7 +93,8 @@ bool sysEvent :: signal ()
 	#ifdef	_WIN32
 	if (hEv != NULL) SetEvent ( hEv );
 	#elif		__unix__ || __APPLE__
-	pthread_cond_signal ( &cnd );
+	sem_post(&sem);
+//	pthread_cond_signal ( &cnd );
 	#endif
 	return 1;
 	}	// signal
@@ -113,7 +114,43 @@ bool sysEvent :: wait ( U32 to )
 	else
 		return FALSE;
 	#elif		__unix__ || __APPLE__
-	BOOL	bRet = 0;
+	bool	bRet = false;
+	
+	// Wait forever
+	if (to == (U32)-1 && sem_wait ( &sem ) == 0)
+		bRet = true;
+	
+	// No wait
+	else if (to == 0)
+		bRet = (sem_trywait(&sem) == 0);
+	
+	// Wait with timeout
+	else
+		{
+		struct timespec 	ts;
+		struct timeval		tv;
+	
+		// Waits are absolute time
+	
+		// Watch difference between 'timeval' and 'timespec'
+
+		// Now
+		gettimeofday ( &tv, NULL );
+
+		// Future
+		ts.tv_sec	= tv.tv_sec + (to/1000);
+		ts.tv_nsec	= (tv.tv_usec*1000) + ((to % 1000)*1000*1000);
+		if (ts.tv_nsec >= 1000000000)
+			{
+			ts.tv_sec++;
+			ts.tv_nsec -= 1000000000;
+			}	// if
+
+		// Wait
+		bRet = (sem_timedwait ( &sem, &ts ) == 0);
+		}	// else
+		
+	/*
 
 	// Perform pthread equivalent for signal waiting
 	if (pthread_mutex_lock ( &mtx ) == 0)
@@ -125,31 +162,13 @@ bool sysEvent :: wait ( U32 to )
 			{
 			int ret;
 
-			// pthread waits are absolute time
-			// Watch difference between 'timeval' and 'timespec'
-			struct timespec 	ts;
-			struct timeval		tv;
-
-			// Now
-			gettimeofday ( &tv, NULL );
-
-			// Future
-			ts.tv_sec	= tv.tv_sec + (to/1000);
-			ts.tv_nsec	= (tv.tv_usec*1000) + ((to % 1000)*1000*1000);
-			if (ts.tv_nsec >= 1000000000)
-				{
-				ts.tv_sec++;
-				ts.tv_nsec -= 1000000000;
-				}	// if
-
-			// Wait
-			bRet = ((ret = pthread_cond_timedwait ( &cnd, &mtx, &ts )) == 0);
 			}	// else
 
 		// Clean up
 		pthread_mutex_unlock ( &mtx );
 		}	// if
 	return bRet;
+	*/
 	#else
 	return FALSE;
 	#endif

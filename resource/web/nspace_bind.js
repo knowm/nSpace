@@ -397,12 +397,11 @@ new function ()
 		////////////////////////////////////////////////////////////////////////
 		var req = 
 			{
-			verb: "Listen",
-			path: ""
+			Verb: "Listen",
 			};
 
 		// Location for listening
-		req["location"] = srcLoc;
+		req["Location"] = srcLoc;
 
 		// Send request
 		if (ws != null)
