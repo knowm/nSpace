@@ -409,9 +409,6 @@ class StmPrsXML :
 	HRESULT	valueSave	( const ADTVALUE & );	// Save child
 	HRESULT	emit			( const WCHAR *,			// Emit character to output stream
 									bool = false );
-	HRESULT	writeAll		( IByteStream *,			// Write full amount
-									const void *, U32 );
-
 	};
 
 #ifdef	_WIN32

@@ -1,8 +1,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%							CAPTURE.NSPC
+%							LOAD.NSPC
 %
-%	Capture a list of values in the namespace.  This is
+%	Load a list of values in the namespace.  This is
 %	a quick way to capture a set of values scattered around
 %	the namespace.
 %
@@ -16,11 +16,11 @@
 	$	Dictionary			Misc.Dist {}		% Root dictionary for values
 
 	% Actions
-	$	Capture				Misc.Dist {}		% Capture values
+	$	Load					Misc.Dist {}		% Capture values
 	$	Initialize			Misc.Dist {}		% Initialize
 
 	% Notifications
-	$	OnCapture			Misc.Dist {}		% Capture complete
+	$	OnLoad				Misc.Dist {}		% Load complete
 		
 	% DEBUG
 	$	Debug Misc.Debug {}

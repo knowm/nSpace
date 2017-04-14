@@ -1,0 +1,83 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%							STORE.NSPC
+%
+%	Store a list of values to the namespace.  This is
+%	a quick way to store a set of values scattered around
+%	the namespace.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+	$	Root					Misc.Dist {}		% Optional root namespace path
+	$	Map					Misc.Dist {}		% Namespace path to dictionary path
+	$	Dictionary			Misc.Dist {}		% Root dictionary containing values
+
+	% Actions
+	$	Store					Misc.Dist {}		% Store values
+	$	Initialize			Misc.Dist {}		% Initialize
+
+	% DEBUG
+	$	Debug Misc.Debug {}
+
+	%%%%%%%%
+	% Store
+	%%%%%%%%
+
+	%% The 'map' dictionary keys contains dictionary path from
+	%% which to get the values and the values are namespaces paths 
+	%% to put the value.
+
+	% ADTN: Iterate the namespace paths
+	$	MapIt Adt.Iterate {}
+		!	Map/OnFire								MapIt/Container
+		!	Store/OnFire							MapIt/First
+		!	MapIt/OnKey								Debug/Fire
+		!	MapIt/OnNext							Debug/Fire
+
+	% MATHN: Append root path if relative path is given
+	$	AppendRoot Math.Binary { Left "" }
+		!	Root/OnFire								AppendRoot/Left
+		!	MapIt/OnNext							AppendRoot/Right
+
+	% MISCN: Extract first character of path
+	$	FirstChar Misc.StringOp { From 0:int To 1:int }
+		!	MapIt/OnNext							FirstChar/Source
+
+	% MISCN: First character a slash ?
+	$	IsRoot Misc.Compare { Left "/" }
+		!	FirstChar/OnFire						IsRoot/Fire
+
+	% Non-slash means relative path, use root
+	!	IsRoot/OnNotEqual							AppendRoot/Fire
+
+	% MATHN: Append the 'Fire' receptor of the path to receive the value
+	$	AppendFire Math.Binary { Right "Fire/" }
+		!	MapIt/OnNext							AppendFire/Left
+		!	AppendRoot/OnFire						AppendFire/Left
+
+	% Generate path
+	!	MapIt/OnNext								FirstChar/Substring
+	!	MapIt/OnNext								AppendFire/Fire
+
+	%% Load the source value and store to path
+
+	% ADTN: Load the source value from the dictionary
+	$	LoadValue Nspc.KeyPath {}
+		!	Dictionary/OnFire						LoadValue/Dictionary
+		!	MapIt/OnKey								LoadValue/Key
+
+	% NSPC: Store value to namespace
+	$	StoreLoc Nspc.This {}
+		!	AppendFire/OnFire						StoreLoc/Location
+		!	LoadValue/OnFire						StoreLoc/Store
+
+	% Trigger store
+	!	AppendFire/OnFire							Debug/Fire
+%	!	AppendFire/OnFire							LoadValue/Fire
+
+	% Next path
+	!	MapIt/OnNext								MapIt/Next
+

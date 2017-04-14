@@ -49,7 +49,7 @@
 		!	Enum/OnArrive/OnFire					CreateDscNone/Fire
 
 	% ADTN: Load the product and vendor Id
-	$	LoadEnumKeys Adt.Keys { Keys ( IdVendor IdProduct SerialNumber ) }
+	$	LoadEnumKeys Adt.Keys { Keys ( Name IdVendor IdProduct SerialNumber ) }
 		!	Enum/OnArrive/OnFire					LoadEnumKeys/Dictionary
 		!	Enum/OnArrive/OnFire					LoadEnumKeys/Load
 %		!	LoadEnumKeys/OnIdVendor				Debug/Fire
@@ -133,16 +133,83 @@
 	%% Generate a full path to the required instance 
 
 	% MATHN: Append name to definition
-	$	AppendInst Math.Binary {}
-		!	LoadDscKeys/OnDefinition			AppendInst/Left
-		!	LoadDscKeys/OnName					AppendInst/Right
-		!	LoadDscKeys/OnName					AppendInst/Fire
+	$	AppendInst_ Math.Binary {}
+		!	LoadDscKeys/OnDefinition			AppendInst_/Left
+		!	LoadDscKeys/OnName					AppendInst_/Right
+		!	LoadDscKeys/OnName					AppendInst_/Fire
+	$	AppendInst Math.Binary { Right "/" }
+		!	AppendInst_/OnFire					AppendInst/Left
+		!	AppendInst_/OnFire					AppendInst/Fire
 		!	AppendInst/OnFire						Debug/Fire
 
 	% NSPCN: Create auto-instance by loading path
 	$	LoadInst Nspc.This {}
 		!	AppendInst/OnFire						LoadInst/Location
-		!	AppendInst/OnFire						LoadInst/Load
 		!	LoadInst/OnLoad						Debug/Fire
 		!	LoadInst/OnNotFound					Debug/Fire
 
+	%%%%%%
+	% USB 
+	%%%%%%
+
+	%% The basic USB information must be sent to the instance. 
+	%% Use the provided relative path to target the state and link
+	%% it from here to fill it in.
+
+	% MISCN: Map of keys to 
+	% Subgraph: Store list of values to namespace
+	#	Store											Lib/State/Store/ {}
+
+
+	% Subgraph: USB setup state
+	#	UsbSetup										State/Comm/Usb/Setup {}
+		!	LoadEnumKeys/OnName					UsbSetup/Path/Fire
+		!	LoadEnumKeys/OnIdVendor				UsbSetup/IdVendor/Fire
+		!	LoadEnumKeys/OnIdProduct			UsbSetup/IdProduct/Fire
+		!	LoadEnumKeys/OnSerialNumber		UsbSetup/SerialNumber/Fire
+
+	% MISCN: Default to detached so transition to attached is detected
+	$	ValueDetached Misc.Dist { Value false:bool }
+		!	ValueDetached/OnFire					UsbSetup/Attached/Fire
+		!	Initialize/OnFire						ValueDetached/Fire
+
+	% ADTN: Check for a USB setup location
+	$	LoadSetup Adt.Load { Key Setup }
+		!	ValueSrchDsc/OnFire					LoadSetup/Dictionary
+		!	LoadInst/OnLoad						LoadSetup/Fire
+
+	% MATHN: Append the relative setup path to instance path
+	$	AppendSetup Math.Binary {}
+		!	AppendInst/OnFire						AppendSetup/Left
+		!	LoadSetup/OnFire						AppendSetup/Right
+		!	LoadSetup/OnFire						AppendSetup/Fire
+
+	%% Temporarily link local state to setup state to let the information
+	%% get transferred and then unlink the states.
+
+	% NSPC: Link/unlink state
+	$	LinkSetup Nspc.Link { Source "./UsbSetup/" }
+		!	AppendSetup/OnFire					LinkSetup/Destination
+		!	AppendSetup/OnFire					LinkSetup/Link
+
+	% MISCN: Device is attached
+	$	ValueAttached Misc.Dist { Value true:bool }
+		!	ValueAttached/OnFire					UsbSetup/Attached/Fire
+		!	AppendSetup/OnFire					ValueAttached/Fire
+
+	% Unlink and restore to default
+	!	AppendSetup/OnFire						LinkSetup/Unlink
+	!	AppendSetup/OnFire						ValueDetached/Fire
+
+	%%%%%%%%%%%%
+	% Auto-link
+	%%%%%%%%%%%%
+
+	%% Driver instances sometimes link to a common state location that
+	%% acts as a 'meeting point' between the driver and users of the driver.
+	%% Perform that link if specified on behalf of the driver.
+
+	%%
+
+	% Latent connections
+	!	AppendInst/OnFire							LoadInst/Load

@@ -8,14 +8,18 @@
 
 @
 
+	% NSPC: Currently attached ?
+	$	Attached			Nspc.Value { Value false:bool Type Boolean Diff true:bool }
+
 	% NSPC: Local path to USB device
 	$	Path				Nspc.Value {}
 
 	% NSPC: Vendor Id
-	$	VendorId			Nspc.Value { Value 0:int }
+	$	IdVendor			Nspc.Value {}
 
 	% NSPC: Product Id
-	$	ProductId		Nspc.Value { Value 0:int }
+	$	IdProduct		Nspc.Value {}
 
 	% NSPC: Serial number
-	$	SerialNumber	Nspc.Value { Value 0:int }
+	$	SerialNumber	Nspc.Value {}
+

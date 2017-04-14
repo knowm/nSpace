@@ -12,6 +12,7 @@
 #elif		defined(__unix__)
 #include <libxml2/libxml/parser.h>
 #endif
+#include <stdio.h>
 
 #define	HDR_XML	"<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n"
 
@@ -90,6 +91,7 @@ HRESULT StmPrsXML :: emit ( const WCHAR *pwStr, bool bSpecial )
 	////////////////////////////////////////////////////////////////////////
 	HRESULT	hr		= S_OK;
 	U32		len	= (U32)wcslen(pwStr);
+	U8			cs;
 
 	// State check
 	CCLTRYE ( pStmDoc != NULL, E_UNEXPECTED );
@@ -97,32 +99,53 @@ HRESULT StmPrsXML :: emit ( const WCHAR *pwStr, bool bSpecial )
 	// Output characters to document, watch for special characters
 	for (U32 i = 0;hr == S_OK && i < len;++i)
 		{
+		// Filtered character (TODO: Handle real unicode ?)
+		cs = (pwStr[i] & 0xff);
+
+		// Unprintable character ?
+		if (cs < 32)
+			{
+			WCHAR	wEnc[11];
+
+			// Some characters are invalid even if encoded properly, only
+			// handle know ones
+			if (cs == '\t' || cs == '\r' || cs == '\n')
+				{
+				// Encode unprintable character
+				swprintf ( SWPF(wEnc,11), L"&#x%02x;", (U8)(cs & 0xff) );
+				emit ( wEnc );
+				}	// if
+			else
+				emit (L" ");
+			}	// else if
+
 		// Special char ?
-		if (	bSpecial &&
-				(	pwStr[i] == WCHAR('&')	||
-					pwStr[i] == WCHAR('<')	||
-					pwStr[i] == WCHAR('>')	||
-					pwStr[i] == WCHAR('\"') ||
-					pwStr[i] == WCHAR('\'') ) )
+		else if (	bSpecial &&
+					(	cs == WCHAR('&')	||
+						cs == WCHAR('<')	||
+						cs == WCHAR('>')	||
+						cs == WCHAR('\"') ||
+						cs == WCHAR('\'') ) )
 			{
 			U8	c = (U8)('&');
 
 			// Output an ampersand then output the rest of the string
-			hr = writeAll ( pStmDoc, &c, 1 );
+			hr = pStmDoc->write ( &c, 1, NULL );
 
 			// Special string
-			CCLTRY ( emit(	(pwStr[i] == WCHAR('&'))	? L"amp;" :
-								(pwStr[i] == WCHAR('<'))	? L"lt;" :
-								(pwStr[i] == WCHAR('>'))	? L"gt;" :
-								(pwStr[i] == WCHAR('\"'))	? L"quot;" :
-								(pwStr[i] == WCHAR('\''))	? L"apos;" : L"" ) );
+			CCLTRY ( emit(	(cs == WCHAR('&'))	? L"amp;" :
+								(cs == WCHAR('<'))	? L"lt;" :
+								(cs == WCHAR('>'))	? L"gt;" :
+								(cs == WCHAR('\"'))	? L"quot;" :
+								(cs == WCHAR('\''))	? L"apos;" : L"" ) );
 			}	// if
+
 		else
 			{
-			U8	c = (U8)(pwStr[i]);
+			U8	c = (U8)(cs);
 
 			// Output byte version of char
-			hr = writeAll ( pStmDoc, &c, 1 );
+			hr = pStmDoc->write ( &c, 1, NULL );
 			}	// else
 
 		}	// for
@@ -628,36 +651,3 @@ HRESULT StmPrsXML :: valueSave ( const ADTVALUE &oVal )
 
 	return hr;
 	}	// valueSave
-
-HRESULT StmPrsXML :: writeAll ( IByteStream *pStm, const void *pcvBfr,
-												U32 sz )
-	{
-	////////////////////////////////////////////////////////////////////////
-	//
-	//	PURPOSE
-	//		-	Writes to stream until error or complete.
-	//
-	//	PARAMETERS
-	//		-	pStm is the stream
-	//		-	pcvBfr contains the data.
-	//		-	sz is the size of the transfer.
-	//
-	//	RETURN VALUE
-	//		S_OK if successful
-	//
-	////////////////////////////////////////////////////////////////////////
-	HRESULT	hr			= S_OK;
-	const U8	*pccBfr	= (U8 *) pcvBfr;
-	U64		nleft		= sz;
-	U64		nx;
-
-	// Continue until error or done
-	while (hr == S_OK && nleft)
-		{
-		CCLTRY( pStm->write ( pccBfr, nleft, &nx ) );
-		CCLOK	( nleft -= nx; )
-		CCLOK	( pccBfr += nx; )
-		}	// while
-
-	return hr;
-	}	// writeAll
