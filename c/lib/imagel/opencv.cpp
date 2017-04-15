@@ -291,7 +291,7 @@ HRESULT image_format ( cvMatRef *pM, adtString &strF )
 			switch ( (pM->type() & CV_MAT_DEPTH_MASK) )
 				{
 				case CV_8U :
-					strF = L"A8B8G8R8";
+					strF = L"B8G8R8A8";
 					break;
 				default :
 					hr = E_NOTIMPL;

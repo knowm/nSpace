@@ -299,6 +299,10 @@ HRESULT Convert :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					spc = CV_GRAY2RGB;
 				else if (!WCASECMP(strTo,L"B8G8R8"))
 					spc = CV_GRAY2BGR;
+				else if (!WCASECMP(strTo,L"R8G8B8A8"))
+					spc = CV_GRAY2RGBA;
+				else if (!WCASECMP(strTo,L"B8G8R8A8"))
+					spc = CV_GRAY2BGRA;
 				}	//if
 
 			// From color
@@ -308,6 +312,10 @@ HRESULT Convert :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					spc = CV_RGB2GRAY;
 				else if (!WCASECMP(strTo,L"B8G8R8") )
 					spc = CV_RGB2BGR;
+				else if (!WCASECMP(strTo,L"R8G8B8A8"))
+					spc = CV_RGB2RGBA;
+				else if (!WCASECMP(strTo,L"B8G8R8A8"))
+					spc = CV_RGB2BGRA;
 				}	// if
 			else if (!WCASECMP(strFmt,L"B8G8R8") )
 				{
@@ -315,6 +323,33 @@ HRESULT Convert :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					spc = CV_BGR2GRAY;
 				else if (!WCASECMP(strTo,L"R8G8B8") )
 					spc = CV_BGR2RGB;
+				else if (!WCASECMP(strTo,L"R8G8B8A8"))
+					spc = CV_BGR2RGBA;
+				else if (!WCASECMP(strTo,L"B8G8R8A8"))
+					spc = CV_BGR2BGRA;
+				}	// if
+
+			else if (!WCASECMP(strFmt,L"R8G8B8A8") )
+				{
+				if (bToG)
+					spc = CV_RGBA2GRAY;
+				else if (!WCASECMP(strTo,L"B8G8R8") )
+					spc = CV_RGBA2BGR;
+				else if (!WCASECMP(strTo,L"R8G8B8"))
+					spc = CV_RGBA2RGB;
+				else if (!WCASECMP(strTo,L"B8G8R8A8"))
+					spc = CV_RGBA2BGRA;
+				}	// if
+			else if (!WCASECMP(strFmt,L"B8G8R8A8") )
+				{
+				if (bToG)
+					spc = CV_BGRA2GRAY;
+				else if (!WCASECMP(strTo,L"R8G8B8") )
+					spc = CV_BGRA2RGB;
+				else if (!WCASECMP(strTo,L"R8G8B8A8"))
+					spc = CV_BGRA2RGBA;
+				else if (!WCASECMP(strTo,L"B8G8R8"))
+					spc = CV_BGRA2BGR;
 				}	// if
 
 			// Valid conversion ?
