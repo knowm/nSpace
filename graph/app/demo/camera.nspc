@@ -54,7 +54,7 @@
 		!	CaptureEn/OnEqual						Capture/Open
 
 	% MISCN: Capture timer
-	$	Timer Misc.Timer { Rate 1000:int }
+	$	Timer Misc.Timer { Rate 500:int }
 		!	Capture/OnOpen							Timer/Start
 		!	CaptureEn/OnNotEqual					Timer/Stop
 		!	CaptureEn/OnNotEqual					Capture/Close
@@ -63,9 +63,13 @@
 	!	Timer/OnFire								Debug/Fire
 	!	Timer/OnFire								Capture/Fire
 
+	% MISCN: NOTE: Not very portable, better way to handle this ? Need RGB for JPEG.
+	$	ToRgb Image.Convert { Format "R8G8B8" }
+		!	Capture/OnFire							ToRgb/Color
+
 	% MISCN: Download for local use
 	$	Prepare Image.Prepare {}
-		!	Capture/OnFire							Prepare/Download
+		!	ToRgb/OnFire							Prepare/Download
 
 	% MISCN: Create a copy for processing
 	$	CloneImage Misc.Clone {}
