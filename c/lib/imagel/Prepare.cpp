@@ -290,22 +290,8 @@ HRESULT Prepare :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		// Copy image from source
 		if (hr == S_OK && bRel == false)
 			{
-			cv::Mat		mat;
-
-			// Download into local matri if GPU is enabled
-			if (pMat->isMat())
-				mat = *(pMat->mat);
-			#ifdef	HAVE_OPENCV_UMAT
-			else if (pMat->isUMat())
-				mat = pMat->umat->getMat(cv::ACCESS_READ);
-			#endif
-			#ifdef	HAVE_OPENCV_CUDA
-			else if (pMat->isGPU())
-				pMat->gpumat->download(mat);
-			#endif
-
 			// Store resulting image in dictionary
-			CCLTRY ( image_from_mat ( &mat, pImgUse ) );
+			hr = image_from_mat ( pMat, pImgUse );
 			}	// if
 
 		// Ensure any matrix object is removed

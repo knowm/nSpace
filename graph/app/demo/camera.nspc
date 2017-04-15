@@ -63,7 +63,7 @@
 	!	Timer/OnFire								Debug/Fire
 	!	Timer/OnFire								Capture/Fire
 
-	% MISCN: NOTE: Not very portable, better way to handle this ? Need RGB for JPEG.
+	% IMAGEN: NOTE: Not very portable, better way to handle this ? Need RGB for JPEG.
 	$	ToRgb Image.Convert { Format "R8G8B8" }
 		!	Capture/OnFire							ToRgb/Color
 

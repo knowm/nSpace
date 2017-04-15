@@ -123,6 +123,15 @@ class cvMatRef :
 						(gpumat != NULL) ? gpumat->channels() : 
 						#endif
 						0; }
+	S32	type ( void )
+			{ return (mat != NULL) ? mat->type() :
+						#ifdef	HAVE_OPENCV_UMAT
+						(umat != NULL) ? umat->type() :
+						#endif
+						#ifdef	HAVE_OPENCV_CUDA
+						(gpumat != NULL) ? gpumat->type() : 
+						#endif
+						0; }
 
 	// Run-time data
 	cv::Mat				*mat;								// CPU matrix
@@ -361,6 +370,9 @@ class Convert :
 	HRESULT convertTo	( cv::cuda::GpuMat *, 
 								cv::cuda::GpuMat *, U32 );
 	#endif
+	static
+	HRESULT	FmtToCvFmt	( const WCHAR *, U32 * );
+//	HRESULT	CvFmtToFmt	( U32, adtString & );
 
 	// CCL
 	CCL_OBJECT_BEGIN(Convert)
@@ -1182,7 +1194,8 @@ class VideoWriter :
 HRESULT image_load		( const WCHAR *, IDictionary * );
 HRESULT image_save		( IDictionary *, const WCHAR * );
 HRESULT image_fft			( cv::Mat *, cv::Mat *, bool = false, bool = false );
-HRESULT image_from_mat	( cv::Mat *, IDictionary * );
+HRESULT image_format		( cvMatRef *, adtString & );
+HRESULT image_from_mat	( cvMatRef *, IDictionary * );
 HRESULT image_to_mat		( IDictionary *, cv::Mat ** );
 HRESULT image_to_debug	( cvMatRef *, const WCHAR *, const WCHAR * );
 

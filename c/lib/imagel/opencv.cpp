@@ -65,6 +65,8 @@ HRESULT image_load ( const WCHAR *pwLoc, IDictionary *pImg )
 	// Convert image into dictionary
 	if (hr == S_OK)
 		{
+		cvMatRef	matRef;
+
 //		cv::UMat mat = cv::imread ( paLoc, CV_LOAD_IMAGE_UNCHANGED ).getUMat(cv::ACCESS_READ);
 //		hr = image_from_mat ( &mat, pImg );
 		IplImage		*plImg = NULL;
@@ -78,7 +80,9 @@ HRESULT image_load ( const WCHAR *pwLoc, IDictionary *pImg )
 			{
 //			cv::Mat mat ( plImg, false );
 			cv::Mat mat = cv::cvarrToMat(plImg);
-			hr = image_from_mat ( &mat, pImg );
+			matRef.mat = &mat;
+			hr = image_from_mat ( &matRef, pImg );
+			matRef.mat = NULL;
 			}	// if
 
 		// Clean up
@@ -231,7 +235,81 @@ HRESULT image_to_debug ( cvMatRef *pMat, const WCHAR *pwCtx,
 	return hr;
 	}	// image_to_debug
 
-HRESULT image_from_mat ( Mat *pM, IDictionary *pImg )
+HRESULT image_format ( cvMatRef *pM, adtString &strF )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Determine string version of format for image.
+	//
+	//	PARAMETERS
+	//		-	pM contains the image data
+	//		-	strF will receive the format
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT			hr			= S_OK;
+
+	// Assign format, add new formats as needed.
+	switch ( pM->channels() )
+		{
+		case 1:
+			// Gray-scale
+			switch ( (pM->type() & CV_MAT_DEPTH_MASK) )
+				{
+				case CV_8U:
+					strF = L"U8x2";
+					break;
+				case CV_16U:
+					strF = L"U16x2";
+					break;
+				case CV_16S:
+					strF = L"S16x2";
+					break;
+				case CV_32F:
+					strF = L"F32x2";
+					break;
+				default :
+					hr = E_NOTIMPL;
+				}	// switch
+			break;
+		case 3 :
+			// Color
+			switch ( (pM->type() & CV_MAT_DEPTH_MASK) )
+				{
+				case CV_8U :
+					strF = L"B8G8R8";
+					break;
+				default :
+					hr = E_NOTIMPL;
+				}	// switch
+			break;
+		case 4 :
+			// Color
+			switch ( (pM->type() & CV_MAT_DEPTH_MASK) )
+				{
+				case CV_8U :
+					strF = L"A8B8G8R8";
+					break;
+				default :
+					hr = E_NOTIMPL;
+				}	// switch
+			break;
+		default :
+			lprintf ( LOG_WARN, L"Unsupported channels %d", pM->channels() );
+			hr = E_NOTIMPL;
+		}	// switch
+
+	// Debug
+	if (hr != S_OK)
+		lprintf ( LOG_WARN, L"Failed 0x%x", hr );
+
+	return hr;
+	}	// image_format
+
+HRESULT image_from_mat ( cvMatRef *pMat, IDictionary *pImg )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -239,7 +317,7 @@ HRESULT image_from_mat ( Mat *pM, IDictionary *pImg )
 	//		-	Convert an OpenCV mat object to an image dictionary.
 	//
 	//	PARAMETERS
-	//		-	pM contains the image data
+	//		-	pMat contains the image data
 	//		-	pImg will receive the image data
 	//
 	//	RETURN VALUE
@@ -249,72 +327,37 @@ HRESULT image_from_mat ( Mat *pM, IDictionary *pImg )
 	HRESULT			hr			= S_OK;
 	IMemoryMapped	*pBits	= NULL;
 	void				*pvBits	= NULL;
+	adtString		strFmt;
+	cv::Mat			mat;
+
+	// Must download first
+	if (pMat->isMat())
+		mat = *(pMat->mat);
+	#ifdef	HAVE_OPENCV_UMAT
+	else if (pMat->isUMat())
+		mat = pMat->umat->getMat(cv::ACCESS_READ);
+	#endif
+	#ifdef	HAVE_OPENCV_CUDA
+	else if (pMat->isGPU())
+		pMat->gpumat->download(mat);
+	#endif
 
 	// Image information
-	CCLTRY ( pImg->store ( strRefWidth, adtInt(pM->cols) ) );
-	CCLTRY ( pImg->store ( strRefHeight, adtInt(pM->rows) ) );
+	CCLTRY ( pImg->store ( strRefWidth, adtInt(mat.cols) ) );
+	CCLTRY ( pImg->store ( strRefHeight, adtInt(mat.rows) ) );
 
 	// Create and size memory block for image
 	CCLTRY ( COCREATE ( L"Io.MemoryBlock", IID_IMemoryMapped, &pBits ) );
-	CCLTRY ( pBits->setSize ( (U32)(pM->total()*pM->elemSize()) ) );
+	CCLTRY ( pBits->setSize ( (U32)(mat.total()*mat.elemSize()) ) );
 	CCLTRY ( pImg->store ( strRefBits, adtIUnknown(pBits) ) );
 	CCLTRY ( pBits->lock ( 0, 0, &pvBits, NULL ) );
 
 	// Copy bits
-	CCLOK  ( memcpy ( pvBits, pM->data, pM->total()*pM->elemSize() ); )
+	CCLOK  ( memcpy ( pvBits, mat.data, mat.total()*mat.elemSize() ); )
 
-	// Assign format, add new formats as needed.
-	if (hr == S_OK)
-		{
-		switch ( pM->channels() )
-			{
-			case 1:
-				// Gray-scale
-				switch ( (pM->type() & CV_MAT_DEPTH_MASK) )
-					{
-					case CV_8U:
-						CCLTRY ( pImg->store ( strRefFormat, adtString(L"U8x2") ) );
-						break;
-					case CV_16U:
-						CCLTRY ( pImg->store ( strRefFormat, adtString(L"U16x2") ) );
-						break;
-					case CV_16S:
-						CCLTRY ( pImg->store ( strRefFormat, adtString(L"S16x2") ) );
-						break;
-					case CV_32F:
-						CCLTRY ( pImg->store ( strRefFormat, adtString(L"F32x2") ) );
-						break;
-					default :
-						hr = E_NOTIMPL;
-					}	// switch
-				break;
-			case 3 :
-				// Color
-				switch ( (pM->type() & CV_MAT_DEPTH_MASK) )
-					{
-					case CV_8U :
-						CCLTRY ( pImg->store ( strRefFormat, adtString(L"B8G8R8") ) );
-						break;
-					default :
-						hr = E_NOTIMPL;
-					}	// switch
-				break;
-			case 4 :
-				// Color
-				switch ( (pM->type() & CV_MAT_DEPTH_MASK) )
-					{
-					case CV_8U :
-						CCLTRY ( pImg->store ( strRefFormat, adtString(L"A8B8G8R8") ) );
-						break;
-					default :
-						hr = E_NOTIMPL;
-					}	// switch
-				break;
-			default :
-				lprintf ( LOG_WARN, L"Unsupported channels %d", pM->channels() );
-				hr = E_NOTIMPL;
-			}	// switch
-		}	// if
+	// Equivalent format
+	CCLTRY ( image_format ( pMat, strFmt ) );
+	CCLTRY ( pImg->store ( strRefFormat, strFmt ) );
 
 	// Debug
 	if (hr != S_OK)

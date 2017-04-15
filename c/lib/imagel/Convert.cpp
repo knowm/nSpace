@@ -149,6 +149,42 @@ HRESULT Convert :: convertTo (	cv::cuda::GpuMat *pMatSrc,
 	}	// convertTo
 #endif
 
+HRESULT Convert :: FmtToCvFmt ( const WCHAR *pwFmt, U32 *pfmt )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	Convert from a system image format string to OpenCV format.
+	//
+	//	PARAMETERS
+	//		-	pwFmt is the format string (such as R8G8B8)
+	//		-	pfmt will receive the CV_XXX format
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT	hr = S_OK;
+
+	// Mapping
+	if (!WCASECMP(pwFmt,L"F32x2"))
+		*pfmt = CV_32FC1;
+	else if (!WCASECMP(pwFmt,L"U16x2"))
+		*pfmt = CV_16UC1;
+	else if (!WCASECMP(pwFmt,L"S16x2"))
+		*pfmt = CV_16SC1;
+	else if (!WCASECMP(pwFmt,L"U8x2"))
+		*pfmt = CV_8UC1;
+	else if (!WCASECMP(pwFmt,L"S8x2"))
+		*pfmt = CV_8SC1;
+	else if (!WCASECMP(pwFmt,L"S8x2"))
+		*pfmt = CV_8SC1;
+	else
+		hr = E_NOTIMPL;
+
+	return hr;
+	}	// FmtToCvFmt
+
 HRESULT Convert :: onAttach ( bool bAttach )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -207,27 +243,15 @@ HRESULT Convert :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		{
 		IDictionary	*pImgUse = NULL;
 		cvMatRef		*pMat		= NULL;
+		U32			fmt		= 0;
 
 		// Obtain image refence
 		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, &pMat ) );
 
 		// Convert 'to' specified format. Add formats as needed.
 //		CCLOK ( image_to_debug ( pMat, L"Convert", L"c:/temp/convert1.png" ); )
-		if (hr == S_OK)
-			{
-			if (!WCASECMP(strTo,L"F32x2"))
-				convertTo ( pMat, pMat, CV_32FC1 );
-			else if (!WCASECMP(strTo,L"U16x2"))
-				convertTo ( pMat, pMat, CV_16UC1 );
-			else if (!WCASECMP(strTo,L"S16x2"))
-				convertTo ( pMat, pMat, CV_16SC1 );
-			else if (!WCASECMP(strTo,L"U8x2"))
-				convertTo ( pMat, pMat, CV_8UC1 );
-			else if (!WCASECMP(strTo,L"S8x2"))
-				convertTo ( pMat, pMat, CV_8SC1 );
-			else
-				hr = E_NOTIMPL;
-			}	// if
+		CCLTRY ( FmtToCvFmt ( strTo, &fmt) );
+		CCLTRY ( convertTo ( pMat, pMat, fmt ) );
 //		CCLOK ( image_to_debug ( pMat, L"Convert", L"c:/temp/convert2.png" ); )
 
 		// Result
@@ -257,9 +281,8 @@ HRESULT Convert :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 		try
 			{
-			// Load the existing format
-			CCLTRY ( pImgUse->load ( adtString(L"Format"), vL ) );
-			CCLTRY ( adtValue::toString ( vL, strFmt ) );
+			// Format of image
+			CCLTRY ( image_format ( pMat, strFmt ) );
 
 			// From/To grayscale
 			CCLOK ( bFromG =	(	!WCASECMP(strFmt,L"U8x2")	||
@@ -283,14 +306,14 @@ HRESULT Convert :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				{
 				if (bToG)
 					spc = CV_RGB2GRAY;
-				else if (!WCASECMP(strFmt,L"B8G8R8") )
+				else if (!WCASECMP(strTo,L"B8G8R8") )
 					spc = CV_RGB2BGR;
 				}	// if
 			else if (!WCASECMP(strFmt,L"B8G8R8") )
 				{
 				if (bToG)
 					spc = CV_BGR2GRAY;
-				else if (!WCASECMP(strFmt,L"R8G8B8") )
+				else if (!WCASECMP(strTo,L"R8G8B8") )
 					spc = CV_BGR2RGB;
 				}	// if
 
