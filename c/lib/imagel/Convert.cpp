@@ -39,12 +39,13 @@ HRESULT Convert :: convertTo (	cvMatRef *pMatSrc, cvMatRef *pMatDst,
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	HRESULT	hr = S_OK;
+	HRESULT	hr			= S_OK;
+	bool		bMatch	= (	(pMatSrc->isUMat() && pMatDst->isUMat()) ||
+									(pMatSrc->isGPU() && pMatDst->isGPU()) ||
+									(pMatSrc->isMat() && pMatDst->isMat()) );
 
-	// Special cases
-	if	(	(pMatSrc->isUMat() && !pMatDst->isUMat()) ||
-			(pMatSrc->isGPU() && !pMatDst->isGPU()) ||
-			(pMatSrc->isMat() && !pMatDst->isMat()) )
+	// Both CPU bound or non matching types
+	if (!bMatch || pMatSrc->isMat())
 		{
 		cv::Mat	matCnv;
 

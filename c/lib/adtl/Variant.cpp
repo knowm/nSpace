@@ -67,6 +67,10 @@ HRESULT adtVariant :: clear ( void )
 	////////////////////////////////////////////////////////////////////////
 
 	// Free up resources
+	_RELEASE(punkPrsrL);
+	_RELEASE(punkPrsrS);
+	_RELEASE(punkStmL);
+	_RELEASE(punkStmS);
 	VariantClear(this);
 
 	// Restore to default state
