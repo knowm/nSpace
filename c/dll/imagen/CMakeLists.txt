@@ -36,6 +36,13 @@ set_property(TARGET ${PROJECT_NAME} APPEND PROPERTY
 			LINK_FLAGS "-Wl,--version-script=${PROJECT_SOURCE_DIR}/../../lib/ccl/ccl.version")
 endif()
 
+# OpenCV contrib build detection
+# Get the first OpenCV include directory and look for a 'contrib' header
+list (GET OpenCV_INCLUDE_DIRS 0 OpenCV_INCLUDE_DIR_FIRST)
+if(EXISTS ${OpenCV_INCLUDE_DIR_FIRST}/opencv2/face/facerec.hpp)
+	add_definitions(-DHAVE_OPENCV_CONTRIB)
+endif()
+
 # Installation
 install	(
 			TARGETS imagen 

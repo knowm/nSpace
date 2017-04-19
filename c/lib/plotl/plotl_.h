@@ -41,7 +41,6 @@ class GnuPlotSrvr :
 	IThread					*pThrd;						// Worker thread
 	IDictionary				*pDctImg;					// Reusable image output
 	IMemoryMapped			*pBits;						// Image bits
-	HRESULT					hr_img;						// Image result
 	U16						uStride;						// Image stride
 	sysCS						csPlot;						// Thread safety
 	sysEvent					evPlot;						// Plot complete

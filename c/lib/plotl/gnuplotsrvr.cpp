@@ -640,7 +640,7 @@ HRESULT GnuPlotSrvr :: plot ( IDictionary *pReq )
 
 	// Store the resulting image in the original request
 	// to more easily support multiple plot clients.
-	if (hr == S_OK && hr_img == S_OK)
+	if (hr == S_OK)
 		hr = pReq->store ( strRefOnImg, adtIUnknown(pDctImg) );
 	else if (pReq != NULL)
 		pReq->store ( adtString(L"OnError"), adtInt(hr) );
