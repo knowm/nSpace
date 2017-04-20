@@ -1,0 +1,79 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%							DateToStrMs.NSPC
+%
+%				Encodes a date down to the millisecond into
+%				a string, format is : YYMMDDHHMMSSmmm
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@
+
+	% Context
+	$	Date					Misc.Dist {}		% Set active date
+
+	% Actions
+	$	Initialize			Misc.Dist {}		% Initialize
+	$	Uninitialize		Misc.Dist {}		% Uninitialize
+	$	Format				Misc.Dist {}		% Format the string
+
+	% Notifications
+	$	OnFormat				Misc.Dist {}		% Formatted string
+
+	% DEBUG
+	$	Debug Misc.Debug {}
+		!	Initialize/OnFire						Debug/Fire
+
+	%%%%%%%%
+	% Setup
+	%%%%%%%%
+
+	% MISCN: Create dictioanry to use for formatting
+	$	CreateFmtDct Misc.Create { Id Adt.Dictionary }
+		!	Initialize/OnFire						CreateFmtDct/Fire
+
+	%%%%%%%%
+	% Break
+	%%%%%%%%
+
+	% MISCN: Latest date
+	$	ValueDate Misc.Dist { Value 0:double }
+		!	Date/OnFire								ValueDate/Value
+		!	Format/OnFire							ValueDate/Fire
+
+	% MISCN: Break current date into its components
+	$	DateBrk Misc.TimeOp {}
+		!	ValueDate/OnFire						DateBrk/Break
+
+	% MATHN: Year is going to be 2 digits
+	$	YearSub Math.Binary { Op Sub Right 2000:int }
+		!	DateBrk/OnYear							YearSub/Left
+		!	DateBrk/OnYear							YearSub/Fire
+
+	% ADTN: Store date components in format dictionary
+	$	StoreDateDct Adt.Keys { Keys ( Id Eye Year Month Day Hour Minute Second Millisecond ) }
+		!	CreateFmtDct/OnFire					StoreDateDct/Dictionary
+		!	YearSub/OnFire							StoreDateDct/Year
+		!	DateBrk/OnMonth						StoreDateDct/Month
+		!	DateBrk/OnDay							StoreDateDct/Day
+		!	DateBrk/OnHour							StoreDateDct/Hour
+		!	DateBrk/OnMinute						StoreDateDct/Minute
+		!	DateBrk/OnSecond						StoreDateDct/Second
+		!	DateBrk/OnMillisecond				StoreDateDct/Millisecond
+		!	ValueDate/OnFire						StoreDateDct/Store
+
+	%%%%%%%%%
+	% Format
+	%%%%%%%%%
+
+	% MISCN: Generate a string with the required format
+	$	FmtDct Misc.StringFormat { 
+			Format ( { Name Year Size 2:int } { Name Month Size 2:int }
+						{ Name Day Size 2:int } { Name Hour Size 2:int }
+						{ Name Minute Size 2:int } { Name Second Size 2:int }
+						{ Name Millisecond Size 3:int } ) }
+		!	StoreDateDct/OnStore					FmtDct/Dictionary
+		!	StoreDateDct/OnStore					FmtDct/Fire
+
+	% Result
+	!	FmtDct/OnFire								OnFormat/Fire
