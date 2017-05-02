@@ -57,12 +57,7 @@ HRESULT DictFormat :: onAttach ( bool bAttach )
 		if (pnDesc->load ( adtString(L"Format"),	v ) == S_OK)
 			_QISAFE((unkV=v),IID_IContainer,&pFmt);
 		if (pnDesc->load ( adtString(L"Endian"),	v ) == S_OK)
-			{
-			adtString	strEnd(v);
-			if (!WCASECMP(strEnd,L"Big"))
-				bEndianBig = true;
-			}	// if
-
+			onReceive ( prEndian, v );
 		}	// if
 
 	// Detach
@@ -387,6 +382,16 @@ HRESULT DictFormat :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		_RELEASE(pStm);
 		hr = _QISAFE(unkV,IID_IByteStream,&pStm);
 		}	// else if
+
+	// State
+	else if (_RCP(Endian))
+		{
+		adtString	strEnd(v);
+		if (!WCASECMP(strEnd,L"Big"))
+			bEndianBig = true;
+		}	// else if
+	else
+		hr = ERROR_NO_MATCH;
 
 	return hr;
 	}	// receive

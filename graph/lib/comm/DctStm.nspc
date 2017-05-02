@@ -11,6 +11,7 @@
 	% Context
 	$	Format				Misc.Dist {}		% Format specification
 	$	Dictionary			Misc.Dist {}		% Input dictionary to convert
+	$	Endian				Misc.Dist {}		% Global endian ("big" or "little")
 
 	% Notifications
 	$	OnSize				Misc.Dist {}		% Size of resultant stream
@@ -33,6 +34,7 @@
 	% MISCN: Format dictionary into stream
 	$	DctFmt Misc.DictFormat {}
 		!	Format/OnFire							DctFmt/Format
+		!	Endian/OnFire							DctFmt/Endian
 		!	CreateStm/OnFire						DctFmt/Stream
 		!	Dictionary/OnFire						DctFmt/Dictionary
 		!	Dictionary/OnFire						DctFmt/Fire

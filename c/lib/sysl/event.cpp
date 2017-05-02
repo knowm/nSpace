@@ -53,7 +53,7 @@ bool sysEvent :: init ( BOOL bManRst )
 	//! \return true if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	bManual = bManRst;
+	bManual = (bManRst == TRUE);
 	#ifdef	_WIN32
 	if (hEv != NULL)
 		return TRUE;

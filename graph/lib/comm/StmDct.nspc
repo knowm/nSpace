@@ -11,6 +11,7 @@
 	% Context
 	$	Format				Misc.Dist {}		% Format specification
 	$	Stream				Misc.Dist {}		% Stream to parse
+	$	Endian				Misc.Dist {}		% Global endian ("big" or "little")
 
 	% Notifications
 	$	OnDict				Misc.Dist {}		% Parsed dictionary
@@ -31,6 +32,7 @@
 	% MISCN: Parse stream into dictionary
 	$	DctPrs Misc.DictParse {}
 		!	Format/OnFire							DctPrs/Format
+		!	Endian/OnFire							DctPrs/Endian
 		!	CreateDct/OnFire						DctPrs/Dictionary
 		!	Stream/OnFire							DctPrs/Stream
 		!	Stream/OnFire							DctPrs/Fire

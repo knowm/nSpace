@@ -527,7 +527,11 @@ extern "C"
 #define		LOG_WIDE(x)			L## # x
 #endif
 #define		LOG_WIDE2(x)		LOG_WIDE(x)
+#ifdef		_WIN32
+#define		lprintf(a,b,...)	logPrintf ( LOG_WIDE2(__FILE__), __LINE__, __FUNCTION__, a, b, ##__VA_ARGS__ )
+#else
 #define		lprintf(a,b,...)	logPrintf ( LOG_WIDE2(__FILE__), __LINE__, __func__, a, b, ##__VA_ARGS__ )
+#endif
 
 //
 // Class - cLogEntry.  Log entry.

@@ -9,7 +9,7 @@
 #include "iol_.h"
 #ifdef 	_WIN32
 #include <Dbt.h>
-#include <usbiodef.h>
+//#include <usbiodef.h>
 #include <stdio.h>
 
 // Globals

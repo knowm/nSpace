@@ -552,6 +552,8 @@ class DictFormat :
 	//@{
 	//!	\brief Specifes the dictionary to use for value lookups.
 	DECLARE_RCP(Dictionary)
+	//!	\brief Specify "big" or "little" endian for appropriate operations.
+	DECLARE_RCP(Endian)
 	//!	\brief Emits error code on failure
 	DECLARE_EMT(Error)
 	//!	\brief Emits formatted byte stream.
@@ -563,6 +565,7 @@ class DictFormat :
 	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_RCP(Dictionary)
+		DEFINE_RCP(Endian)
 		DEFINE_EMT(Error)
 		DEFINE_CON(Fire)
 		DEFINE_RCP(Format)
@@ -607,6 +610,8 @@ class DictParse :
 	DECLARE_CON(Fire)
 	//!	\brief Specifies the dictionary that will receive the parsed values
 	DECLARE_RCP(Dictionary)
+	//!	\brief Specify "big" or "little" endian for appropriate operations.
+	DECLARE_RCP(Endian)
 	//!	\brief Specify the specification for the format.
 	DECLARE_RCP(Format)
 	//!	\brief Specify the stream that contains the bytes to parse.
@@ -617,6 +622,7 @@ class DictParse :
 	BEGIN_BEHAVIOUR()
 		DEFINE_CON(Fire)
 		DEFINE_RCP(Dictionary)
+		DEFINE_RCP(Endian)
 		DEFINE_RCP(Format)
 		DEFINE_RCP(Stream)
 		DEFINE_EMT(Error)

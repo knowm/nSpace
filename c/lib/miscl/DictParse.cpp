@@ -50,11 +50,7 @@ HRESULT DictParse :: onAttach ( bool bAttach )
 		if (pnDesc->load ( adtString(L"Format"),	v ) == S_OK)
 			_QISAFE((unkV=v),IID_IContainer,&pFmt);
 		if (pnDesc->load ( adtString(L"Endian"),	v ) == S_OK)
-			{
-			adtString	strEnd(v);
-			if (!WCASECMP(strEnd,L"Big"))
-				bEndianBig = true;
-			}	// if
+			onReceive ( prEndian, v );
 		}	// if
 
 	// Detach
@@ -495,6 +491,13 @@ HRESULT DictParse :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		}	// else if
 //	else if (prStr == pR)
 //		hr = adtValue::copy ( adtString(v), strParse );
+	// State
+	else if (_RCP(Endian))
+		{
+		adtString	strEnd(v);
+		if (!WCASECMP(strEnd,L"Big"))
+			bEndianBig = true;
+		}	// else if
 	else
 		hr = ERROR_NO_MATCH;
 
