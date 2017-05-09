@@ -594,6 +594,7 @@ class File :
 	// CCL
 	CCL_OBJECT_BEGIN(File)
 		CCL_INTF(IBehaviour)
+		CCL_INTF(ITickable)
 	CCL_OBJECT_END()
 	virtual HRESULT	construct	( void );		// Construct object
 	virtual void		destruct		( void );		// Destruct object
@@ -754,6 +755,7 @@ class Resource :
 
 class Serial :
 	public CCLObject,										// Base class
+	public ITickable,										// Interface
 	public Behaviour										// Interface
 	{
 	public :
@@ -764,19 +766,41 @@ class Serial :
 	adtInt		iBits;									// Data bits
 	adtString	strParity;								// Parity
 	adtFloat		fStop;									// Stop bits
+	IIt			*pItEv;									// Monitoring event list
+	IThread		*pThrd;									// Monitoring thread
+	bool			bRun;										// Thread should run
+	#ifdef		_WIN32
+	HANDLE		hPort;									// Handle to serial port
+	HANDLE		hevWait;									// Wait event handle
+	#endif
+
+	// 'ITickable' members
+	STDMETHOD(tick)		( void );
+	STDMETHOD(tickAbort)	( void );
+	STDMETHOD(tickBegin)	( void );
+	STDMETHOD(tickEnd)	( void );
 
 	// CCL
 	CCL_OBJECT_BEGIN(Serial)
 		CCL_INTF(IBehaviour)
+		CCL_INTF(ITickable)
 	CCL_OBJECT_END()
 	virtual void		destruct	( void );			// Destruct object
 
 	// Connections
+	DECLARE_EMT(Change)
 	DECLARE_CON(Fire)
 	DECLARE_EMT(Error)
+	DECLARE_RCP(Port)
+	DECLARE_RCP(Start)
+	DECLARE_RCP(Stop)
 	BEGIN_BEHAVIOUR()
+		DEFINE_EMT(Change)
 		DEFINE_CON(Fire)
 		DEFINE_EMT(Error)
+		DEFINE_RCP(Port)
+		DEFINE_RCP(Start)
+		DEFINE_RCP(Stop)
 	END_BEHAVIOUR_NOTIFY()
 	};
 
