@@ -330,8 +330,11 @@ HRESULT DictParse :: parse ( IContainer *pFmt )
 				}	// for
 
 			// Terminate string
-			CCLOK ( pwStr[i] = WCHAR('\0'); )
-			CCLOK ( adtValue::copy ( adtString(pwStr), vVal ); )
+			if (hr == S_OK && pwStr != NULL)
+				{
+				pwStr[i] = WCHAR('\0');
+				adtValue::copy ( adtString(pwStr), vVal );
+				}	// if
 
 			// Clean up
 			_FREEMEM(pwStr);

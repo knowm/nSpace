@@ -331,7 +331,7 @@ HRESULT Device :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			}	// if
 
 		// Product Id
-		if (hr == S_OK && (pw = wcschr ( pw+1, '&' )) != NULL)
+		if (hr == S_OK && (pw != NULL) && (pw = wcschr ( pw+1, '&' )) != NULL)
 			{
 			// PID_Hex vendor Id 4 characters
 			strV = (pw+5);
@@ -342,7 +342,7 @@ HRESULT Device :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			}	// if
 
 		// Serial number
-		if (hr == S_OK && (pw = wcschr ( pw+1, '#' )) != NULL)
+		if (hr == S_OK && (pw != NULL) && (pw = wcschr ( pw+1, '#' )) != NULL)
 			{
 			U32	idx;
 
@@ -358,7 +358,7 @@ HRESULT Device :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			}	// if
 
 		// Interface GUID
-		if (hr == S_OK && (pw = wcschr ( pw+1, '#' )) != NULL)
+		if (hr == S_OK && (pw != NULL) && (pw = wcschr ( pw+1, '#' )) != NULL)
 			{
 			// Remaining string is interface GUID
 			strV = (pw+1);

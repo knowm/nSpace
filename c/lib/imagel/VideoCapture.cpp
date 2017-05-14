@@ -102,6 +102,9 @@ HRESULT VideoCapture :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			_EMT(Fire,adtIUnknown(pImg));
 		else
 			_EMT(Error,adtInt(hr));
+
+		// Clean up
+		_RELEASE(pMat);
 		}	// if
 
 	// Open

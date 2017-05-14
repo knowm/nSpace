@@ -1308,8 +1308,8 @@ HRESULT Shell :: tickBegin ( void )
 		}	// if
 
 	// Debug
-//	Sleep(2000);
-//	hr = S_FALSE;
+	Sleep(10000);
+	hr = S_FALSE;
 	lprintf ( LOG_DBG, L"Shell::tickBegin:hr 0x%x", hr );
 	
 	// Clean up

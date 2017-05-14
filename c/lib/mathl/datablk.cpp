@@ -147,8 +147,9 @@ HRESULT DataBlock :: addRow ( IDictionary *pDctDst,
 			U16	*piSrc = ((U16 *) pvBitsSrc) + (iRow*iSrcW);
 
 			// Copy into new row
-			for (U32 c = 0;c < iSrcW;++c)
-				pfDst[c] = piSrc[c];
+			if (piSrc != NULL)
+				for (U32 c = 0;c < iSrcW;++c)
+					pfDst[c] = piSrc[c];
 			}	// if
 		else if (!WCASECMP(strFmt,L"S16x2"))
 			{
@@ -156,8 +157,9 @@ HRESULT DataBlock :: addRow ( IDictionary *pDctDst,
 			S16	*piSrc = ((S16 *) pvBitsSrc) + (iRow*iSrcW);
 
 			// Copy into new row
-			for (U32 c = 0;c < iSrcW;++c)
-				pfDst[c] = piSrc[c];
+			if (piSrc != NULL)
+				for (U32 c = 0;c < iSrcW;++c)
+					pfDst[c] = piSrc[c];
 			}	// if
 		else if (!WCASECMP(strFmt,L"U8x2"))
 			{
@@ -165,8 +167,9 @@ HRESULT DataBlock :: addRow ( IDictionary *pDctDst,
 			U8	*pcSrc = ((U8 *) pvBitsSrc) + (iRow*iSrcW);
 
 			// Copy into new row
-			for (U32 c = 0;c < iSrcW;++c)
-				pfDst[c] = pcSrc[c];
+			if (pcSrc != NULL)
+				for (U32 c = 0;c < iSrcW;++c)
+					pfDst[c] = pcSrc[c];
 			}	// if
 		else if (!WCASECMP(strFmt,L"F32x2"))
 			{
@@ -174,7 +177,8 @@ HRESULT DataBlock :: addRow ( IDictionary *pDctDst,
 			float *pfBits = ((float *)pvBitsSrc) + (iRow*iSrcW);
 
 			// Copy row
-			memcpy ( pfDst, pfBits, iSrcW*sizeof(float) );
+			if (pfBits != NULL)
+				memcpy ( pfDst, pfBits, iSrcW*sizeof(float) );
 			}	// else if
 		
 		// No format specified

@@ -419,6 +419,7 @@ HRESULT StmPrsXML :: valueLoad ( ADTVALUE &oVal )
 
 		// Clean up
 		_RELEASE(pLst);
+		_RELEASE(pDct);
 		}	// if
 
 	// Primitive value ?

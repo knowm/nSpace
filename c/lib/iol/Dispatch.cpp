@@ -516,6 +516,7 @@ HRESULT DispIntf :: invoke ( const WCHAR *pwName,
 
 		// Setup
 		memset ( &dprms, 0, sizeof(dprms) );
+		memset ( &ei, 0, sizeof(ei) );
 
 		// Number of parameters
 		CCLTRY	( pParam->size ( &sz ) );

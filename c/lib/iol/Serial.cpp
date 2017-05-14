@@ -104,8 +104,8 @@ HRESULT Serial :: onAttach ( bool bAttach )
 		onReceive(prStop,adtInt());
 		if (hevWait != NULL)
 			{
-			hevWait = NULL;
 			CloseHandle ( hevWait );
+			hevWait = NULL;
 			}	//if
 		_RELEASE(pItEv);
 		}	// else

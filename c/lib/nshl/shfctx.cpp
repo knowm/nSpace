@@ -187,6 +187,7 @@ HRESULT ShellFactX :: reg ( BOOL bReg )
 		else
 			{
 			// 1.0\\0\\win32
+			szKey[0] = '\0';
 			swprintf_s ( szKey, L"%s\\1.0\\0", szTypeLib );
 			if (RegOpenKeyEx ( HKEY_CLASSES_ROOT, szKey, 0, KEY_ALL_ACCESS, &hKeyTop ) == ERROR_SUCCESS)
 				{

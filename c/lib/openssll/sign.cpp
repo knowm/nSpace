@@ -60,6 +60,7 @@ HRESULT EVPSign :: onAttach ( bool bAttach )
 			EVP_MD_CTX_destroy ( pctx );
 			pctx	= NULL;
 			}	// if
+		_RELEASE(pStm);
 
 		// Lbrary reference
 		libS.Release();
