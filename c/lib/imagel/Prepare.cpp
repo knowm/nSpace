@@ -245,6 +245,9 @@ HRESULT Prepare :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			// Since uploading to a GPU involves a copy, 'own' the pixel
 			// data for CPU in case the download goes back into the same image bits.
 			*(pMat->mat) = mat->clone();
+
+			// DEBUG
+//			pImgUse->remove ( adtString(L"Bits") );
 			}	// else
 
 		// OCL

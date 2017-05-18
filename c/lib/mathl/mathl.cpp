@@ -28,7 +28,8 @@
 #define	M_43		14
 #define	M_44		15
 
-HRESULT mathBinary ( int iOp, const ADTVALUE &vL, const ADTVALUE &vR, ADTVALUE &v )
+HRESULT mathBinary ( int iOp, const ADTVALUE &vL, const ADTVALUE &vR, 
+							ADTVALUE &v )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -61,6 +62,9 @@ HRESULT mathBinary ( int iOp, const ADTVALUE &vL, const ADTVALUE &vR, ADTVALUE &
 	// involves more complicated structures (tuples,etc).
 	if (hr == S_OK && (vL.vtype == VTYPE_UNK || vR.vtype == VTYPE_UNK))
 		return mathBinary_ ( iOp, vL, vR, v );
+
+	// Prepare to receive value
+	adtValue::clear(v);
 
 	// Value type of left side
 	switch ((int)adtValue::type(vL))
@@ -429,7 +433,7 @@ HRESULT mathBinary ( int iOp, const ADTVALUE &vL, const ADTVALUE &vR, ADTVALUE &
 	}	// mathBinary
 
 HRESULT mathBinary_ (	int iOp, const ADTVALUE &vL, const ADTVALUE &vR, 
-								ADTVALUE &v )
+								ADTVALUE &vEq )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -455,9 +459,9 @@ HRESULT mathBinary_ (	int iOp, const ADTVALUE &vL, const ADTVALUE &vR,
 
 	// Dereference values
 	if (hr == S_OK && vL.vtype == (VTYPE_VALUE|VTYPE_BYREF) && vL.pval != NULL)
-		return mathBinary_ ( iOp, *(vL.pval), vR, v );
+		return mathBinary_ ( iOp, *(vL.pval), vR, vEq );
 	if (hr == S_OK && vR.vtype == (VTYPE_VALUE|VTYPE_BYREF) && vR.pval != NULL)
-		return mathBinary_ ( iOp, vL, *(vR.pval), v );
+		return mathBinary_ ( iOp, vL, *(vR.pval), vEq );
 
 	// Each side will either be treated as a vector or a scalar (double)
 	if (hr == S_OK && vL.vtype == VTYPE_UNK)
@@ -514,7 +518,7 @@ HRESULT mathBinary_ (	int iOp, const ADTVALUE &vL, const ADTVALUE &vR,
 			_RELEASE(pItL);
 
 			// Result
-			CCLTRY ( adtValue::copy ( adtDouble(dDot), v ) );
+			CCLTRY ( adtValue::copy ( adtDouble(dDot), vEq ) );
 			}	// if
 
 		// Cross product
@@ -560,7 +564,7 @@ HRESULT mathBinary_ (	int iOp, const ADTVALUE &vL, const ADTVALUE &vR,
 			CCLTRY ( pDctRes->store ( vK[2], adtDouble ( dL[0]*dR[1] - dL[1]*dR[0] ) ) );
 
 			// Result
-			CCLTRY ( adtValue::copy ( adtIUnknown(pDctRes), v ) );
+			CCLTRY ( adtValue::copy ( adtIUnknown(pDctRes), vEq ) );
 
 			// Clean up
 			_RELEASE(pIt);
@@ -621,7 +625,7 @@ HRESULT mathBinary_ (	int iOp, const ADTVALUE &vL, const ADTVALUE &vR,
 				}	// while
 
 			// Result
-			CCLTRY ( adtValue::copy ( adtIUnknown(pDctRes), v ) );
+			CCLTRY ( adtValue::copy ( adtIUnknown(pDctRes), vEq ) );
 
 			// Clean up
 			_RELEASE(pItR);
@@ -688,7 +692,7 @@ HRESULT mathBinary_ (	int iOp, const ADTVALUE &vL, const ADTVALUE &vR,
 			}	// while
 
 		// Result
-		CCLTRY ( adtValue::copy ( adtIUnknown(pDctRes), v ) );
+		CCLTRY ( adtValue::copy ( adtIUnknown(pDctRes), vEq ) );
 
 		// Clean up
 		_RELEASE(pIt);
@@ -701,7 +705,7 @@ HRESULT mathBinary_ (	int iOp, const ADTVALUE &vL, const ADTVALUE &vR,
 		{
 		IByteStream	*pStmRes = NULL;
 		U8				cM[8],szR,cR,cV;
-		adtIUnknown	unkV(v);
+		adtIUnknown	unkV(vEq);
 		U32			i;
 
 		// Results will be in provided stream

@@ -81,7 +81,7 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	if (_RCP(Fire))
  		{
 		// Debug
-//		if (!WCASECMP(this->strnName,L"MissAdd"))
+//		if (!WCASECMP(this->strnName,L"WidthDiv"))
 //		if (iOp == MATHOP_SUB)
 //		if (iOp == MATHOP_MOD)
 //			dbgprintf ( L"Hi\r\n" );
