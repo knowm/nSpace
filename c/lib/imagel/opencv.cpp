@@ -329,6 +329,7 @@ HRESULT image_from_mat ( cvMatRef *pMat, IDictionary *pImg )
 	void				*pvBits	= NULL;
 	adtString		strFmt;
 	cv::Mat			mat;
+	adtValue			vL;
 
 	// Must download first
 	if (pMat->isMat())
@@ -346,16 +347,24 @@ HRESULT image_from_mat ( cvMatRef *pMat, IDictionary *pImg )
 	CCLTRY ( pImg->store ( strRefWidth, adtInt(mat.cols) ) );
 	CCLTRY ( pImg->store ( strRefHeight, adtInt(mat.rows) ) );
 
-	// Create and size memory block for image
-	CCLTRY ( COCREATE ( L"Io.MemoryBlock", IID_IMemoryMapped, &pBits ) );
-	CCLTRY ( pBits->setSize ( (U32)(mat.total()*mat.elemSize()) ) );
-	CCLTRY ( pImg->store ( strRefBits, adtIUnknown(pBits) ) );
-	CCLTRY ( pBits->lock ( 0, 0, &pvBits, NULL ) );
+	// Does image already have a bits memory block that can be re-used ?
+	if (hr == S_OK && pImg->load ( strRefBits, vL ) == S_OK)
+		{
+		CCLTRY ( _QISAFE(adtIUnknown(vL),IID_IMemoryMapped,&pBits) );
+		}	// if
+	else
+		{
+		// Create and size memory block for image
+		CCLTRY ( COCREATE ( L"Io.MemoryBlock", IID_IMemoryMapped, &pBits ) );
+		CCLTRY ( pImg->store ( strRefBits, adtIUnknown(pBits) ) );
+		}	// else
 
-	// Copy bits
+	// Set size and copy bits
+	CCLTRY ( pBits->setSize ( (U32)(mat.total()*mat.elemSize()) ) );
+	CCLTRY ( pBits->lock ( 0, 0, &pvBits, NULL ) );
 	CCLOK  ( memcpy ( pvBits, mat.data, mat.total()*mat.elemSize() ); )
 
-	// Equivalent format
+	// Retreive equivalent system format
 	CCLTRY ( image_format ( pMat, strFmt ) );
 	CCLTRY ( pImg->store ( strRefFormat, strFmt ) );
 

@@ -198,81 +198,12 @@ HRESULT MemoryBlock :: setSize ( U32 sz )
 		// Allocate in blocks
 		szAllocd = ((sz/MEMBLOCK_DEFBLKSIZE)+1)*MEMBLOCK_DEFBLKSIZE;
 
-		// NOTE: For Windows CE each process is limited to 32 MB.  Only way
-		// around this limitation is to use file-mapping objects.  For 'large'
-		// allocations, put memory outside process.  'Large' is arbitrary.
-		// WARNING: Resizing large blocks slow due to non-resizable map objects.
-		// TODO: Makes sense to do this for large blocks for 'any' OS ?
-		#if	defined(_WIN32)
-		if (sz >= MEMBLOCK_BIGBLKSIZE)
-			{
-			HANDLE	hMapNew		= NULL;
-			U8			*pcBlkNew	= NULL;
+		// Reallocate buffer
+		CCLTRYE ( (pcBlkNew = (U8 *) _REALLOCMEM ( (hMap == NULL) ? pcBlk : NULL, 
+						szAllocd )) != NULL, E_OUTOFMEMORY );
 
-			// Allocate in blocks
-			szAllocd = ((sz/MEMBLOCK_BIGBLKSIZE)+1)*MEMBLOCK_BIGBLKSIZE;
-
-			// Create a new file mapping backed by memory
-			CCLTRYE ( (hMapNew = CreateFileMapping ( INVALID_HANDLE_VALUE,
-							NULL, PAGE_READWRITE, 0, szAllocd, NULL ))
-							!= NULL, GetLastError() );
-
-			// Map a view info the file
-			CCLTRYE ( (pcBlkNew = (U8 *) MapViewOfFile ( hMapNew,
-							FILE_MAP_WRITE, 0, 0, 0 )) != NULL, GetLastError() );
-
-			// If previous buffer exists, copy into new buffer
-			if (hr == S_OK && pcBlk != NULL && szBlk)
-				memcpy ( pcBlkNew, pcBlk, szBlk );
-
-			// Release previous memory based on type
-			if (hMap == NULL)
-				{
-				_FREEMEM(pcBlk);
-				}	// if
-			else
-				{
-				if (pcBlk != NULL) { UnmapViewOfFile ( pcBlk ); pcBlk = NULL; }
-				CloseHandle ( hMap );
-				hMap = NULL;
-				}	// else
-
-			// New block information
-			if (hr == S_OK)
-				{
-				hMap	= hMapNew;
-				pcBlk	= pcBlkNew;
-				}	// if
-			}	// if
-		else
-			{
-			#endif
-
-			// Reallocate buffer
-			CCLTRYE ( (pcBlkNew = (U8 *) _REALLOCMEM ( (hMap == NULL) ? pcBlk : NULL, 
-							szAllocd )) != NULL, E_OUTOFMEMORY );
-
-			#if	defined(_WIN32)
-			// If decreasing in size from a large memory mapped file, release it
-			if (hr == S_OK && hMap != NULL)
-				{
-				// Keep contents of block
-				if (pcBlk != NULL)
-					{
-					if (szBlk) memcpy ( pcBlkNew, pcBlk, szBlk );
-					UnmapViewOfFile ( pcBlk );
-					}	// if
-				CloseHandle ( hMap );
-				hMap	= NULL;
-				}	// if
-			#endif
-
-			// New ptr.
-			pcBlk = pcBlkNew;
-
-			#if	defined(_WIN32)	
-			}	// else
-			#endif
+		// New ptr.
+		pcBlk = pcBlkNew;
 
 		// Debug
 //		dbgprintf ( L"MemoryBlock::setSize:%d:%p\r\n", sz, pcBlk );
@@ -346,3 +277,74 @@ HRESULT MemoryBlock :: unlock ( void *pv )
 	return S_OK;
 	}	// unlock
 
+		/*
+		// NOTE: For Windows CE each process is limited to 32 MB.  Only way
+		// around this limitation is to use file-mapping objects.  For 'large'
+		// allocations, put memory outside process.  'Large' is arbitrary.
+		// WARNING: Resizing large blocks slow due to non-resizable map objects.
+		// TODO: Makes sense to do this for large blocks for 'any' OS ?
+		#if	defined(_WIN32)
+		if (sz >= MEMBLOCK_BIGBLKSIZE)
+			{
+			HANDLE	hMapNew		= NULL;
+			U8			*pcBlkNew	= NULL;
+
+			// Allocate in blocks
+			szAllocd = ((sz/MEMBLOCK_BIGBLKSIZE)+1)*MEMBLOCK_BIGBLKSIZE;
+
+			// Create a new file mapping backed by memory
+			CCLTRYE ( (hMapNew = CreateFileMapping ( INVALID_HANDLE_VALUE,
+							NULL, PAGE_READWRITE, 0, szAllocd, NULL ))
+							!= NULL, GetLastError() );
+
+			// Map a view info the file
+			CCLTRYE ( (pcBlkNew = (U8 *) MapViewOfFile ( hMapNew,
+							FILE_MAP_WRITE, 0, 0, 0 )) != NULL, GetLastError() );
+
+			// If previous buffer exists, copy into new buffer
+			if (hr == S_OK && pcBlk != NULL && szBlk)
+				memcpy ( pcBlkNew, pcBlk, szBlk );
+
+			// Release previous memory based on type
+			if (hMap == NULL)
+				{
+				_FREEMEM(pcBlk);
+				}	// if
+			else
+				{
+				if (pcBlk != NULL) { UnmapViewOfFile ( pcBlk ); pcBlk = NULL; }
+				CloseHandle ( hMap );
+				hMap = NULL;
+				}	// else
+
+			// New block information
+			if (hr == S_OK)
+				{
+				hMap	= hMapNew;
+				pcBlk	= pcBlkNew;
+				}	// if
+			}	// if
+		else
+			{
+			#endif
+
+			#if	defined(_WIN32)
+			// If decreasing in size from a large memory mapped file, release it
+			if (hr == S_OK && hMap != NULL)
+				{
+				// Keep contents of block
+				if (pcBlk != NULL)
+					{
+					if (szBlk) memcpy ( pcBlkNew, pcBlk, szBlk );
+					UnmapViewOfFile ( pcBlk );
+					}	// if
+				CloseHandle ( hMap );
+				hMap	= NULL;
+				}	// if
+			#endif
+			#if	defined(_WIN32)	
+			}	// else
+			#endif
+
+
+*/

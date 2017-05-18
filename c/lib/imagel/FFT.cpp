@@ -103,7 +103,7 @@ HRESULT FFT :: fft ( cv::Mat *pMat, cv::Mat *pWnd, bool bRows )
 		// Crop the spectrum if it has an odd number of rows or columns
 		matMag = matMag ( cv::Rect ( 0, 0, matMag.cols & -2, matMag.rows & -2 ) );
 
-		// Rearrange the quadrants of Fourier image so that the origin is at the image center
+		// Keep a single quadrant
 		cx = matMag.cols/2;
 		cy = matMag.rows/2;
 
@@ -205,7 +205,7 @@ HRESULT FFT :: fft ( cv::UMat *pMat, cv::UMat *pWnd, bool bRows )
 		// Crop the spectrum if it has an odd number of rows or columns
 		umatMag = umatMag ( cv::Rect ( 0, 0, umatMag.cols & -2, umatMag.rows & -2 ) );
 
-		// Rearrange the quadrants of Fourier image so that the origin is at the image center
+		// Keep a single quadrant
 		cx = umatMag.cols/2;
 		cy = umatMag.rows/2;
 
@@ -336,7 +336,7 @@ HRESULT FFT :: fft ( cv::cuda::GpuMat *pMat, cv::cuda::GpuMat *pWnd,
 		// Crop the spectrum if it has an odd number of rows or columns
 		gpuMag = gpuMag ( cv::Rect ( 0, 0, gpuMag.cols & -2, gpuMag.rows & -2 ) );
 
-		// Rearrange the quadrants of Fourier image so that the origin is at the image center
+		// Keep a single quadrant
 		cx = gpuMag.cols/2;
 		cy = gpuMag.rows/2;
 
