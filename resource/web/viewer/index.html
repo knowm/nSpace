@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+	<link rel="stylesheet" type="text/css" href="default.css" />
+</head>
+<body background="background.png" data-nroot="/App/Demo/Viewer/default/" style="height: 337px; background-color: #000000">
+
+<table>
+<caption>Image viewer</caption>
+	<tbody>
+		<tr>
+			<td>
+				<table>
+					<tr>
+						<td >
+							Setup
+						</td>
+					</tr>
+					<tr>
+						<td >
+							Location
+						</td>
+						<td >
+							<input type="text" data-nloc="Location/"/>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							Load image
+						</td>
+						<td>
+							<input type="button" value="Load" data-nloc="Load/" />
+						</td>
+					</tr>
+					<tr>
+						<td >
+						Edges
+						</td>
+						<td >
+						<input type="checkbox" data-nloc="EdgesEn/"/>
+						</td>
+					</tr>
+					<tr>
+						<td >
+						Edge count
+						</td>
+						<td >
+							<input type="text" data-nloc="EdgeCount/" disabled="disabled"/>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							Threshold
+						</td>
+						<td>
+							<input type="range" data-nloc="Threshold/" />
+						</td>
+					</tr>
+					<tr>
+						<td>
+						</td>
+						<td>
+							<input type="text" data-nloc="Status/" disabled="disabled" />
+						</td>
+					</tr>
+				</table>
+			</td>
+			<td>
+				<canvas data-nloc="Image/" width="640" height="480" style="background-color: #202020"></canvas>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<script type="text/javascript" src="../nspace.js"></script>
+</body>
+</html>

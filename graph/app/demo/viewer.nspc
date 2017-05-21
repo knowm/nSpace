@@ -50,6 +50,9 @@
 	% Subgraph: Number of edge pixels
 	#	EdgeCount									State/Interface/Value/ {}
 
+	% Subgraph: Threshold level
+	#	Threshold									State/Interface/Value/ {}
+
 	% Subgraph: Status
 	#	Status										State/Interface/Value/ {}
 
@@ -61,8 +64,16 @@
 	%% Image selection
 	%%
 
+	% MISCN: Default threshold
+	$	ValueThreshDsc Misc.Dist { Value { Type Integer Minimum 0:int Maximum 255:int } }
+		!	Initialize/OnFire						ValueThreshDsc/Fire
+		!	ValueThreshDsc/OnFire				Threshold/Element/Default/Descriptor
+	$	ValueThreshDef Misc.Dist { Value 0:int }
+		!	Initialize/OnFire						ValueThreshDef/Fire
+		!	ValueThreshDef/OnFire				Threshold/Element/Default/Fire
+
 	% MISCN: Initial value location
-	$	ValueLoc Misc.Dist { Value "c:\\temp\\images\\eye.png" }
+	$	ValueLoc Misc.Dist { Value "c:\\temp\\test.jpg" }
 		!	Initialize/OnFire						ValueLoc/Fire
 		!	ValueLoc/OnFire						Location/Element/Default/Fire
 
@@ -79,7 +90,7 @@
 	$	AddLoadErr Math.Binary { Op Add Left "Unable to load : " }
 		!	OnImageLoc/OnFire						AddLoadErr/Right
 		!	AddLoadErr/OnFire						Status/Element/Default/Fire
-	$	AddLoadOk Math.Binary { Op Add Left "Image loaded successfuly from : " }
+	$	AddLoadOk Math.Binary { Op Add Left "Image loaded successfully from : " }
 		!	OnImageLoc/OnFire						AddLoadOk/Right
 		!	AddLoadOk/OnFire						Status/Element/Default/Fire
 
@@ -110,6 +121,27 @@
 	$	Prepare Image.Prepare { CPU true:bool }
 		!	OnImageAsync/OnFire					Prepare/Upload
 
+	% IMAGEN: Ensure grayscale
+	$	ToGray Image.Convert { Format "U8x2" }
+		!	Prepare/OnUpload						ToGray/Color
+
+	%% Threshold
+
+	% IMAGEN: Apply threshold
+	$	ApplyThresh Image.Threshold { Op Zero }
+		!	Prepare/OnUpload						ApplyThresh/Image
+		!	Threshold/Element/Default/OnFire	ApplyThresh/Value
+
+	% MISCN: Threshold ?
+	$	IsThresh Misc.Compare { Left 0:int }
+		!	Threshold/Element/Default/OnFire	IsThresh/Right
+		!	Prepare/OnUpload						IsThresh/Fire
+
+	% Apply thresh if not zero
+	!	IsThresh/OnNotEqual						ApplyThresh/Fire
+
+	%% Edges
+
 	% MISCN: Edge detection enabled ?
 	$	EdgeBool Misc.Toggle { Default false:bool }
 		!	EdgesEn/Activate/OnFire				EdgeBool/Value
@@ -129,13 +161,13 @@
 		!	NonZero/OnFire							LoadEdgeCount/Fire
 		!	LoadEdgeCount/OnFire					EdgeCount/Element/Default/Fire
 
+	%% Compression.  Some clients do not need the raw data
+
 	% Image processing complete, download results into dictionary
 	!	Prepare/OnUpload							Prepare/Download
 
 	% Uncompressed version for interested parties
 	!	Prepare/OnDownload						ImageRaw/Element/Default/Fire
-
-	%% Compression.  Some clients do not need the raw data
 
 	% MISCN: Create a copy for compression
 	$	CloneEncode Misc.Clone {}
@@ -153,6 +185,7 @@
 	% Re-do image processing on load or change in options
 	!	LoadImage/OnLoad							OnImage/Fire
 	!	EdgesEn/Activate/OnFire					OnImage/Fire
+	!	Threshold/Element/Default/OnFire		OnImage/Fire
 
 	%%%%%%%%%%%%%%%%
 	% Remote server

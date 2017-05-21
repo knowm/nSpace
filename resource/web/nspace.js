@@ -102,7 +102,7 @@ new function ()
 				return;
 
 			// To make it easier to process string
-			loc	= msg["Location"].toLowerCase();
+			locf	= msg["Location"].toLowerCase();
 //			type	= elem.nodeName.toLowerCase();
 			tag	= elem.tagName.toLowerCase();
 			type	= elem["type"];
@@ -114,7 +114,7 @@ new function ()
 			console.log("Location:"+loc+":Tag:"+tag+":Type:"+type);
 
 			// Remove common '/onfire/value' postfix
-			loc = loc.substring(0,loc.length-13);
+			loc = locf.substring(0,locf.length-13);
 
 			// Non-type specific
 
@@ -133,6 +133,24 @@ new function ()
 				// Activate
 				if (loc == "activate")
 					elem.checked = value;
+				}	// else if
+
+			// Range / Slider
+			else if (tag == "input" && type == "range")
+				{
+				// Value
+				if (loc == "element/default")
+					elem.value	= value;
+
+				// Limits
+				else if (locf == "element/default/ondescriptor/value")
+					{
+					if (value.hasOwnProperty("Minimum"))
+						elem.min = value["Minimum"];
+					if (value.hasOwnProperty("Maximum"))
+						elem.max = value["Maximum"];
+					}	// else if
+
 				}	// else if
 
 			// List box
@@ -372,6 +390,7 @@ new function ()
 					// Set-up events
 					elems[i].onclick	= onClickn;
 					elems[i].onchange	= onChangen;
+					elems[i].oninput	= onInputn;
 
 					// Send listen request for path
 //					console.log ( "tagName:"+elems[i].tagName );
@@ -441,6 +460,10 @@ new function ()
 			// Selected index, indexes in nSpace are 1-based
 			dct["Value"]	= event.srcElement.selectedIndex+1;
 			}	// if
+
+		// Range
+		else if (type == "range")
+			dct["Value"]	= event.srcElement.value;
 
 		// Text/edit
 		else if (type == "text")
@@ -512,6 +535,49 @@ new function ()
 			ws.send ( xml );
 			}	// if
 		}	// onClickn
+
+	var onInputn = function(event)
+		{
+		////////////////////////////////////////////////////////////////////////
+		//
+		//	PURPOSE
+		//		-	Called when input is available on an  element
+		//
+		//	PARAMETERS
+		//		-	event contains the event information
+		//
+		////////////////////////////////////////////////////////////////////////
+		var type = event.srcElement["type"];
+		var dct  = {};
+		var xml	= null;
+		var send = true;
+
+		// Store template
+		dct["Verb"]			= "Store";
+		dct["Location"]	= event.srcElement.attributes["data-nabs"] +
+									"Element/Default/Fire";
+
+		// Range/slider
+		if (type == "range")
+			dct["Value"]	= event.srcElement.value;
+
+		// Unhandled type
+		else
+			{
+			console.log ( "Unhandled type for input : " + type );
+			send = false;
+			}	// else
+
+		// Transmit store
+		if (send == true)
+			{
+			// Convert to XML
+			xml = nSpaceXML.save(dct);
+
+			// Transmit
+			ws.send ( xml );
+			}	// if
+		}	// onInputn
 
 	}	// function
 
