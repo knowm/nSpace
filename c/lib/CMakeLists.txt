@@ -27,3 +27,7 @@ endif()
 if( OpenSSL_FOUND )
 	add_subdirectory(openssll)
 endif()
+
+if ( VTK_FOUND )
+	add_subdirectory(visualizel)
+endif()

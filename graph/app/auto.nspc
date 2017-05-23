@@ -132,7 +132,7 @@
 	%%%%%%%%%%%%%%
 
 	% Subgraph: Remote namespace server
-	#	Server										Lib/Namespace/Remote/Inst/ {}
+%	#	Server										Lib/Namespace/Remote/Inst/ {}
 
 	% Subgraph: Interface elements
 %	#	ButtonTest									State/Interface/Button/ {}

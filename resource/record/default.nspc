@@ -24,8 +24,8 @@
 			% HTTP namespace browser
 			"/Lib/Comm/Network/Ip/Tcp/Http/Browser/Default/"
 
-			% Portal
-%			"/Lib/Namespace/Portal/Inst/Default/"
+			% Remote namespace server (TCP/IP, websockets, etc)
+			"/Lib/Namespace/Remote/Inst/Default/"
 
 			% For testing
 			"/App/Auto/Default/"

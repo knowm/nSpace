@@ -25,3 +25,6 @@ if( OpenSSL_FOUND )
 	add_subdirectory(openssln)
 endif()
 
+if ( VTK_FOUND )
+	add_subdirectory(visualizen)
+endif()

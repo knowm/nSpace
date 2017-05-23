@@ -2,14 +2,14 @@ cmake_minimum_required(VERSION 2.8.11 FATAL_ERROR)
 
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Configs" FORCE)
 
-# Installation.  Do not use the default of "C:\Program files\nSpace"
-# set(CMAKE_INSTALL_PREFIX "/nSpace" CACHE PATH "Install directory" FORCE)
-# MESSAGE(STATUS ${CMAKE_INSTALL_PREFIX})
+# Installation.  The default if not specified is "C:\Program files\nSpace"
+set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install" CACHE PATH "Installation Directory")
 
 project("nSpace")
 
 # Use solution folders
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 
 # Determine platform (32 or 64-bit)
 if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
@@ -34,6 +34,13 @@ set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_BINARY_DIR}/Release 
 # SDKs
 find_package(OpenCV)
 find_package(OpenSSL)
+
+# NOTE: Must be the <install>/lib/cmake/vtk-<version> directory not just the install dir.
+# NOTE NOTE NOTE.  VTK seems to rely a lot on static intialization.  This may be why
+# linking to VTK DLLs from COM DLLs is not a good idea (load order, etc).  For now
+# VTK is statically link to avoid crashes on exit.  Revsisit this in the future,
+# is there some sort of 'uninitialization' call that can manually be made before the DLL is unloaded ?
+find_package(VTK)
 
 if (UNIX)
 find_package(LibXml2)

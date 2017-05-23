@@ -89,13 +89,13 @@ HRESULT Prepare :: gpuInit ( void )
 	// CPU only.  The only time to enable this in debug mode is if this 
 	// specifically is being debugged.
 	// NOTE: Running from the debugger is very slow to start cuda/open CL.
-//	#if 0
+	#if 0
 //	#ifndef	_DEBUG
 //	#ifdef	_DEBUG
 	bCuda		= false;
 	bUMat		= false;
 	bGPUInit = true;
-//	#endif
+	#endif
 
 	// Already initialized ?
 	if (bGPUInit)
