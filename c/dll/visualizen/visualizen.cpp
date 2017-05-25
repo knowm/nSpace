@@ -14,6 +14,7 @@
 
 // Objects in this module
 CCL_OBJLIST_BEGIN()
+	CCL_OBJLIST_ENTRY	(Points)
 	CCL_OBJLIST_ENTRY	(Render)
 CCL_OBJLIST_END()
 

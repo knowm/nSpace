@@ -32,6 +32,7 @@ set	(
 		Smooth.cpp
 		Stats.cpp
 		Threshold.cpp
+		Tomography.cpp
 		VideoCapture.cpp
 		VideoWriter.cpp
 		)

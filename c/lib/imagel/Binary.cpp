@@ -351,30 +351,57 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 										(iOp == MATHOP_GE) ? cv::CMP_LE : cv::CMP_NE;
 
 							// Perform comparison
+							// NOTE: Compare functions seem to need their own destination away
+							// from source.  If outside graph uses the same destination as one of the
+							// sides this won't work.  Output to own matrix then copy result.
 							if (bImgR)
 								{
 								if (pMatL->isMat())
-									cv::compare ( *(pMatL->mat), *(pMatR->mat), *(pMatO->mat), cmpop );
+									{
+									cv::Mat	matO;
+									cv::compare ( *(pMatL->mat), *(pMatR->mat), matO, cmpop );
+									matO.copyTo(*(pMatO->mat));
+									}	// if
 								#ifdef	HAVE_OPENCV_UMAT
 								else if (pMatL->isUMat())
-									cv::compare ( *(pMatL->umat), *(pMatR->umat), *(pMatO->umat), cmpop );
+									{
+									cv::UMat	matO;
+									cv::compare ( *(pMatL->umat), *(pMatR->umat), matO, cmpop );
+									matO.copyTo(*(pMatO->umat));
+									}	// else if
 								#endif
 								#ifdef	HAVE_OPENCV_CUDA
 								else if (pMatL->isGPU())
-									cv::cuda::compare ( *(pMatL->gpumat), *(pMatR->gpumat), *(pMatO->gpumat), cmpop );
+									{
+									cv::cuda::GpuMat	matO;
+									cv::cuda::compare ( *(pMatL->gpumat), *(pMatR->gpumat), matO, cmpop );
+									matO.copyTo(*(pMatO->gpumat));
+									}	// else if
 								#endif
 								}	// if
 							else
 								{
 								if (pMatL->isMat())
-									cv::compare ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), *(pMatO->mat), cmpop );
+									{
+									cv::Mat	matO;
+									cv::compare ( *(pMatL->mat), cv::Scalar(adtFloat(vR)), matO, cmpop );
+									matO.copyTo(*(pMatO->mat));
+									}	// if
 								#ifdef	HAVE_OPENCV_UMAT
 								else if (pMatL->isUMat())
-									cv::compare ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), *(pMatO->umat), cmpop );
+									{
+									cv::UMat	matO;
+									cv::compare ( *(pMatL->umat), cv::Scalar(adtFloat(vR)), matO, cmpop );
+									matO.copyTo(*(pMatO->umat));
+									}	// else if
 								#endif
 								#ifdef	HAVE_OPENCV_CUDA
 								else if (pMatL->isGPU())
-									cv::cuda::compare ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), *(pMatO->gpumat), cmpop );
+									{
+									cv::cuda::GpuMat	matO;
+									cv::cuda::compare ( *(pMatL->gpumat), cv::Scalar(adtFloat(vR)), matO, cmpop );
+									matO.copyTo(*(pMatO->gpumat));
+									}	// else if
 								#endif
 								}	// else
 

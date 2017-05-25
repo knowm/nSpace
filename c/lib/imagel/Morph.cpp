@@ -133,9 +133,7 @@ HRESULT Morph :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				cv::morphologyEx ( *(pMat->mat), *(pMat->mat), op, matKer );
 			#ifdef	HAVE_OPENCV_UMAT
 			else if (pMat->isUMat())
-				{
 				cv::morphologyEx ( *(pMat->umat), *(pMat->umat), op, matKer );
-				}	// else if
 			#endif
 			#ifdef	HAVE_OPENCV_CUDA
 			else if (pMat->isGPU())

@@ -122,51 +122,67 @@ try
 	{
 		if (hr == S_OK)
 			{
-			cv::Mat	matR,matT,matC;
-
-//image_to_debug ( pMatR, L"Match", L"c:/temp/MatchR.png" );
-//image_to_debug ( pMatT, L"Match", L"c:/temp/MatchT.png" );
 
 			//
 			// NOTE: Currently getting different results from all different methods,
 			// CPU, CUDA and OpenCL (Umat).  Until this is figured out, downshift into CPU mode.
 			//
-			if (pMatR->isMat())
+
+			// CPU or GPU
+			if (	(pMatR->isMat() && pMatT->isMat()) ||
+					(pMatR->isGPU() && pMatT->isGPU()) )
 				{
-				matR = *(pMatR->mat);
-				matT = *(pMatT->mat);
+				cv::Mat	matR, matT, matC;
+
+				// Copy matirx locally
+				if (pMatR->isMat())
+					{
+					matR = *(pMatR->mat);
+					matT = *(pMatT->mat);
+					}	// else
+				#ifdef	HAVE_OPENCV_UMAT
+				else if (pMatR->isUMat())
+					{
+					matR = pMatR->umat->getMat(cv::ACCESS_READ);
+					matT = pMatT->umat->getMat(cv::ACCESS_READ);
+					}	// else if
+				#endif
+				#ifdef	HAVE_OPENCV_CUDA
+				else if (pMatR->isGPU())
+					{
+					pMatR->gpumat->download(matR);
+					pMatT->gpumat->download(matT);
+					}	// if
+				#endif
+
+				// Perform match
+				cv::matchTemplate(matR, matT, matC, CV_TM_CCORR_NORMED);
+
+				// Copy result to destination
+				if (pMatR->isMat())
+					matC.copyTo ( *(pMatO->mat) );
+				#ifdef	HAVE_OPENCV_UMAT
+				else if (pMatR->isUMat())
+					matC.copyTo ( *(pMatO->umat) );
+				#endif
+				#ifdef	HAVE_OPENCV_CUDA
+				else if (pMatO->isGPU())
+					pMatO->gpumat->upload(matC);
+				#endif
 				}	// else
+
+			// UMAT
 			#ifdef	HAVE_OPENCV_UMAT
-			else if (pMatR->isUMat())
+			else if (pMatR->isUMat() && pMatT->isUMat())
 				{
-				matR = pMatR->umat->getMat(cv::ACCESS_READ);
-				matT = pMatT->umat->getMat(cv::ACCESS_READ);
+				// Perform match
+				cv::matchTemplate(*(pMatR->umat), *(pMatT->umat), *(pMatO->umat), CV_TM_CCORR_NORMED);
 				}	// else if
 			#endif
-			#ifdef	HAVE_OPENCV_CUDA
-			else if (pMatR->isGPU())
-				{
-				pMatR->gpumat->download(matR);
-				pMatT->gpumat->download(matT);
-				}	// if
-			#endif
 
-			// Perform match
-			cv::matchTemplate ( matR, matT, matC, CV_TM_CCORR_NORMED );
-
-			// Copy result to destination
-			if (pMatR->isMat())
-				matC.copyTo ( *(pMatO->mat) );
-			#ifdef	HAVE_OPENCV_UMAT
-			else if (pMatR->isUMat())
-				matC.copyTo ( *(pMatO->umat) );
-			#endif
-			#ifdef	HAVE_OPENCV_CUDA
-			else if (pMatO->isGPU())
-				pMatO->gpumat->upload(matC);
-			#endif
-
-//image_to_debug ( pMatO, L"Match", L"c:/temp/MatchC1.png" );
+			// Unknown
+			else
+				hr = E_NOTIMPL;
 
 			/*
 			if (pMatR->isGPU())

@@ -66,7 +66,7 @@ class Points :
 
 	// Run-time data
 	IDictionary	*pDct;									// Target dictionary
-	IIt			*pItX,*pItY,*pItZ;					// Pre-assigned coordinates
+	IContainer	*pCntX,*pCntY,*pCntZ;				// Pre-assigned coordinates
 	
 	// CCL
 	CCL_OBJECT_BEGIN(Points)
@@ -88,12 +88,6 @@ class Points :
 		DEFINE_RCP(Yaxis)
 		DEFINE_RCP(Zaxis)
 	END_BEHAVIOUR_NOTIFY()
-
-	private :
-
-	// Internal utilities
-	float getAxisPt ( U8, U32, U32, IIt * );
-
 	};
 
 //

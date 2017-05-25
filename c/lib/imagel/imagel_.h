@@ -611,7 +611,7 @@ class Features :
 
 	// Internal state
 	#ifdef	HAVE_OPENCV_CUDA
-	cv::Ptr<cv::cuda::CannyEdgeDetector>	pgpuCanny;
+//	cv::Ptr<cv::cuda::CannyEdgeDetector>	pgpuCanny;
 	#endif
 
 	};
@@ -1117,6 +1117,44 @@ class Threshold :
 		DEFINE_CON(Fire)
 		DEFINE_RCP(Image)
 		DEFINE_RCP(Value)
+	END_BEHAVIOUR_NOTIFY()
+	};
+
+//
+// Class - Tomography.  Node to convert image data to list of 3D points.
+//
+
+class Tomography :
+	public CCLObject,										// Base class
+	public Behaviour										// Interface
+	{
+	public :
+	Tomography ( void );									// Constructor
+
+	// Run-time data
+	IDictionary	*pImg;									// Image dictionary
+	IDictionary	*pImgX,*pImgY;							// Scanning coordinates for image
+	IDictionary	*pImgPts;								// Destination image
+
+	// CCL
+	CCL_OBJECT_BEGIN(Tomography)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_EMT(Error)
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Image)
+	DECLARE_RCP(ImageX)
+	DECLARE_RCP(ImageY)
+	DECLARE_RCP(Points)
+	BEGIN_BEHAVIOUR()
+		DEFINE_EMT(Error)
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Image)
+		DEFINE_RCP(ImageX)
+		DEFINE_RCP(ImageY)
+		DEFINE_RCP(Points)
 	END_BEHAVIOUR_NOTIFY()
 	};
 

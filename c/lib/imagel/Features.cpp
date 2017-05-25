@@ -199,13 +199,14 @@ HRESULT Features :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					pMat->gpumat->upload ( cpuEdges );
 */
 					cv::cuda::GpuMat	edges;
+					cv::Ptr<cv::cuda::CannyEdgeDetector>	pgpuCanny;
 
 					// Create canny detector algorithm if necessary
-					if (pgpuCanny == NULL)
+//					if (pgpuCanny == NULL)
 						pgpuCanny = cv::cuda::createCannyEdgeDetector ( 100, 200 );
 
 					// Perform detection
-					if (pgpuCanny != NULL)
+//					if (pgpuCanny != NULL)
 						pgpuCanny->detect ( *(pMat->gpumat), edges );
 
 					// Result
