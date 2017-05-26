@@ -197,19 +197,17 @@ HRESULT Stats :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				#ifdef	HAVE_OPENCV_UMAT
 				else if (pMat->isUMat())
 					{
-					cv::Mat	matHst,matLog;
+					std::vector<int>			ch				= { 0 };
+					std::vector<int>			histSize		= { 256 };
+					std::vector<float>		histRange	= { 0, 256 };
+					std::vector<cv::UMat>	matLst		= { *(pMat->umat) };
+					cv::UMat						matHst,matLog;
 
-					// TODO: not working yet, keeps using same bits
-
-					// 'calcHist' not available for UMat ?
-					matHst = pMat->umat->getMat(cv::ACCESS_READ);
-
-					// Histogram
-					cv::calcHist ( &matHst, 1, 0, cv::noArray(), 
-										matHst, 1, &histSize, &histRange );
+					// Only the 'array' version of calcHist is available for UMat
+					cv::calcHist ( matLst, ch, cv::UMat(), matHst, histSize, histRange );
 
 					// Normalize
-					matHst /= (double)pMat->umat->total();
+					cv::divide ( matHst, cv::Scalar((double)pMat->umat->total()), matHst );
 
 					// Ensure no log of zeroes
 					cv::add ( matHst, cv::Scalar::all(1e-20), matHst );

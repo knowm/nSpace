@@ -47,7 +47,7 @@
 	% Load
 	%%%%%%%
 
-	% IMAGEN: Create container image, keep on CPU
+	% IMAGEN: Create container image, keep on CPU for per pixel access
 	$	Create Image.Create { Format "F32x2" Width 0:int Height 0:int CPU true:bool }
 		!	CreateImageDct/OnFire				Create/Image
 		!	Load/OnFire								Create/Fire
