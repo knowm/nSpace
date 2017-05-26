@@ -315,26 +315,26 @@ HRESULT FFT :: fft ( cv::cuda::GpuMat *pMat, cv::cuda::GpuMat *pWnd,
 
 		// Compute the magnitude of DFT
 		cv::cuda::magnitude ( gpuPlanes[0], gpuPlanes[1], gpuPlanes[0] );
-//		gpuMag = gpuPlanes[0];
+		gpuMag = gpuPlanes[0];
 
 		// Normalize by the number of samples (convention ?)
 		if (bRows)
-			cv::cuda::divide ( gpuPlanes[0], cv::Scalar(gpuPlanes[0].cols), gpuPlanes[0] );
+			cv::cuda::divide ( gpuMag, cv::Scalar(gpuMag.cols), gpuMag );
 		else
-			cv::cuda::divide ( gpuPlanes[0], cv::Scalar(gpuPlanes[0].cols*gpuPlanes[0].rows), gpuPlanes[0] );
+			cv::cuda::divide ( gpuMag, cv::Scalar(gpuMag.cols*gpuMag.rows), gpuMag );
 
 		// Ensure no log of zeroes
-		cv::cuda::add ( gpuPlanes[0], cv::Scalar::all(1e-20), gpuPlanes[0] );
+		cv::cuda::add ( gpuMag, cv::Scalar::all(1e-20), gpuMag );
 
 		// Log scale
-		cv::cuda::log ( gpuPlanes[0], gpuPlanes[0] );
+		cv::cuda::log ( gpuMag, gpuMag );
 
 		// Need to take 20*log10(x)
 		// Open CV log is natural log so scale for log10 (2.303)
-		cv::cuda::multiply ( gpuPlanes[0], cv::Scalar::all(20.0/2.303), gpuPlanes[0] );
+		cv::cuda::multiply ( gpuMag, cv::Scalar::all(20.0/2.303), gpuMag );
 
 		// Crop the spectrum if it has an odd number of rows or columns
-		gpuMag = gpuPlanes[0] ( cv::Rect ( 0, 0, gpuMag.cols & -2, gpuMag.rows & -2 ) );
+		gpuMag = gpuMag ( cv::Rect ( 0, 0, gpuMag.cols & -2, gpuMag.rows & -2 ) );
 
 		// Keep a single quadrant
 		cx = gpuMag.cols/2;

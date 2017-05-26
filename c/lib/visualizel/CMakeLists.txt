@@ -5,6 +5,7 @@ project("visualizel")
 set	(
 		SOURCES
 		Points.cpp
+		Renderable.cpp
 		Render.cpp
 		)
 

@@ -226,7 +226,7 @@
 2534d0e7-8628-11d2-868c-006008addfed				//	CLSID_Render (visualizel)
 2534d0e8-8628-11d2-868c-006008addfed				//	CLSID_Points (visualizel)
 2534d0e9-8628-11d2-868c-006008addfed				//	CLSID_Tomography (imagel)
-2534d0ea-8628-11d2-868c-006008addfed				// 
+2534d0ea-8628-11d2-868c-006008addfed				// CLSID_Renderable (visualizel)
 2534d0eb-8628-11d2-868c-006008addfed				//	
 2534d0ec-8628-11d2-868c-006008addfed				//	
 2534d0ed-8628-11d2-868c-006008addfed				//	

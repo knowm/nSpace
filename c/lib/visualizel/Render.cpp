@@ -29,6 +29,7 @@ Render :: Render ( void )
 	////////////////////////////////////////////////////////////////////////
 	pDct	= NULL;
 	pImg	= NULL;
+	pItm	= NULL;
 	pBits	= NULL;
 	}	// Render
 
@@ -94,6 +95,7 @@ HRESULT Render :: onAttach ( bool bAttach )
 		_RELEASE(pDct);
 		_RELEASE(pBits);
 		_RELEASE(pImg);
+		_RELEASE(pItm);
 
 		// NOTE NOTE NOTE.  VTK seems to rely a lot on static
 		// intialization.  This seems to easily crash the system since doing
@@ -135,6 +137,29 @@ HRESULT Render :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		CCLTRYE( (pRef = (visObjRef *)(IUnknown *)(adtIUnknown(vL)))
 						!= NULL, ERROR_INVALID_STATE );
 		CCLOK  ( pRef->AddRef(); )
+/*
+// DEBUG
+if (hr == S_OK)
+{
+vtkCamera *camera = pRef->renderer->GetActiveCamera();
+double x,y,z;
+//<DBG:Render::onReceive> Camera 0.0460949 -0.0780151 134.618
+camera->GetPosition(x,y,z);
+lprintf ( LOG_DBG, L"Camera %g %g %g\r\n", x, y, z );
+camera->SetPosition(0.0436699,-0.0755751,20000);
+
+camera->SetPosition(0.0509449,10,0);
+camera->GetPosition(x,y,z);
+lprintf ( LOG_DBG, L"Camera %g %g %g\r\n", x, y, z );
+camera->GetPosition(x,y,z);
+lprintf ( LOG_DBG, L"Camera %g %g %g %g\r\n", x, y, z, camera->GetParallelScale() );
+camera->SetParallelScale(3.3);
+lprintf ( LOG_DBG, L"Camera %g %g %g %g\r\n", x, y, z, camera->GetParallelScale() );
+// 3.3
+camera->SetFocalPoint(0,0,0);
+
+}
+*/
 
 		// Render and grab snapshot of image
 		if (hr == S_OK)
@@ -217,6 +242,12 @@ HRESULT Render :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 //		CCLOK		( pRef->wif->SetInputBufferTypeToRGBA(); )
 		CCLOK		( pRef->wif->SetInputBufferTypeToRGB(); )
 		CCLOK		( pRef->wif->ReadFrontBufferOff(); )
+if (hr == S_OK)
+{
+pRef->wif->SetMagnification(10);	// 3000x3000
+//pRef->wif->SetMagnification(20); // 6000x6000
+}
+
 		CCLTRY	( pImg->store ( adtString(L"Format"),adtString(L"R8G8B8") ) );
 
 		//
@@ -224,11 +255,12 @@ HRESULT Render :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		//
 		if (hr == S_OK)
 			{
+/*
 			// Create a random point cloud
 			vtkSmartPointer<vtkPointSource>	pts = 
 				vtkSmartPointer<vtkPointSource>::New();
 			pts->SetCenter(0,0,0);
-			pts->SetNumberOfPoints(500);
+			pts->SetNumberOfPoints(10);
 			pts->SetRadius(5.0);
 			pts->Update();
 
@@ -242,7 +274,8 @@ HRESULT Render :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			actor->SetMapper(mapper);
 
 			pRef->renderer->AddActor(actor);
-
+pRef->renderer->ResetCamera();
+*/
 			}	// if
 
 		// Result
@@ -261,12 +294,52 @@ HRESULT Render :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			pDct->remove ( adtString(L"visObjRef") );
 		}	// else if
 
+	// Add renderable item to renderer
+	else if (_RCP(Add))
+		{
+		visObjRef	*pRefRen = NULL;
+		visObjRef	*pRefItm = NULL;
+		adtValue		vL;
+
+		// State check
+		CCLTRYE ( pDct != NULL && pItm != NULL, ERROR_INVALID_STATE );
+
+		// Renderer
+		CCLTRY (pDct->load(adtString(L"visObjRef"),vL));
+		CCLTRYE( (pRefRen = (visObjRef *)(IUnknown *)(adtIUnknown(vL)))
+						!= NULL, ERROR_INVALID_STATE );
+		CCLOK  ( pRefRen->AddRef(); )
+
+		// Item
+		CCLTRY (pItm->load(adtString(L"visObjRef"),vL));
+		CCLTRYE( (pRefItm = (visObjRef *)(IUnknown *)(adtIUnknown(vL)))
+						!= NULL, ERROR_INVALID_STATE );
+		CCLOK  ( pRefItm->AddRef(); )
+
+		// Add actor to renderer
+		if (hr == S_OK && pRefRen->renderer != NULL && pRefItm->actor != NULL)
+{
+			pRefRen->renderer->AddActor ( pRefItm->actor );
+pRefRen->renderer->ResetCamera();
+}
+
+		// Clean up
+		_RELEASE(pRefItm);
+		_RELEASE(pRefRen);
+		}	// else if
+
 	// State
 	else if (_RCP(Dictionary))
 		{
 		adtIUnknown	unkV(v);
 		_RELEASE(pDct);
 		_QISAFE(unkV,IID_IDictionary,&pDct);
+		}	// else if
+	else if (_RCP(Item))
+		{
+		adtIUnknown	unkV(v);
+		_RELEASE(pItm);
+		_QISAFE(unkV,IID_IDictionary,&pItm);
 		}	// else if
 	else
 		hr = ERROR_NO_MATCH;

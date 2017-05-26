@@ -21,9 +21,7 @@ Points :: Points ( void )
 	//
 	////////////////////////////////////////////////////////////////////////
 	pDct	= NULL;
-	pCntX	= NULL;
-	pCntY	= NULL;
-	pCntZ	= NULL;
+	pImg	= NULL;
 	}	// Points
 
 HRESULT Points :: onAttach ( bool bAttach )
@@ -45,24 +43,13 @@ HRESULT Points :: onAttach ( bool bAttach )
 	// Attach
 	if (bAttach)
 		{
-		adtValue		vL;
-
-		// How to assign each axis
-		if (pnDesc->load ( adtString(L"Xaxis"), vL ) == S_OK)
-			onReceive(prXaxis,vL);
-		if (pnDesc->load ( adtString(L"Yaxis"), vL ) == S_OK)
-			onReceive(prYaxis,vL);
-		if (pnDesc->load ( adtString(L"Zaxis"), vL ) == S_OK)
-			onReceive(prZaxis,vL);
 		}	// if
 
 	// Detach
 	else
 		{
 		// Shutdown
-		_RELEASE(pCntX);
-		_RELEASE(pCntY);
-		_RELEASE(pCntZ);
+		_RELEASE(pImg);
 		_RELEASE(pDct);
 		}	// else
 
@@ -93,12 +80,22 @@ HRESULT Points :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		IIt			*pItX		= NULL;
 		IIt			*pItY		= NULL;
 		IIt			*pItZ		= NULL;
-		U32			npts		= 0;
-		U32			nptsx		= 0;
+		ImageDct		dctImg;
+
+		//
+		// NOTE: Current assumes points are contained in the image
+		// with each row being a point and the colums can be X,Y,Z,I
+		//
 
 		// State check
-		CCLTRYE	( pDct != NULL, ERROR_INVALID_STATE );
-		CCLTRYE	( pCntX != NULL && pCntY != NULL && pCntZ != NULL, ERROR_INVALID_STATE );
+		CCLTRYE	( pDct != NULL && pImg != NULL, ERROR_INVALID_STATE );
+
+		// Extract information about image
+		CCLTRY ( dctImg.lock ( pImg ) );
+
+		// Current requires non-zero number of floating points
+		CCLTRYE ( dctImg.iFmt == IMGFMT_F32X2, ERROR_INVALID_STATE );
+		CCLTRYE ( dctImg.iH > 0, ERROR_INVALID_STATE );
 
 		// Create point collection
 		CCLTRYE	( (pRef = new visObjRef()) != NULL, E_OUTOFMEMORY );
@@ -106,46 +103,47 @@ HRESULT Points :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 						!= NULL, E_OUTOFMEMORY );
 		CCLOK		( pRef->pts->SetDataTypeToFloat(); )
 
-		// Total number of pts will be minimum of all three lists
-		CCLTRY ( pCntX->size ( &npts ) );
-		if (hr == S_OK && pCntY->size ( &nptsx ) == S_OK && nptsx < npts)
-			npts = nptsx;
-		if (hr == S_OK && pCntZ->size ( &nptsx ) == S_OK && nptsx < npts)
-			npts = nptsx;
-		CCLTRYE	( npts > 0, E_INVALIDARG );
-		CCLOK		( pRef->pts->SetNumberOfPoints(npts); )
+		// Total number of points will be the number of rows in the image
+		CCLOK		( pRef->pts->SetNumberOfPoints(dctImg.iH); )
+//		CCLOK		( pRef->pts->SetNumberOfPoints(10000); )
 
-		// Add points to cloud from lists
+		// Add points to cloud from memory
 		if (hr == S_OK)
 			{
-			U32			idx = 0;
-			adtValue		vX,vY,vZ;
+			float			*pfBits	= (float *)(dctImg.pvBits);
 			adtDouble	dX,dY,dZ;
 
-			// Add point from each list until a list runs dry
-			CCLTRY ( pCntX->iterate ( &pItX ) );
-			CCLTRY ( pCntY->iterate ( &pItY ) );
-			CCLTRY ( pCntZ->iterate ( &pItZ ) );
-			while (	hr == S_OK && 
-						pItX->read(vX) == S_OK &&
-						pItY->read(vY) == S_OK &&
-						pItZ->read(vZ) == S_OK )
+			// All rows
+			for (U32 idx = 0;hr == S_OK && idx < (U32)dctImg.iH;++idx)//&& idx < 10000;++idx)
 				{
+				// Assign coordinates
+				if (dctImg.iW > 0)	dX = pfBits[0];
+				if (dctImg.iW > 1)	dY = pfBits[1];
+				if (dctImg.iW > 2)	dZ = pfBits[2];
+
 				// Add point to collection
-				pRef->pts->SetPoint(idx++,(dX=vX),(dY=vY),(dZ=vZ));
+//				lprintf ( LOG_DBG, L"%g %g %g\r\n", (double)dX, (double)dY, (double)dZ );
+				pRef->pts->SetPoint(idx,dX,dY,dZ);
 
-				// Next tuple
-				pItX->next();
-				pItY->next();
-				pItZ->next();
-				}	// while
+				// Next row
+				pfBits += dctImg.iW;
+				}	// for
 
-			// Clean up
-			_RELEASE(pItZ);
-			_RELEASE(pItY);
-			_RELEASE(pItX);
 			}	// if
 
+		// DEBUG
+/*
+if (hr == S_OK)
+{
+pRef->pts->SetNumberOfPoints(100);
+for (U32 i = 0;i < 100;++i)
+	pRef->pts->SetPoint(i,i,i,i);
+//pRef->pts->InsertNextPoint(0,0,0);
+//pRef->pts->InsertNextPoint(1,0,0);
+//pRef->pts->InsertNextPoint(0,1,0);
+//pRef->pts->InsertNextPoint(0,0,1);
+}
+*/
 		// Result
 		CCLTRY(pDct->store ( adtString(L"visObjRef"), adtIUnknown(pRef)));
 		if (hr == S_OK)
@@ -164,27 +162,11 @@ HRESULT Points :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		_RELEASE(pDct);
 		_QISAFE(unkV,IID_IDictionary,&pDct);
 		}	// else if
-	else if (_RCP(Xaxis) || _RCP(Yaxis) || _RCP(Zaxis))
+	else if (_RCP(Image))
 		{
 		adtIUnknown	unkV(v);
-
-		// Obtain iterator for axis
-		if (_RCP(Xaxis))
-			{
-			_RELEASE(pCntX);
-			CCLTRY(_QISAFE(unkV,IID_IContainer,&pCntX));
-			}	// if
-		else if (_RCP(Yaxis))
-			{
-			_RELEASE(pCntY);
-			CCLTRY(_QISAFE(unkV,IID_IContainer,&pCntY));
-			}	// if
-		else if (_RCP(Zaxis))
-			{
-			_RELEASE(pCntZ);
-			CCLTRY(_QISAFE(unkV,IID_IContainer,&pCntZ));
-			}	// if
-
+		_RELEASE(pImg);
+		_QISAFE(unkV,IID_IDictionary,&pImg);
 		}	// else if
 	else
 		hr = ERROR_NO_MATCH;
