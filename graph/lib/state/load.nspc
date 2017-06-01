@@ -33,12 +33,12 @@
 	%% are dictionary path to store the loaded values.
 
 	% Pre-load notification
-	!	Dictionary/OnFire							OnCapture/Value
+	!	Dictionary/OnFire							OnLoad/Value
 
 	% ADTN: Iterate the namespace paths
 	$	MapIt Adt.Iterate {}
 		!	Map/OnFire								MapIt/Container
-		!	Capture/OnFire							MapIt/First
+		!	Load/OnFire								MapIt/First
 		!	MapIt/OnKey								Debug/Fire
 		!	MapIt/OnNext							Debug/Fire
 
@@ -99,5 +99,5 @@
 	!	MapIt/OnNext								MapIt/Next
 
 	% Complete
-	!	MapIt/OnLast								OnCapture/Fire
+	!	MapIt/OnLast								OnLoad/Fire
 

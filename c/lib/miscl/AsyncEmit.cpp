@@ -126,6 +126,14 @@ HRESULT AsyncEmit :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 		// Emission value available
 		CCLOK ( evEmit.signal(); )
+
+		// Debug
+		if (hr != S_OK)
+			{
+			HRESULT hr_dbg = hr;
+			hr = S_OK;
+			hr = hr_dbg;
+			}	// if
 		}	// if
 
 	// State
