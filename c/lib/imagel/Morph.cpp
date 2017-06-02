@@ -19,7 +19,13 @@ Morph :: Morph ( void )
 	//		-	Constructor for the object
 	//
 	////////////////////////////////////////////////////////////////////////
-	pImg	= NULL;
+	pImg		= NULL;
+	#ifdef	HAVE_OPENCV_CUDA
+	pfOpen	= NULL;
+	pfClose	= NULL;
+	pfDi		= NULL;
+	pfEr		= NULL;
+	#endif
 //	pKer	= NULL;
 	}	// Morph
 

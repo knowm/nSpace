@@ -100,9 +100,6 @@ HRESULT AsyncEmit :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	// Emit
 	if (_RCP(Fire))
 		{
-		// Value slot available ?
-		CCLTRYE ( adtValue::empty(vEmit) == true, ERROR_INVALID_STATE );
-
 		// Single shot ?
 		if (bSingle == true && pThrd != NULL)
 			{
@@ -120,20 +117,24 @@ HRESULT AsyncEmit :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			}	// if
 
 		// Copy value to emit
-		csVal.enter();
-		CCLTRY ( adtValue::copy ( adtValue::empty(vVal) ? v : vVal, vEmit ) );
-		csVal.leave();
-
-		// Emission value available
-		CCLOK ( evEmit.signal(); )
-
-		// Debug
-		if (hr != S_OK)
+		if (hr == S_OK)
 			{
-			HRESULT hr_dbg = hr;
-			hr = S_OK;
-			hr = hr_dbg;
+			// Thread safety
+			csVal.enter();
+
+			// Available ?
+			CCLTRYE ( adtValue::empty(vEmit) == true, E_UNEXPECTED );
+
+			// New value
+			CCLTRY ( adtValue::copy ( adtValue::empty(vVal) ? v : vVal, vEmit ) );
+
+			// Thread safety
+			csVal.leave();
+
+			// Signal availability
+			CCLOK ( evEmit.signal(); )
 			}	// if
+
 		}	// if
 
 	// State
@@ -161,7 +162,8 @@ HRESULT AsyncEmit :: tick ( void )
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
-	HRESULT		hr = S_OK;
+	HRESULT		hr		= S_OK;
+	bool			bEmit = false;
 	adtValue		vEmitNow;
 
 	// Wait for value to emit
@@ -173,7 +175,7 @@ HRESULT AsyncEmit :: tick ( void )
 	// Emit value
 	if (hr == S_OK && !adtValue::empty(vEmit))
 		{
-		// Make local copy so value can be readied immediately
+		// Make local copy so next value can be readied immediately
 		csVal.enter();
 		CCLTRY ( adtValue::copy ( vEmit, vEmitNow ) );
 

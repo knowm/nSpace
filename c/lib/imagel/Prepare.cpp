@@ -109,9 +109,9 @@ HRESULT Prepare :: gpuInit ( void )
 		{
 		// Perform some sort of GPU operation to intiailize Cuda for the
 		// first time which can take while (many seconds on a fresh system)
-//		cv::cuda::GpuMat	gpumat;
-//		cv::Mat				mat(10,10,CV_8UC1);
-//		gpumat.upload(mat);
+		cv::cuda::GpuMat	gpumat;
+		cv::Mat				mat(10,10,CV_8UC1);
+		gpumat.upload(mat);
 
 		// Enable Cuda
 		lprintf ( LOG_INFO, L"Cuda enabled devices : %d\r\n", ret );
