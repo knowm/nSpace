@@ -52,7 +52,6 @@ HRESULT Gradient :: onAttach ( bool bAttach )
 		{
 		adtValue		vL;
 
-
 		// Defaults (optional)
 		if (pnDesc->load ( adtString(L"Type"), vL ) == S_OK)
 			hr = adtValue::toString ( vL, strType );

@@ -43,7 +43,6 @@ class AsyncEmit :
 		CCL_INTF(IBehaviour)
 		CCL_INTF(ITickable)
 	CCL_OBJECT_END()
-	virtual void		destruct		( void );		// Destruct object
 
 	//! \name Connections 
 	//@{

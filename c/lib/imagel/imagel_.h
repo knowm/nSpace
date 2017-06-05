@@ -1159,6 +1159,55 @@ class Tomography :
 	};
 
 //
+// Class - Transform.  2D affine transformation.
+//
+
+class Transform :
+	public CCLObject,										// Base class
+	public Behaviour										// Interface
+	{
+	public :
+	Transform ( void );									// Constructor
+
+	// Run-time data
+	IDictionary	*pImg;									// Image dictionary
+	double		dScl[2],dRot[2],dTrns[2];			// Run-time data
+	adtDouble	vD;										// Run-time data
+
+	// CCL
+	CCL_OBJECT_BEGIN(Transform)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_EMT(Error)
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Image)
+	DECLARE_RCP(ScaleX)
+	DECLARE_RCP(ScaleY)
+	DECLARE_RCP(RotateX)
+	DECLARE_RCP(RotateY)
+	DECLARE_RCP(TranslateX)
+	DECLARE_RCP(TranslateY)
+	BEGIN_BEHAVIOUR()
+		DEFINE_EMT(Error)
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Image)
+		DEFINE_RCP(ScaleX)
+		DEFINE_RCP(ScaleY)
+		DEFINE_RCP(RotateX)
+		DEFINE_RCP(RotateY)
+		DEFINE_RCP(TranslateX)
+		DEFINE_RCP(TranslateY)
+	END_BEHAVIOUR_NOTIFY()
+
+	private :
+
+	// Internal utilities
+
+	};
+
+//
 // Class - VideoCapture.  General video capture node.
 //
 

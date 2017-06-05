@@ -33,6 +33,7 @@ set	(
 		Stats.cpp
 		Threshold.cpp
 		Tomography.cpp
+		Transform.cpp
 		VideoCapture.cpp
 		VideoWriter.cpp
 		)
