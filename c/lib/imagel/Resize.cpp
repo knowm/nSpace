@@ -98,11 +98,20 @@ HRESULT Resize :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				cv::resize ( *(pMat->mat), *(pMat->mat), cv::Size(iW,iH) );
 			#ifdef	HAVE_OPENCV_UMAT
 			else if (pMat->isUMat())
-				cv::resize ( *(pMat->umat), *(pMat->umat), cv::Size(iW,iH) );
+				{
+				// UMat does not seem to like src == dst
+				cv::UMat matDst;
+				cv::resize ( *(pMat->umat), matDst, cv::Size(iW,iH) );
+				matDst.copyTo(*(pMat->umat));
+				}	// else if
 			#endif
 			#ifdef	HAVE_OPENCV_CUDA
 			else if (pMat->isGPU())
-				cv::cuda::resize ( *(pMat->gpumat), *(pMat->gpumat), cv::Size(iW,iH) );
+				{
+				cv::cuda::GpuMat	matDst;
+				cv::cuda::resize ( *(pMat->gpumat), mstDst, cv::Size(iW,iH) );
+				matDst.copyTo(*(pMat->gpumat));
+				}	// else if
 			#endif
 			}	// if
 

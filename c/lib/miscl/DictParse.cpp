@@ -103,7 +103,7 @@ HRESULT DictParse :: parse ( IContainer *pFmt )
 		// Fields (required)
 		CCLTRY	( pDictSpec->load ( adtString(L"Type"), sType ) );
 
-		// Size field required for certain type
+		// Size field required for certain types
 		if (pDictSpec->load ( adtString(L"Size"), vSz ) == S_OK)
 			{
 			// Size, if a string is specified for the 'Size' field then it refers
@@ -270,14 +270,17 @@ HRESULT DictParse :: parse ( IContainer *pFmt )
 			CCLOK  ( adtValue::copy ( bV, vVal ); )
 			}	// if
 
-		else if (hr == S_OK && !WCASECMP ( L"String", sType ))
+		else if (hr == S_OK && (!WCASECMP ( L"String", sType ) || !WCASECMP ( L"StringW", sType )))
 			{
 			// Converting to internal string from assumed ASCII.
 			WCHAR			*pwStr	= NULL;
-			U8				c;
+			U16			c,csz;
 			adtValue		vL;
 			adtString	sEnd;
 			U32			i,j,uAllocd,elen;
+
+			// String (ASCII) or StringW (Wide char - 2bytes per char)
+			csz = (!WCASECMP ( L"StringW", sType )) ? 2 : 1;
 
 			// If the size is set to zero, an ending sequence of
 			// characters can be specified.
@@ -290,7 +293,7 @@ HRESULT DictParse :: parse ( IContainer *pFmt )
 
 			// Pre-allocate space for string
 			i = 0;
-			while (hr == S_OK && pStm->read ( &c, 1, NULL ) == S_OK)
+			while (hr == S_OK && pStm->read ( &c, csz, NULL ) == S_OK)
 				{
 				// Ensure enough space in buffer
 				if (hr == S_OK && i >= uAllocd)
@@ -301,7 +304,7 @@ HRESULT DictParse :: parse ( IContainer *pFmt )
 					}	// if
 
 				// Add character
-				CCLOK ( pwStr[i++] = WCHAR(c); )
+				CCLOK ( pwStr[i++] = (csz == 1) ? WCHAR(c & 0xff) : c; )
 
 				// End of string ?
 				if (hr == S_OK && uSz > 0 && i >= uSz)
@@ -343,22 +346,62 @@ HRESULT DictParse :: parse ( IContainer *pFmt )
 		else if (hr == S_OK && !WCASECMP ( L"Binary", sType ))
 			{
 			IByteStream	*pStmDst = NULL;
+			U32			uSzElem	= 1;
+			U32			uSzMult	= 1;
 			adtIUnknown	unkV;
 			
 			// Size must be specified
 			CCLTRYE ( uSz > 0, E_INVALIDARG );
 
+			// Allow an optional element size (e.g., arrays of structures)
+			if (hr == S_OK && pDictSpec->load ( adtString(L"SizeElem"), vL ) == S_OK)
+				uSzElem = adtInt(vL);
+
+			// An alternative 'multiplier' for the size can be specified
+			if (hr == S_OK && pDictSpec->load ( adtString(L"SizeMult"), vL ) == S_OK)
+				{
+				// Size, if a string is specified for the 'Size' field then it refers
+				// to a field in the dictionary.
+				if (hr == S_OK && adtValue::type(vL) == VTYPE_STR)
+					{
+					CCLTRY(pDict->load ( adtString(vL), vL ));
+					CCLOK (uSzMult = adtInt(vL);)
+					}	// if
+				else if (hr == S_OK && vSz.vtype == VTYPE_I4)
+					uSzMult = adtInt(vL);
+				else
+					hr = E_UNEXPECTED;
+				}	// if
+
 			// Unformatted data, store as stream
 			CCLTRY ( COCREATE ( L"Io.StmMemory", IID_IByteStream, &pStmDst ) );
 
 			// Copy bytes
-			CCLTRY( pStm->copyTo ( pStmDst, uSz, NULL ); )
+			CCLTRY( pStm->copyTo ( pStmDst, (uSz*uSzElem)*uSzMult, NULL ); )
 			CCLTRY( pStmDst->seek ( STREAM_SEEK_SET, 0, NULL ) );
 			CCLOK ( adtValue::copy ( adtIUnknown(pStmDst), vVal ); )
 
 			// Clean up
 			_RELEASE(pStmDst);
 			}	// if
+
+		// GUID
+		else if (hr == S_OK && !WCASENCMP ( L"GUID", sType, 4 ))
+			{
+			LPOLESTR	pstr = NULL;
+			GUID		guid;
+
+			// Allow a GUID stored in binary in the byte stream to be parsed
+			// It will be stored as a string GUID in the dictionary
+			CCLTRY ( pStm->read ( &guid, sizeof(guid), NULL ) );
+			CCLTRY ( StringFromCLSID ( guid, &pstr ) );
+
+			// Store result
+			CCLTRY ( adtValue::copy ( adtString(pstr), vVal ) );
+
+			// Clean up
+			_FREETASKMEM(pstr);
+			}	// else if
 
 		// Mapping ?  Format specification can contain a mapping of from/to values
 		if (hr == S_OK && pDictSpec->load ( adtString(L"Map"), unkV ) == S_OK)

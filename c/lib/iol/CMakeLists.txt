@@ -20,7 +20,9 @@ set (	SOURCES
 		StmPrsXML.cpp
 		StreamSource.cpp
 		StmSrcFile.cpp
+		StmSrcStg.cpp
 		StmOnByteStm.cpp
+		StmStg.cpp
 		StreamOp.cpp )
 
 set (	HEADERS

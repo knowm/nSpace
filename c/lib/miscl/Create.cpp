@@ -74,8 +74,6 @@ HRESULT Create :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		// State check
 		CCLTRYE ( strId.length() > 0, ERROR_INVALID_STATE );
 
-//if (IsEqualGUID(clsid,CLSID_Dist))
-//	dbgprintf ( L"Hi\r\n" );
 		// Create object
 		if (hr == S_OK)
 			{

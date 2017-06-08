@@ -84,6 +84,10 @@ HRESULT Prepare :: gpuInit ( void )
 	//		S_OK if successful
 	//
 	////////////////////////////////////////////////////////////////////////
+	static sysCS	csPrep;
+
+	// Thread safety
+	csPrep.enter();
 
 	// Since performance is not an issue when debugging default to 
 	// CPU only.  The only time to enable this in debug mode is if this 
@@ -98,67 +102,70 @@ HRESULT Prepare :: gpuInit ( void )
 	#endif
 
 	// Already initialized ?
-	if (bGPUInit)
-		return S_OK;
-
-	// Any CUDA-enabled devices ?
-	bCuda = false;
-	#ifdef	HAVE_OPENCV_CUDA
-	int	ret;
-	if ((ret = cv::cuda::getCudaEnabledDeviceCount()) > 0)
+	if (!bGPUInit)
 		{
-		// Perform some sort of GPU operation to intiailize Cuda for the
-		// first time which can take while (many seconds on a fresh system)
-		cv::cuda::GpuMat	gpumat;
-		cv::Mat				mat(10,10,CV_8UC1);
-		gpumat.upload(mat);
-
-		// Enable Cuda
-		lprintf ( LOG_INFO, L"Cuda enabled devices : %d\r\n", ret );
-		bCuda = true;
-
-		// For debug to force CPU mode
-//		bCuda = false;
-
-		// Do not use OpenCL
-		bUMat = false;
-		}	// if
-	else
-	#endif
-		{
-		// Debug
-		lprintf ( LOG_INFO, L"No Cuda enabled devices\r\n" );
-		bUMat = false;
-
-		// Open CV 3.X has automatic OpenCL support via the new "UMat" object
-		#ifdef	HAVE_OPENCV_UMAT
-		if (cv::ocl::haveOpenCL())
-			bUMat = true;
-
-		// Debug information
-		cv::ocl::Device	
-		dev = cv::ocl::Device::getDefault();
-		lprintf ( LOG_DBG, L"Name : %S : %S : %d.%d : %S\r\n", dev.name().c_str(), dev.vendorName().c_str(),
-						dev.deviceVersionMajor(), dev.deviceVersionMinor(), dev.name().c_str() );
-
-		// Debug
-		lprintf ( LOG_INFO, L"OpenCL %s\r\n", (bUMat) ? L"enabled" : L"disabled" );
-
-		// Perform some sort of GPU operation to intiailize Cuda for the
-		// first time which can take while (many seconds on a fresh system)
-		cv::ocl::setUseOpenCL(bUMat);
-		if (bUMat)
+		// Any CUDA-enabled devices ?
+		bCuda = false;
+		#ifdef	HAVE_OPENCV_CUDA
+		int	ret;
+		if ((ret = cv::cuda::getCudaEnabledDeviceCount()) > 0)
 			{
-			cv::UMat	umat;
-			cv::Mat	mat(10,10,CV_8UC1);
-			mat.copyTo ( umat );
+			// Perform some sort of GPU operation to intiailize Cuda for the
+			// first time which can take while (many seconds on a fresh system)
+			cv::cuda::GpuMat	gpumat;
+			cv::Mat				mat(10,10,CV_8UC1);
+			gpumat.upload(mat);
+
+			// Enable Cuda
+			lprintf ( LOG_INFO, L"Cuda enabled devices : %d\r\n", ret );
+			bCuda = true;
+
+			// For debug to force CPU mode
+	//		bCuda = false;
+
+			// Do not use OpenCL
+			bUMat = false;
 			}	// if
+		else
 		#endif
+			{
+			// Debug
+			lprintf ( LOG_INFO, L"No Cuda enabled devices\r\n" );
+			bUMat = false;
 
-		}	// else
+			// Open CV 3.X has automatic OpenCL support via the new "UMat" object
+			#ifdef	HAVE_OPENCV_UMAT
+			if (cv::ocl::haveOpenCL())
+				bUMat = true;
 
-	// GPU initialized
-	bGPUInit = true;
+			// Debug information
+			cv::ocl::Device	
+			dev = cv::ocl::Device::getDefault();
+			lprintf ( LOG_DBG, L"Name : %S : %S : %d.%d : %S\r\n", dev.name().c_str(), dev.vendorName().c_str(),
+							dev.deviceVersionMajor(), dev.deviceVersionMinor(), dev.name().c_str() );
+
+			// Debug
+			lprintf ( LOG_INFO, L"OpenCL %s\r\n", (bUMat) ? L"enabled" : L"disabled" );
+
+			// Perform some sort of GPU operation to intiailize Cuda for the
+			// first time which can take while (many seconds on a fresh system)
+			cv::ocl::setUseOpenCL(bUMat);
+			if (bUMat)
+				{
+				cv::UMat	umat;
+				cv::Mat	mat(10,10,CV_8UC1);
+				mat.copyTo ( umat );
+				}	// if
+			#endif
+
+			}	// else
+
+		// GPU initialized
+		bGPUInit = true;
+		}	// if
+
+	// Thread safety
+	csPrep.leave();
 
 	return S_OK;
 	}	// gpuInit

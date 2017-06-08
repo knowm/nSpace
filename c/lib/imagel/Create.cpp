@@ -167,6 +167,10 @@ HRESULT Create :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		// Obtain image refence
 		CCLTRY ( Prepare::extract ( pImg, v, &pImgUse, NULL ) );
 
+		// DEBUG
+//		if (!WCASECMP(strnName,L"CreatePlusTmp"))
+//			dbgprintf ( L"Hi\r\n" );
+
 		// Process
 		// A 'type' can be specified if a certain type of matrix is to
 		// be created, other a blank image is created.

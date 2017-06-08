@@ -213,6 +213,48 @@ class StmSrcFile :
 	};
 
 //
+// Class - StmSrcStg.  Win32 compound storage based stream source.
+//
+#ifdef	_WIN32
+class StmSrcStg :
+	public CCLObject,										// Base class
+	public ILocations										// Interface
+	{
+	public :
+	StmSrcStg ( void );									// Constructor
+
+	// Run-time data
+	IUnknown			*punkDct;							// Object dictionary
+	IDictionary		*pDct;								// Object dictionary
+	adtString		strFile;								// Root storage file
+	adtString		strRoot;								// Root path
+	IDictionary		*pCache;								// Storage/stream cache
+	IStorage			*pStg;								// Root storage
+	BOOL				bStgRead;							// Storage read only ?
+
+	// 'ILocations' members
+	STDMETHOD(open)		( IDictionary *,	IUnknown ** );
+	STDMETHOD(locations)	( const WCHAR *,	IIt ** );
+	STDMETHOD(resolve)	( const WCHAR *,	bool, ADTVALUE & );
+	STDMETHOD(status)		( const WCHAR *,	IDictionary * );
+
+	// CCL
+	CCL_OBJECT_BEGIN(StmSrcStg)
+		CCL_INTF(ILocations)
+		CCL_INTF_AGG(IDictionary,punkDct)
+	CCL_OBJECT_END()
+	virtual HRESULT	construct	( void );		// Construct object
+	virtual void		destruct		( void );		// Destruct object
+
+	private :
+
+	// Internal utilities
+	HRESULT	toPath		( const WCHAR *, adtString & );
+	HRESULT	validate		( adtString & );
+	};
+#endif
+
+//
 // Class - StmFileRes.  File resource.
 //
 
@@ -290,6 +332,44 @@ class StmFile :
 	CCL_OBJECT_END()
 	virtual void		destruct		( void );		// Destruct object
 	};
+
+//
+// Class - StmStg.  Compound document storage stream.
+//
+#ifdef _WIN32
+class StmStg :
+	public CCLObject,										// Base class
+	public IByteStream,									// Interface
+	public IResource										// Interface
+	{
+	public :
+	StmStg ( IStream * );								// Constructor
+
+	// Run-time data
+	IStream			*pStm;								// Active stream object
+
+	// 'IResource' members
+	STDMETHOD(close)		( void );
+	STDMETHOD(getResId)	( ADTVALUE & );
+	STDMETHOD(open)		( IDictionary * );
+
+	// 'IByteStream' members
+	STDMETHOD(available)	( U64 * );
+	STDMETHOD(copyTo)		( IByteStream *, U64, U64 * );
+	STDMETHOD(flush)		( void );
+	STDMETHOD(read)		( void *, U64, U64 * );
+	STDMETHOD(seek)		( S64, U32, U64 * );
+	STDMETHOD(setSize)	( U64 );
+	STDMETHOD(write)		( void const *, U64, U64 * );
+
+	// CCL
+	CCL_OBJECT_BEGIN_INT(StmStg)
+		CCL_INTF(IResource)
+		CCL_INTF(IByteStream)
+	CCL_OBJECT_END()
+	virtual void		destruct		( void );		// Destruct object
+	};
+#endif
 
 //
 // Class - StmMemory.  Implementation of a byte stream 
@@ -566,7 +646,7 @@ class EnumDevices :
 
 class File :
 	public CCLObject,										// Base class
-	public Behaviour,									// Interface
+	public Behaviour,										// Interface
 	public ITickable										// Interface
 	{
 	public :
