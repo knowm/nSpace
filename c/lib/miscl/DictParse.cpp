@@ -350,39 +350,40 @@ HRESULT DictParse :: parse ( IContainer *pFmt )
 			U32			uSzMult	= 1;
 			adtIUnknown	unkV;
 			
-			// Size must be specified
-			CCLTRYE ( uSz > 0, E_INVALIDARG );
-
-			// Allow an optional element size (e.g., arrays of structures)
-			if (hr == S_OK && pDictSpec->load ( adtString(L"SizeElem"), vL ) == S_OK)
-				uSzElem = adtInt(vL);
-
-			// An alternative 'multiplier' for the size can be specified
-			if (hr == S_OK && pDictSpec->load ( adtString(L"SizeMult"), vL ) == S_OK)
+			// Size must be specified, ok if zero just means no data
+			if (hr == S_OK && uSz > 0)
 				{
-				// Size, if a string is specified for the 'Size' field then it refers
-				// to a field in the dictionary.
-				if (hr == S_OK && adtValue::type(vL) == VTYPE_STR)
+				// Allow an optional element size (e.g., arrays of structures)
+				if (hr == S_OK && pDictSpec->load ( adtString(L"SizeElem"), vL ) == S_OK)
+					uSzElem = adtInt(vL);
+/*
+				// An alternative 'multiplier' for the size can be specified
+				if (hr == S_OK && pDictSpec->load ( adtString(L"SizeMult"), vL ) == S_OK)
 					{
-					CCLTRY(pDict->load ( adtString(vL), vL ));
-					CCLOK (uSzMult = adtInt(vL);)
+					// Size, if a string is specified for the 'Size' field then it refers
+					// to a field in the dictionary.
+					if (hr == S_OK && adtValue::type(vL) == VTYPE_STR)
+						{
+						CCLTRY(pDict->load ( adtString(vL), vL ));
+						CCLOK (uSzMult = adtInt(vL);)
+						}	// if
+					else if (hr == S_OK && vSz.vtype == VTYPE_I4)
+						uSzMult = adtInt(vL);
+					else
+						hr = E_UNEXPECTED;
 					}	// if
-				else if (hr == S_OK && vSz.vtype == VTYPE_I4)
-					uSzMult = adtInt(vL);
-				else
-					hr = E_UNEXPECTED;
+*/
+				// Unformatted data, store as stream
+				CCLTRY ( COCREATE ( L"Io.StmMemory", IID_IByteStream, &pStmDst ) );
+
+				// Copy bytes
+				CCLTRY( pStm->copyTo ( pStmDst, (uSz*uSzElem)*uSzMult, NULL ); )
+				CCLTRY( pStmDst->seek ( STREAM_SEEK_SET, 0, NULL ) );
+				CCLOK ( adtValue::copy ( adtIUnknown(pStmDst), vVal ); )
+
+				// Clean up
+				_RELEASE(pStmDst);
 				}	// if
-
-			// Unformatted data, store as stream
-			CCLTRY ( COCREATE ( L"Io.StmMemory", IID_IByteStream, &pStmDst ) );
-
-			// Copy bytes
-			CCLTRY( pStm->copyTo ( pStmDst, (uSz*uSzElem)*uSzMult, NULL ); )
-			CCLTRY( pStmDst->seek ( STREAM_SEEK_SET, 0, NULL ) );
-			CCLOK ( adtValue::copy ( adtIUnknown(pStmDst), vVal ); )
-
-			// Clean up
-			_RELEASE(pStmDst);
 			}	// if
 
 		// GUID
@@ -423,7 +424,21 @@ HRESULT DictParse :: parse ( IContainer *pFmt )
 			{
 			// If name is specified, store under specified key
 			if (pDictSpec->load ( adtString(L"Name"), sName ) == S_OK)
+				{
+				// TODO: Enable debug output in node descriptor ?
+				/*
+				// Debug
+				{
+				adtString strV;
+				adtValue::toString(vVal,strV);
+				lprintf ( LOG_DBG, L"%s = %s\r\n", (LPCWSTR)sName, (LPCWSTR) strV );
+//				if (!WCASECMP(sName,L"ExamId"))
+//					lprintf ( LOG_DBG, L"Break!\r\n" );
+				}	// Debug
+				*/
+				// Store
 				hr = pDict->store ( sName, vVal );
+				}	// if
 
 			// If a value is specified, make sure it matches
 			else if (pDictSpec->load ( adtString(L"Value"), vValChk ) == S_OK)
@@ -501,7 +516,10 @@ HRESULT DictParse :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		if (hr == S_OK)
 			_EMT(Fire,adtIUnknown(pDict) );
 		else
+			{
+//			lprintf ( LOG_DBG, L"Failed : 0x%x\r\n", hr );
 			_EMT(Error,adtIUnknown(pDict) );
+			}	// else
 		}	// if
 
 	// State

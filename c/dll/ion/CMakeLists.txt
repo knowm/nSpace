@@ -13,7 +13,7 @@ set	(
 
 add_library (ion SHARED ${SOURCES} ${HEADERS} ../dll.def)
 
-target_link_libraries(ion iol adtl nspcl adtl ccl sysl)
+target_link_libraries(ion iol adtl nspcl adtl ccl sysl zlib)
 
 # XML
 if (WIN32)

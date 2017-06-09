@@ -541,6 +541,55 @@ class StmOnByteStm :
 	};
 #endif
 
+//
+// Class - StmZlib.  ZLib compression/decompression based stream.
+//
+
+class StmZlib :
+	public CCLObject,										// Base class
+	public IByteStream,									// Interface
+	public IResource										// Interface
+	{
+	public :
+	StmZlib ( void );										// Constructor
+
+	// Run-time data
+	IByteStream		*pStm;								// Destination stream
+	IMemoryMapped	*pMemWr,*pMemRd;					// Memory buffers
+	void				*pvMemWr,*pvMemRd;				// Memory buffers
+	adtBool			bReadOnly;							// Current mode
+	void				*pvstm;								// Zlib stream ptr
+
+	// 'IResource' members
+	STDMETHOD(close)		( void );
+	STDMETHOD(getResId)	( ADTVALUE & );
+	STDMETHOD(open)		( IDictionary * );
+
+	// 'IByteStream' members
+	STDMETHOD(available)	( U64 * );
+	STDMETHOD(copyTo)		( IByteStream *, U64, U64 * );
+	STDMETHOD(flush)		( void );
+	STDMETHOD(read)		( void *, U64, U64 * );
+	STDMETHOD(seek)		( S64, U32, U64 * );
+	STDMETHOD(setSize)	( U64 );
+	STDMETHOD(write)		( void const *, U64, U64 * );
+
+	// CCL
+	CCL_OBJECT_BEGIN(StmZlib)
+		CCL_INTF(IResource)
+		CCL_INTF(IByteStream)
+	CCL_OBJECT_END()
+	virtual HRESULT	construct	( void );		// Construct object
+	virtual void		destruct		( void );		// Destruct object
+
+	private :
+
+	// Internal utilities
+	HRESULT	flushRead	( void );
+	HRESULT	flushWrite	( void );
+	HRESULT	writeAll		( IByteStream *, void const *, U64 );
+	};
+
 /////////
 // Nodes
 /////////

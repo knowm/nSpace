@@ -23,6 +23,7 @@ set (	SOURCES
 		StmSrcStg.cpp
 		StmOnByteStm.cpp
 		StmStg.cpp
+		StmZlib.cpp
 		StreamOp.cpp )
 
 set (	HEADERS
