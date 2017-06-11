@@ -61,6 +61,17 @@ CCLObject::~CCLObject ( void )
 	#endif
 	}	// ~CCLObject
 
+ULONG CCLObject :: AddRef ( void )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//! \brief Increments the reference count for an interface on an object.
+	//! \return The method returns the new reference count. 
+	//
+	////////////////////////////////////////////////////////////////////////
+	return unkOuter->AddRef();
+	}	// AddRef
+
 HRESULT CCLObject :: cclRegister ( bool bReg )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -82,11 +93,9 @@ HRESULT CCLObject :: construct ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
-	//	PURPOSE
-	//		-	Called to construct the object.
-	//
-	//	RETURN VALUE
-	//		S_OK is successful
+	//! \brief Called when an object has been created, a reference count is
+	//!	held on the object to allow for outer unknown creation.
+	//! \return S_OK if successful, on error object creation will fail.
 	//
 	////////////////////////////////////////////////////////////////////////
 	return S_OK;
@@ -96,8 +105,8 @@ void CCLObject :: destruct ( void )
 	{
 	////////////////////////////////////////////////////////////////////////
 	//
-	//	PURPOSE
-	//		-	Called when the object is being destroyed.
+	//! \brief Called when the object's reference count reaches zero but
+	//!	before the object is 'delete'd.
 	//
 	////////////////////////////////////////////////////////////////////////
 	}	// destruct
@@ -195,6 +204,31 @@ ULONG CCLObject :: InnerRelease ( void )
 	return 0;
 	}	// InnerRelease
 
+HRESULT CCLObject :: QueryInterface ( REFIID iid, void **ppv )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//! \brief Retrieves pointers to the supported interfaces on an object.
+	//! \param iid is the identifier of the interface being requested.
+	//! \param ppv will receive the address of a pointer that receives the 
+	//!	interface pointer requested in the riid parameter.
+	//! \return S_OK if the interface is supported
+	//
+	////////////////////////////////////////////////////////////////////////
+	return unkOuter->QueryInterface ( iid, ppv );
+	}	// QueryInterface
+
+ULONG CCLObject :: Release ( void )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//! \brief Decrements the reference count for an interface on an object.
+	//! \return The method returns the new reference count. 
+	//
+	////////////////////////////////////////////////////////////////////////
+	return unkOuter->Release();
+	}	// Release
+/*
 void CCLObject :: operator delete ( void *p )
 	{
 	////////////////////////////////////////////////////////////////////////
@@ -225,4 +259,4 @@ void *CCLObject :: operator new ( size_t sz )
 	////////////////////////////////////////////////////////////////////////
 	return _ALLOCMEM((U32)sz);
 	}	// operator new
-
+*/

@@ -123,7 +123,7 @@ struct	IDictionary;
 //
 
 class CCLObject :
-	public IUnknown,										// Interface
+	protected IUnknown,										// Interface
 	public IInnerUnknown									// Interface
 	{
 	public :
@@ -136,21 +136,22 @@ class CCLObject :
 	virtual HRESULT	cclRegister	( bool );		// Object (un)registration
 
 	// 'IUnknown' members
-	STDMETHOD_(ULONG,AddRef)	( void )
-			{ return unkOuter->AddRef(); }
-	STDMETHOD(QueryInterface)	( REFIID iid, void **ppv )
-			{ return unkOuter->QueryInterface ( iid, ppv ); }
-	STDMETHOD_(ULONG,Release)	( void )
-			{ return unkOuter->Release(); }
+	STDMETHOD_(ULONG,AddRef)	( void );
+	STDMETHOD(QueryInterface)	( REFIID iid, void **ppv );
+	STDMETHOD_(ULONG,Release)	( void );
+
+	protected :
 
 	// 'IInnerUnknown' members
 	STDMETHOD_(ULONG,InnerAddRef)		( void );
 	STDMETHOD(InnerQueryInterface)	( REFIID, void ** ) = 0;
 	STDMETHOD_(ULONG,InnerRelease)	( void );
 
+	public :
+
 	// Operators
-	void *operator new		( size_t );
-	void operator	delete	( void * );
+//	void *operator new		( size_t );
+//	void operator	delete	( void * );
 
 // Operator overload to use global memory manager
 //#define			_NEW			new

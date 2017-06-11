@@ -112,7 +112,8 @@ HRESULT Behaviour :: onReceive (	IReceptor *pr, const ADTVALUE &v )
 	////////////////////////////////////////////////////////////////////////
 	//
 	//! \brief A location has received a value on the specified receptor.
-	//! \param pr is a ptr. to the receptor that received the value
+	//! \param pr the receptor that received the value, use the  
+	//!	_RCP macro to check for match against known receptors 
 	//! \param v is the received value
 	//! \return S_OK if successful
 	//

@@ -219,10 +219,6 @@ class Dictionary :
 	private :
 	};
 
-/////////////////
-// DictionaryStm
-/////////////////
-
 //
 // Class - List.  Class to contain a simple list of values.
 //
@@ -464,7 +460,8 @@ class StackIt :
 /////////
 
 //
-// Class - Iterate.  A node that allows iteration of a container.
+//!	\brief Iterate values in a container or keys and values in a dictionary
+//!	\nodetag Dictionary List Container
 //
 
 class Iterate :
@@ -488,13 +485,21 @@ class Iterate :
 	CCL_OBJECT_END()
 	virtual void		destruct		( void );		// Destruct object
 
-	// Node behaviour
+	//! \name Connections 
+	//@{
+	//!	\brief Specify the container from which to iterate.
 	DECLARE_RCP(Container)
+	//!	\brief Emit the first key/value pair in the container
 	DECLARE_CON(First)
+	//!	\brief Emit the last key/value pair in the container
 	DECLARE_CON(Last)
+	//!	\brief Emit the next key/value pair in the container
 	DECLARE_CON(Next)
+	//!	\brief Emit the previous key/value pair in the container
 	DECLARE_CON(Previous)
+	//!	\brief The latest key from the dictionary
 	DECLARE_EMT(Key)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_RCP(Container)
 		DEFINE_CON(First)
@@ -507,7 +512,8 @@ class Iterate :
 	};
 
 //
-// Class - Keys.  A node to manage a set of keys in a dictionary.
+//!	\brief A node to manage a set of keys/values in a dictionary
+//!	\nodetag Dictionary 
 //
 
 class Keys :
@@ -534,12 +540,21 @@ class Keys :
 	virtual void		destruct		( void );		// Destruct object
 
 	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Clear any values that have been cached.
 	DECLARE_RCP(Clear)
+	//!	\brief Copy the list of keys from the provided dictionary to the active dictionary.
 	DECLARE_CON(Copy)
+	//!	\brief Set the active dictionary
 	DECLARE_RCP(Dictionary)
+	//!	\brief Load the values for the active list of keys.
 	DECLARE_CON(Load)
+	//!	\brief Store the list of cached values from the list of keys.
 	DECLARE_CON(Store)
+	//!	\brief Contains a key that was not found in the dictionary during a load.
 	DECLARE_EMT(NotFound)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_RCP(Clear)
 		DEFINE_CON(Copy)
@@ -552,7 +567,8 @@ class Keys :
 	};
 
 //
-// Class - Load.  Node to load a value from a dictionary.
+//!	\brief Load a value associated with the active key
+//!	\nodetag Dictionary 
 //
 
 class Load :
@@ -574,11 +590,17 @@ class Load :
 	CCL_OBJECT_END()
 	virtual void		destruct		( void );		// Destruct object
 
-	// Node behaviour
+	//! \name Connections 
+	//@{
+	//!	\brief Set the active dictionary
 	DECLARE_RCP(Dictionary)
+	//!	\brief Set the active key
 	DECLARE_RCP(Key)
+	//!	\brief Load and emit the value associated with the active key
 	DECLARE_CON(Fire)
+	//!	\brief Emits key when not found in active dictionary.
 	DECLARE_EMT(NotFound)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_RCP(Dictionary)
 		DEFINE_RCP(Key)
@@ -589,7 +611,8 @@ class Load :
 	};
 
 //
-// Class - Remove.  Node to remove an item from a container.
+//!	\brief Remove a value from a container
+//!	\nodetag Dictionary Container
 //
 
 class Remove :
@@ -610,12 +633,19 @@ class Remove :
 	CCL_OBJECT_END()
 	virtual void		destruct		( void );		// Destruct object
 
-	// Node behaviour
+	//! \name Connections 
+	//@{
+	//!	\brief Set the active container
 	DECLARE_RCP(Container)
+	//!	\brief Remove all values from the container
 	DECLARE_RCP(Clear)
+	//!	\brief Set the active key/value to remove
 	DECLARE_RCP(Key)
+	//!	\brief Remove the specified key/value from the container
 	DECLARE_CON(Fire)
+	//!	\brief Emits key when not found in container.
 	DECLARE_EMT(NotFound)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_RCP(Container)
 		DEFINE_RCP(Clear)
@@ -626,7 +656,8 @@ class Remove :
 	};
 
 //
-// Class - Stat.  Statistics for a container.
+//!	\brief Obtain statistics about a container
+//!	\nodetag Dictionary Container
 //
 
 class Stat :
@@ -647,12 +678,19 @@ class Stat :
 	CCL_OBJECT_END()
 	virtual void		destruct		( void );		// Destruct object
 
-	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Set the active container
 	DECLARE_RCP(Container)
+	//!	\brief Compute statistics and emit the container
 	DECLARE_CON(Fire)
+	//!	\brief The number of items in the container
 	DECLARE_EMT(Count)
+	//!	\brief Signal if there are no items in the container
 	DECLARE_EMT(Empty)
+	//!	\brief Signal if there are items in the container
 	DECLARE_EMT(NotEmpty)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_RCP(Container)
 		DEFINE_CON(Fire)
@@ -666,7 +704,8 @@ class Stat :
 	};
 
 //
-// Class - Store.  Node to store a value in a dictionary.
+//!	\brief Store a key/value into a dictionary
+//!	\nodetag Dictionary 
 //
 
 class Store :
@@ -687,11 +726,17 @@ class Store :
 	CCL_OBJECT_END()
 	virtual void		destruct		( void );		// Destruct object
 
-	// Node behaviour
+	//! \name Connections 
+	//@{
+	//!	\brief Set the active dictionary
 	DECLARE_RCP(Dictionary)
+	//!	\brief Set the active key
 	DECLARE_RCP(Key)
+	//!	\brief Set the active value
 	DECLARE_RCP(Value)
+	//!	\brief Store the active or provided value under the active key
 	DECLARE_CON(Fire)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_RCP(Dictionary)
 		DEFINE_RCP(Key)
@@ -702,7 +747,8 @@ class Store :
 	};
 
 //
-// Class - Write.  Write an object to a list.
+//!	\brief Append a value to a list.
+//!	\nodetag List
 //
 
 class Write :
@@ -723,10 +769,15 @@ class Write :
 	CCL_OBJECT_END()
 	virtual void		destruct		( void );		// Destruct object
 
-	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Set the active list
 	DECLARE_RCP(List)
+	//!	\brief Set the active value
 	DECLARE_RCP(Value)
+	//!	\brief Append the active or provided value to the active list
 	DECLARE_CON(Fire)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_RCP(List)
 		DEFINE_RCP(Value)
