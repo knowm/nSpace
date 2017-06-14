@@ -28,6 +28,7 @@
 // Class - AsyncEmit.  
 /// \brief An asynchronous emission node.  Values sent into this node
 ///		will be re-emitted on its own thread.
+///	\nodetag Asynchronous
 //
 
 class AsyncEmit :
@@ -1030,6 +1031,7 @@ class TimeOp :
 //
 // Class - Timer.  
 //!	\brief A node that asynchronously emits a signal at a given interval.
+//!	\nodetag Timed Asynchronous
 //
 
 class Timer :

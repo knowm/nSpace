@@ -32,8 +32,8 @@
 ///////////
 
 //
-// Class - ByteCache.  Stream based byte buffer cache to be placed in 
-//								front of another byte stream.
+//!	\brief Stream based byte buffer cache to be placed in front of another byte stream.
+//!	\nodetag ByteStream
 //
 
 class ByteCache :
@@ -76,11 +76,11 @@ class ByteCache :
 #ifdef 	_WIN32
 
 //
-// Class - DispIntf.  Contains the information necessary to interact
-//		with an interface IDispatch object.  Can also serve as an event sink.
+//!	\brief Contains the information necessary to interact
+//!		with an interface IDispatch object.  Can also serve as an event sink.
+//!	\nodetag Dispatch
 //
 class Dispatch;											// Forward dec.
-
 class DispIntf :
 	public CCLObject										// Base class
 	{
@@ -107,7 +107,8 @@ class DispIntf :
 #endif
 
 //
-// Class - Lock.  Lock synchronization object.
+//!	\brief Lock synchronization resource object. 
+//!	\nodetag Synchronization
 //
 
 class Lock :
@@ -135,8 +136,10 @@ class Lock :
 	};
 
 //
-// Class - MemoryBlock.  Implementation of a memory block.
+//!	\brief A block of memory supporting the memory mapped interface.
+//!	\nodetag Memory
 //
+
 class MemoryBlock :
 	public CCLObject,										// Base class
 	public ICloneable,									// Interface
@@ -173,7 +176,8 @@ class MemoryBlock :
 	};
 
 //
-// Class - StmSrcFile.  File system based stream source.
+//!	\brief A file system based stream source. 
+//!	\nodetag File ByteStream
 //
 
 class StmSrcFile :
@@ -213,8 +217,10 @@ class StmSrcFile :
 	};
 
 //
-// Class - StmSrcStg.  Win32 compound storage based stream source.
+//!	\brief A Win32 compound storage based stream source.
+//!	\nodetag Storage ByteStream
 //
+
 #ifdef	_WIN32
 class StmSrcStg :
 	public CCLObject,										// Base class
@@ -255,7 +261,8 @@ class StmSrcStg :
 #endif
 
 //
-// Class - StmFileRes.  File resource.
+//!	\brief Wrapper object for a file resource.
+//!	\nodetag File
 //
 
 class StmFileRes :
@@ -295,7 +302,8 @@ class StmFileRes :
 	};
 
 //
-// Class - StmFile.  File system based stream.
+//!	\brief A file system based stream.
+//!	\nodetag File
 //
 
 class StmFile :
@@ -334,8 +342,10 @@ class StmFile :
 	};
 
 //
-// Class - StmStg.  Compound document storage stream.
+//!	\brief A compound document storage stream.
+//!	\nodetag File Storage ByteStream
 //
+
 #ifdef _WIN32
 class StmStg :
 	public CCLObject,										// Base class
@@ -372,8 +382,8 @@ class StmStg :
 #endif
 
 //
-// Class - StmMemory.  Implementation of a byte stream 
-//		interface on a block of memory.
+//!	\brief Implements a byte stream interface on a block of memory.
+//!	\nodetag ByteStream MemoryMapped
 //
 
 class StmMemory :
@@ -413,7 +423,8 @@ class StmMemory :
 	};
 
 //
-// Class - StmPrsBin.  Binary stream value parser.
+//!	\brief A binary stream value parser
+//!	\nodetag Parser
 //
 
 class StmPrsBin :
@@ -450,7 +461,8 @@ class StmPrsBin :
 	};
 
 //
-// Class - StmPrsXML.  XML value stream parser object.
+//!	\brief An XML stream value parser
+//!	\nodetag Parser XML
 //
 
 class StmPrsXML :
@@ -493,8 +505,9 @@ class StmPrsXML :
 
 #ifdef	_WIN32
 //
-// Class - StmOnByteStm.  Lays an 'IStream' interface on top
-//		of our 'IByteStream'.  Useful for APIs that require 'IStream'.
+//!	\brief Lays an 'IStream' interface on top
+//!		of 'IByteStream'.  Useful for APIs that require 'IStream'.
+//!	\nodetag ByteStream
 //
 
 class StmOnByteStm :
@@ -542,7 +555,8 @@ class StmOnByteStm :
 #endif
 
 //
-// Class - StmZlib.  ZLib compression/decompression based stream.
+//!	\brief A ZLib compression/decompression based stream.
+//!	\nodetag ByteStream
 //
 
 class StmZlib :
@@ -597,7 +611,8 @@ class StmZlib :
 #if	defined(_WIN32)
 
 //
-// Class - Dispatch.  Implentation of IDispatch usage (Windows specific).
+//!	\brief Implentation of IDispatch usage (Windows specific).
+//!	\nodetag Dispatch Windows
 //
 
 class Dispatch :
@@ -620,12 +635,21 @@ class Dispatch :
 	virtual void		destruct	( void );			// Destruct object
 
 	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Close all interfaces for the node.
 	DECLARE_CON(Close)
+	//!	\brief Invoke method/property action.
 	DECLARE_CON(Fire)
+	//!	\brief Set the active IDispatch interface
 	DECLARE_RCP(Iface)
+	//!	\brief Open IDispatch interfac on a new object instance
 	DECLARE_CON(Open)
+	//!	\brief Set active dictionary of method parameters
 	DECLARE_RCP(Params)
+	//!	\brief Signaled when an error is countered
 	DECLARE_EMT(Error)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_CON(Close)
 		DEFINE_RCP(Iface)
@@ -637,7 +661,8 @@ class Dispatch :
 	};
 
 //
-// Class - EnumDevices.  Node to enumerator through system devices.
+//!	\brief Node to enumerate through system devices.
+//!	\nodetag Iterate Windows
 //
 
 class EnumDevices :
@@ -658,12 +683,19 @@ class EnumDevices :
 		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
 
-	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief GUID for the type of device to enumerate
 	DECLARE_RCP(Class)
+	//!	\brief Signals at the end of enumeration
 	DECLARE_EMT(End)
+	//!	\brief Emit the first enumerated device
 	DECLARE_RCP(First)
+	//!	\brief Unique system name of the device
 	DECLARE_EMT(Name)
+	//!	\brief Emit the next enumerated device
 	DECLARE_CON(Next)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_RCP(Class)
 		DEFINE_EMT(End)
@@ -690,7 +722,8 @@ class EnumDevices :
 #endif
 
 //
-// Class - File.  General file I/O node.
+//!	\brief General file I/O node.  Only used for direct (possibly asynchronous I/O) access to a 'file' resource without IByteStream
+//!	\nodetag File
 //
 
 class File :
@@ -728,12 +761,19 @@ class File :
 	virtual HRESULT	construct	( void );		// Construct object
 	virtual void		destruct		( void );		// Destruct object
 
-	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Signals on an error state
 	DECLARE_EMT(Error)
+	//!	\brief Set active file resource
 	DECLARE_RCP(File)
+	//!	\brief Explicitly perform a read (when synchronous)
 	DECLARE_CON(Read)
+	//!	\brief Set the active input or output byte stream for data
 	DECLARE_RCP(Stream)
+	//!	\brief Explicity perform a write
 	DECLARE_CON(Write)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_EMT(Error)
 		DEFINE_RCP(File)
@@ -751,7 +791,8 @@ class File :
 #if	defined(_WIN32)
 
 //
-// Class - NotifyDevices.  Node to notify contains of system device changes.
+//!	\brief Provides notifications of system device changes.
+//!	\nodetag Asynchronous System Devices
 //
 
 class NotifyDevices :
@@ -781,10 +822,15 @@ class NotifyDevices :
 		CCL_INTF(ITickable)
 	CCL_OBJECT_END()
 
-	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Begin monitoring system for device changes
 	DECLARE_RCP(Start)
+	//!	\brief End monitoring system for device changes
 	DECLARE_RCP(Stop)
+	//!	\brief Output dictionary containing information about a device change
 	DECLARE_EMT(Fire)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_RCP(Start)
 		DEFINE_RCP(Stop)
@@ -803,7 +849,8 @@ class NotifyDevices :
 #endif
 
 //
-// Class - Persist.  Node to save/load values to/from streams.
+//!	\brief Save/load values to/from byte streams using provided parser.
+//!	\nodetag Persist 
 //
 
 class Persist :
@@ -824,13 +871,21 @@ class Persist :
 	CCL_OBJECT_END()
 	virtual void		destruct	( void );			// Destruct object
 
-	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Load and emit a value from the stream
 	DECLARE_CON(Load)
+	//!	\brief Save and emit a value to the stream
 	DECLARE_CON(Save)
+	//!	\brief Specifies parser object to use during persistence
 	DECLARE_RCP(Parser)
+	//!	\brief Specifies byte stream for input/output.
 	DECLARE_RCP(Stream)
+	//!	\brief Sets the active value for saving.
 	DECLARE_RCP(Value)
+	//!	\brief Signals on error
 	DECLARE_EMT(Error)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_CON(Load)
 		DEFINE_CON(Save)
@@ -842,7 +897,8 @@ class Persist :
 	};
 
 //
-// Class - Resource.  Node to access a generic resource.
+//!	\brief Node to access a generic resource.
+//!	\nodetag Resource
 //
 
 class Resource :
@@ -863,12 +919,19 @@ class Resource :
 	CCL_OBJECT_END()
 	virtual void		destruct	( void );			// Destruct object
 
-	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Close the active resource
 	DECLARE_RCP(Close)
+	//!	\brief Open the active resource with the active options.
 	DECLARE_CON(Open)
+	//!	\brief Specify options dictionary for opening resources.
 	DECLARE_RCP(Options)
+	//!	\brief Specify the active resource
 	DECLARE_RCP(Resource)
+	//!	\brief Signals on error
 	DECLARE_EMT(Error)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_RCP(Close)
 		DEFINE_CON(Open)
@@ -879,7 +942,8 @@ class Resource :
 	};
 
 //
-// Class - Serial.  Node to setup a serial port stream.
+//!	\brief Provide serial port specific functionality.
+//!	\nodetag Serial
 //
 
 class Serial :
@@ -916,13 +980,21 @@ class Serial :
 	CCL_OBJECT_END()
 	virtual void		destruct	( void );			// Destruct object
 
-	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Emits a signal when a monitoring state changes
 	DECLARE_EMT(Change)
+	//!	\brief Apply serial settings
 	DECLARE_CON(Fire)
+	//!	\brief Signals on an error
 	DECLARE_EMT(Error)
+	//!	\brief Specifies the active serial port resource.
 	DECLARE_RCP(Port)
+	//!	\brief Begin monitoring serial line for changes
 	DECLARE_RCP(Start)
+	//!	\brief End monitoring serial line for changes
 	DECLARE_RCP(Stop)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_EMT(Change)
 		DEFINE_CON(Fire)
@@ -934,7 +1006,8 @@ class Serial :
 	};
 
 //
-// Class - StreamOp.  Node to perform operations on a stream.
+//!	\brief Perform operations on a byte stream.
+//!	\nodetag ByteStream
 //
 
 class StreamOp :
@@ -955,15 +1028,25 @@ class StreamOp :
 	CCL_OBJECT_END()
 	virtual void		destruct	( void );			// Destruct object
 
-	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Emits the number of bytes available for reading in the active byte stream
 	DECLARE_CON(Available)
+	//!	\brief Specify the active offset for byte stream operations
 	DECLARE_RCP(Offset)
+	//!	\brief Specify the origin of seek operations, valid strings are : Set, End, or Current
 	DECLARE_RCP(Origin)
+	//!	\brief Seeks to the active offset from the active origin  within the byte stream
 	DECLARE_RCP(Seek)
+	//!	\brief Set the size of the active byte stream
 	DECLARE_CON(Size)
+	//!	\brief Set the active byte stream
 	DECLARE_RCP(Stream)
+	//!	\brief Emits the active stream position after a seek
 	DECLARE_EMT(Position)
+	//!	\brief Signals on error
 	DECLARE_EMT(Error)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_CON(Available)
 		DEFINE_RCP(Offset)
@@ -977,7 +1060,8 @@ class StreamOp :
 	};
 
 //
-// Class - StreamCopy.  Node to copy between streams and memory mapped bytes.
+//!	\brief Copyies between byte streams and/or memory mapped bytes
+//!	\nodetag ByteStream MemoryMapped
 //
 
 class StreamCopy :
@@ -997,12 +1081,19 @@ class StreamCopy :
 	CCL_OBJECT_END()
 	virtual void		destruct	( void );			// Destruct object
 
-	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Perform a copy between the source and destination
 	DECLARE_CON(Fire)
+	//!	\brief Specifies the destination byte stream or memory mapped object
 	DECLARE_RCP(Destination)
+	//!	\brief Provide a specific number of bytes to copy
 	DECLARE_RCP(Size)
+	//!	\brief Specifies the source byte stream or memory mapped object
 	DECLARE_RCP(Source)
+	//!	\brief Signals on error
 	DECLARE_EMT(Error)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_CON(Fire)
 		DEFINE_RCP(Destination)
@@ -1013,7 +1104,8 @@ class StreamCopy :
 	};
 
 //
-// Class - StreamSource.  Node to access streams in a stream source.
+//!	\brief Node to access byte streams from inside a stream source.
+//!	\nodetag Locations ByteStream
 //
 
 class StreamSource :
@@ -1036,17 +1128,29 @@ class StreamSource :
 	CCL_OBJECT_END()
 	virtual void		destruct	( void );			// Destruct object
 
-	// Connections
+	//! \name Connections 
+	//@{
+	//!	\brief Open and emit a byte stream from within the stream source
 	DECLARE_CON(Open)
+	//!	\brief Emit the next available byte stream location
 	DECLARE_CON(Next)
+	//!	\brief Resolve and emit a given location to a fully qualified location within the stream source
 	DECLARE_CON(Resolve)
+	//!	\brief Emit a dictionary containing information about the active byte stream location
 	DECLARE_CON(Status)
+	//!	\brief Emit the first available byte stream location
 	DECLARE_RCP(First)
+	//!	\brief Specify the active byte stream location for future operations
 	DECLARE_RCP(Location)
+	//!	\brief Specify an options dictionary when opening the next stream
 	DECLARE_RCP(Options)
+	//!	\brief Specifies a stream source object
 	DECLARE_RCP(Source)
+	//!	\brief Signals when there are no more byte streams
 	DECLARE_EMT(End)
+	//!	\brief Signals on an error
 	DECLARE_EMT(Error)
+	//@}
 	BEGIN_BEHAVIOUR()
 		DEFINE_CON(Open)
 		DEFINE_CON(Next)
