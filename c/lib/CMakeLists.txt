@@ -10,6 +10,7 @@ add_subdirectory(miscl)
 add_subdirectory(netl)
 add_subdirectory(nshl)
 add_subdirectory(nspcl)
+add_subdirectory(sqll)
 add_subdirectory(sysl)
 
 if(MSVC)

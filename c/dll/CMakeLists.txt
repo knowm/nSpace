@@ -12,6 +12,7 @@ add_subdirectory(sysn)
 
 if(MSVC)
 add_subdirectory(plotn)
+add_subdirectory(sqln)
 add_subdirectory(usbn)
 add_subdirectory(wmin)
 endif()

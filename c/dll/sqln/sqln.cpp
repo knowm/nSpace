@@ -6,11 +6,6 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-/*
-   Copyright (c) nSpace, LLC
-   All right reserved
-*/
-
 #define	CCL_OBJ_PREFIX		L"nSpace"
 #define	CCL_OBJ_MODULE		L"Sql"
 
@@ -23,8 +18,8 @@ CCL_OBJLIST_BEGIN()
 
 	// Nodes
 	CCL_OBJLIST_ENTRY	(Connection)
-	CCL_OBJLIST_ENTRY	(Query)
-	CCL_OBJLIST_ENTRY	(RecordEnum)
+//	CCL_OBJLIST_ENTRY	(Query)
+//	CCL_OBJLIST_ENTRY	(RecordEnum)
 
 CCL_OBJLIST_END()
 

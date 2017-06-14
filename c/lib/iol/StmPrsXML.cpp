@@ -25,6 +25,7 @@ StmPrsXML :: StmPrsXML ( void )
 	//
 	////////////////////////////////////////////////////////////////////////
 	pStmDoc		= NULL;
+	uBfrOutIdx	= 0;
 	#ifdef		_WIN32
 	pStmStm		= NULL;
 	pXMLDocLoad	= NULL;
@@ -128,26 +129,30 @@ HRESULT StmPrsXML :: emit ( const WCHAR *pwStr, bool bSpecial )
 						cs == WCHAR('\'') ||
 						cs == WCHAR('%') ) )
 			{
-			U8	c = (U8)('&');
-
-			// Output an ampersand then output the rest of the string
-			hr = pStmDoc->write ( &c, 1, NULL );
-
 			// Special string
-			CCLTRY ( emit(	(cs == WCHAR('&'))	? L"amp;" :
-								(cs == WCHAR('<'))	? L"lt;" :
-								(cs == WCHAR('>'))	? L"gt;" :
-								(cs == WCHAR('\"'))	? L"quot;" :
-								(cs == WCHAR('\''))	? L"apos;" :
-								(cs == WCHAR('%'))	? L"#37;" : L"" ) );
+			CCLTRY ( emit(	(cs == WCHAR('&'))	? L"&amp;" :
+								(cs == WCHAR('<'))	? L"&lt;" :
+								(cs == WCHAR('>'))	? L"&gt;" :
+								(cs == WCHAR('\"'))	? L"&quot;" :
+								(cs == WCHAR('\''))	? L"&apos;" :
+								(cs == WCHAR('%'))	? L"&#37;" : L"" ) );
 			}	// if
 
 		else
 			{
-			U8	c = (U8)(cs);
+			// Buffer output for speed
+			bBfrOut[uBfrOutIdx++] = (U8)(cs);
 
-			// Output byte version of char
-			hr = pStmDoc->write ( &c, 1, NULL );
+			// Flush ?
+			if (uBfrOutIdx >= sizeof(bBfrOut))
+				{
+				// Write cache
+				hr = pStmDoc->write ( bBfrOut, uBfrOutIdx, NULL );
+
+				// Reset cache
+				uBfrOutIdx = 0;
+				}	// if
+
 			}	// else
 
 		}	// for
@@ -277,7 +282,12 @@ HRESULT StmPrsXML :: save ( IByteStream *pUnkStm, const ADTVALUE &oVal )
 	CCLTRY ( _QISAFE(pUnkStm,IID_IByteStream,&pStmDoc) );
 
 	// Write value to document
+	CCLOK ( uBfrOutIdx = 0; )
 	CCLTRY( valueSave ( oVal ) );
+
+	// Remaining cache
+	if (hr == S_OK && uBfrOutIdx > 0)
+		hr = pStmDoc->write ( bBfrOut, uBfrOutIdx, NULL );
 
 	// Clean up
 	_RELEASE(pStmDoc);

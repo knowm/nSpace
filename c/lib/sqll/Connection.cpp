@@ -1,21 +1,14 @@
 ////////////////////////////////////////////////////////////////////////
 //
-//									CONN.CPP
+//									CONNECTION.CPP
 //
 //				Implementation of the SQL connection node
 //
 ////////////////////////////////////////////////////////////////////////
 
-/*
-   Copyright (c) nSpace, LLC
-   All right reserved
-*/
 #define	INITGUID
 #include "sqll_.h"
 #include <stdio.h>
-
-// SQLite DLL
-SQLiteDll	sqliteDll ( L"sqlite3.dll" );
 
 Connection :: Connection ( void )
 	{
@@ -25,33 +18,9 @@ Connection :: Connection ( void )
 	//		-	Constructor for the node
 	//
 	////////////////////////////////////////////////////////////////////////
-	bSqlite	= true;
-	bODBC		= false;
-
-	#ifdef	USE_ODBC
 	hSQLEnv	= NULL;
-	#endif
+	pConn		= NULL;
 	}	// Connection
-
-void Connection :: destruct ( void )
-	{
-	////////////////////////////////////////////////////////////////////////
-	//
-	//	OVERLOAD
-	//	FROM		CCLObject
-	//
-	//	PURPOSE
-	//		-	Called when the object is being destroyed
-	//
-	////////////////////////////////////////////////////////////////////////
-	#ifdef	USE_ODBC
-	if (hSQLEnv != NULL)
-		{
-		SQLFreeHandle ( SQL_HANDLE_ENV, hSQLEnv );
-		hSQLEnv = NULL;
-		}	// if
-	#endif
-	}	// destruct
 
 HRESULT Connection :: onAttach ( bool bAttach )
 	{
@@ -76,17 +45,112 @@ HRESULT Connection :: onAttach ( bool bAttach )
 
 		// Defaults
 		if (pnDesc->load ( adtString(L"Location"), vL ) == S_OK)
-			adtValue::toString ( vL, strConn );
+			adtValue::toString ( vL, strLoc );
 		}	// if
 
 	// Detach
 	else
 		{
 		// Shutdown
+		if (hSQLEnv != NULL)
+			{
+			SQLFreeHandle ( SQL_HANDLE_ENV, hSQLEnv );
+			hSQLEnv = NULL;
+			}	// if
 		}	// else
 
 	return hr;
 	}	// onAttach
+
+HRESULT Connection :: onReceive ( IReceptor *pr, const ADTVALUE &v )
+	{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//	PURPOSE
+	//		-	The node has received a value on the specified receptor.
+	//
+	//	PARAMETERS
+	//		-	pR is the receptor
+	//		-	v is the value
+	//
+	//	RETURN VALUE
+	//		S_OK if successful
+	//
+	////////////////////////////////////////////////////////////////////////
+	HRESULT	hr = S_OK;
+
+	// Connect
+	if (_RCP(Connect))
+		{
+		SQLHandle	*pNew	= NULL;
+		SQLRETURN	sqlr;
+
+		// State check
+		CCLTRYE ( strLoc.length() > 0, ERROR_INVALID_STATE );
+
+		// Allocate an environment handle for the connection
+		if (hr == S_OK && hSQLEnv == NULL)
+			{
+			CCLTRYE ( (sqlr = SQLAllocHandle ( SQL_HANDLE_ENV, SQL_NULL_HANDLE, 
+							&hSQLEnv )) == SQL_SUCCESS, sqlr );
+
+			// Attributes/options
+			CCLTRYE ( (sqlr = SQLSetEnvAttr ( hSQLEnv, SQL_ATTR_ODBC_VERSION,
+							(SQLPOINTER) SQL_OV_ODBC3, 0 )) == SQL_SUCCESS, sqlr );
+			}	// if
+
+		// Allocate a handle for the connection
+		CCLTRYE	( (pNew = new SQLHandle ( SQL_HANDLE_DBC, hSQLEnv ))
+						!= NULL, E_OUTOFMEMORY );
+		CCLTRY	( pNew->construct() );
+
+		// Connection to database
+		CCLOK		( dbgprintf ( L"%s\r\n", (PCWSTR)strLoc ); )
+		CCLTRYE ( (sqlr = SQLDriverConnect ( pNew->Handle, GetDesktopWindow(), &strLoc.at(),
+						SQL_NTS, NULL, 0, NULL, SQL_DRIVER_NOPROMPT )) == SQL_SUCCESS, sqlr );
+
+		// Results
+		if (hr == S_OK)
+			_EMT(Connect,adtIUnknown((IHaveValue *)pNew));
+		else
+			_EMT(Error,adtInt(hr));
+
+		// Clean up
+		_RELEASE(pNew);
+		}	// if
+
+	// Disconnect
+	else if (_RCP(Disconnect))
+		{
+		adtValue		vL;
+
+		// State check
+		CCLTRYE ( pConn != NULL, ERROR_INVALID_STATE );
+
+		// Disconnect
+		if (hr == S_OK && pConn->getValue ( vL ) == S_OK)
+			SQLDisconnect ( (SQLHDBC)(U64)adtLong(vL) );
+
+		// Clean up
+		_RELEASE(pConn);
+		}	// else if
+
+	// State
+	else if (_RCP(Connection))
+		{
+		_RELEASE(pConn);
+		_QISAFE(adtIUnknown(v),IID_IHaveValue,&pConn);
+		}	// else if
+	else if (_RCP(Location))
+		hr = adtValue::toString(v,strLoc);
+
+	return hr;
+	}	// receive
+
+#if	0
+
+// SQLite DLL
+SQLiteDll	sqliteDll ( L"sqlite3.dll" );
 
 HRESULT Connection :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	{
@@ -111,7 +175,7 @@ HRESULT Connection :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		SQLRef	*pConn	= NULL;
 
 		// State check
-		CCLTRYE ( strConn.length() > 0, ERROR_INVALID_STATE );
+		CCLTRYE ( strLoc.length() > 0, ERROR_INVALID_STATE );
 
 		// Prepare a connection reference
 		CCLTRYE ( (pConn = new SQLRef()) != NULL, E_OUTOFMEMORY );
@@ -126,16 +190,16 @@ HRESULT Connection :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			int		ret;
 
 			// Open connection to database
-//			CCLTRY ( strConn.toAscii ( &paConn ) );
+//			CCLTRY ( strLoc.toAscii ( &paConn ) );
 //			CCLTRYE ( (ret = sqliteDll.sqlite3_open ( paConn, &pDB ))
 //							== SQLITE_OK, ret );
-			CCLTRYE ( (ret = sqliteDll.sqlite3_open16 ( &strConn.at(), &pDB ))
+			CCLTRYE ( (ret = sqliteDll.sqlite3_open16 ( &strLoc.at(), &pDB ))
 							== SQLITE_OK, ret );
 
 			// Debug
 			if (hr != S_OK || pDB == NULL)
 				lprintf ( LOG_WARN, L"Unable to open database file : %s\r\n", 
-								(LPCWSTR)strConn );
+								(LPCWSTR)strLoc );
 
 			// Store in reference counted object
 			CCLOK ( pConn->plite_db = pDB; )
@@ -168,8 +232,8 @@ HRESULT Connection :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		SQLRETURN	sqlr;
 
 		// State check
-		if (hr == S_OK && sConn.length() == 0)
-			hr = pnDesc->load ( adtString ( L"Connection" ), sConn );
+		if (hr == S_OK && strLoc.length() == 0)
+			hr = pnDesc->load ( adtString ( L"Connection" ), strLoc );
 
 		// Allocate an environment handle for the connection
 		if (hr == S_OK && hSQLEnv == NULL)
@@ -188,8 +252,8 @@ HRESULT Connection :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		CCLTRY	( pConn->construct() );
 
 		// Connection to database
-		CCLOK		( dbgprintf ( L"%s\r\n", (PCWSTR)sConn ); )
-		CCLTRYE ( (sqlr = SQLDriverConnect ( pConn->Handle, NULL, &sConn.at(),
+		CCLOK		( dbgprintf ( L"%s\r\n", (PCWSTR)strLoc ); )
+		CCLTRYE ( (sqlr = SQLDriverConnect ( pConn->Handle, NULL, &strLoc.at(),
 						SQL_NTS, NULL, 0, NULL, SQL_DRIVER_NOPROMPT )) == SQL_SUCCESS, sqlr );
 
 		// Results
@@ -202,78 +266,12 @@ HRESULT Connection :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 	// State
 	else if (_RCP(Location))
-		adtValue::toString ( v, strConn );
+		adtValue::toString ( v, strLoc );
 	else
 		hr = ERROR_NO_MATCH;
 
 	return hr;
 	}	// receive
-
-#ifdef	USE_ODBC
-
-HRESULT Connection :: onReceive ( IReceptor *pr, const ADTVALUE &v )
-	{
-	////////////////////////////////////////////////////////////////////////
-	//
-	//	PURPOSE
-	//		-	The node has received a value on the specified receptor.
-	//
-	//	PARAMETERS
-	//		-	pR is the receptor
-	//		-	v is the value
-	//
-	//	RETURN VALUE
-	//		S_OK if successful
-	//
-	////////////////////////////////////////////////////////////////////////
-	HRESULT	hr = S_OK;
-
-	// Fire
-	if (_RCP(Fire))
-		{
-		SQLHandle	*pConn	= NULL;
-		IHaveValue	*phv;
-		SQLRETURN	sqlr;
-
-		// State check
-		if (hr == S_OK && sConn.length() == 0)
-			hr = pnDesc->load ( adtString ( L"Connection" ), sConn );
-
-		// Allocate an environment handle for the connection
-		if (hr == S_OK && hSQLEnv == NULL)
-			{
-			CCLTRYE ( (sqlr = SQLAllocHandle ( SQL_HANDLE_ENV, SQL_NULL_HANDLE, 
-							&hSQLEnv )) == SQL_SUCCESS, sqlr );
-
-			// Attributes/options
-			CCLTRYE ( (sqlr = SQLSetEnvAttr ( hSQLEnv, SQL_ATTR_ODBC_VERSION,
-							(SQLPOINTER) SQL_OV_ODBC3, 0 )) == SQL_SUCCESS, sqlr );
-			}	// if
-
-		// Allocate a handle for the connection
-		CCLTRYE	( (pConn = new SQLHandle ( SQL_HANDLE_DBC, hSQLEnv ))
-						!= NULL, E_OUTOFMEMORY );
-		CCLTRY	( pConn->construct() );
-
-		// Connection to database
-		CCLOK		( dbgprintf ( L"%s\r\n", (PCWSTR)sConn ); )
-		CCLTRYE ( (sqlr = SQLDriverConnect ( pConn->Handle, NULL, &sConn.at(),
-						SQL_NTS, NULL, 0, NULL, SQL_DRIVER_NOPROMPT )) == SQL_SUCCESS, sqlr );
-
-		// Results
-		CCLOK ( _EMT(Connect,adtIUnknown((phv = pConn))); ) 
-
-		// Clean up
-		_RELEASE(pConn);
-		}	// if
-
-	// State
-	else if (_RCP(Connection))
-		sConn = (LPCWSTR)adtString(v);
-
-	return hr;
-	}	// receive
-
 #endif
 
 #ifdef	USE_OLEDB
@@ -299,8 +297,8 @@ HRESULT Connection :: receiveFire ( const adtValue &v )
 	CLSID				clsid;
 
 	// State check
-	if (hr == S_OK && sConn.length() == 0)
-		hr = pnAttr->load ( adtString ( L"Connection" ), sConn );
+	if (hr == S_OK && strLoc.length() == 0)
+		hr = pnAttr->load ( adtString ( L"Connection" ), strLoc );
 
 	// For now default to Microsoft Access/Jet engine for default
 	CCLTRY(CLSIDFromProgID ( L"Microsoft.Jet.OLEDB.4.0", &clsid ) );
@@ -314,7 +312,7 @@ HRESULT Connection :: receiveFire ( const adtValue &v )
 		VariantInit ( &(prop[0].vValue) );
 		prop[0].dwPropertyID	= DBPROP_INIT_DATASOURCE;
 		prop[0].dwOptions		= DBPROPOPTIONS_REQUIRED;
-		prop[0].vValue			= sConn;
+		prop[0].vValue			= strLoc;
 
 		// Property set
 		set[0].guidPropertySet	= DBPROPSET_DBINIT;

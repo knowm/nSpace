@@ -487,6 +487,8 @@ class StmPrsXML :
 
 	// Run-time data
 	IByteStream			*pStmDoc;						// Document stream
+	BYTE					bBfrOut[8192];					// Buffer output
+	U32					uBfrOutIdx;						// Buffer output index
 	#ifdef				_WIN32
 	IHaveValue			*pStmStm;						// Stream on byte stream
 	IUnknown				*pXMLDocLoad;					// XML load document

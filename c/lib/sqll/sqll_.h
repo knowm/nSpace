@@ -6,52 +6,19 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-/*
-   Copyright (c) 2003, nSpace, LLC
-   All right reserved
-
-   Redistribution and use in source and binary forms, with or without 
-   modification, are permitted provided that the following conditions
-   are met:
-
-      - Redistributions of source code must retain the above copyright 
-        notice, this list of conditions and the following disclaimer.
-      - nSpace, LLC as the copyright holder reserves the right to 
-        maintain, update, and provide future releases of the source code.
-      - Redistributions in binary form must reproduce the above copyright
-        notice, this list of conditions and the following disclaimer in 
-        the documentation and/or other materials provided with the 
-        distribution.
-      - Neither the name of nSpace, nor the names of its contributors may 
-        be used to endorse or promote products derived from this software
-        without specific prior written permission.
-
-   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
-   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR 
-   A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT 
-   OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
-   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
-   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSBILITY OF SUCH DAMAGE.
-*/
-
 #ifndef	SQLL__H
 #define	SQLL__H
 
 #include "sqll.h"
 
 // SQLite
-#include "sqlite3.h"
+//#include "sqlite3.h"
 
 // ODBC
 #include <sqlext.h>
 
 // Using "PDLL" to avoid having to link to possibly missing DLLs
-#include "../sysl/PDll.h"
+//#include "../sysl/PDll.h"
 
 /*
 #define	USE_ODBC
@@ -115,7 +82,7 @@ DEFINE_REFSTR ( strRefTo,			L"To" );
 //
 // Objects
 //
-
+/*
 //
 // Class - SQLite DLL function handler.
 //
@@ -144,7 +111,8 @@ class SQLiteDll : public PDLL
 	DECLARE_FUNCTION1(int, sqlite3_step, sqlite3_stmt *);
 
 	};
-
+*/
+/*
 //
 // Class - SQLRef.  Reference counted SQL resources.
 //
@@ -156,21 +124,100 @@ class SQLRef :
 	SQLRef ( void );										// Constructor
 
 	// Run-time data
-	sqlite3			*plite_db;							// SQLite 3 database
-	sqlite3_stmt	*plite_stmt;						// SQLite 3 statement
+//	sqlite3			*plite_db;							// SQLite 3 database
+//	sqlite3_stmt	*plite_stmt;						// SQLite 3 statement
 
 	// CCL
 	CCL_OBJECT_BEGIN_INT(SQLRef)
 	CCL_OBJECT_END()
 	virtual void		destruct	( void );			// Destruct object
 	};
+*/
 
+// Error handling
+#define	SQLSTMT(a,b)	SQLHandleError ( SQL_HANDLE_STMT, (a), (b) );
+#define	SQLFREESTMT(a)	if ((a) != NULL) {							\
+									SQLFreeHandle(SQL_HANDLE_STMT,(a));	\
+									(a) = NULL; }
+
+///////////
+// Objects
+///////////
+
+//
+// Class - SQLHandle.  Internal class to handle node creation/destruction.
+//
+
+class SQLHandle :
+	public CCLObject,										// Base class
+	public IHaveValue										// Interface
+	{
+	public :
+	SQLHandle ( SQLSMALLINT, SQLHANDLE );			// Constructor
+
+	public :
+	SQLHANDLE	Handle;									// Active handle
+	SQLSMALLINT	HandleType;								// Handle type
+	SQLHANDLE	InputHandle;							// Creation input handle
+
+	// 'IHaveValue' members
+	STDMETHOD(getValue)	( ADTVALUE & );
+	STDMETHOD(setValue)	( const ADTVALUE & );
+
+	// CCL
+	CCL_OBJECT_BEGIN_INT(SQLHandle)
+		CCL_INTF(IHaveValue)
+	CCL_OBJECT_END()
+	virtual HRESULT	construct( void );			// Construct object
+	virtual void		destruct	( void );			// Destruct object
+
+	};
 
 //
 // Nodes
 //
 
+//
+// Class - Connection.  Node to establish a connection to an SQL database.
+//
 
+class Connection :
+	public CCLObject,										// Base class
+	public Behaviour										// Interface
+	{
+	public :
+	Connection ( void );									// Constructor
+
+	// Run-time data
+	adtString		strLoc;								// Connection string
+	SQLHANDLE		hSQLEnv;								// Environment handle
+	SQLHandle		*pConn;								// Active connection
+
+	// CCL
+	CCL_OBJECT_BEGIN(Connection)
+		CCL_INTF(IBehaviour)	
+	CCL_OBJECT_END()
+
+	// Connections
+	DECLARE_RCP(Connection)
+	DECLARE_CON(Connect)
+	DECLARE_CON(Disconnect)
+	DECLARE_RCP(Location)
+	DECLARE_EMT(Error)
+	BEGIN_BEHAVIOUR()
+		DEFINE_RCP(Connection)
+		DEFINE_CON(Connect)
+		DEFINE_CON(Disconnect)
+		DEFINE_RCP(Location)
+		DEFINE_EMT(Error)
+	END_BEHAVIOUR_NOTIFY()
+
+	private :
+
+	};
+
+
+/*
 //
 // Class - Connection.  Node to establish a connection to an SQL database.
 //
@@ -306,85 +353,6 @@ class RecordEnum :
 
 	private :
 	};
-
-/*
-//
-// Class - Connection.  Node to establish a connection to an SQL database.
-//
-
-class Connection :
-	public CCLObject,										// Base class
-	public Behaviour										// Interface
-	{
-	public :
-	Connection ( void );									// Constructor
-
-	// Run-time data
-	adtString		sConn;								// Connection string
-	#ifdef			USE_ODBC
-	SQLHANDLE		hSQLEnv;								// Environment handle
-	#endif
-	#ifdef			USE_OLEDB
-	#endif
-
-	// CCL
-	CCL_OBJECT_BEGIN(Connection)
-		CCL_INTF(IBehaviour)	
-	CCL_OBJECT_END()
-	virtual void		destruct	( void );			// Destruct object
-
-	// Connections
-	DECLARE_CON(Connection)
-	DECLARE_RCP(Fire)
-	DECLARE_EMT(Connect)
-	BEGIN_BEHAVIOUR()
-		DEFINE_CON(Connection)
-		DEFINE_RCP(Fire)
-		DEFINE_EMT(Connect)
-	END_BEHAVIOUR()
-
-	private :
-
-	};
-
-#ifdef	USE_ODBC
-
-// Error handling
-#define	SQLSTMT(a,b)	SQLHandleError ( SQL_HANDLE_STMT, (a), (b) );
-#define	SQLFREESTMT(a)	if ((a) != NULL) {							\
-									SQLFreeHandle(SQL_HANDLE_STMT,(a));	\
-									(a) = NULL; }
-
-//
-// Class - SQLHandle.  Internal class to handle node creation/destruction.
-//
-
-class SQLHandle :
-	public CCLObject,										// Base class
-	public IHaveValue										// Interface
-	{
-	public :
-	SQLHandle ( SQLSMALLINT, SQLHANDLE );			// Constructor
-
-	public :
-	SQLHANDLE	Handle;									// Active handle
-	SQLSMALLINT	HandleType;								// Handle type
-	SQLHANDLE	InputHandle;							// Creation input handle
-
-	// 'IHaveValue' members
-	STDMETHOD(getValue)	( ADTVALUE & );
-	STDMETHOD(setValue)	( const ADTVALUE & );
-
-	// CCL
-	CCL_OBJECT_BEGIN_INT(SQLHandle)
-		CCL_INTF(IHaveValue)
-	CCL_OBJECT_END()
-	virtual HRESULT	construct( void );			// Construct object
-	virtual void		destruct	( void );			// Destruct object
-
-	};
-
-#endif
 
 //
 // Class - SQLCreateDatabase.  Node to create a new database.
