@@ -103,7 +103,7 @@ HRESULT StmPrsXML :: emit ( const WCHAR *pwStr, bool bSpecial )
 		cs = (pwStr[i] & 0xff);
 
 		// Unprintable character ?
-		if (cs < 32)
+		if (cs < 32 || cs > 126)
 			{
 			WCHAR	wEnc[11];
 
@@ -125,7 +125,8 @@ HRESULT StmPrsXML :: emit ( const WCHAR *pwStr, bool bSpecial )
 						cs == WCHAR('<')	||
 						cs == WCHAR('>')	||
 						cs == WCHAR('\"') ||
-						cs == WCHAR('\'') ) )
+						cs == WCHAR('\'') ||
+						cs == WCHAR('%') ) )
 			{
 			U8	c = (U8)('&');
 
@@ -137,7 +138,8 @@ HRESULT StmPrsXML :: emit ( const WCHAR *pwStr, bool bSpecial )
 								(cs == WCHAR('<'))	? L"lt;" :
 								(cs == WCHAR('>'))	? L"gt;" :
 								(cs == WCHAR('\"'))	? L"quot;" :
-								(cs == WCHAR('\''))	? L"apos;" : L"" ) );
+								(cs == WCHAR('\''))	? L"apos;" :
+								(cs == WCHAR('%'))	? L"#37;" : L"" ) );
 			}	// if
 
 		else
