@@ -84,6 +84,7 @@ HRESULT Connection :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		{
 		SQLHandle	*pNew	= NULL;
 		SQLRETURN	sqlr;
+		SQLWCHAR		wOutStr[1024];
 
 		// State check
 		CCLTRYE ( strLoc.length() > 0, ERROR_INVALID_STATE );
@@ -106,8 +107,21 @@ HRESULT Connection :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 		// Connection to database
 		CCLOK		( dbgprintf ( L"%s\r\n", (PCWSTR)strLoc ); )
-		CCLTRYE ( (sqlr = SQLDriverConnect ( pNew->Handle, GetDesktopWindow(), &strLoc.at(),
-						SQL_NTS, NULL, 0, NULL, SQL_DRIVER_NOPROMPT )) == SQL_SUCCESS, sqlr );
+		CCLOK    ( sqlr = SQLDriverConnect ( pNew->Handle, GetDesktopWindow(), &strLoc.at(),
+						SQL_NTS, wOutStr, 1024, NULL, 0 /*SQL_DRIVER_NOPROMPT*/ ); )
+		CCLTRYE ( (sqlr == SQL_SUCCESS) || (sqlr == SQL_SUCCESS_WITH_INFO), sqlr );
+
+		// DEBUG
+		if (hr != S_OK)
+			{
+			SQLWCHAR	wMsg[256];
+			SQLWCHAR	wState[256];
+			SDWORD	native;
+			SWORD		msglen;
+
+			SQLError ( hSQLEnv, pNew->Handle, NULL, wState, &native, wMsg, 256, &msglen );
+			lprintf ( LOG_DBG, L"Error : %s\r\n", wMsg );
+			}	// if
 
 		// Results
 		if (hr == S_OK)

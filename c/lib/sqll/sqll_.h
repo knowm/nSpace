@@ -216,6 +216,78 @@ class Connection :
 
 	};
 
+//
+// Class - Query.  Node to perform a generic SQL query.
+//
+
+class Query :
+	public CCLObject,										// Base class
+	public Behaviour										// Interface
+	{
+	public :
+	Query ( void );										// Constructor
+
+	// Run-time data
+	IDictionary		*pDctConn;							// Connection dictionary
+	IDictionary		*pDctFlds;							// Fields dictionary
+	IDictionary		*pDctCons;							// Constraints dictionary
+	IContainer		*pCntJoin;							// Join information
+
+	/*
+	IHaveValue		*pConn;								// Connection object
+	SQLHANDLE		hConn;								// Connection
+	adtString		sTableName;							// Table name
+	adtBool			bDistinct;							// Distinct record result ?
+	IContainer		*pCons;								// Constraints
+	IIt				*pConsIn;							// Constraints
+	SQLCol			*pvCons;								// Constraint values
+	U32				szCons;								// # of constraints
+	IIt				*pFldsIn;							// Fields to 'select'
+	adtBool			bSort;								// Sort result ?
+	adtBool			bCount;								// Count query only ?
+	IMemoryMapped	*pQryBfr;							// Query buffer
+	WCHAR				*pwQryBfr;							// Query buffer
+	adtString		sSort;								// Sort field ?
+	adtInt			iCount;								// Max. query count
+	*/
+
+	// CCL
+	CCL_OBJECT_BEGIN(Query)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+	virtual HRESULT	construct( void );			// Construct object
+	virtual void		destruct	( void );			// Destruct object
+
+	// Connections
+	DECLARE_RCP(Connection)
+	DECLARE_RCP(Constraints)
+	DECLARE_RCP(Count)
+	DECLARE_RCP(Distinct)
+	DECLARE_RCP(Fields)
+	DECLARE_CON(Fire)
+	DECLARE_RCP(Join)
+	DECLARE_RCP(Sort)
+	DECLARE_RCP(Table)
+	DECLARE_EMT(Fail)
+	BEGIN_BEHAVIOUR()
+		DEFINE_RCP(Connection)
+		DEFINE_RCP(Constraints)
+		DEFINE_RCP(Count)
+		DEFINE_RCP(Distinct)
+		DEFINE_RCP(Fields)
+		DEFINE_CON(Fire)
+		DEFINE_RCP(Join)
+		DEFINE_RCP(Sort)
+		DEFINE_RCP(Table)
+		DEFINE_EMT(Fail)
+	END_BEHAVIOUR()
+
+	private :
+
+	// Internal utilities
+
+	};
+
 
 /*
 //

@@ -17,6 +17,7 @@
 // Macros
 #define	SIZE_SQLBFR		1024
 
+/*
 // Globals
 extern SQLiteDll	sqliteDll;
 
@@ -269,7 +270,7 @@ HRESULT Query :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			_RELEASE(pIt);
 			}	// if
 
-		/*
+		
 		// Optional constraints
 		if (hr == S_OK && szCons == 0 && pCons != NULL)
 			{
@@ -335,7 +336,7 @@ HRESULT Query :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 				}	// while
 			CCLOK ( pwQryBfr[wcslen(pwQryBfr)-1] = WCHAR('\0'); )
 			}	// if
-		*/
+
 
 		// Sort ?  Prefix with table name in case of join
 		if (hr == S_OK && sSort.length() > 0)
@@ -384,7 +385,7 @@ HRESULT Query :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 
 	return hr;
 	}	// receive
-
+*/
 #ifdef	USE_ODBC
 
 

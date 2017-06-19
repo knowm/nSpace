@@ -6,6 +6,7 @@ set	(
 		SOURCES
 		Connection.cpp
 		Handle.cpp
+		Query.cpp
 		)
 
 set (	HEADERS
