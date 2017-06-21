@@ -145,6 +145,30 @@ class SQLRef :
 ///////////
 
 //
+// Class - SQLCol.  Object to contain information about a column.
+//
+
+class SQLCol
+	{
+	public :
+	SQLCol ( void ) { 
+		uSz = 0; memset ( &guid, 0, sizeof(guid) ); DataType = 0; 
+		TargetType = 0; memset ( &TimeStamp, 0, sizeof(TimeStamp) ); StrLen_or_Ind = 0; }
+
+	// Run-time data
+	adtString			sName;							// Column name
+	adtValue				sData;							// Column data
+	SQLLEN				uSz;								// Column size
+	SQLSMALLINT			DataType;						// SQL data type
+	SQLSMALLINT			TargetType;						// SQL target type
+	TIMESTAMP_STRUCT	TimeStamp;						// For 'datetime' data type
+	SQLLEN				StrLen_or_Ind;					// String len or indicator
+
+	// Storage for 'alternate' types
+	GUID					guid;								// For 'GUID' type
+	};
+
+//
 // Class - SQLHandle.  Internal class to handle node creation/destruction.
 //
 
@@ -191,7 +215,7 @@ class Connection :
 	// Run-time data
 	adtString		strLoc;								// Connection string
 	SQLHANDLE		hSQLEnv;								// Environment handle
-	SQLHandle		*pConn;								// Active connection
+	IHaveValue		*pConn;								// Active connection
 
 	// CCL
 	CCL_OBJECT_BEGIN(Connection)
@@ -217,6 +241,52 @@ class Connection :
 	};
 
 //
+// Class - Enumerate.  Node to perform record iteration on a result set.
+//
+
+class Enumerate :
+	public CCLObject,										// Base class
+	public Behaviour										// Interface
+	{
+	public :
+	Enumerate ( void );									// Constructor
+
+	// Run-time data
+	IHaveValue		*pStmt;								// Statement object
+	SQLHANDLE		hStmt;								// Statement
+	SQLCol			*pCols;								// Column info.
+	SQLSMALLINT		ColumnCount;						// Current column count
+	bool				bEnd;									// Enumeration done ?
+
+	// CCL
+	CCL_OBJECT_BEGIN(Enumerate)
+		CCL_INTF(IBehaviour)
+	CCL_OBJECT_END()
+	virtual HRESULT	construct( void );			// Construct object
+	virtual void		destruct	( void );			// Destruct object
+
+	// Connections
+	DECLARE_RCP(Dictionary)
+	DECLARE_CON(Count)
+	DECLARE_CON(Next)
+	DECLARE_RCP(Position)
+	DECLARE_EMT(End)
+	BEGIN_BEHAVIOUR()
+		DEFINE_RCP(Dictionary)
+		DEFINE_CON(Count)
+		DEFINE_CON(Next)
+		DEFINE_RCP(Position)
+		DEFINE_EMT(End)
+	END_BEHAVIOUR()
+
+	private :
+
+	// Internal utilities
+	HRESULT	prepare	( void );
+	HRESULT	getBlob	( SQLHANDLE, SQLUSMALLINT, adtValue & );
+	};
+
+//
 // Class - Query.  Node to perform a generic SQL query.
 //
 
@@ -228,15 +298,12 @@ class Query :
 	Query ( void );										// Constructor
 
 	// Run-time data
-	IDictionary		*pDctConn;							// Connection dictionary
-	IDictionary		*pDctFlds;							// Fields dictionary
-	IDictionary		*pDctCons;							// Constraints dictionary
-	IContainer		*pCntJoin;							// Join information
-
-	/*
+	adtString		strTableName;						// Table name
+	adtString		strSort;								// Sort field ?
+	IMemoryMapped	*pQryBfr;							// Query buffer
+	WCHAR				*pwQryBfr;							// Query buffer
 	IHaveValue		*pConn;								// Connection object
 	SQLHANDLE		hConn;								// Connection
-	adtString		sTableName;							// Table name
 	adtBool			bDistinct;							// Distinct record result ?
 	IContainer		*pCons;								// Constraints
 	IIt				*pConsIn;							// Constraints
@@ -244,19 +311,14 @@ class Query :
 	U32				szCons;								// # of constraints
 	IIt				*pFldsIn;							// Fields to 'select'
 	adtBool			bSort;								// Sort result ?
+	IDictionary		*pJoin;								// Join information
 	adtBool			bCount;								// Count query only ?
-	IMemoryMapped	*pQryBfr;							// Query buffer
-	WCHAR				*pwQryBfr;							// Query buffer
-	adtString		sSort;								// Sort field ?
 	adtInt			iCount;								// Max. query count
-	*/
 
 	// CCL
 	CCL_OBJECT_BEGIN(Query)
 		CCL_INTF(IBehaviour)
 	CCL_OBJECT_END()
-	virtual HRESULT	construct( void );			// Construct object
-	virtual void		destruct	( void );			// Destruct object
 
 	// Connections
 	DECLARE_RCP(Connection)
@@ -280,7 +342,7 @@ class Query :
 		DEFINE_RCP(Sort)
 		DEFINE_RCP(Table)
 		DEFINE_EMT(Fail)
-	END_BEHAVIOUR()
+	END_BEHAVIOUR_NOTIFY()
 
 	private :
 
@@ -711,23 +773,6 @@ HRESULT OLEDBCopyVariant			( PVOID, adtValue * );
 
 #ifdef	USE_ODBC
 
-//
-// Class - SQLCol.  Object to contain information about a column.
-//
-
-class SQLCol
-	{
-	public :
-	SQLCol ( void ) { uSz = 0; }
-
-	// Run-time data
-	adtString			sName;							// Column name
-	adtValue				sData;							// Column data
-	SQLINTEGER			uSz;								// Column size
-	SQLSMALLINT			DataType;						// SQL data type
-	TIMESTAMP_STRUCT	TimeStamp;						// For 'datetime' data type
-	SQLLEN				StrLen_or_Ind;					// String len or indicator
-	};
 
 //
 // Class - SQLDelete.  Node to perform a generic SQL deletion.
@@ -1243,6 +1288,13 @@ HRESULT SQLStringItLen			( IIt *, U32 *, U32 * );
 
 #endif
 */
+
+// Prototypes
+HRESULT SQLBindVariantParam	( SQLHANDLE, U32, ADTVALUE *, const WCHAR *, VOID *, SQLLEN * );
+HRESULT SQLHandleError			( SQLSMALLINT, SQLHANDLE, SQLRETURN );
+HRESULT SQLVtToSQLC				( VARTYPE, SQLSMALLINT * );
+HRESULT SQLVtToSQLType			( VARTYPE, SQLSMALLINT * );
+HRESULT SQLStringItLen			( IIt *, U32 *, U32 * );
 
 #endif
 

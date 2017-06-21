@@ -190,7 +190,7 @@
 2534d0c3-8628-11d2-868c-006008addfed				// CLSID_Query (sqll)
 2534d0c4-8628-11d2-868c-006008addfed				// CLSID_SQLQueryKey
 2534d0c5-8628-11d2-868c-006008addfed				// CLSID_SQLQueryRange
-2534d0c6-8628-11d2-868c-006008addfed				// CLSID_SQLRecordEnum
+2534d0c6-8628-11d2-868c-006008addfed				// CLSID_Enumerate (sqll)
 2534d0c7-8628-11d2-868c-006008addfed				// CLSID_SQLTableCreate
 2534d0c8-8628-11d2-868c-006008addfed				// CLSID_SQLTableWrite
 2534d0c9-8628-11d2-868c-006008addfed				// CLSID_SQLUpdate

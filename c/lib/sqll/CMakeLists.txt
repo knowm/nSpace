@@ -5,8 +5,10 @@ project("sqll")
 set	(
 		SOURCES
 		Connection.cpp
+		Enumerate.cpp
 		Handle.cpp
 		Query.cpp
+		sqll.cpp
 		)
 
 set (	HEADERS
@@ -38,3 +40,4 @@ if (MSVC)
 				CONFIGURATIONS	Debug
 				)
 endif()
+
