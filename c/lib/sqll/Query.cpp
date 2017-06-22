@@ -189,6 +189,10 @@ HRESULT Query :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		// Table name
 		CCLOK		( WCSCAT ( pwQryBfr, SIZE_SQLBFR, strTableName ); )
 
+		// Debug
+//		if (!WCASECMP(strTableName,L"Treatment"))
+//			dbgprintf ( L"Hi\r\n" );
+
 		// Optional joins
 		if (hr == S_OK && pJoin != NULL)
 			{

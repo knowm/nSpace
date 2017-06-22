@@ -201,15 +201,18 @@ HRESULT Enumerate :: prepare ( void )
 				break;
 			case SQL_WCHAR :
 			case SQL_WVARCHAR :
+			case SQL_WLONGVARCHAR :
 				{
 				adtString	sData;
 
-				// Allocate max. size.
-				sData.allocate ( (U32)ColumnSize );
+				// Allocate max. size.  Not happy about SQL_WLONGVARCHAR, 
+				// how to get real size ? SQLGetData doesn't seem to return length
+				pCol->uSz				= (pCol->DataType != SQL_WLONGVARCHAR) ? (U32)ColumnSize : 8192;
+				sData.allocate ( (U32)pCol->uSz );
+				pCol->uSz				*= sizeof(WCHAR);
 				sData.at(0)				= WCHAR('\0');
 				TargetValuePtr			= (SQLPOINTER) &sData.at();
 				adtValue::copy ( sData,  pCol->sData );
-				pCol->uSz				= (U32)ColumnSize*sizeof(WCHAR);
 				pCol->TargetType		= SQL_C_WCHAR;
 				}
 				break;
@@ -228,8 +231,16 @@ HRESULT Enumerate :: prepare ( void )
 				TargetValuePtr		= &(pCol->guid);
 				}	// SQL_GUID
 				break;
-
+			case SQL_BIT :
+				{
+				adtValue::copy(adtBool(false),pCol->sData);
+				pCol->uSz			= sizeof(pCol->sData.vbool);
+				pCol->TargetType	= SQL_C_BIT;
+				TargetValuePtr		= &(pCol->sData.vbool);
+				}	// SQL_BIT
+				break;
 			default :
+				lprintf ( LOG_INFO, L"Unhandled data type %d for %s\r\n", DataType, wColName );
 				hr = E_NOTIMPL;
 			}	// switch
 
@@ -244,6 +255,10 @@ HRESULT Enumerate :: prepare ( void )
 		++ColumnNumber;
 		}	// while
 
+	// Debug
+	if (hr != S_OK)
+		lprintf ( LOG_INFO, L"Error binding columns %d/%d\r\n", ColumnNumber, ColumnCount );
+	
 	return hr;
 	}	// prepare
 
@@ -350,6 +365,9 @@ HRESULT Enumerate :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 					else
 						hr = pDict->store ( pCols[c].sName, pCols[c].sData );
 					}	// if
+
+				// Continue if on single field error
+				hr = S_OK;
 				}	// for
 			}	// if
 

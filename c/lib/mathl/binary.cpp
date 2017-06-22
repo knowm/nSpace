@@ -74,7 +74,7 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 	HRESULT	hr = S_OK;
 
 	// Debug
-//	if (!WCASECMP(this->strnName,L"LightAvgX"))
+//	if (!WCASECMP(this->strnName,L"AppendTableName_"))
 //		dbgprintf ( L"Hi\r\n" );
 	
 	// Execute
@@ -101,7 +101,10 @@ HRESULT Binary :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			_EMT(Fire,vRes);
 		else
 			{
-			lprintf ( LOG_ERR, L"%s:Fire:Error:hr 0x%x:%d\r\n", (LPCWSTR)strnName, hr, iOp );
+			lprintf ( LOG_ERR, L"%s:Fire:Error:hr 0x%x:Empty (%s,%s):%d\r\n", 
+							(LPCWSTR)strnName, hr, 
+							(adtValue::empty(vL)) ? L"true" : L"false",
+							(adtValue::empty(vR)) ? L"true" : L"false", iOp );
 			_EMT(Error,adtInt(hr) );
 			}	// else
 		}	// if

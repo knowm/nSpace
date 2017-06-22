@@ -142,9 +142,9 @@ HRESULT Value :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		// Forward through emitter
 		_EMT(Descriptor,adtIUnknown(pDsc));
 
-		// If a default value is specified, emit it
-//		if (pDsc->load ( strRefValue, vL ) == S_OK)
-//			receive ( prFire, L"Value", vL );
+		// If a new value is specified, emit it
+//		if (pDsc != NULL && pDsc->load ( strRefValue, vL ) == S_OK)
+//			onReceive ( prFire, vL );
 		}	// else if
 	else
 		hr = ERROR_NO_MATCH;
