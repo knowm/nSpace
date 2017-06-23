@@ -718,7 +718,6 @@ class Store :
 	// Run-time data
 	IDictionary		*pDct;								// Parameters
 	adtValue			vKey,vValue;						// Parameters
-	adtIUnknown		unkV;									// Internal variable
 
 	// CCL
 	CCL_OBJECT_BEGIN(Store)

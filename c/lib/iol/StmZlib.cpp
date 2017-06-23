@@ -434,7 +434,6 @@ HRESULT StmZlib :: open ( IDictionary *pOpts )
 		}	// else if
 
 	// Clean up
-	_RELEASE(pOpts);
 	if (hr != S_OK && pzstm != NULL)
 		{
 		_FREEMEM(pzstm);

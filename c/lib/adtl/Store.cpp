@@ -129,14 +129,15 @@ HRESULT Store :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 			}	// if
 
 		// Result
-		CCLOK ( _EMT(Fire,(unkV=pDct) ); )
+		CCLOK ( _EMT(Fire,adtIUnknown(pDct) ); )
 		}	// if
 
 	// Parameters
 	else if (_RCP(Dictionary))
 		{
+		adtIUnknown		unkV(v);
 		_RELEASE(pDct);
-		hr = _QISAFE((unkV=v),IID_IDictionary,&pDct);
+		hr = _QISAFE(unkV,IID_IDictionary,&pDct);
 		}	// else if
 	else if (_RCP(Key))
 		hr = adtValue::copy ( v, vKey );

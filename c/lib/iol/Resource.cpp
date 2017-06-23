@@ -119,7 +119,7 @@ HRESULT Resource :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		{
 		adtIUnknown	unkV(v);
 		_RELEASE(pOpt);
-		hr = _QI(unkV,IID_IDictionary,&pOpt);
+		hr = _QISAFE(unkV,IID_IDictionary,&pOpt);
 		}	// else if
 	else if (_RCP(Resource))
 		{

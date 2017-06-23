@@ -89,6 +89,9 @@ HRESULT Connection :: onReceive ( IReceptor *pr, const ADTVALUE &v )
 		// State check
 		CCLTRYE ( strLoc.length() > 0, ERROR_INVALID_STATE );
 
+		// Ensure valid Windows path
+		CCLOK ( strLoc.replace ( '/', '\\' ); )
+
 		// Allocate an environment handle for the connection
 		if (hr == S_OK && hSQLEnv == NULL)
 			{
